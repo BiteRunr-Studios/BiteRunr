@@ -24,7 +24,8 @@ struct BiteClubApp: App {
             .environment(clerk)
             .task {
                 print("Configuring Clerk...")
-                clerk.configure(publishableKey: "pk_test_YWJzb2x1dGUtcGhvZW5peC03LmNsZXJrLmFjY291bnRzLmRldiQ")
+                // Secret Key not for prod (use env)
+                clerk.configure(publishableKey: "pk_test_bXV0dWFsLXJpbmd0YWlsLTc3LmNsZXJrLmFjY291bnRzLmRldiQ")
                 do {
                     try await clerk.load()
                     print("Clerk loaded successfully")
