@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		14B82D062DA21A9D00C2D4AF /* Clerk in Frameworks */ = {isa = PBXBuildFile; productRef = 14B82D052DA21A9D00C2D4AF /* Clerk */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		14B82CF62DA20AC600C2D4AF /* BiteClub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BiteClub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				14B82D062DA21A9D00C2D4AF /* Clerk in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = BiteClub;
 			packageProductDependencies = (
+				14B82D052DA21A9D00C2D4AF /* Clerk */,
 			);
 			productName = BiteClub;
 			productReference = 14B82CF62DA20AC600C2D4AF /* BiteClub.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 14B82CED2DA20AC600C2D4AF;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				14B82D042DA21A9D00C2D4AF /* XCRemoteSwiftPackageReference "clerk-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 14B82CF72DA20AC600C2D4AF /* Products */;
 			projectDirPath = "";
@@ -324,6 +333,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		14B82D042DA21A9D00C2D4AF /* XCRemoteSwiftPackageReference "clerk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/clerk/clerk-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.55.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		14B82D052DA21A9D00C2D4AF /* Clerk */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 14B82D042DA21A9D00C2D4AF /* XCRemoteSwiftPackageReference "clerk-ios" */;
+			productName = Clerk;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 14B82CEE2DA20AC600C2D4AF /* Project object */;
 }
