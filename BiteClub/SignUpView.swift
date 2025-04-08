@@ -22,7 +22,6 @@ struct SignUpView: View {
                 .scaledToFill()
                 .frame(width: screen.width, height: screen.height / 3.33)
                 .clipped()
-                .ignoresSafeArea(edges: .top)
             
             VStack(spacing: 16) {
                 Text("Sign Up")
@@ -34,14 +33,12 @@ struct SignUpView: View {
                 } else {
                     HStack(spacing: 12) {
                         TextField("Email", text: $email)
-                            .foregroundStyle(.gray)
-                        Image("mailIcon")
-                            .resizable()
+                        Image(systemName: "envelope.fill")
                             .frame(width: 24, height: 24)
+                            .foregroundStyle(.gray)
                     }
                     .padding(.vertical, 16)
                     .padding(.horizontal, 16)
-                    .background(Color.white)
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
@@ -50,9 +47,9 @@ struct SignUpView: View {
                     
                     HStack(spacing: 12) {
                         SecureField("Password", text: $password)
-                        Image("eyeClosed")
-                            .resizable()
+                        Image(systemName: "eye")
                             .frame(width: 24, height: 24)
+                            .foregroundStyle(.gray)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
