@@ -7,12 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		037BAD652DA426C500832708 /* BiteClubAPI in Resources */ = {isa = PBXBuildFile; fileRef = 037BAD642DA426C500832708 /* BiteClubAPI */; };
 		14B82D062DA21A9D00C2D4AF /* Clerk in Frameworks */ = {isa = PBXBuildFile; productRef = 14B82D052DA21A9D00C2D4AF /* Clerk */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		037BAD642DA426C500832708 /* BiteClubAPI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = BiteClubAPI; sourceTree = "<group>"; };
 		14B82CF62DA20AC600C2D4AF /* BiteClub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BiteClub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -39,7 +37,6 @@
 		14B82CED2DA20AC600C2D4AF = {
 			isa = PBXGroup;
 			children = (
-				037BAD642DA426C500832708 /* BiteClubAPI */,
 				14B82CF82DA20AC600C2D4AF /* BiteClub */,
 				14B82CF72DA20AC600C2D4AF /* Products */,
 			);
@@ -121,7 +118,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				037BAD652DA426C500832708 /* BiteClubAPI in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
