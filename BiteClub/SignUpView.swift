@@ -25,6 +25,7 @@ struct SignUpView: View {
                 .clipped()
             
             VStack(spacing: 16) {
+                Text("Sign Up")
                 if isVerifying {
                     TextField("Code", text: $code)
                     Button("Verify") {
