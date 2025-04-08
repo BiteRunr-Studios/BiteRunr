@@ -15,7 +15,7 @@ struct SignUpView: View {
     @State private var isVerifying = false
     
     var body: some View {
-        VStack {
+        VStack(spacing: 12) {
             Text("Sign Up")
             if isVerifying {
                 TextField("Code", text: $code)
@@ -28,6 +28,82 @@ struct SignUpView: View {
                 Button("Continue") {
                     Task { await signUp(email: email, password: password) }
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(.orange)
+                .foregroundStyle(.white)
+                .cornerRadius(12)
+                
+                HStack {
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(.gray)
+                        .cornerRadius(12)
+                    
+                    Text("OR")
+                        .padding(.horizontal, 8)
+                        .foregroundColor(.gray)
+                    
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(.gray)
+                        .cornerRadius(12)
+                }
+                .padding(.horizontal)
+                
+                Button(action: {
+                    print("Continue with Google")
+                }) {
+                    HStack {
+                        Image("GoogleIcon")
+                        Text("Continue with Google")
+                            .foregroundColor(.gray)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .foregroundStyle(.gray)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(.gray, lineWidth: 1)
+                )
+                
+                Button(action: {
+                    print("Continue with Apple")
+                }) {
+                    HStack {
+                        Image("Apple")
+                        Text("Continue with Apple")
+                            .foregroundColor(.gray)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .foregroundStyle(.gray)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(.gray, lineWidth: 1)
+                )
+                
+                Button(action: {
+                    print("Continue with GitHub")
+                }) {
+                    HStack {
+                        Image("GitHub")
+                        Text("Continue with GitHub")
+                            .foregroundColor(.gray)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .foregroundStyle(.gray)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(.gray, lineWidth: 1)
+                )
             }
         }
         .padding()
