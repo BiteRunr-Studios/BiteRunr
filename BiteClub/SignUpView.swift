@@ -13,100 +13,140 @@ struct SignUpView: View {
     @State private var password = ""
     @State private var code = ""
     @State private var isVerifying = false
+    let screen = UIScreen.main.bounds
     
     var body: some View {
-        VStack(spacing: 12) {
-            Text("Sign Up")
-            if isVerifying {
-                TextField("Code", text: $code)
-                Button("Verify") {
-                    Task { await verify(code: code) }
-                }
-            } else {
-                TextField("Email", text: $email)
-                SecureField("Password", text: $password)
-                Button("Continue") {
-                    Task { await signUp(email: email, password: password) }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(.orange)
-                .foregroundStyle(.white)
-                .cornerRadius(12)
-                
-                HStack {
-                    Rectangle()
-                        .frame(height: 1)
-                        .foregroundColor(.gray)
-                        .cornerRadius(12)
+        VStack(spacing: 6) {
+            Image("SignupIcon")
+                .resizable()
+                .scaledToFill()
+                .frame(width: screen.width, height: screen.height / 3.33)
+                .clipped()
+                .ignoresSafeArea(edges: .top)
+            
+            VStack(spacing: 16) {
+                Text("Sign Up")
+                if isVerifying {
+                    TextField("Code", text: $code)
+                    Button("Verify") {
+                        Task { await verify(code: code) }
+                    }
+                } else {
+                    HStack(spacing: 12) {
+                        TextField("Email", text: $email)
+                            .foregroundStyle(.gray)
+                        Image("mailIcon")
+                            .resizable()
+                            .frame(width: 24, height: 24)
+                    }
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 16)
+                    .background(Color.white)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.gray, lineWidth: 1)
+                    )
                     
-                    Text("OR")
-                        .padding(.horizontal, 8)
-                        .foregroundColor(.gray)
+                    HStack(spacing: 12) {
+                        SecureField("Password", text: $password)
+                        Image("eyeClosed")
+                            .resizable()
+                            .frame(width: 24, height: 24)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 16)
+                    .foregroundStyle(.gray)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(.gray, lineWidth: 1)
+                    )
                     
-                    Rectangle()
-                        .frame(height: 1)
-                        .foregroundColor(.gray)
-                        .cornerRadius(12)
-                }
-                .padding(.horizontal)
-                
-                Button(action: {
-                    print("Continue with Google")
-                }) {
-                    HStack {
-                        Image("GoogleIcon")
-                        Text("Continue with Google")
-                            .foregroundColor(.gray)
+                    Button("Continue") {
+                        Task { await signUp(email: email, password: password) }
                     }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .foregroundStyle(.gray)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(.gray, lineWidth: 1)
-                )
-                
-                Button(action: {
-                    print("Continue with Apple")
-                }) {
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(.orange)
+                    .foregroundStyle(.white)
+                    .cornerRadius(12)
+                    
                     HStack {
-                        Image("Apple")
-                        Text("Continue with Apple")
+                        Rectangle()
+                            .frame(height: 1)
                             .foregroundColor(.gray)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .foregroundStyle(.gray)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(.gray, lineWidth: 1)
-                )
-                
-                Button(action: {
-                    print("Continue with GitHub")
-                }) {
-                    HStack {
-                        Image("GitHub")
-                        Text("Continue with GitHub")
+                            .cornerRadius(12)
+                        
+                        Text("OR")
+                            .padding(.horizontal, 8)
                             .foregroundColor(.gray)
+                        
+                        Rectangle()
+                            .frame(height: 1)
+                            .foregroundColor(.gray)
+                            .cornerRadius(12)
                     }
+                    .padding(.horizontal)
+                    
+                    Button(action: {
+                        print("Continue with Google")
+                    }) {
+                        HStack {
+                            Image("GoogleIcon")
+                            Text("Continue with Google")
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .foregroundStyle(.gray)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(.gray, lineWidth: 1)
+                    )
+                    
+                    Button(action: {
+                        print("Continue with Apple")
+                    }) {
+                        HStack {
+                            Image("Apple")
+                            Text("Continue with Apple")
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .foregroundStyle(.gray)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(.gray, lineWidth: 1)
+                    )
+                    
+                    Button(action: {
+                        print("Continue with GitHub")
+                    }) {
+                        HStack {
+                            Image("GitHub")
+                            Text("Continue with GitHub")
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .foregroundStyle(.gray)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(.gray, lineWidth: 1)
+                    )
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .foregroundStyle(.gray)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(.gray, lineWidth: 1)
-                )
             }
+            .padding()
         }
-        .padding()
     }
 }
 
