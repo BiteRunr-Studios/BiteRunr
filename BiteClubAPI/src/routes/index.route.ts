@@ -1,13 +1,17 @@
 import { createRouter } from "@/lib/create-app.js";
 import { createRoute, z } from "@hono/zod-openapi";
 import { jsonContent } from "stoker/openapi/helpers";
+import * as HttpStatusCodes from "stoker/http-status-codes";
+
+const tags = ["Index"];
 
 const router = createRouter().openapi(
     createRoute({
         method: "get",
         path: "/",
+        tags,
         responses: {
-            200: jsonContent(
+            [HttpStatusCodes.OK]: jsonContent(
                 z.object({
                     message: z.string(),
                 }),
@@ -16,9 +20,12 @@ const router = createRouter().openapi(
         },
     }),
     (c) => {
-        return c.json({
-            message: "BiteClub API",
-        });
+        return c.json(
+            {
+                message: "BiteClub API",
+            },
+            HttpStatusCodes.OK
+        );
     }
 );
 
