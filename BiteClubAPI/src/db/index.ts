@@ -1,12 +1,17 @@
 import env from "@/env.js";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import * as schema from "@/db/schema/index.js";
 
-async function main() {
-    const connectionString = env.DATABASE_URL;
+const connectionString = env.DATABASE_URL;
 
-    const client = postgres(connectionString, { prepare: false });
-    const db = drizzle(client);
-}
+export const connection = postgres(connectionString, { prepare: false });
 
-main();
+export const db = drizzle(connection, {
+    schema,
+    logger: true,
+});
+
+export type db = typeof db;
+
+export default db;
