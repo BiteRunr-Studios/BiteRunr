@@ -1,0 +1,31 @@
+{
+    "name": "bite-club-api",
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "dev:db": "tsx watch src/db/index.ts",
+        "db:push": "pnpm drizzle-kit push",
+        "db:generate": "pnpm drizzle-kit generate",
+        "db:migrate": "pnpm drizzle-kit migrate"
+    },
+    "dependencies": {
+        "@hono/node-server": "^1.14.0",
+        "@hono/zod-openapi": "0.18.4",
+        "@scalar/hono-api-reference": "^0.8.0",
+        "dotenv": "^16.4.7",
+        "dotenv-expand": "^12.0.1",
+        "drizzle-orm": "^0.41.0",
+        "hono": "^4.7.6",
+        "hono-pino": "^0.8.0",
+        "postgres": "^3.4.5",
+        "stoker": "^1.4.2",
+        "zod": "^3.24.2"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.17",
+        "drizzle-kit": "^0.30.6",
+        "tsx": "^4.19.3"
+    },
+    "packageManager": "pnpm@9.15.1"
+}

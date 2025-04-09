@@ -22,6 +22,7 @@ struct ContentView: View {
                 SignUpOrSignInView()
             }
         }
+        .toolbarBackground(.teal, for: .tabBar)
     }
 }
 
