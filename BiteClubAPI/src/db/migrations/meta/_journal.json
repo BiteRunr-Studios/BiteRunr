@@ -8,6 +8,20 @@
       "when": 1744237697539,
       "tag": "0000_misty_silver_surfer",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1744239492585,
+      "tag": "0001_crazy_scarecrow",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1744240937351,
+      "tag": "0002_absent_overlord",
+      "breakpoints": true
     }
   ]
 }
