@@ -13,16 +13,16 @@ struct SignUpView: View {
     @State private var password = ""
     @State private var code = ""
     @State private var isVerifying = false
+    @State private var isPasswordVisible: Bool = false
     let screen = UIScreen.main.bounds
     
     var body: some View {
         VStack(spacing: 6) {
-            Image("SignupIcon")
+            Image("signUpIcon")
                 .resizable()
                 .scaledToFill()
                 .frame(width: screen.width, height: screen.height / 3.33)
                 .clipped()
-                .ignoresSafeArea(edges: .top)
             
             VStack(spacing: 16) {
                 Text("Sign Up")
@@ -34,14 +34,12 @@ struct SignUpView: View {
                 } else {
                     HStack(spacing: 12) {
                         TextField("Email", text: $email)
-                            .foregroundStyle(.gray)
-                        Image("mailIcon")
-                            .resizable()
+                        Image(systemName: "envelope.fill")
                             .frame(width: 24, height: 24)
+                            .foregroundStyle(.gray)
                     }
                     .padding(.vertical, 16)
                     .padding(.horizontal, 16)
-                    .background(Color.white)
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
@@ -49,10 +47,19 @@ struct SignUpView: View {
                     )
                     
                     HStack(spacing: 12) {
-                        SecureField("Password", text: $password)
-                        Image("eyeClosed")
-                            .resizable()
-                            .frame(width: 24, height: 24)
+                        if isPasswordVisible {
+                            TextField("Password", text: $password)
+                        }
+                        else {
+                            SecureField("Password", text: $password)
+                        }
+                        Button(action: {
+                            isPasswordVisible.toggle()
+                        }) {
+                            Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
+                                .frame(width: 24, height: 24)
+                                .foregroundStyle(.gray)
+                        }
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
