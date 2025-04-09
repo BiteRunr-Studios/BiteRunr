@@ -8,6 +8,8 @@ serve(
         port: env.PORT,
     },
     (info) => {
-        console.log(`Server is running on http://localhost:${info.port}`);
+        console.log(
+            `Server is running on http://localhost:${info.port}/scalar`
+        );
     }
 );

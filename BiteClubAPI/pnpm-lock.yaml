@@ -26,6 +26,9 @@ importers:
       drizzle-orm:
         specifier: ^0.41.0
         version: 0.41.0(gel@2.0.2)(postgres@3.4.5)
+      drizzle-zod:
+        specifier: ^0.7.1
+        version: 0.7.1(drizzle-orm@0.41.0(gel@2.0.2)(postgres@3.4.5))(zod@3.24.2)
       hono:
         specifier: ^4.7.6
         version: 4.7.6
@@ -656,6 +659,12 @@ packages:
       sqlite3:
         optional: true
 
+  drizzle-zod@0.7.1:
+    resolution: {integrity: sha512-nZzALOdz44/AL2U005UlmMqaQ1qe5JfanvLujiTHiiT8+vZJTBFhj3pY4Vk+L6UWyKFfNmLhk602Hn4kCTynKQ==}
+    peerDependencies:
+      drizzle-orm: '>=0.36.0'
+      zod: '>=3.0.0'
+
   env-paths@3.0.0:
     resolution: {integrity: sha512-dtJUTepzMW3Lm/NPxRf3wP4642UWhjL2sQxc+ym2YMj1m/H2zDNQOlezafzkHwn6sMstjHTwG6iQQsctDW/b1A==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -1133,6 +1142,11 @@ snapshots:
     optionalDependencies:
       gel: 2.0.2
       postgres: 3.4.5
+
+  drizzle-zod@0.7.1(drizzle-orm@0.41.0(gel@2.0.2)(postgres@3.4.5))(zod@3.24.2):
+    dependencies:
+      drizzle-orm: 0.41.0(gel@2.0.2)(postgres@3.4.5)
+      zod: 3.24.2
 
   env-paths@3.0.0: {}
 
