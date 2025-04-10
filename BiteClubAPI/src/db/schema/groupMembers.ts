@@ -5,10 +5,10 @@ import orderGroups from "./orderGroups";
 import { user } from "./user";
 
 export const groupMembers = pgTable("group_members", {
-  id: serial("id").primaryKey(),
-  groupId: integer("group_id").references(() => orderGroups.id),
-  userId: integer("user_id").references(() => user.id),
-  joinedAt: timestamp("joined_at").defaultNow(),
+    id: serial("id").primaryKey(),
+    groupId: integer("group_id").references(() => orderGroups.id),
+    userId: integer("user_id").references(() => user.id),
+    joinedAt: timestamp("joined_at").defaultNow(),
 });
 
 export default groupMembers;
