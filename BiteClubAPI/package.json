@@ -10,6 +10,7 @@
         "db:migrate": "pnpm drizzle-kit migrate"
     },
     "dependencies": {
+        "@asteasolutions/zod-to-openapi": "^7.3.0",
         "@hono/node-server": "^1.14.0",
         "@hono/zod-openapi": "0.18.4",
         "@scalar/hono-api-reference": "^0.8.0",

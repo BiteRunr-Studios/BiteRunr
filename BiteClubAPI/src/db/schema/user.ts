@@ -1,5 +1,6 @@
 import { integer, pgTable, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 export const user = pgTable("users", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -8,7 +9,10 @@ export const user = pgTable("users", {
     email: varchar({ length: 255 }).notNull().unique(),
 });
 
-export const insertUserSchema = createInsertSchema(user);
 export const selectUserSchema = createSelectSchema(user);
+export const insertUserSchema = createInsertSchema(user).extend({
+    email: z.string().email(),
+});
+export const patchUserSchema = insertUserSchema.partial();
 
 export default user;
