@@ -1,5 +1,5 @@
 // @ts-ignore
-export { default as user } from "./user";
+export { default as user, userFriends } from "./user";
 // @ts-ignore
 export { default as orderGroups } from "./orderGroups";
 // @ts-ignore

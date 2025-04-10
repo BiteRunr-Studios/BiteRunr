@@ -22,6 +22,13 @@
       "when": 1744240937351,
       "tag": "0002_absent_overlord",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1744250063528,
+      "tag": "0003_rich_pride",
+      "breakpoints": true
     }
   ]
 }
