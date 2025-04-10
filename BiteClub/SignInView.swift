@@ -9,9 +9,12 @@ import SwiftUI
 import Clerk
 
 struct SignInView: View {
+    @Environment(\.colorScheme) var colorScheme
+    
     @State private var email = ""
     @State private var password = ""
     @State private var isPasswordVisible: Bool = false
+    
     let screen = UIScreen.main.bounds
     
     var body: some View {
@@ -29,14 +32,15 @@ struct SignInView: View {
                     TextField("Email", text: $email)
                     Image(systemName: "envelope.fill")
                         .frame(width: 24, height: 24)
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(.secondary)
                 }
                 .padding(.vertical, 16)
                 .padding(.horizontal, 16)
+                .background(Color(UIColor.systemBackground))
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.gray, lineWidth: 1)
+                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
                 )
                 HStack(spacing: 12) {
                     if isPasswordVisible {
@@ -50,17 +54,18 @@ struct SignInView: View {
                     }) {
                         Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
                             .frame(width: 24, height: 24)
-                            .foregroundStyle(.gray)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .padding(.horizontal, 16)
-                .foregroundStyle(.gray)
+                .foregroundStyle(.primary)
+                .background(Color(UIColor.systemBackground))
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(.gray, lineWidth: 1)
+                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
                 )
                 Button("Continue") {
                     Task { await submit(email: email, password: password) }
@@ -74,16 +79,16 @@ struct SignInView: View {
                 HStack {
                     Rectangle()
                         .frame(height: 1)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                         .cornerRadius(12)
                     
                     Text("OR")
                         .padding(.horizontal, 8)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                     
                     Rectangle()
                         .frame(height: 1)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                         .cornerRadius(12)
                 }
                 .padding(.horizontal)
@@ -94,16 +99,17 @@ struct SignInView: View {
                     HStack {
                         Image("GoogleIcon")
                         Text("Continue with Google")
-                            .foregroundColor(.gray)
+                            .foregroundColor(.primary)
                     }
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .foregroundStyle(.gray)
+                .background(Color(UIColor.systemBackground))
+                .foregroundStyle(.primary)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(.gray, lineWidth: 1)
+                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
                 )
                 
                 Button(action: {
@@ -111,37 +117,21 @@ struct SignInView: View {
                 }) {
                     HStack {
                         Image("Apple")
+                            .renderingMode(.template)
+                            .foregroundColor(colorScheme == .dark ? .white : .black)
                         Text("Continue with Apple")
-                            .foregroundColor(.gray)
+                            .foregroundColor(.primary)
                     }
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .foregroundStyle(.gray)
+                .background(Color(UIColor.systemBackground))
+                .foregroundStyle(.primary)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(.gray, lineWidth: 1)
+                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
                 )
-                
-                Button(action: {
-                    print("Continue with GitHub")
-                }) {
-                    HStack {
-                        Image("GitHub")
-                        Text("Continue with GitHub")
-                            .foregroundColor(.gray)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .foregroundStyle(.gray)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(.gray, lineWidth: 1)
-                )
-                
             }
             .padding()
         }

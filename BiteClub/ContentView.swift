@@ -12,22 +12,23 @@ struct ContentView: View {
     @Environment(Clerk.self) private var clerk
     
     var body: some View {
-        ZStack(alignment: .top) {
-            Color(UIColor(red: 1.0, green: 0.533, blue: 0.0, alpha: 1.0))
-                .ignoresSafeArea(edges: .top)
-                .frame(height: UIApplication.shared.statusBarFrame.height)
-            VStack {
-                if let user = clerk.user {
-                    Text("Hello, \(user.id)")
-                    Button("Sign Out") {
-                        Task { try? await clerk.signOut() }
+        GeometryReader { geometry in
+            ZStack(alignment: .top) {
+                Color(UIColor(red: 1.0, green: 0.533, blue: 0.0, alpha: 1.0))
+                    .ignoresSafeArea(edges: .top)
+                    .frame(height: geometry.safeAreaInsets.top)
+                VStack {
+                    if let user = clerk.user {
+                        Text("Hello, \(user.id)")
+                        Button("Sign Out") {
+                            Task { try? await clerk.signOut() }
+                        }
+                    } else {
+                        SignUpOrSignInView()
                     }
-                } else {
-                    SignUpOrSignInView()
                 }
             }
         }
-        .toolbarBackground(.teal, for: .tabBar)
     }
 }
 
