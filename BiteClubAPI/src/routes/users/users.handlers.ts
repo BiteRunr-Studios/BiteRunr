@@ -54,7 +54,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
         .where(eq(user.id, id))
         .returning();
 
-    if (!user) {
+    if (!updatedUser) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
