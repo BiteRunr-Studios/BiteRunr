@@ -16,6 +16,7 @@ struct SignUpView: View {
     @State private var code = ""
     @State private var isVerifying = false
     @State private var isPasswordVisible: Bool = false
+    @State private var isPressed = false
     
     let screen = UIScreen.main.bounds
     
@@ -76,14 +77,27 @@ struct SignUpView: View {
                             .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
                     )
                     
-                    Button("Continue") {
-                        Task { await signUp(email: email, password: password) }
+                    Button(action: {
+                        withAnimation(.easeIn(duration: 0.1)) {
+                            isPressed = true
+                        }
+                        Task {
+                            await signUp(email: email, password: password)
+                            withAnimation(.easeOut(duration: 0.1)) {
+                                isPressed = false
+                            }
+                        }
+                    }) {
+                        Text("Continue")
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color.orange)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                            .scaleEffect(isPressed ? 0.99 : 1.0)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(.orange)
-                    .foregroundStyle(.white)
-                    .cornerRadius(12)
+                    .contentShape(Rectangle())
+
                     
                     HStack {
                         Rectangle()

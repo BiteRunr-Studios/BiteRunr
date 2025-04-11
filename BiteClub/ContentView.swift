@@ -11,6 +11,7 @@ import Clerk
 struct ContentView: View {
     @Environment(Clerk.self) private var clerk
     
+
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
@@ -20,9 +21,6 @@ struct ContentView: View {
                 VStack {
                     if let _ = clerk.user {
                         BottomTabBar()
-                        Button("Sign Out") {
-                            Task { try? await clerk.signOut() }
-                        }
                     } else {
                         SignUpOrSignInView()
                     }
