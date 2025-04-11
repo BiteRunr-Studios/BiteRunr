@@ -14,27 +14,27 @@ import { eq } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const items = await db.query.orders.findMany();
-    const validatedUsers = items.map((item) =>
+    const validatedOrders = items.map((item) =>
         selectOrdersSchema.parse(item)
     );
-    return c.json(validatedUsers);
+    return c.json(validatedOrders);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
-    const newItem = c.req.valid("json");
-    const [inserted] = await db.insert(orders).values(newItem).returning();
+    const newOrder = c.req.valid("json");
+    const [inserted] = await db.insert(orders).values(newOrder).returning();
     return c.json(inserted, HttpStatusCodes.OK);
 };
 
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     const { id } = c.req.valid("param");
-    const item = await db.query.orders.findFirst({
+    const order = await db.query.orders.findFirst({
         where(fields, operators) {
             return operators.eq(fields.id, id);
         },
     });
 
-    if (!item) {
+    if (!order) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -43,20 +43,20 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         );
     }
 
-    const validatedItem = selectOrdersSchema.parse(item);
-    return c.json(validatedItem, HttpStatusCodes.OK);
+    const validatedOrder = selectOrdersSchema.parse(order);
+    return c.json(validatedOrder, HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
-    const [updatedItem] = await db
+    const [updatedOrder] = await db
         .update(orders)
         .set(updates)
         .where(eq(orders.id, id))
         .returning();
 
-    if (!updatedItem) {
+    if (!updatedOrder) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -65,5 +65,6 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
         );
     }
 
-    return c.json(updatedItem, HttpStatusCodes.OK);
+    const validatedOrder = selectOrdersSchema.parse(updatedOrder);
+    return c.json(validatedOrder, HttpStatusCodes.OK);
 };

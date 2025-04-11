@@ -14,27 +14,27 @@ import { eq } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const items = await db.query.friends.findMany();
-    const validatedUsers = items.map((item) =>
+    const validatedFriends = items.map((item) =>
         selectFriendsSchema.parse(item)
     );
-    return c.json(validatedUsers);
+    return c.json(validatedFriends);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
-    const newItem = c.req.valid("json");
-    const [inserted] = await db.insert(friends).values(newItem).returning();
+    const newFriend = c.req.valid("json");
+    const [inserted] = await db.insert(friends).values(newFriend).returning();
     return c.json(inserted, HttpStatusCodes.OK);
 };
 
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     const { id } = c.req.valid("param");
-    const item = await db.query.friends.findFirst({
+    const friend = await db.query.friends.findFirst({
         where(fields, operators) {
             return operators.eq(fields.id, id);
         },
     });
 
-    if (!item) {
+    if (!friend) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -43,20 +43,20 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         );
     }
 
-    const validatedItem = selectFriendsSchema.parse(item);
-    return c.json(validatedItem, HttpStatusCodes.OK);
+    const validatedFriend = selectFriendsSchema.parse(friend);
+    return c.json(validatedFriend, HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
-    const [updatedItem] = await db
+    const [updatedFriend] = await db
         .update(friends)
         .set(updates)
         .where(eq(friends.id, id))
         .returning();
 
-    if (!updatedItem) {
+    if (!updatedFriend) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -65,5 +65,6 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
         );
     }
 
-    return c.json(updatedItem, HttpStatusCodes.OK);
+    const validatedFriend = selectFriendsSchema.parse(updatedFriend);
+    return c.json(validatedFriend, HttpStatusCodes.OK);
 };
