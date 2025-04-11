@@ -1,38 +1,40 @@
 import db from "@/db/index";
-import { users } from "@/db/schema/users";
+import { orderItems } from "@/db/schema/orderItems";
 import type {
     CreateRoute,
     GetOneRoute,
     ListRoute,
     PatchRoute,
-} from "./users.routes";
+} from "./items.routes";
 import type { AppRouteHandler } from "@/lib/types";
-import { selectUserSchema } from "@/db/schema/users";
+import { selectOrderItemsSchema } from "@/db/schema/orderItems";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { eq } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
-    const users = await db.query.users.findMany();
-    const validatedUsers = users.map((user) => selectUserSchema.parse(user));
+    const items = await db.query.orderItems.findMany();
+    const validatedUsers = items.map((item) =>
+        selectOrderItemsSchema.parse(item)
+    );
     return c.json(validatedUsers);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
-    const newUser = c.req.valid("json");
-    const [inserted] = await db.insert(users).values(newUser).returning();
+    const newItem = c.req.valid("json");
+    const [inserted] = await db.insert(orderItems).values(newItem).returning();
     return c.json(inserted, HttpStatusCodes.OK);
 };
 
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     const { id } = c.req.valid("param");
-    const user = await db.query.users.findFirst({
+    const item = await db.query.orderItems.findFirst({
         where(fields, operators) {
             return operators.eq(fields.id, id);
         },
     });
 
-    if (!user) {
+    if (!item) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -41,20 +43,20 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         );
     }
 
-    const validatedUser = selectUserSchema.parse(user);
-    return c.json(validatedUser, HttpStatusCodes.OK);
+    const validatedItem = selectOrderItemsSchema.parse(item);
+    return c.json(validatedItem, HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
-    const [updatedUser] = await db
-        .update(users)
+    const [updatedItem] = await db
+        .update(orderItems)
         .set(updates)
-        .where(eq(users.id, id))
+        .where(eq(orderItems.id, id))
         .returning();
 
-    if (!updatedUser) {
+    if (!updatedItem) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -63,5 +65,5 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
         );
     }
 
-    return c.json(updatedUser, HttpStatusCodes.OK);
+    return c.json(updatedItem, HttpStatusCodes.OK);
 };
