@@ -10,9 +10,9 @@ import {
     insertUserSchema,
     patchUserSchema,
     selectUserSchema,
-} from "@/db/schema/user.js";
-import { createErrorSchema, IdParamsSchema } from "stoker/openapi/schemas";
-import { notFoundSchema } from "@/lib/constants.js";
+} from "@/db/schema/users";
+import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
+import { notFoundSchema } from "@/lib/constants";
 
 const tags = ["Users"];
 
@@ -49,7 +49,7 @@ export const getOne = createRoute({
     method: "get",
     tags,
     request: {
-        params: IdParamsSchema,
+        params: IdUUIDParamsSchema,
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(selectUserSchema, "User by Id"),
@@ -58,7 +58,7 @@ export const getOne = createRoute({
             "User not found"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-            createErrorSchema(IdParamsSchema),
+            createErrorSchema(IdUUIDParamsSchema),
             "Invalid Id error"
         ),
     },
@@ -69,7 +69,7 @@ export const patch = createRoute({
     method: "patch",
     tags,
     request: {
-        params: IdParamsSchema,
+        params: IdUUIDParamsSchema,
         body: jsonContentRequired(patchUserSchema, "Update a user"),
     },
     responses: {
@@ -81,7 +81,7 @@ export const patch = createRoute({
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
             [
                 createErrorSchema(patchUserSchema),
-                createErrorSchema(IdParamsSchema),
+                createErrorSchema(IdUUIDParamsSchema),
             ],
             "Validation error(s)"
         ),

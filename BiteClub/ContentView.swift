@@ -18,7 +18,7 @@ struct ContentView: View {
                     .ignoresSafeArea(edges: .top)
                     .frame(height: geometry.safeAreaInsets.top)
                 VStack {
-                    if let user = clerk.user {
+                    if let _ = clerk.user {
                         BottomTabBar()
                         Button("Sign Out") {
                             Task { try? await clerk.signOut() }

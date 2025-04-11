@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1744237697539,
-      "tag": "0000_misty_silver_surfer",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1744239492585,
-      "tag": "0001_crazy_scarecrow",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1744240937351,
-      "tag": "0002_absent_overlord",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1744250063528,
-      "tag": "0003_rich_pride",
+      "when": 1744390073724,
+      "tag": "0000_careful_patriot",
       "breakpoints": true
     }
   ]

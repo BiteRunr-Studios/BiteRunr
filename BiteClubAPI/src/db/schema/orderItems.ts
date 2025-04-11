@@ -1,14 +1,39 @@
-import { pgTable, integer, serial } from "drizzle-orm/pg-core";
-import { items } from "./items.js";
-import { orderGroups } from "./orderGroups.js";
-import { user } from "./user.js";
+import {
+    pgTable,
+    timestamp,
+    uuid,
+    pgEnum,
+    unique,
+    varchar,
+    text,
+    integer,
+} from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-export const orderItems = pgTable("order_items", {
-    id: serial("id").primaryKey(),
-    groupId: integer("group_id").references(() => orderGroups.id),
-    itemId: integer("item_id").references(() => items.id),
-    userId: integer("user_id").references(() => user.id),
-    quantity: integer("quantity").default(1),
-});
+import users from "./users";
+import orderLocations from "./orderLocations";
+
+export const orderItems = pgTable(
+    "order_items",
+    {
+        id: uuid().primaryKey().defaultRandom(),
+        order_location_id: uuid()
+            .notNull()
+            .references(() => orderLocations.id, { onDelete: "cascade" }),
+        user_id: uuid()
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        name: varchar().notNull(),
+        comments: text(),
+        quantity: integer().notNull(),
+        created_at: timestamp().notNull().defaultNow(),
+        updated_at: timestamp().notNull().defaultNow(),
+    },
+    (t) => [unique().on(t.user_id, t.name)]
+);
+
+export const selectOrderItemsSchema = createSelectSchema(orderItems);
+export const insertOrderItemsSchema = createInsertSchema(orderItems);
+export const patchOrderItemsSchema = insertOrderItemsSchema.partial();
 
 export default orderItems;

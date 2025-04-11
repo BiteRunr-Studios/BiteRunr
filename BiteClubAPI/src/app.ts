@@ -1,7 +1,7 @@
-import createApp from "@/lib/create-app.js";
-import configureOpenAPI from "@/lib/configure-open-api.js";
-import index from "@/routes/index.route.js";
-import users from "@/routes/users/users.index.js";
+import createApp from "@/lib/create-app";
+import configureOpenAPI from "@/lib/configure-open-api";
+import index from "@/routes/index.route";
+import users from "@/routes/users/users.index";
 
 const app = createApp();
 
