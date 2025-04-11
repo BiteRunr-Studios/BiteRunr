@@ -40,14 +40,14 @@ struct HomeView: View {
                                         .clipShape(Circle())
                                         .shadow(radius: 3)
                                         .overlay {
-                                            Circle().stroke(.black, lineWidth: 3)
+                                            Circle().stroke(.secondary, lineWidth: 3)
                                         }
 
                                     VStack(alignment: .leading) {
                                         Text("Maya Johnson")
                                         Text("I am whoever this person is")
                                             .font(.subheadline)
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(.primary)
                                     }
                                 }
                                 .padding(.vertical, 8)
