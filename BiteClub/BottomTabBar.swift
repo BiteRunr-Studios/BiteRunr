@@ -24,8 +24,6 @@ struct BottomTabBar: View {
                     }
                 }
                 }
-       
-    
 }
 
 #Preview {
