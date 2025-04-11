@@ -1,6 +1,5 @@
 import { pgTable, serial, text, integer } from "drizzle-orm/pg-core";
-// @ts-ignore
-import { locations } from "./locations";
+import { locations } from "./locations.js";
 
 export const items = pgTable("items", {
     id: serial("id").primaryKey(),

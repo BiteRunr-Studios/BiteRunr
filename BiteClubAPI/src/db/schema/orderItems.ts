@@ -1,10 +1,7 @@
 import { pgTable, integer, serial } from "drizzle-orm/pg-core";
-// @ts-ignore
-import { items } from "./items";
-// @ts-ignore
-import { orderGroups } from "./orderGroups";
-// @ts-ignore
-import { user } from "./user";
+import { items } from "./items.js";
+import { orderGroups } from "./orderGroups.js";
+import { user } from "./user.js";
 
 export const orderItems = pgTable("order_items", {
     id: serial("id").primaryKey(),
