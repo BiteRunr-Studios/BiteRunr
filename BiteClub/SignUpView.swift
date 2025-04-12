@@ -12,6 +12,8 @@ struct SignUpView: View {
     @Environment(\.colorScheme) var colorScheme
     
     @State private var email = ""
+    @State private var firstName = ""
+    @State private var lastName = ""
     @State private var password = ""
     @State private var code = ""
     @State private var isVerifying = false
@@ -30,6 +32,7 @@ struct SignUpView: View {
             
             VStack(spacing: 16) {
                 Text("Sign Up")
+                    .foregroundColor(.secondary)
                 if isVerifying {
                     TextField("Code", text: $code)
                     Button("Verify") {
@@ -37,10 +40,38 @@ struct SignUpView: View {
                     }
                 } else {
                     HStack(spacing: 12) {
+                        TextField("First Name", text: $firstName)
+                        Image(systemName: "person.fill")
+                            .frame(width: 24, height: 24)
+                            .foregroundStyle(Color.secondary.opacity(0.3))
+                    }
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 16)
+                    .background(Color(UIColor.systemBackground))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                    )
+                    HStack(spacing: 12) {
+                        TextField("Last Name", text: $lastName)
+                        Image(systemName: "person.fill")
+                            .frame(width: 24, height: 24)
+                            .foregroundStyle(Color.secondary.opacity(0.3))
+                    }
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 16)
+                    .background(Color(UIColor.systemBackground))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                    )
+                    HStack(spacing: 12) {
                         TextField("Email", text: $email)
                         Image(systemName: "envelope.fill")
                             .frame(width: 24, height: 24)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.secondary.opacity(0.3))
                     }
                     .padding(.vertical, 16)
                     .padding(.horizontal, 16)
@@ -61,9 +92,9 @@ struct SignUpView: View {
                         Button(action: {
                             isPasswordVisible.toggle()
                         }) {
-                            Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
+                            Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
                                 .frame(width: 24, height: 24)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.secondary.opacity(0.3))
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -94,67 +125,9 @@ struct SignUpView: View {
                             .background(Color.orange)
                             .foregroundColor(.white)
                             .cornerRadius(12)
-                            .scaleEffect(isPressed ? 0.99 : 1.0)
+                            .scaleEffect(isPressed ? 0.995 : 1.0)
                     }
                     .contentShape(Rectangle())
-
-                    
-                    HStack {
-                        Rectangle()
-                            .frame(height: 1)
-                            .foregroundColor(.secondary)
-                            .cornerRadius(12)
-                        
-                        Text("OR")
-                            .padding(.horizontal, 8)
-                            .foregroundColor(.secondary)
-                        
-                        Rectangle()
-                            .frame(height: 1)
-                            .foregroundColor(.secondary)
-                            .cornerRadius(12)
-                    }
-                    .padding(.horizontal)
-                    
-                    Button(action: {
-                        print("Continue with Google")
-                    }) {
-                        HStack {
-                            Image("GoogleIcon")
-                            Text("Continue with Google")
-                                .foregroundColor(.primary)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color(UIColor.systemBackground))
-                    .foregroundStyle(.primary)
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                    )
-                    
-                    Button(action: {
-                        print("Continue with Apple")
-                    }) {
-                        HStack {
-                            Image("Apple")
-                                .renderingMode(.template)
-                                .foregroundColor(colorScheme == .dark ? .white : .black)
-                            Text("Continue with Apple")
-                                .foregroundColor(.primary)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color(UIColor.systemBackground))
-                    .foregroundStyle(.primary)
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                    )
                 }
             }
             .padding()

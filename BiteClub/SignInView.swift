@@ -29,11 +29,12 @@ struct SignInView: View {
             
             VStack(spacing: 16) {
                 Text("Sign In")
+                    .foregroundColor(.secondary)
                 HStack(spacing: 12) {
                     TextField("Email", text: $email)
                     Image(systemName: "envelope.fill")
                         .frame(width: 24, height: 24)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.secondary.opacity(0.3))
                 }
                 .padding(.vertical, 16)
                 .padding(.horizontal, 16)
@@ -53,9 +54,9 @@ struct SignInView: View {
                     Button(action: {
                         isPasswordVisible.toggle()
                     }) {
-                        Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
+                        Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
                             .frame(width: 24, height: 24)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.secondary.opacity(0.3))
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -92,16 +93,16 @@ struct SignInView: View {
                 HStack {
                     Rectangle()
                         .frame(height: 1)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.secondary.opacity(0.3))
                         .cornerRadius(12)
                     
                     Text("OR")
                         .padding(.horizontal, 8)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.secondary.opacity(0.3))
                     
                     Rectangle()
                         .frame(height: 1)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.secondary.opacity(0.3))
                         .cornerRadius(12)
                 }
                 .padding(.horizontal)
@@ -112,10 +113,10 @@ struct SignInView: View {
                     HStack {
                         Image("GoogleIcon")
                         Text("Continue with Google")
-                            .foregroundColor(.primary)
+                            .foregroundColor(.secondary)
                     }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(Color(UIColor.systemBackground))
                 .foregroundStyle(.primary)
@@ -133,10 +134,10 @@ struct SignInView: View {
                             .renderingMode(.template)
                             .foregroundColor(colorScheme == .dark ? .white : .black)
                         Text("Continue with Apple")
-                            .foregroundColor(.primary)
+                            .foregroundColor(.secondary)
                     }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(Color(UIColor.systemBackground))
                 .foregroundStyle(.primary)

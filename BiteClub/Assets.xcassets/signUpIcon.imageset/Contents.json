@@ -1,15 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "signUpIcon.svg",
+      "filename" : "Group 27.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
+      "filename" : "Group 28.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "Group 29.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }
