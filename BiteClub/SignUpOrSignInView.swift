@@ -8,26 +8,24 @@
 import SwiftUI
 
 struct SignUpOrSignInView: View {
-    @State private var isSignUp = true
+    @State private var isSignUp = false
     
     var body: some View {
-        ScrollView {
             if isSignUp {
                 SignUpView()
             } else {
                 SignInView()
             }
-            
-            Button {
-                isSignUp.toggle()
-            } label: {
-                if isSignUp {
-                    Text("Already have an account? Sign in")
-                } else {
-                    Text("Don't have an account? Sign up")
+        HStack {
+            Text(isSignUp ? "Already have an account?" : "Don't have an account?")
+                .foregroundColor(.secondary)
+                Button {
+                    isSignUp.toggle()
+                } label: {
+                    Text(isSignUp ? "Sign in": "Sign up")
+                        .underline()
+                        .foregroundColor(Color.orange)
                 }
-            }
-            .padding()
         }
     }
 }
