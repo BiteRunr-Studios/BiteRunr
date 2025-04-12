@@ -7,51 +7,51 @@ import {
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import { z } from "zod";
 import {
-    insertOrderItemsSchema,
-    patchOrderItemsSchema,
-    selectOrderItemsSchema,
-} from "@/db/schema/orderItems";
+    insertOrderUsersSchema,
+    patchOrderUsersSchema,
+    selectOrderUsersSchema,
+} from "@/db/schema/orderUsers";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
 
-const tags = ["Items"];
+const tags = ["Order Users"];
 
 export const list = createRoute({
-    path: "/items",
+    path: "/order-users",
     method: "get",
     tags,
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            z.array(selectOrderItemsSchema),
-            "List of order items"
+            z.array(selectOrderUsersSchema),
+            "List of order users"
         ),
     },
 });
 
 export const create = createRoute({
-    path: "/items",
+    path: "/order-users",
     method: "post",
     tags,
     request: {
         body: jsonContentRequired(
-            insertOrderItemsSchema,
-            "Create an order item"
+            insertOrderUsersSchema,
+            "Create an order user"
         ),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            selectOrderItemsSchema,
-            "Create an order item"
+            selectOrderUsersSchema,
+            "Created order user"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-            createErrorSchema(insertOrderItemsSchema),
+            createErrorSchema(insertOrderUsersSchema),
             "Validation error(s)"
         ),
     },
 });
 
 export const getOne = createRoute({
-    path: "/items/{id}",
+    path: "/order-users/{id}",
     method: "get",
     tags,
     request: {
@@ -59,12 +59,12 @@ export const getOne = createRoute({
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            selectOrderItemsSchema,
-            "Order item by Id"
+            selectOrderUsersSchema,
+            "Order user by Id"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
-            "Order item not found"
+            "Order user not found"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
             createErrorSchema(IdUUIDParamsSchema),
@@ -74,28 +74,51 @@ export const getOne = createRoute({
 });
 
 export const patch = createRoute({
-    path: "/items/{id}",
+    path: "/order-users/{id}",
     method: "patch",
     tags,
     request: {
         params: IdUUIDParamsSchema,
-        body: jsonContentRequired(patchOrderItemsSchema, "Update a user"),
+        body: jsonContentRequired(patchOrderUsersSchema, "Update an order user"),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            selectOrderItemsSchema,
-            "Update an order item"
+            selectOrderUsersSchema,
+            "Updated order user"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
-            "Order item not found"
+            "Order user not found"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
             [
-                createErrorSchema(patchOrderItemsSchema),
+                createErrorSchema(patchOrderUsersSchema),
                 createErrorSchema(IdUUIDParamsSchema),
             ],
             "Validation error(s)"
+        ),
+    },
+});
+
+export const remove = createRoute({
+    path: "/order-users/{id}",
+    method: "delete",
+    tags,
+    request: {
+        params: IdUUIDParamsSchema,
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            selectOrderUsersSchema,
+            "Deleted order user"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "Order user not found"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(IdUUIDParamsSchema),
+            "Invalid Id error"
         ),
     },
 });
@@ -104,3 +127,4 @@ export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
+export type RemoveRoute = typeof remove;

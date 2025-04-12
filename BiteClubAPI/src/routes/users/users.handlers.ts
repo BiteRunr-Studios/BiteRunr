@@ -5,6 +5,7 @@ import type {
     GetOneRoute,
     ListRoute,
     PatchRoute,
+    RemoveRoute,
 } from "./users.routes";
 import type { AppRouteHandler } from "@/lib/types";
 import { selectUserSchema } from "@/db/schema/users";
@@ -48,9 +49,11 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
+    // Remove id from updates to prevent changing the id
+    const { id: _, ...safeUpdates } = updates;
     const [updatedUser] = await db
         .update(users)
-        .set(updates)
+        .set(safeUpdates)
         .where(eq(users.id, id))
         .returning();
 
@@ -64,4 +67,23 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     }
 
     return c.json(updatedUser, HttpStatusCodes.OK);
+};
+
+export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+    const { id } = c.req.valid("param");
+    const [deletedUser] = await db
+        .delete(users)
+        .where(eq(users.id, id))
+        .returning();
+
+    if (!deletedUser) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    return c.json(deletedUser, HttpStatusCodes.OK);
 };

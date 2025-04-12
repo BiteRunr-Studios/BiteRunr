@@ -5,7 +5,8 @@ import type {
     GetOneRoute,
     ListRoute,
     PatchRoute,
-} from "./items.routes";
+    RemoveRoute,
+} from "./orderItems.routes";
 import type { AppRouteHandler } from "@/lib/types";
 import { selectOrderItemsSchema } from "@/db/schema/orderItems";
 import * as HttpStatusCodes from "stoker/http-status-codes";
@@ -14,10 +15,10 @@ import { eq } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const items = await db.query.orderItems.findMany();
-    const validatedUsers = items.map((item) =>
+    const validatedItems = items.map((item) =>
         selectOrderItemsSchema.parse(item)
     );
-    return c.json(validatedUsers);
+    return c.json(validatedItems);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
@@ -50,9 +51,11 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
+    // Remove id from updates to prevent changing the id
+    const { id: _, ...safeUpdates } = updates;
     const [updatedItem] = await db
         .update(orderItems)
-        .set(updates)
+        .set(safeUpdates)
         .where(eq(orderItems.id, id))
         .returning();
 
@@ -65,5 +68,26 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
         );
     }
 
-    return c.json(updatedItem, HttpStatusCodes.OK);
+    const validatedItem = selectOrderItemsSchema.parse(updatedItem);
+    return c.json(validatedItem, HttpStatusCodes.OK);
+};
+
+export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+    const { id } = c.req.valid("param");
+    const [deletedItem] = await db
+        .delete(orderItems)
+        .where(eq(orderItems.id, id))
+        .returning();
+
+    if (!deletedItem) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    const validatedItem = selectOrderItemsSchema.parse(deletedItem);
+    return c.json(validatedItem, HttpStatusCodes.OK);
 };

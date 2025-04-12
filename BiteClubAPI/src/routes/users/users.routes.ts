@@ -88,7 +88,28 @@ export const patch = createRoute({
     },
 });
 
+export const remove = createRoute({
+    path: "/users/{id}",
+    method: "delete",
+    tags,
+    request: {
+        params: IdUUIDParamsSchema,
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(selectUserSchema, "Deleted user"),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User not found"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(IdUUIDParamsSchema),
+            "Invalid Id error"
+        ),
+    },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
+export type RemoveRoute = typeof remove;

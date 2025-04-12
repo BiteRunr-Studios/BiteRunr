@@ -5,6 +5,7 @@ import type {
     GetOneRoute,
     ListRoute,
     PatchRoute,
+    RemoveRoute,
 } from "./friends.routes";
 import type { AppRouteHandler } from "@/lib/types";
 import { selectFriendsSchema } from "@/db/schema/friends";
@@ -13,9 +14,9 @@ import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { eq } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
-    const items = await db.query.friends.findMany();
-    const validatedFriends = items.map((item) =>
-        selectFriendsSchema.parse(item)
+    const friends = await db.query.friends.findMany();
+    const validatedFriends = friends.map((friend) =>
+        selectFriendsSchema.parse(friend)
     );
     return c.json(validatedFriends);
 };
@@ -50,9 +51,11 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
+    // Remove id from updates to prevent changing the id
+    const { id: _, ...safeUpdates } = updates;
     const [updatedFriend] = await db
         .update(friends)
-        .set(updates)
+        .set(safeUpdates)
         .where(eq(friends.id, id))
         .returning();
 
@@ -66,5 +69,25 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     }
 
     const validatedFriend = selectFriendsSchema.parse(updatedFriend);
+    return c.json(validatedFriend, HttpStatusCodes.OK);
+};
+
+export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+    const { id } = c.req.valid("param");
+    const [deletedFriend] = await db
+        .delete(friends)
+        .where(eq(friends.id, id))
+        .returning();
+
+    if (!deletedFriend) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    const validatedFriend = selectFriendsSchema.parse(deletedFriend);
     return c.json(validatedFriend, HttpStatusCodes.OK);
 };

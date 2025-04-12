@@ -1,41 +1,41 @@
 import db from "@/db/index";
-import { orders } from "@/db/schema/orders";
+import { orderLocations } from "@/db/schema/orderLocations";
 import type {
     CreateRoute,
     GetOneRoute,
     ListRoute,
     PatchRoute,
     RemoveRoute,
-} from "./orders.routes";
+} from "./orderLocations.routes";
 import type { AppRouteHandler } from "@/lib/types";
-import { selectOrdersSchema } from "@/db/schema/orders";
+import { selectOrderLocationsSchema } from "@/db/schema/orderLocations";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { eq } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
-    const orders = await db.query.orders.findMany();
-    const validatedOrders = orders.map((order) =>
-        selectOrdersSchema.parse(order)
+    const locations = await db.query.orderLocations.findMany();
+    const validatedLocations = locations.map((location) =>
+        selectOrderLocationsSchema.parse(location)
     );
-    return c.json(validatedOrders);
+    return c.json(validatedLocations);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
-    const newOrder = c.req.valid("json");
-    const [inserted] = await db.insert(orders).values(newOrder).returning();
+    const newLocation = c.req.valid("json");
+    const [inserted] = await db.insert(orderLocations).values(newLocation).returning();
     return c.json(inserted, HttpStatusCodes.OK);
 };
 
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     const { id } = c.req.valid("param");
-    const order = await db.query.orders.findFirst({
+    const location = await db.query.orderLocations.findFirst({
         where(fields, operators) {
             return operators.eq(fields.id, id);
         },
     });
 
-    if (!order) {
+    if (!location) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -44,8 +44,8 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         );
     }
 
-    const validatedOrder = selectOrdersSchema.parse(order);
-    return c.json(validatedOrder, HttpStatusCodes.OK);
+    const validatedLocation = selectOrderLocationsSchema.parse(location);
+    return c.json(validatedLocation, HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
@@ -53,13 +53,13 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const updates = c.req.valid("json");
     // Remove id from updates to prevent changing the id
     const { id: _, ...safeUpdates } = updates;
-    const [updatedOrder] = await db
-        .update(orders)
+    const [updatedLocation] = await db
+        .update(orderLocations)
         .set(safeUpdates)
-        .where(eq(orders.id, id))
+        .where(eq(orderLocations.id, id))
         .returning();
 
-    if (!updatedOrder) {
+    if (!updatedLocation) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -68,18 +68,18 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
         );
     }
 
-    const validatedOrder = selectOrdersSchema.parse(updatedOrder);
-    return c.json(validatedOrder, HttpStatusCodes.OK);
+    const validatedLocation = selectOrderLocationsSchema.parse(updatedLocation);
+    return c.json(validatedLocation, HttpStatusCodes.OK);
 };
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
     const { id } = c.req.valid("param");
-    const [deletedOrder] = await db
-        .delete(orders)
-        .where(eq(orders.id, id))
+    const [deletedLocation] = await db
+        .delete(orderLocations)
+        .where(eq(orderLocations.id, id))
         .returning();
 
-    if (!deletedOrder) {
+    if (!deletedLocation) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -88,6 +88,6 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
         );
     }
 
-    const validatedOrder = selectOrdersSchema.parse(deletedOrder);
-    return c.json(validatedOrder, HttpStatusCodes.OK);
+    const validatedLocation = selectOrderLocationsSchema.parse(deletedLocation);
+    return c.json(validatedLocation, HttpStatusCodes.OK);
 };

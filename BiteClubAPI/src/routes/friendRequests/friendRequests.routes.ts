@@ -7,51 +7,51 @@ import {
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import { z } from "zod";
 import {
-    insertOrdersSchema,
-    patchOrdersSchema,
-    selectOrdersSchema,
-} from "@/db/schema/orders";
+    insertFriendRequestsSchema,
+    patchFriendRequestsSchema,
+    selectFriendRequestsSchema,
+} from "@/db/schema/friendRequests";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
 
-const tags = ["Orders"];
+const tags = ["Friend Requests"];
 
 export const list = createRoute({
-    path: "/orders",
+    path: "/friend-requests",
     method: "get",
     tags,
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            z.array(selectOrdersSchema),
-            "List of order items"
+            z.array(selectFriendRequestsSchema),
+            "List of friend requests"
         ),
     },
 });
 
 export const create = createRoute({
-    path: "/orders",
+    path: "/friend-requests",
     method: "post",
     tags,
     request: {
         body: jsonContentRequired(
-            insertOrdersSchema,
-            "Create an order"
+            insertFriendRequestsSchema,
+            "Create a friend request"
         ),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            selectOrdersSchema,
-            "Create an order"
+            selectFriendRequestsSchema,
+            "Create a friend request"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-            createErrorSchema(insertOrdersSchema),
+            createErrorSchema(insertFriendRequestsSchema),
             "Validation error(s)"
         ),
     },
 });
 
 export const getOne = createRoute({
-    path: "/orders/{id}",
+    path: "/friend-requests/{id}",
     method: "get",
     tags,
     request: {
@@ -59,12 +59,12 @@ export const getOne = createRoute({
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            selectOrdersSchema,
-            "Order by Id"
+            selectFriendRequestsSchema,
+            "Friend request by Id"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
-            "Order not found"
+            "Friend request not found"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
             createErrorSchema(IdUUIDParamsSchema),
@@ -74,25 +74,28 @@ export const getOne = createRoute({
 });
 
 export const patch = createRoute({
-    path: "/orders/{id}",
+    path: "/friend-requests/{id}",
     method: "patch",
     tags,
     request: {
         params: IdUUIDParamsSchema,
-        body: jsonContentRequired(patchOrdersSchema, "Update a user"),
+        body: jsonContentRequired(
+            patchFriendRequestsSchema,
+            "Update a friend request"
+        ),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            selectOrdersSchema,
-            "Update an order"
+            selectFriendRequestsSchema,
+            "Update a friend request"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
-            "Order not found"
+            "Friend request not found"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
             [
-                createErrorSchema(patchOrdersSchema),
+                createErrorSchema(patchFriendRequestsSchema),
                 createErrorSchema(IdUUIDParamsSchema),
             ],
             "Validation error(s)"
@@ -101,7 +104,7 @@ export const patch = createRoute({
 });
 
 export const remove = createRoute({
-    path: "/orders/{id}",
+    path: "/friend-requests/{id}",
     method: "delete",
     tags,
     request: {
@@ -109,12 +112,12 @@ export const remove = createRoute({
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            selectOrdersSchema,
-            "Deleted order"
+            selectFriendRequestsSchema,
+            "Deleted friend request"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
-            "Order not found"
+            "Friend request not found"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
             createErrorSchema(IdUUIDParamsSchema),

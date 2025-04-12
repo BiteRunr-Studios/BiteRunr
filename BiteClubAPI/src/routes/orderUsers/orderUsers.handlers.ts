@@ -1,41 +1,41 @@
 import db from "@/db/index";
-import { orders } from "@/db/schema/orders";
+import { orderUsers } from "@/db/schema/orderUsers";
 import type {
     CreateRoute,
     GetOneRoute,
     ListRoute,
     PatchRoute,
     RemoveRoute,
-} from "./orders.routes";
+} from "./orderUsers.routes";
 import type { AppRouteHandler } from "@/lib/types";
-import { selectOrdersSchema } from "@/db/schema/orders";
+import { selectOrderUsersSchema } from "@/db/schema/orderUsers";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { eq } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
-    const orders = await db.query.orders.findMany();
-    const validatedOrders = orders.map((order) =>
-        selectOrdersSchema.parse(order)
+    const users = await db.query.orderUsers.findMany();
+    const validatedUsers = users.map((user) =>
+        selectOrderUsersSchema.parse(user)
     );
-    return c.json(validatedOrders);
+    return c.json(validatedUsers);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
-    const newOrder = c.req.valid("json");
-    const [inserted] = await db.insert(orders).values(newOrder).returning();
+    const newUser = c.req.valid("json");
+    const [inserted] = await db.insert(orderUsers).values(newUser).returning();
     return c.json(inserted, HttpStatusCodes.OK);
 };
 
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     const { id } = c.req.valid("param");
-    const order = await db.query.orders.findFirst({
+    const user = await db.query.orderUsers.findFirst({
         where(fields, operators) {
             return operators.eq(fields.id, id);
         },
     });
 
-    if (!order) {
+    if (!user) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -44,8 +44,8 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         );
     }
 
-    const validatedOrder = selectOrdersSchema.parse(order);
-    return c.json(validatedOrder, HttpStatusCodes.OK);
+    const validatedUser = selectOrderUsersSchema.parse(user);
+    return c.json(validatedUser, HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
@@ -53,13 +53,13 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const updates = c.req.valid("json");
     // Remove id from updates to prevent changing the id
     const { id: _, ...safeUpdates } = updates;
-    const [updatedOrder] = await db
-        .update(orders)
+    const [updatedUser] = await db
+        .update(orderUsers)
         .set(safeUpdates)
-        .where(eq(orders.id, id))
+        .where(eq(orderUsers.id, id))
         .returning();
 
-    if (!updatedOrder) {
+    if (!updatedUser) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -68,18 +68,18 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
         );
     }
 
-    const validatedOrder = selectOrdersSchema.parse(updatedOrder);
-    return c.json(validatedOrder, HttpStatusCodes.OK);
+    const validatedUser = selectOrderUsersSchema.parse(updatedUser);
+    return c.json(validatedUser, HttpStatusCodes.OK);
 };
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
     const { id } = c.req.valid("param");
-    const [deletedOrder] = await db
-        .delete(orders)
-        .where(eq(orders.id, id))
+    const [deletedUser] = await db
+        .delete(orderUsers)
+        .where(eq(orderUsers.id, id))
         .returning();
 
-    if (!deletedOrder) {
+    if (!deletedUser) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -88,6 +88,6 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
         );
     }
 
-    const validatedOrder = selectOrdersSchema.parse(deletedOrder);
-    return c.json(validatedOrder, HttpStatusCodes.OK);
+    const validatedUser = selectOrderUsersSchema.parse(deletedUser);
+    return c.json(validatedUser, HttpStatusCodes.OK);
 };

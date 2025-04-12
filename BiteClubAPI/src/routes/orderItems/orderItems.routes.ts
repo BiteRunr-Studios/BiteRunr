@@ -7,51 +7,51 @@ import {
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import { z } from "zod";
 import {
-    insertOrdersSchema,
-    patchOrdersSchema,
-    selectOrdersSchema,
-} from "@/db/schema/orders";
+    insertOrderItemsSchema,
+    patchOrderItemsSchema,
+    selectOrderItemsSchema,
+} from "@/db/schema/orderItems";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
 
-const tags = ["Orders"];
+const tags = ["Order Items"];
 
 export const list = createRoute({
-    path: "/orders",
+    path: "/order-items",
     method: "get",
     tags,
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            z.array(selectOrdersSchema),
+            z.array(selectOrderItemsSchema),
             "List of order items"
         ),
     },
 });
 
 export const create = createRoute({
-    path: "/orders",
+    path: "/order-items",
     method: "post",
     tags,
     request: {
         body: jsonContentRequired(
-            insertOrdersSchema,
-            "Create an order"
+            insertOrderItemsSchema,
+            "Create an order item"
         ),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            selectOrdersSchema,
-            "Create an order"
+            selectOrderItemsSchema,
+            "Created order item"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-            createErrorSchema(insertOrdersSchema),
+            createErrorSchema(insertOrderItemsSchema),
             "Validation error(s)"
         ),
     },
 });
 
 export const getOne = createRoute({
-    path: "/orders/{id}",
+    path: "/order-items/{id}",
     method: "get",
     tags,
     request: {
@@ -59,12 +59,12 @@ export const getOne = createRoute({
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            selectOrdersSchema,
-            "Order by Id"
+            selectOrderItemsSchema,
+            "Order item by Id"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
-            "Order not found"
+            "Order item not found"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
             createErrorSchema(IdUUIDParamsSchema),
@@ -74,25 +74,25 @@ export const getOne = createRoute({
 });
 
 export const patch = createRoute({
-    path: "/orders/{id}",
+    path: "/order-items/{id}",
     method: "patch",
     tags,
     request: {
         params: IdUUIDParamsSchema,
-        body: jsonContentRequired(patchOrdersSchema, "Update a user"),
+        body: jsonContentRequired(patchOrderItemsSchema, "Update an order item"),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            selectOrdersSchema,
-            "Update an order"
+            selectOrderItemsSchema,
+            "Updated order item"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
-            "Order not found"
+            "Order item not found"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
             [
-                createErrorSchema(patchOrdersSchema),
+                createErrorSchema(patchOrderItemsSchema),
                 createErrorSchema(IdUUIDParamsSchema),
             ],
             "Validation error(s)"
@@ -101,7 +101,7 @@ export const patch = createRoute({
 });
 
 export const remove = createRoute({
-    path: "/orders/{id}",
+    path: "/order-items/{id}",
     method: "delete",
     tags,
     request: {
@@ -109,12 +109,12 @@ export const remove = createRoute({
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            selectOrdersSchema,
-            "Deleted order"
+            selectOrderItemsSchema,
+            "Deleted order item"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
-            "Order not found"
+            "Order item not found"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
             createErrorSchema(IdUUIDParamsSchema),
