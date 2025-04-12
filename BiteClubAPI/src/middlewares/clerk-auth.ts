@@ -5,9 +5,12 @@ import env from "@/env";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
     const authHeader = c.req.header("Authorization");
+    c.json;
     if (!authHeader?.startsWith("Bearer ")) {
-        return c.text(
-            "Unauthorized: Missing token",
+        return c.json(
+            {
+                message: "Unauthorized: Missing token",
+            },
             HttpStatusCodes.UNAUTHORIZED
         );
     }
@@ -28,8 +31,10 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
         await next();
     } catch (err) {
         console.error("Token verification failed:", err);
-        return c.text(
-            "Unauthorized: Invalid token",
+        return c.json(
+            {
+                message: "Unauthorized: Missing token",
+            },
             HttpStatusCodes.UNAUTHORIZED
         );
     }
