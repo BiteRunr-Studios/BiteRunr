@@ -13,6 +13,7 @@ import {
 } from "@/db/schema/friends";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
+import { authMiddleware } from "@/middlewares/clerk-auth";
 
 const tags = ["Friends"];
 
@@ -20,6 +21,8 @@ export const list = createRoute({
     path: "/friends",
     method: "get",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
             z.array(selectFriendsSchema),
@@ -32,11 +35,10 @@ export const create = createRoute({
     path: "/friends",
     method: "post",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
-        body: jsonContentRequired(
-            insertFriendsSchema,
-            "Create a friend"
-        ),
+        body: jsonContentRequired(insertFriendsSchema, "Create a friend"),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
@@ -54,14 +56,13 @@ export const getOne = createRoute({
     path: "/friends/{id}",
     method: "get",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
     },
     responses: {
-        [HttpStatusCodes.OK]: jsonContent(
-            selectFriendsSchema,
-            "Friend by Id"
-        ),
+        [HttpStatusCodes.OK]: jsonContent(selectFriendsSchema, "Friend by Id"),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
             "Friend not found"
@@ -77,6 +78,8 @@ export const patch = createRoute({
     path: "/friends/{id}",
     method: "patch",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
         body: jsonContentRequired(patchFriendsSchema, "Update a friend"),
@@ -104,6 +107,8 @@ export const remove = createRoute({
     path: "/friends/{id}",
     method: "delete",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
     },

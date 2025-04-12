@@ -22,7 +22,7 @@ const router = createRouter().openapi(
     (c) => {
         return c.json(
             {
-                message: "BiteClub API",
+                message: "BiteRunr API",
             },
             HttpStatusCodes.OK
         );

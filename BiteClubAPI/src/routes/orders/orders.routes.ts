@@ -13,6 +13,7 @@ import {
 } from "@/db/schema/orders";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
+import { authMiddleware } from "@/middlewares/clerk-auth";
 
 const tags = ["Orders"];
 
@@ -20,6 +21,8 @@ export const list = createRoute({
     path: "/orders",
     method: "get",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
             z.array(selectOrdersSchema),
@@ -32,11 +35,10 @@ export const create = createRoute({
     path: "/orders",
     method: "post",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
-        body: jsonContentRequired(
-            insertOrdersSchema,
-            "Create an order"
-        ),
+        body: jsonContentRequired(insertOrdersSchema, "Create an order"),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
@@ -54,14 +56,13 @@ export const getOne = createRoute({
     path: "/orders/{id}",
     method: "get",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
     },
     responses: {
-        [HttpStatusCodes.OK]: jsonContent(
-            selectOrdersSchema,
-            "Order by Id"
-        ),
+        [HttpStatusCodes.OK]: jsonContent(selectOrdersSchema, "Order by Id"),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
             "Order not found"
@@ -77,6 +78,8 @@ export const patch = createRoute({
     path: "/orders/{id}",
     method: "patch",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
         body: jsonContentRequired(patchOrdersSchema, "Update a user"),
@@ -104,14 +107,13 @@ export const remove = createRoute({
     path: "/orders/{id}",
     method: "delete",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
     },
     responses: {
-        [HttpStatusCodes.OK]: jsonContent(
-            selectOrdersSchema,
-            "Deleted order"
-        ),
+        [HttpStatusCodes.OK]: jsonContent(selectOrdersSchema, "Deleted order"),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
             "Order not found"

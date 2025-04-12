@@ -13,6 +13,7 @@ import {
 } from "@/db/schema/orderLocations";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
+import { authMiddleware } from "@/middlewares/clerk-auth";
 
 const tags = ["Order Locations"];
 
@@ -20,6 +21,8 @@ export const list = createRoute({
     path: "/order-locations",
     method: "get",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
             z.array(selectOrderLocationsSchema),
@@ -32,6 +35,8 @@ export const create = createRoute({
     path: "/order-locations",
     method: "post",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         body: jsonContentRequired(
             insertOrderLocationsSchema,
@@ -54,6 +59,8 @@ export const getOne = createRoute({
     path: "/order-locations/{id}",
     method: "get",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
     },
@@ -77,9 +84,14 @@ export const patch = createRoute({
     path: "/order-locations/{id}",
     method: "patch",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
-        body: jsonContentRequired(patchOrderLocationsSchema, "Update an order location"),
+        body: jsonContentRequired(
+            patchOrderLocationsSchema,
+            "Update an order location"
+        ),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
@@ -104,6 +116,8 @@ export const remove = createRoute({
     path: "/order-locations/{id}",
     method: "delete",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
     },

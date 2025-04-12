@@ -13,6 +13,7 @@ import {
 } from "@/db/schema/friendRequests";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
+import { authMiddleware } from "@/middlewares/clerk-auth";
 
 const tags = ["Friend Requests"];
 
@@ -20,6 +21,8 @@ export const list = createRoute({
     path: "/friend-requests",
     method: "get",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
             z.array(selectFriendRequestsSchema),
@@ -32,6 +35,8 @@ export const create = createRoute({
     path: "/friend-requests",
     method: "post",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         body: jsonContentRequired(
             insertFriendRequestsSchema,
@@ -54,6 +59,8 @@ export const getOne = createRoute({
     path: "/friend-requests/{id}",
     method: "get",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
     },
@@ -77,6 +84,8 @@ export const patch = createRoute({
     path: "/friend-requests/{id}",
     method: "patch",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
         body: jsonContentRequired(
@@ -107,6 +116,8 @@ export const remove = createRoute({
     path: "/friend-requests/{id}",
     method: "delete",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
     },

@@ -9,7 +9,17 @@ export default function configureOpenAPI(app: AppOpenAPI) {
             version: packageJSON.version,
             title: "BiteClub API",
         },
+        security: [
+
+        ]
     });
+
+    app.openAPIRegistry.registerComponent('securitySchemes', 'Bearer', {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+    });
+      
 
     app.get('/scalar', Scalar({ 
         url: '/doc',

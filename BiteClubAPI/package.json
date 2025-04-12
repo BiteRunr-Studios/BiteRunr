@@ -11,6 +11,7 @@
     },
     "dependencies": {
         "@asteasolutions/zod-to-openapi": "^7.3.0",
+        "@clerk/backend": "^1.27.3",
         "@hono/node-server": "^1.14.0",
         "@hono/zod-openapi": "0.18.4",
         "@scalar/hono-api-reference": "^0.8.0",

@@ -13,6 +13,7 @@ import {
 } from "@/db/schema/users";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
+import { authMiddleware } from "@/middlewares/clerk-auth";
 
 const tags = ["Users"];
 
@@ -20,6 +21,8 @@ export const list = createRoute({
     path: "/users",
     method: "get",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
             z.array(selectUserSchema),
@@ -32,6 +35,8 @@ export const create = createRoute({
     path: "/users",
     method: "post",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         body: jsonContentRequired(insertUserSchema, "Create a user"),
     },
@@ -48,6 +53,8 @@ export const getOne = createRoute({
     path: "/users/{id}",
     method: "get",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
     },
@@ -68,6 +75,8 @@ export const patch = createRoute({
     path: "/users/{id}",
     method: "patch",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
         body: jsonContentRequired(patchUserSchema, "Update a user"),
@@ -92,6 +101,8 @@ export const remove = createRoute({
     path: "/users/{id}",
     method: "delete",
     tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
     },
