@@ -23,14 +23,6 @@ export const friends = pgTable(
     (t) => [unique().on(t.user_id, t.friend_id)]
 ).enableRLS();
 
-export const selectFriendsSchema = createSelectSchema(friends);
-export const insertFriendsSchema = createInsertSchema(friends).omit({
-    id: true,
-    created_at: true,
-    updated_at: true,
-});
-export const patchFriendsSchema = insertFriendsSchema.partial();
-
 export const friendsRelations = relations(friends, ({ one }) => ({
     user: one(users, {
         fields: [friends.user_id],
@@ -41,5 +33,13 @@ export const friendsRelations = relations(friends, ({ one }) => ({
         references: [users.id],
     }),
 }));
+
+export const selectFriendsSchema = createSelectSchema(friends);
+export const insertFriendsSchema = createInsertSchema(friends).omit({
+    id: true,
+    created_at: true,
+    updated_at: true,
+});
+export const patchFriendsSchema = insertFriendsSchema.partial();
 
 export default friends;

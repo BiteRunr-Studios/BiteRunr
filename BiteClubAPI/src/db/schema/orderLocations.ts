@@ -1,10 +1,9 @@
 import { pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import orders from "./orders";
-import locations from "./locations";
+import { orders, locations, orderItems } from "./index";
 import { sql, relations } from "drizzle-orm";
-import orderItems from "./orderItems";
+import { selectOrderItemsSchema } from "./orderItems";
 
 export const orderLocations = pgTable("order_locations", {
     id: uuid().primaryKey().defaultRandom(),
@@ -21,16 +20,6 @@ export const orderLocations = pgTable("order_locations", {
         .$onUpdateFn(() => sql`CURRENT_TIMESTAMP`),
 }).enableRLS();
 
-export const selectOrderLocationsSchema = createSelectSchema(orderLocations);
-export const insertOrderLocationsSchema = createInsertSchema(
-    orderLocations
-).omit({
-    id: true,
-    created_at: true,
-    updated_at: true,
-});
-export const patchOrderLocationsSchema = insertOrderLocationsSchema.partial();
-
 export const orderLocationsRelations = relations(
     orderLocations,
     ({ one, many }) => ({
@@ -45,5 +34,19 @@ export const orderLocationsRelations = relations(
         orderItems: many(orderItems),
     })
 );
+
+export const selectOrderLocationsSchema = createSelectSchema(
+    orderLocations
+).extend({
+    orderItems: selectOrderItemsSchema.optional(),
+});
+export const insertOrderLocationsSchema = createInsertSchema(
+    orderLocations
+).omit({
+    id: true,
+    created_at: true,
+    updated_at: true,
+});
+export const patchOrderLocationsSchema = insertOrderLocationsSchema.partial();
 
 export default orderLocations;

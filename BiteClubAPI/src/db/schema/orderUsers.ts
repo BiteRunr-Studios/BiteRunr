@@ -1,8 +1,6 @@
 import { pgTable, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-
-import users from "./users";
-import orders from "./orders";
+import { orders, users } from "./index";
 import { sql, relations } from "drizzle-orm";
 
 export const orderUsers = pgTable(
@@ -24,14 +22,6 @@ export const orderUsers = pgTable(
     (t) => [unique().on(t.user_id, t.order_id)]
 ).enableRLS();
 
-export const selectOrderUsersSchema = createSelectSchema(orderUsers);
-export const insertOrderUsersSchema = createInsertSchema(orderUsers).omit({
-    id: true,
-    created_at: true,
-    updated_at: true,
-});
-export const patchOrderUsersSchema = insertOrderUsersSchema.partial();
-
 export const orderUsersRelations = relations(orderUsers, ({ one }) => ({
     user: one(users, {
         fields: [orderUsers.user_id],
@@ -42,5 +32,13 @@ export const orderUsersRelations = relations(orderUsers, ({ one }) => ({
         references: [orders.id],
     }),
 }));
+
+export const selectOrderUsersSchema = createSelectSchema(orderUsers);
+export const insertOrderUsersSchema = createInsertSchema(orderUsers).omit({
+    id: true,
+    created_at: true,
+    updated_at: true,
+});
+export const patchOrderUsersSchema = insertOrderUsersSchema.partial();
 
 export default orderUsers;

@@ -15,10 +15,8 @@ import { eq } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const items = await db.query.orderItems.findMany();
-    const validatedItems = items.map((item) =>
-        selectOrderItemsSchema.parse(item)
-    );
-    return c.json(validatedItems);
+
+    return c.json(items);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {

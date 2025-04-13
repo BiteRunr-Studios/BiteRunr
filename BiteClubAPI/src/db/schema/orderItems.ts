@@ -36,14 +36,6 @@ export const orderItems = pgTable(
     (t) => [unique().on(t.user_id, t.name)]
 ).enableRLS();
 
-export const selectOrderItemsSchema = createSelectSchema(orderItems);
-export const insertOrderItemsSchema = createInsertSchema(orderItems).omit({
-    id: true,
-    created_at: true,
-    updated_at: true,
-});
-export const patchOrderItemsSchema = insertOrderItemsSchema.partial();
-
 export const orderItemsRelations = relations(orderItems, ({ one }) => ({
     orderLocation: one(orderLocations, {
         fields: [orderItems.order_location_id],
@@ -54,5 +46,13 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
         references: [users.id],
     }),
 }));
+
+export const selectOrderItemsSchema = createSelectSchema(orderItems);
+export const insertOrderItemsSchema = createInsertSchema(orderItems).omit({
+    id: true,
+    created_at: true,
+    updated_at: true,
+});
+export const patchOrderItemsSchema = insertOrderItemsSchema.partial();
 
 export default orderItems;
