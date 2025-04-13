@@ -3,6 +3,7 @@ import { orders } from "@/db/schema/orders";
 import type {
     CreateRoute,
     GetOneRoute,
+    ListByUserIdRoute,
     ListRoute,
     PatchRoute,
     RemoveRoute,
@@ -44,8 +45,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         );
     }
 
-    const validatedOrder = selectOrdersSchema.parse(order);
-    return c.json(validatedOrder, HttpStatusCodes.OK);
+    return c.json(order, HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
@@ -68,8 +68,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
         );
     }
 
-    const validatedOrder = selectOrdersSchema.parse(updatedOrder);
-    return c.json(validatedOrder, HttpStatusCodes.OK);
+    return c.json(updatedOrder, HttpStatusCodes.OK);
 };
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
@@ -88,6 +87,25 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
         );
     }
 
-    const validatedOrder = selectOrdersSchema.parse(deletedOrder);
-    return c.json(validatedOrder, HttpStatusCodes.OK);
+    return c.json(deletedOrder, HttpStatusCodes.OK);
+};
+
+export const listByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
+    const { id } = c.req.valid("param");
+    const orders = await db.query.orders.findMany({
+        where(fields, operators) {
+            return operators.eq(fields.creator_id, id);
+        },
+    });
+
+    if (!orders) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    return c.json(orders, HttpStatusCodes.OK);
 };

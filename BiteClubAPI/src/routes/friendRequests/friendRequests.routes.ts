@@ -28,12 +28,6 @@ export const list = createRoute({
             z.array(selectFriendRequestsSchema),
             "List of friend requests"
         ),
-        [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
-            z.object({
-                message: z.string(),
-            }),
-            "Unauthorized: Missing token"
-        ),
     },
 });
 
@@ -57,12 +51,6 @@ export const create = createRoute({
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
             createErrorSchema(insertFriendRequestsSchema),
             "Validation error(s)"
-        ),
-        [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
-            z.object({
-                message: z.string(),
-            }),
-            "Unauthorized: Missing token"
         ),
     },
 });
@@ -88,12 +76,6 @@ export const getOne = createRoute({
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
             createErrorSchema(IdUUIDParamsSchema),
             "Invalid Id error"
-        ),
-        [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
-            z.object({
-                message: z.string(),
-            }),
-            "Unauthorized: Missing token"
         ),
     },
 });
@@ -127,12 +109,6 @@ export const patch = createRoute({
             ],
             "Validation error(s)"
         ),
-        [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
-            z.object({
-                message: z.string(),
-            }),
-            "Unauthorized: Missing token"
-        ),
     },
 });
 
@@ -157,12 +133,6 @@ export const remove = createRoute({
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
             createErrorSchema(IdUUIDParamsSchema),
             "Invalid Id error"
-        ),
-        [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
-            z.object({
-                message: z.string(),
-            }),
-            "Unauthorized: Missing token"
         ),
     },
 });

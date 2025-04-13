@@ -3,7 +3,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import users from "./users";
 
-export const friendRequestStatusEnum = pgEnum("friend_request_status", [
+export const friendRequestStatusEnum = pgEnum("friend_request_status_enum", [
     "pending",
     "accepted",
     "rejected",

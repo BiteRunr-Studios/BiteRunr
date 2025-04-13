@@ -11,10 +11,11 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import users from "./users";
 
-export const orderStatusEnum = pgEnum("order_status", [
-    "pending",
-    "accepted",
-    "rejected",
+export const orderStatusEnum = pgEnum("order_status_enum", [
+    "created",
+    "active",
+    "completed",
+    "cancelled",
 ]);
 
 export const orders = pgTable("orders", {

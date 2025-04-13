@@ -26,13 +26,7 @@ export const list = createRoute({
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
             z.array(selectOrdersSchema),
-            "List of order items"
-        ),
-        [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
-            z.object({
-                message: z.string(),
-            }),
-            "Unauthorized: Missing token"
+            "List of orders"
         ),
     },
 });
@@ -55,12 +49,6 @@ export const create = createRoute({
             createErrorSchema(insertOrdersSchema),
             "Validation error(s)"
         ),
-        [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
-            z.object({
-                message: z.string(),
-            }),
-            "Unauthorized: Missing token"
-        ),
     },
 });
 
@@ -82,12 +70,6 @@ export const getOne = createRoute({
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
             createErrorSchema(IdUUIDParamsSchema),
             "Invalid Id error"
-        ),
-        [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
-            z.object({
-                message: z.string(),
-            }),
-            "Unauthorized: Missing token"
         ),
     },
 });
@@ -118,12 +100,6 @@ export const patch = createRoute({
             ],
             "Validation error(s)"
         ),
-        [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
-            z.object({
-                message: z.string(),
-            }),
-            "Unauthorized: Missing token"
-        ),
     },
 });
 
@@ -146,11 +122,30 @@ export const remove = createRoute({
             createErrorSchema(IdUUIDParamsSchema),
             "Invalid Id error"
         ),
-        [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
-            z.object({
-                message: z.string(),
-            }),
-            "Unauthorized: Missing token"
+    },
+});
+
+export const listByUserId = createRoute({
+    path: "/orders/user/{id}",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: IdUUIDParamsSchema,
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(selectOrdersSchema),
+            "User's list of orders"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User's orders not found"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(IdUUIDParamsSchema),
+            "Invalid Id error"
         ),
     },
 });
@@ -160,3 +155,4 @@ export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
+export type ListByUserIdRoute = typeof listByUserId;
