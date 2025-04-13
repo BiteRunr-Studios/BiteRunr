@@ -18,12 +18,14 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     const validatedUsers = users.map((user) =>
         selectOrderUsersSchema.parse(user)
     );
+
     return c.json(validatedUsers);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
     const newUser = c.req.valid("json");
     const [inserted] = await db.insert(orderUsers).values(newUser).returning();
+
     return c.json(inserted, HttpStatusCodes.OK);
 };
 
@@ -44,18 +46,16 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         );
     }
 
-    const validatedUser = selectOrderUsersSchema.parse(user);
-    return c.json(validatedUser, HttpStatusCodes.OK);
+    return c.json(user, HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
-    // Remove id from updates to prevent changing the id
-    const { id: _, ...safeUpdates } = updates;
+
     const [updatedUser] = await db
         .update(orderUsers)
-        .set(safeUpdates)
+        .set(updates)
         .where(eq(orderUsers.id, id))
         .returning();
 
@@ -68,8 +68,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
         );
     }
 
-    const validatedUser = selectOrderUsersSchema.parse(updatedUser);
-    return c.json(validatedUser, HttpStatusCodes.OK);
+    return c.json(updatedUser, HttpStatusCodes.OK);
 };
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
@@ -88,6 +87,5 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
         );
     }
 
-    const validatedUser = selectOrderUsersSchema.parse(deletedUser);
-    return c.json(validatedUser, HttpStatusCodes.OK);
+    return c.json(deletedUser, HttpStatusCodes.OK);
 };

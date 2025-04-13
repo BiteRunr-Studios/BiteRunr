@@ -19,12 +19,14 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     const validatedOrders = orders.map((order) =>
         selectOrdersSchema.parse(order)
     );
+
     return c.json(validatedOrders);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
     const newOrder = c.req.valid("json");
     const [inserted] = await db.insert(orders).values(newOrder).returning();
+
     return c.json(inserted, HttpStatusCodes.OK);
 };
 
@@ -51,11 +53,10 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
-    // Remove id from updates to prevent changing the id
-    const { id: _, ...safeUpdates } = updates;
+
     const [updatedOrder] = await db
         .update(orders)
-        .set(safeUpdates)
+        .set(updates)
         .where(eq(orders.id, id))
         .returning();
 

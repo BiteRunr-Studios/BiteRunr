@@ -8,6 +8,20 @@
       "when": 1744503760110,
       "tag": "0000_brief_mandroid",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1744505670855,
+      "tag": "0001_skinny_sauron",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1744507494495,
+      "tag": "0002_secret_gambit",
+      "breakpoints": true
     }
   ]
 }

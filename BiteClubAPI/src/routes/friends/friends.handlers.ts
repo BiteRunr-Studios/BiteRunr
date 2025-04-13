@@ -18,12 +18,14 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     const validatedFriends = friends.map((friend) =>
         selectFriendsSchema.parse(friend)
     );
+
     return c.json(validatedFriends);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
     const newFriend = c.req.valid("json");
     const [inserted] = await db.insert(friends).values(newFriend).returning();
+
     return c.json(inserted, HttpStatusCodes.OK);
 };
 
@@ -44,18 +46,16 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         );
     }
 
-    const validatedFriend = selectFriendsSchema.parse(friend);
-    return c.json(validatedFriend, HttpStatusCodes.OK);
+    return c.json(friend, HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
-    // Remove id from updates to prevent changing the id
-    const { id: _, ...safeUpdates } = updates;
+
     const [updatedFriend] = await db
         .update(friends)
-        .set(safeUpdates)
+        .set(updates)
         .where(eq(friends.id, id))
         .returning();
 
@@ -68,8 +68,7 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
         );
     }
 
-    const validatedFriend = selectFriendsSchema.parse(updatedFriend);
-    return c.json(validatedFriend, HttpStatusCodes.OK);
+    return c.json(updatedFriend, HttpStatusCodes.OK);
 };
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
@@ -88,6 +87,5 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
         );
     }
 
-    const validatedFriend = selectFriendsSchema.parse(deletedFriend);
-    return c.json(validatedFriend, HttpStatusCodes.OK);
+    return c.json(deletedFriend, HttpStatusCodes.OK);
 };

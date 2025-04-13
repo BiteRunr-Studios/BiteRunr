@@ -10,6 +10,9 @@ import {
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import users from "./users";
+import { sql, relations } from "drizzle-orm";
+import orderLocations from "./orderLocations";
+import orderUsers from "./orderUsers";
 
 export const orderStatusEnum = pgEnum("order_status_enum", [
     "created",
@@ -25,14 +28,30 @@ export const orders = pgTable("orders", {
         .notNull()
         .references(() => users.id, { onDelete: "cascade" }),
     comments: text(),
-    status: orderStatusEnum().notNull(),
-    paused: boolean().notNull(),
+    status: orderStatusEnum().notNull().default("created"),
+    paused: boolean().notNull().default(false),
     created_at: timestamp().notNull().defaultNow(),
-    updated_at: timestamp().notNull().defaultNow(),
-});
+    updated_at: timestamp()
+        .notNull()
+        .defaultNow()
+        .$onUpdateFn(() => sql`CURRENT_TIMESTAMP`),
+}).enableRLS();
 
 export const selectOrdersSchema = createSelectSchema(orders);
-export const insertOrdersSchema = createInsertSchema(orders);
+export const insertOrdersSchema = createInsertSchema(orders).omit({
+    id: true,
+    created_at: true,
+    updated_at: true,
+});
 export const patchOrdersSchema = insertOrdersSchema.partial();
+
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+    creator: one(users, {
+        fields: [orders.creator_id],
+        references: [users.id],
+    }),
+    orderLocations: many(orderLocations),
+    orderUsers: many(orderUsers),
+}));
 
 export default orders;

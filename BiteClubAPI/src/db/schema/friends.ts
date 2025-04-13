@@ -2,6 +2,7 @@ import { pgTable, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import users from "./users";
+import { sql, relations } from "drizzle-orm";
 
 export const friends = pgTable(
     "friends",
@@ -14,13 +15,31 @@ export const friends = pgTable(
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
         created_at: timestamp().notNull().defaultNow(),
-        updated_at: timestamp().notNull().defaultNow(),
+        updated_at: timestamp()
+            .notNull()
+            .defaultNow()
+            .$onUpdateFn(() => sql`CURRENT_TIMESTAMP`),
     },
     (t) => [unique().on(t.user_id, t.friend_id)]
-);
+).enableRLS();
 
 export const selectFriendsSchema = createSelectSchema(friends);
-export const insertFriendsSchema = createInsertSchema(friends);
+export const insertFriendsSchema = createInsertSchema(friends).omit({
+    id: true,
+    created_at: true,
+    updated_at: true,
+});
 export const patchFriendsSchema = insertFriendsSchema.partial();
+
+export const friendsRelations = relations(friends, ({ one }) => ({
+    user: one(users, {
+        fields: [friends.user_id],
+        references: [users.id],
+    }),
+    friend: one(users, {
+        fields: [friends.friend_id],
+        references: [users.id],
+    }),
+}));
 
 export default friends;

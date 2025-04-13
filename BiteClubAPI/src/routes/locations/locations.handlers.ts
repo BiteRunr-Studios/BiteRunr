@@ -18,6 +18,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
     const validatedLocations = locations.map((location) =>
         selectLocationsSchema.parse(location)
     );
+
     return c.json(validatedLocations);
 };
 
@@ -27,6 +28,7 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
         .insert(locations)
         .values(newLocation)
         .returning();
+
     return c.json(inserted, HttpStatusCodes.OK);
 };
 
@@ -47,18 +49,16 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         );
     }
 
-    const validatedLocation = selectLocationsSchema.parse(location);
-    return c.json(validatedLocation, HttpStatusCodes.OK);
+    return c.json(location, HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
-    // Remove id from updates to prevent changing the id
-    const { id: _, ...safeUpdates } = updates;
+
     const [updatedLocation] = await db
         .update(locations)
-        .set(safeUpdates)
+        .set(updates)
         .where(eq(locations.id, id))
         .returning();
 
@@ -90,6 +90,5 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
         );
     }
 
-    const validatedLocation = selectLocationsSchema.parse(deletedLocation);
-    return c.json(validatedLocation, HttpStatusCodes.OK);
+    return c.json(deletedLocation, HttpStatusCodes.OK);
 };

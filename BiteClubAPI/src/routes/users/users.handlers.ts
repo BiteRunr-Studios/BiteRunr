@@ -1,5 +1,5 @@
 import db from "@/db/index";
-import { users } from "@/db/schema/users";
+import { users } from "@/db/schema/index";
 import type {
     CreateRoute,
     GetOneRoute,
@@ -8,15 +8,13 @@ import type {
     RemoveRoute,
 } from "./users.routes";
 import type { AppRouteHandler } from "@/lib/types";
-import { selectUserSchema } from "@/db/schema/users";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { eq } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const users = await db.query.users.findMany();
-    const validatedUsers = users.map((user) => selectUserSchema.parse(user));
-    return c.json(validatedUsers);
+    return c.json(users);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
@@ -42,18 +40,16 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         );
     }
 
-    const validatedUser = selectUserSchema.parse(user);
-    return c.json(validatedUser, HttpStatusCodes.OK);
+    return c.json(user, HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
     const { id } = c.req.valid("param");
     const updates = c.req.valid("json");
-    // Remove id from updates to prevent changing the id
-    const { id: _, ...safeUpdates } = updates;
+
     const [updatedUser] = await db
         .update(users)
-        .set(safeUpdates)
+        .set(updates)
         .where(eq(users.id, id))
         .returning();
 
