@@ -20,7 +20,7 @@ struct ContentView: View {
                     .frame(height: geometry.safeAreaInsets.top)
                 VStack {
                     if let _ = clerk.user {
-                        BottomTabBar()
+                        MainLayout()
                     } else {
                         SignUpOrSignInView()
                     }
