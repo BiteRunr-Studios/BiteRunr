@@ -140,7 +140,6 @@ struct SignUpView: View {
 }
 
 extension SignUpView {
-    
     func signUp(email: String, password: String) async {
         do {
             let signUp = try await SignUp.create(
@@ -167,5 +166,4 @@ extension SignUpView {
             dump(error)
         }
     }
-    
 }

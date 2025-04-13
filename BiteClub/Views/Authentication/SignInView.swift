@@ -155,7 +155,6 @@ struct SignInView: View {
 }
 
 extension SignInView {
-    
     func submit(email: String, password: String) async {
         do {
             try await SignIn.create(
@@ -165,5 +164,4 @@ extension SignInView {
             dump(error)
         }
     }
-    
 }
