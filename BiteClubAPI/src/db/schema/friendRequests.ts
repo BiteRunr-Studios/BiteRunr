@@ -30,16 +30,6 @@ export const friendRequests = pgTable(
     (t) => [unique().on(t.sender_id, t.receiver_id)]
 ).enableRLS();
 
-export const selectFriendRequestsSchema = createSelectSchema(friendRequests);
-export const insertFriendRequestsSchema = createInsertSchema(
-    friendRequests
-).omit({
-    id: true,
-    created_at: true,
-    updated_at: true,
-});
-export const patchFriendRequestsSchema = insertFriendRequestsSchema.partial();
-
 export const friendRequestsRelations = relations(friendRequests, ({ one }) => ({
     sender: one(users, {
         fields: [friendRequests.sender_id],
@@ -52,5 +42,15 @@ export const friendRequestsRelations = relations(friendRequests, ({ one }) => ({
         relationName: "received_requests",
     }),
 }));
+
+export const selectFriendRequestsSchema = createSelectSchema(friendRequests);
+export const insertFriendRequestsSchema = createInsertSchema(
+    friendRequests
+).omit({
+    id: true,
+    created_at: true,
+    updated_at: true,
+});
+export const patchFriendRequestsSchema = insertFriendRequestsSchema.partial();
 
 export default friendRequests;
