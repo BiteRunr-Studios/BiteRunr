@@ -14,12 +14,14 @@ import { eq } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const users = await db.query.users.findMany();
+
     return c.json(users);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
     const newUser = c.req.valid("json");
     const [inserted] = await db.insert(users).values(newUser).returning();
+
     return c.json(inserted, HttpStatusCodes.OK);
 };
 

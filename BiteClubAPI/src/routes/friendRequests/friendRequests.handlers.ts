@@ -15,11 +15,8 @@ import { eq } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const friendRequests = await db.query.friendRequests.findMany();
-    const validatedFriendRequests = friendRequests.map((friendRequest) =>
-        selectFriendRequestsSchema.parse(friendRequest)
-    );
 
-    return c.json(validatedFriendRequests);
+    return c.json(friendRequests);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
