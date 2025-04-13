@@ -16,12 +16,22 @@ struct ProfileView: View {
         NavigationView {
             List {
                 HStack {
-                    Image("profileImage")
-                        .clipShape(Circle())
-                        .shadow(radius: 3)
-                        .overlay {
-                            Circle().stroke(.secondary, lineWidth: 3)
+                    if let user = clerk.user, let url = URL(string: user.imageUrl) {
+                        AsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .clipShape(Circle())
+                                .shadow(radius: 3)
+                                .overlay {
+                                    Circle().stroke(.secondary, lineWidth: 3)
+                                }
+                        } placeholder: {
+                            ProgressView()
                         }
+                        .frame(width: 40, height: 40)
+                    }
+
 
                     VStack(alignment: .leading) {
                         Text("Maya Somebody")

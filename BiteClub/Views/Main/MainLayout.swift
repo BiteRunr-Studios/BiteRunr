@@ -31,6 +31,7 @@ struct MainLayout: View {
                         Image(systemName: selectedTab == tab ? tab.filledIcon : tab.icon)
                             .font(.system(size: 24))
                             .foregroundColor(selectedTab == tab ? .orange : .gray)
+                            
                     }
                     Spacer()
                 }
