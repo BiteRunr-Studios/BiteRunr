@@ -33,7 +33,7 @@ export const orders = pgTable("orders", {
     updated_at: timestamp()
         .notNull()
         .defaultNow()
-        .$onUpdateFn(() => sql`CURRENT_TIMESTAMP`),
+        .$onUpdateFn(() => new Date()),
 }).enableRLS();
 
 export const ordersRelations = relations(orders, ({ one, many }) => ({

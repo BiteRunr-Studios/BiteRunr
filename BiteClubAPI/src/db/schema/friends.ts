@@ -18,7 +18,7 @@ export const friends = pgTable(
         updated_at: timestamp()
             .notNull()
             .defaultNow()
-            .$onUpdateFn(() => sql`CURRENT_TIMESTAMP`),
+            .$onUpdateFn(() => new Date()),
     },
     (t) => [unique().on(t.user_id, t.friend_id)]
 ).enableRLS();

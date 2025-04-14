@@ -25,7 +25,7 @@ export const users = pgTable("users", {
     updated_at: timestamp()
         .notNull()
         .defaultNow()
-        .$onUpdateFn(() => sql`CURRENT_TIMESTAMP`),
+        .$onUpdateFn(() => new Date()),
 }).enableRLS();
 
 export const usersRelations = relations(users, ({ many }) => ({

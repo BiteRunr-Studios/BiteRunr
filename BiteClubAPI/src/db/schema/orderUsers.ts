@@ -17,7 +17,7 @@ export const orderUsers = pgTable(
         updated_at: timestamp()
             .notNull()
             .defaultNow()
-            .$onUpdateFn(() => sql`CURRENT_TIMESTAMP`),
+            .$onUpdateFn(() => new Date()),
     },
     (t) => [unique().on(t.user_id, t.order_id)]
 ).enableRLS();
