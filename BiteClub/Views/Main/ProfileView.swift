@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Clerk
+import Foundation
 
 struct ProfileView: View {
     @State var showProfileSheet: Bool = false
@@ -20,7 +21,6 @@ struct ProfileView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 16) {
-                    // Profile Header
                     HStack {
                         if let user = clerk.user, let url = URL(string: user.imageUrl) {
                             AsyncImage(url: url) { image in
@@ -53,9 +53,8 @@ struct ProfileView: View {
                     }
                     .padding(.vertical, 8)
                     
-                    Divider() // Custom divider
+                    Divider()
                     
-                    // Editable Fields
                     if let user = clerk.user {
                         VStack(spacing: 12) {
                             HStack(spacing: 12) {
@@ -99,7 +98,12 @@ struct ProfileView: View {
                                     isPressed = true
                                 }
                                 Task {
-                                    try await user.update(.init(firstName: firstName, lastName: lastName))
+                                    do {
+                                        try await updateProfile()
+                                        print("Profile updated successfully!")
+                                    } catch {
+                                        print("Failed to update profile: \(error)")
+                                    }
                                 }
                             }) {
                                 Text("Save")
@@ -114,9 +118,8 @@ struct ProfileView: View {
                         }
                     }
                     
-                    Divider() // Custom divider
+                    Divider()
                     
-                    // Sign Out Button
                     Button(action: {
                         withAnimation(.easeIn(duration: 0.1)) {
                             isPressed = true
@@ -146,6 +149,39 @@ struct ProfileView: View {
     }
 }
 
+extension ProfileView {
+    func updateProfile() async throws {
+        if let user = clerk.user {
+            // Update Clerk user
+            do {
+                try await user.update(.init(firstName: firstName, lastName: lastName))
+            } catch {
+                print("Error: \(error)")
+            }
+            
+            // Update Supabase user
+            // let _ = try await fetch(url: "http://localhost:3000/users/\(user.id)", method: "PATCH", responseType: User.self)
+            let headers = ["Content-Type": "application/json"]
+            let parameters = ["first_name": firstName, "last_name": lastName]
+            
+            let postData = try JSONSerialization.data(withJSONObject: parameters, options: [])
+            
+            var request = URLRequest(url: URL(string: "http://localhost:3000/users/clerk/\(user.id)")!)
+            request.httpMethod = "PATCH"
+            request.allHTTPHeaderFields = headers
+            request.httpBody = postData
+            
+            let (_, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                print("Supabase user updated successfully!")
+            } else {
+                print("Failed to update Supabase user. Response: \(response)")
+            }
+        }
+    }
+    
+}
 
 #Preview {
     ProfileView()
