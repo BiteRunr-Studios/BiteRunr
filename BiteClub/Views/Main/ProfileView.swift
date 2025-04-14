@@ -1,21 +1,21 @@
-//
-//  ProfileView.swift
-//  BiteClub
-//
-//  Created by Ryan Somers on 4/12/25.
-//
-
 import SwiftUI
 import Clerk
 import Foundation
+
+struct UpdateUserRequest: Encodable {
+    var first_name: String
+    var last_name: String
+}
+
+struct UpdateUserResponse: Decodable {}
 
 struct ProfileView: View {
     @State var showProfileSheet: Bool = false
     @Environment(Clerk.self) private var clerk
     @State private var isPressed = false
     
-    @State private var firstName = ""
-    @State private var lastName = ""
+    @State private var userFields = UpdateUserRequest(first_name: "", last_name: "")
+    @State private var errorMessage: String?
     
     var body: some View {
         NavigationView {
@@ -58,7 +58,10 @@ struct ProfileView: View {
                     if let user = clerk.user {
                         VStack(spacing: 12) {
                             HStack(spacing: 12) {
-                                TextField("First Name", text: $firstName)
+                                TextField("First Name", text: $userFields.first_name)
+                                    .onChange(of: userFields.first_name, {
+                                        errorMessage = nil
+                                    })
                                 Image(systemName: "person.fill")
                                     .frame(width: 24, height: 24)
                                     .foregroundStyle(Color.secondary.opacity(0.3))
@@ -72,11 +75,14 @@ struct ProfileView: View {
                                     .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
                             )
                             .onAppear {
-                                firstName = user.firstName ?? ""
+                                userFields.first_name = user.firstName ?? ""
                             }
                             
                             HStack(spacing: 12) {
-                                TextField("Last Name", text: $lastName)
+                                TextField("Last Name", text: $userFields.last_name)
+                                    .onChange(of: userFields.last_name, {
+                                        errorMessage = nil
+                                    })
                                 Image(systemName: "person.fill")
                                     .frame(width: 24, height: 24)
                                     .foregroundStyle(Color.secondary.opacity(0.3))
@@ -90,7 +96,14 @@ struct ProfileView: View {
                                     .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
                             )
                             .onAppear {
-                                lastName = user.lastName ?? ""
+                                userFields.last_name = user.lastName ?? ""
+                            }
+                            
+                            if let errorMessage = errorMessage {
+                                Text(errorMessage)
+                                    .foregroundColor(.red)
+                                    .font(.footnote)
+                                    .padding(.top, 4)
                             }
                             
                             Button(action: {
@@ -99,10 +112,12 @@ struct ProfileView: View {
                                 }
                                 Task {
                                     do {
-                                        try await updateProfile()
+                                        try validateFields()
+                                        await updateProfile()
+                                        errorMessage = nil
                                         print("Profile updated successfully!")
                                     } catch {
-                                        print("Failed to update profile: \(error)")
+                                        errorMessage = error.localizedDescription
                                     }
                                 }
                             }) {
@@ -150,37 +165,72 @@ struct ProfileView: View {
 }
 
 extension ProfileView {
-    func updateProfile() async throws {
-        if let user = clerk.user {
-            // Update Clerk user
-            do {
-                try await user.update(.init(firstName: firstName, lastName: lastName))
-            } catch {
-                print("Error: \(error)")
-            }
-            
-            // Update Supabase user
-            // let _ = try await fetch(url: "http://localhost:3000/users/\(user.id)", method: "PATCH", responseType: User.self)
-            let headers = ["Content-Type": "application/json"]
-            let parameters = ["first_name": firstName, "last_name": lastName]
-            
-            let postData = try JSONSerialization.data(withJSONObject: parameters, options: [])
-            
-            var request = URLRequest(url: URL(string: "http://localhost:3000/users/clerk/\(user.id)")!)
-            request.httpMethod = "PATCH"
-            request.allHTTPHeaderFields = headers
-            request.httpBody = postData
-            
-            let (_, response) = try await URLSession.shared.data(for: request)
-            
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                print("Supabase user updated successfully!")
-            } else {
-                print("Failed to update Supabase user. Response: \(response)")
-            }
+    func validateFields() throws {
+        guard !userFields.first_name.isEmpty else {
+            throw ValidationError("First name cannot be empty.")
+        }
+        
+        guard !userFields.last_name.isEmpty else {
+            throw ValidationError("Last name cannot be empty.")
         }
     }
     
+    func updateProfile() async {
+        do {
+            try validateFields()
+            
+            if let user = clerk.user {
+                // MARK: - Update Clerk user
+                do {
+                    try await user.update(.init(firstName: userFields.first_name, lastName: userFields.last_name))
+                    
+                    if user.firstName == userFields.first_name && user.lastName == userFields.last_name {
+                        errorMessage = nil
+                        print("Clerk user updated successfully!")
+                    } else {
+                        errorMessage = "Name update failed to reflect in Clerk."
+                    }
+                } catch {
+                    print("Clerk update error: \(error.localizedDescription)")
+                    
+                    if user.firstName == userFields.first_name && user.lastName == userFields.last_name {
+                        errorMessage = nil
+                        print("Clerk user updated successfully despite error!")
+                    } else {
+                        errorMessage = "Failed to update Clerk user: \(error.localizedDescription)"
+                        return
+                    }
+                }
+                
+                // MARK: - Update Supabase user
+                let url = "http://localhost:3000/users/clerk/\(user.id)"
+                let requestBody = userFields
+                
+                do {
+                    let response: UpdateUserResponse = try await fetch(
+                        url: url,
+                        method: "PATCH",
+                        responseType: UpdateUserResponse.self,
+                        body: requestBody
+                    )
+                    
+                    print("Supabase user updated successfully! Response: \(response)")
+                } catch {
+                    errorMessage = "Failed to update Supabase user: \(error.localizedDescription)"
+                }
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+}
+
+struct ValidationError: LocalizedError {
+    var errorDescription: String?
+    
+    init(_ description: String) {
+        self.errorDescription = description
+    }
 }
 
 #Preview {
