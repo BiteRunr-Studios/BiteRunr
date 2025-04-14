@@ -12,16 +12,16 @@ struct MainLayout: View {
     @State private var selectedTab: Tab = .home
     @State private var showProfileSheet = false
     @Environment(Clerk.self) private var clerk
-
+    
     var body: some View {
         VStack(spacing: 0) {
             TopBarView(showProfileSheet: $showProfileSheet)
-
+            
             selectedTab.view
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-
+            
             Divider()
-
+            
             HStack {
                 ForEach(Tab.allCases, id: \.self) { tab in
                     Spacer()
@@ -31,7 +31,7 @@ struct MainLayout: View {
                         Image(systemName: selectedTab == tab ? tab.filledIcon : tab.icon)
                             .font(.system(size: 24))
                             .foregroundColor(selectedTab == tab ? .orange : .gray)
-                            
+                        
                     }
                     Spacer()
                 }
@@ -47,7 +47,7 @@ struct MainLayout: View {
 
 enum Tab: Int, CaseIterable {
     case home, addGroup, joinGroup
-
+    
     var icon: String {
         switch self {
         case .home: return "house"
@@ -55,7 +55,7 @@ enum Tab: Int, CaseIterable {
         case .joinGroup: return "arrow.triangle.2.circlepath.circle"
         }
     }
-
+    
     var filledIcon: String {
         switch self {
         case .home: return "house.fill"
@@ -63,7 +63,7 @@ enum Tab: Int, CaseIterable {
         case .joinGroup: return "arrow.triangle.2.circlepath.circle.fill"
         }
     }
-
+    
     @ViewBuilder
     var view: some View {
         switch self {

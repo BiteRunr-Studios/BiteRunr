@@ -17,7 +17,8 @@ struct TopBarView: View {
             Image("pageLogo")
                 .resizable()
                 .scaledToFit()
-                .frame(height: 52)
+                .frame(height: 35)
+            
             
             Spacer()
             
