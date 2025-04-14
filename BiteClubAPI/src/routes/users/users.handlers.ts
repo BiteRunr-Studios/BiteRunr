@@ -4,6 +4,7 @@ import type {
     CreateRoute,
     GetOneRoute,
     ListRoute,
+    PatchClerkIdRoute,
     PatchRoute,
     RemoveRoute,
 } from "./users.routes";
@@ -84,4 +85,26 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
     }
 
     return c.json(deletedUser, HttpStatusCodes.OK);
+};
+
+export const patchClerkId: AppRouteHandler<PatchClerkIdRoute> = async (c) => {
+    const { clerk_id } = c.req.valid("param");
+    const updates = c.req.valid("json");
+
+    const [updatedUser] = await db
+        .update(users)
+        .set(updates)
+        .where(eq(users.clerk_id, clerk_id))
+        .returning();
+
+    if (!updatedUser) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    return c.json(updatedUser, HttpStatusCodes.OK);
 };

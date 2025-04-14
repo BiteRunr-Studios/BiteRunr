@@ -119,8 +119,37 @@ export const remove = createRoute({
     },
 });
 
+export const patchClerkId = createRoute({
+    path: "/users/clerk/{clerk_id}",
+    method: "patch",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            clerk_id: z.string(),
+        }),
+        body: jsonContentRequired(patchUserSchema, "Update a user"),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(selectUserSchema, "Update a user"),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User not found"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+            [
+                createErrorSchema(patchUserSchema),
+                createErrorSchema(IdUUIDParamsSchema),
+            ],
+            "Validation error(s)"
+        ),
+    },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
+export type PatchClerkIdRoute = typeof patchClerkId;
