@@ -8,6 +8,7 @@ struct User: Codable, Identifiable {
     var clerkId: String
     var createdAt: Date
     var updatedAt: Date
+    var imageUrl: String?
     
     var createdOrders: [Order]?
     var orderUsers: [OrderUser]?
@@ -24,6 +25,7 @@ struct User: Codable, Identifiable {
         case clerkId = "clerk_id"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+        case imageUrl = "image_url"
         case createdOrders = "createdOrders"
         case orderUsers = "orderUsers"
         case orderItems = "orderItems"
