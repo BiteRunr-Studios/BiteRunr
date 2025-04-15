@@ -8,6 +8,21 @@ struct AddLocationsView: View {
     @State private var errorMessage: String? // Optional error message
     @Environment(Clerk.self) private var clerk
     
+    // Computed property to filter friends based on search text
+    private var filteredLocations: [Location] {
+        if searchText.isEmpty {
+            return locations
+        } else {
+            return locations.filter { location in
+                let locationName = "\(location.name)".lowercased()
+                let locationAddress = location.address.lowercased()
+                let searchQuery = searchText.lowercased()
+                
+                return locationName.contains(searchQuery) || locationAddress.contains(searchQuery)
+            }
+        }
+    }
+    
     var body: some View {
         // --- The Grabber Handle ---
         Capsule()
@@ -22,9 +37,22 @@ struct AddLocationsView: View {
             
             HStack(spacing: 12) {
                 TextField("Search Locations", text: $searchText)
-                Image(systemName: "magnifyingglass")
-                    .frame(width: 24, height: 24)
-                    .foregroundStyle(Color.secondary.opacity(0.3))
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                if !searchText.isEmpty {
+                    Button(action: {
+                        searchText = ""
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Color.secondary)
+                    }
+                    .transition(.scale)
+                    .animation(.default, value: searchText)
+                } else {
+                    Image(systemName: "magnifyingglass")
+                        .frame(width: 24, height: 24)
+                        .foregroundStyle(Color.secondary.opacity(0.3))
+                }
             }
             .padding(.vertical, 16)
             .padding(.horizontal, 16)
@@ -38,8 +66,34 @@ struct AddLocationsView: View {
             if let errorMessage = errorMessage {
                 Text(errorMessage)
                     .foregroundColor(.red)
+            } else if (filteredLocations.isEmpty && !searchText.isEmpty) {
+                    VStack(spacing: 10) {
+                        Image(systemName: "location.slash.circle.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(.secondary)
+                            .padding(.top, 20)
+                        
+                        Text("No locations found matching '\(searchText)'")
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 20)
+                }
+            else if (filteredLocations.isEmpty && locations.isEmpty) {
+                VStack(spacing: 10) {
+                    Image(systemName: "location.fill")
+                        .font(.system(size: 40))
+                        .foregroundColor(.secondary)
+                        .padding(.top, 20)
+                    
+                    Text("No locations available")
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.top, 20)
             } else {
-                ForEach(locations, id: \.id) { location in
+                ForEach(filteredLocations, id: \.id) { location in
                     HStack(spacing: 12) {
                         Image("locationIcon")
                             .resizable()
