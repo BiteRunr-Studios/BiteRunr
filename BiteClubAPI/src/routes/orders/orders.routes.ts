@@ -7,6 +7,7 @@ import {
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import { z } from "zod";
 import {
+    insertOrdersDTOSchema,
     insertOrdersSchema,
     patchOrdersSchema,
     selectOrdersSchema,
@@ -38,15 +39,21 @@ export const create = createRoute({
     security: [{ Bearer: [] }],
     middleware: [authMiddleware] as const,
     request: {
-        body: jsonContentRequired(insertOrdersSchema, "Create an order"),
+        body: jsonContentRequired(insertOrdersDTOSchema, "Create an order"),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
             selectOrdersSchema,
             "Create an order"
         ),
+        [HttpStatusCodes.BAD_REQUEST]: jsonContent(
+            z.object({
+                message: z.string(),
+            }),
+            "Order locations and/or order users could not be added"
+        ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-            createErrorSchema(insertOrdersSchema),
+            createErrorSchema(insertOrdersDTOSchema),
             "Validation error(s)"
         ),
     },

@@ -10,8 +10,12 @@ import {
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { sql, relations } from "drizzle-orm";
 import { orderUsers, orderLocations, users } from "./index";
-import { selectOrderLocationsSchema } from "./orderLocations";
-import { selectOrderUsersSchema } from "./orderUsers";
+import {
+    insertOrderLocationsSchema,
+    selectOrderLocationsSchema,
+} from "./orderLocations";
+import { insertOrderUsersSchema, selectOrderUsersSchema } from "./orderUsers";
+import { z } from "zod";
 
 export const orderStatusEnum = pgEnum("order_status_enum", [
     "created",
@@ -46,13 +50,18 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
 }));
 
 export const selectOrdersSchema = createSelectSchema(orders).extend({
-    orderLocations: selectOrderLocationsSchema.optional(),
-    orderUsers: selectOrderUsersSchema.optional(),
+    order_locations: selectOrderLocationsSchema.optional(),
+    order_users: selectOrderUsersSchema.optional(),
 });
 export const insertOrdersSchema = createInsertSchema(orders).omit({
     id: true,
     created_at: true,
     updated_at: true,
+});
+
+export const insertOrdersDTOSchema = insertOrdersSchema.extend({
+    order_locations: z.array(insertOrderLocationsSchema),
+    order_users: z.array(insertOrderUsersSchema),
 });
 export const patchOrdersSchema = insertOrdersSchema.partial();
 

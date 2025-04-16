@@ -14,7 +14,7 @@ export const locationsRelations = relations(locations, ({ many }) => ({
 }));
 
 export const selectLocationsSchema = createSelectSchema(locations).extend({
-    orderLocations: selectOrderLocationsSchema.optional(),
+    order_locations: selectOrderLocationsSchema.optional(),
 });
 export const insertLocationsSchema = createInsertSchema(locations).omit({
     id: true,

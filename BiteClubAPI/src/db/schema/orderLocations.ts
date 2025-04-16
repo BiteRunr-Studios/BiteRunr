@@ -38,7 +38,7 @@ export const orderLocationsRelations = relations(
 export const selectOrderLocationsSchema = createSelectSchema(
     orderLocations
 ).extend({
-    orderItems: selectOrderItemsSchema.optional(),
+    order_items: selectOrderItemsSchema.optional(),
 });
 export const insertOrderLocationsSchema = createInsertSchema(
     orderLocations

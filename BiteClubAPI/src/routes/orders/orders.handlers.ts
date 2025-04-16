@@ -9,10 +9,10 @@ import type {
     RemoveRoute,
 } from "./orders.routes";
 import type { AppRouteHandler } from "@/lib/types";
-import { selectOrdersSchema } from "@/db/schema/orders";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { eq } from "drizzle-orm";
+import { orderLocations, orderUsers } from "@/db/schema";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const orders = await db.query.orders.findMany();
@@ -21,10 +21,35 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
-    const newOrder = c.req.valid("json");
-    const [inserted] = await db.insert(orders).values(newOrder).returning();
+    const newCompleteOrder = c.req.valid("json");
 
-    return c.json(inserted, HttpStatusCodes.OK);
+    const { order_users, order_locations, ...newOrder } = newCompleteOrder;
+    const [insertedOrder] = await db
+        .insert(orders)
+        .values(newOrder)
+        .returning();
+
+    const insertedOrderLocations = await db
+        .insert(orderLocations)
+        .values(order_locations)
+        .returning();
+
+    const insertedOrderUsers = await db
+        .insert(orderUsers)
+        .values(order_users)
+        .returning();
+
+    if (insertedOrderLocations.length == 0 || insertedOrderUsers.length == 0) {
+        return c.json(
+            {
+                message:
+                    "Order locations and/or order users could not be added",
+            },
+            HttpStatusCodes.BAD_REQUEST
+        );
+    }
+
+    return c.json(insertedOrder, HttpStatusCodes.OK);
 };
 
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {

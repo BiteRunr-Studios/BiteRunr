@@ -42,12 +42,12 @@ export const usersRelations = relations(users, ({ many }) => ({
 }));
 
 export const selectUserSchema = createSelectSchema(users).extend({
-    createdOrders: selectOrdersSchema.optional(),
-    orderUsers: selectOrderUsersSchema.optional(),
-    orderItems: selectOrderItemsSchema.optional(),
+    created_orders: selectOrdersSchema.optional(),
+    order_users: selectOrderUsersSchema.optional(),
+    order_items: selectOrderItemsSchema.optional(),
     friends: selectFriendsSchema.optional(),
-    sentFriendRequests: selectFriendRequestsSchema.optional(),
-    receivedFriendRequests: selectFriendRequestsSchema.optional(),
+    sent_friend_requests: selectFriendRequestsSchema.optional(),
+    received_friend_requests: selectFriendRequestsSchema.optional(),
 });
 export const insertUserSchema = createInsertSchema(users)
     .extend({
