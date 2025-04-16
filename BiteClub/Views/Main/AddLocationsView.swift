@@ -4,12 +4,11 @@ import Clerk
 struct AddLocationsView: View {
     @State private var searchText = ""
     @State private var isToggledOn = false
-    @State private var locations: [Location] = [] // Array to hold fetched locations
-    @State private var errorMessage: String? // Optional error message
+    @State private var locations: [Location] = []
+    @State private var errorMessage: String?
     @Environment(Clerk.self) private var clerk
     
     var body: some View {
-        // --- The Grabber Handle ---
         Capsule()
             .fill(Color.secondary.opacity(0.5))
             .frame(width: 120, height: 3)
@@ -83,7 +82,8 @@ struct AddLocationsView: View {
     
     private func fetchLocations() async {
         do {
-            let url = "http://localhost:3000/locations"
+            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let url = "\(apiUrl)/locations"
             let response: [Location] = try await fetch(url: url, responseType: [Location].self, body: nil as String?)
             locations = response // Update the friends array with the fetched data
         } catch {
@@ -91,10 +91,3 @@ struct AddLocationsView: View {
         }
     }
 }
-//
-//  AddLocationsView.swift
-//  BiteClub
-//
-//  Created by Pierre Badra on 2025-04-14.
-//
-

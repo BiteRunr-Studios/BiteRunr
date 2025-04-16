@@ -4,11 +4,10 @@ import Clerk
 struct AddFriendView: View {
     @State private var searchText = ""
     @State private var isToggledOn = false
-    @State private var friends: [User] = [] // Array to hold fetched friends
-    @State private var errorMessage: String? // Optional error message
+    @State private var friends: [User] = []
+    @State private var errorMessage: String?
     @Environment(Clerk.self) private var clerk
     
-    // Computed property to filter friends based on search text
     private var filteredFriends: [User] {
         if searchText.isEmpty {
             return friends
@@ -24,7 +23,6 @@ struct AddFriendView: View {
     }
     
     var body: some View {
-        // --- The Grabber Handle ---
         Capsule()
             .fill(Color.secondary.opacity(0.5))
             .frame(width: 120, height: 3)
@@ -167,7 +165,8 @@ struct AddFriendView: View {
     private func fetchFriends() async {
         do {
             if let user = clerk.user {
-                let url = "http://localhost:3000/users/clerk/\(user.id)/friends"
+                let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+                let url = "\(apiUrl)/users/clerk/\(user.id)/friends"
                 let response: [User] = try await fetch(url: url, responseType: [User].self, body: nil as String?)
                 friends = response
             }

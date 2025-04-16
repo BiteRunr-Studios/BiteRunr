@@ -50,6 +50,18 @@
             ReferencedContainer = "container:BiteClub.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "CLERK_PUBLIC_KEY"
+            value = "pk_test_bXV0dWFsLXJpbmd0YWlsLTc3LmNsZXJrLmFjY291bnRzLmRldiQ"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "API_URL"
+            value = "http://localhost:3000"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

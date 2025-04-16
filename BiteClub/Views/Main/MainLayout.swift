@@ -1,10 +1,3 @@
-//
-//  MainLayout.swift
-//  BiteClub
-//
-//  Created by Ryan Somers on 4/12/25.
-//
-
 import SwiftUI
 import Clerk
 

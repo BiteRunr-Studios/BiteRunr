@@ -203,7 +203,8 @@ extension ProfileView {
                 }
                 
                 // MARK: - Update Supabase user
-                let url = "http://localhost:3000/users/clerk/\(user.id)"
+                let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+                let url = "\(apiUrl)/users/clerk/\(user.id)"
                 let requestBody = userFields
                 
                 do {

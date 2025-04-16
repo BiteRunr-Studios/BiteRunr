@@ -1,10 +1,3 @@
-//
-//  ErrorResponse.swift
-//  BiteClub
-//
-//  Created by Claude White on 2025-04-14.
-//
-
 import Foundation
 
 struct ErrorResponse: Codable, Error {

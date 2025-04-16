@@ -1,10 +1,3 @@
-//
-//  BiteClubApp.swift
-//  BiteClub
-//
-//  Created by Claude White on 2025-04-05.
-//
-
 import SwiftUI
 import Clerk
 
@@ -23,14 +16,27 @@ struct BiteClubApp: App {
             }
             .environment(clerk)
             .task {
-                print("Configuring Clerk...")
-                // Secret Key not for prod (use env)
-                clerk.configure(publishableKey: "pk_test_bXV0dWFsLXJpbmd0YWlsLTc3LmNsZXJrLmFjY291bnRzLmRldiQ")
                 do {
-                    try await clerk.load()
-                    print("Clerk loaded successfully")
+                    print("Configuring Clerk...")
+                    if let clerkPublicKey = ProcessInfo.processInfo.environment["CLERK_PUBLIC_KEY"] {
+                        clerk.configure(publishableKey: clerkPublicKey)
+                        try await clerk.load()
+                        print("Clerk loaded successfully")
+                    } else {
+                        throw NSError(domain: "BiteRunrApp", code: 1, userInfo: [NSLocalizedDescriptionKey : "CLERK_PUBLIC_KEY environment variable not set"])
+                    }
                 } catch {
                     print("Failed to load Clerk: \(error)")
+                }
+                
+                do {
+                    if let _ = ProcessInfo.processInfo.environment["API_URL"] {
+                        print("API Url loaded successfully")
+                    } else {
+                        throw NSError(domain: "BiteRunrApp", code: 1, userInfo: [NSLocalizedDescriptionKey : "API_URL environment variable not set"])
+                    }
+                } catch {
+                    print("Failed to load api url: \(error)")
                 }
             }
         }
