@@ -22,7 +22,7 @@ struct OrderItem: Codable, Identifiable {
         case quantity = "quantity"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
-        case orderLocation = "orderLocation"
+        case orderLocation = "order_location"
         case user = "user"
     }
 }

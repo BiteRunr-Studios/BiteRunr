@@ -11,6 +11,6 @@ struct Location: Codable, Identifiable {
         case id = "id"
         case name = "name"
         case address = "address"
-        case orderLocations = "orderLocations"
+        case orderLocations = "order_locations"
     }
 }

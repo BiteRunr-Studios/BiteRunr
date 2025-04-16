@@ -19,6 +19,6 @@ struct OrderLocation: Codable, Identifiable {
         case updatedAt = "updated_at"
         case order = "order"
         case location = "location"
-        case orderItems = "orderItems"
+        case orderItems = "order_items"
     }
 }

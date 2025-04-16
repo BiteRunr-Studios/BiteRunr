@@ -18,6 +18,32 @@ struct Order: Codable, Identifiable {
     var orderLocations: [OrderLocation]?
     var creator: User?
     
+    init(
+        id: UUID?,
+        name: String,
+        creatorId: UUID,
+        comments: String?,
+        status: Status,
+        paused: Bool,
+        createdAt: Date?,
+        updatedAt: Date?,
+        orderUsers: [OrderUser]?,
+        orderLocations: [OrderLocation]?,
+        creator: User?
+    ) {
+        self.id = id ?? UUID()
+        self.name = name
+        self.creatorId = creatorId
+        self.comments = comments
+        self.status = status
+        self.paused = paused
+        self.createdAt = createdAt ?? Date()
+        self.updatedAt = updatedAt ?? Date()
+        self.orderUsers = orderUsers
+        self.orderLocations = orderLocations
+        self.creator = creator
+    }
+    
     enum CodingKeys: String, CodingKey {
         case id = "id"
         case name = "name"
@@ -27,9 +53,8 @@ struct Order: Codable, Identifiable {
         case paused = "paused"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
-        case orderUsers = "OrderUsers"
-        case orderLocations = "OrderLocations"
+        case orderUsers = "order_users"
+        case orderLocations = "order_locations"
         case creator = "creator"
     }
 }
-

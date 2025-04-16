@@ -15,7 +15,7 @@ struct MainTabView: View {
 
             JoinGroupView()
                 .tabItem {
-                    Label("Start", systemImage: "arrow.clockwise.circle")
+                    Label("Start", systemImage: "arrow.trianglehead.merge")
                 }
         }
     }

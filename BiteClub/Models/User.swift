@@ -21,16 +21,16 @@ struct User: Codable, Identifiable {
         case id = "id"
         case firstName = "first_name"
         case lastName = "last_name"
-        case email
+        case email = "email"
         case clerkId = "clerk_id"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case imageUrl = "image_url"
-        case createdOrders = "createdOrders"
-        case orderUsers = "orderUsers"
-        case orderItems = "orderItems"
+        case createdOrders = "created_orders"
+        case orderUsers = "order_users"
+        case orderItems = "order_items"
         case friends = "friends"
-        case sentFriendRequests = "sentFriendRequests"
-        case receivedFriendRequests = "receivedFriendRequests"
+        case sentFriendRequests = "sent_friend_requests"
+        case receivedFriendRequests = "received_friend_requests"
     }
 }

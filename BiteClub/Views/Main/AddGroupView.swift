@@ -22,7 +22,7 @@ struct AddGroupView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading,spacing: 12) {
-                Text("Create Order Group")
+                Text("Create Order")
                     .foregroundStyle(.secondary)
                     .font(.title2)
                 HStack(spacing: 12) {
@@ -115,7 +115,7 @@ struct AddGroupView: View {
                         isPressed = true
                     }
                     Task {
-                        print("Created food order")
+                        await createOrder()
                     }
                 }) {
                     HStack {
@@ -134,6 +134,37 @@ struct AddGroupView: View {
             .padding()
         }
         
+    }
+}
+
+extension AddGroupView {
+    func createOrder() async {
+        do {
+            // maybe need to create route for clerkId
+            var order = Order(
+                id: nil,
+                name: name,
+                creatorId: UUID(),
+                comments: comments,
+                status: .created,
+                paused: false,
+                createdAt: nil,
+                updatedAt: nil,
+                orderUsers: nil, // Selected users/friends
+                orderLocations: nil, // Selected locations
+                creator: nil // Not necessary creatorId set
+            )
+            
+            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let response: Order = try await fetch(
+                url: "\(apiUrl)/orders",
+                method: "POST",
+                responseType: Order.self,
+                body: order
+            )
+        } catch {
+            print("Error: \(error)")
+        }
     }
 }
 
