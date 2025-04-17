@@ -4,7 +4,7 @@ enum Status: String, Codable {
     case created, active, cancelled, completed
 }
 
-struct Order: Codable, Identifiable {
+struct Order: Codable, Hashable, Identifiable {
     var id: UUID
     var name: String
     var creatorId: UUID

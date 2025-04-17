@@ -1,6 +1,6 @@
 import Foundation
 
-struct OrderLocation: Codable, Identifiable {
+struct OrderLocation: Codable, Hashable, Identifiable {
     var id: UUID
     var orderId: UUID
     var locationId: UUID

@@ -4,7 +4,7 @@ enum RequestStatus: String, Codable {
     case pending, accepted, rejected
 }
 
-struct FriendRequest: Codable, Identifiable {
+struct FriendRequest: Codable, Hashable, Identifiable {
     var id: UUID
     var senderId: UUID
     var receiverId: UUID

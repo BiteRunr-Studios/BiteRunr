@@ -1,6 +1,6 @@
 import Foundation
 
-struct Location: Codable, Identifiable {
+struct Location: Codable, Hashable, Identifiable {
     var id: UUID
     var name: String
     var address: String

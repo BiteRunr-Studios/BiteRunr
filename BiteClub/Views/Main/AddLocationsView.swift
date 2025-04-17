@@ -8,6 +8,7 @@ struct AddLocationsView: View {
     @State private var locations: [Location] = [] // Array to hold fetched locations
     @State private var selectedLocationSet: Set<UUID> = [] // Set of selected locations
     @State private var saveLocationsButton: Bool = false
+    @Binding var orderLocationDTOS: [OrderLocationDTO]
     
     @State private var errorMessage: String? // Optional error message
     @Environment(Clerk.self) private var clerk
@@ -30,9 +31,10 @@ struct AddLocationsView: View {
     // Fetch locations on initial load
     private func fetchLocations() async {
         do {
-            let url = "http://localhost:3000/locations"
+            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let url = "\(apiUrl)/locations"
             let response: [Location] = try await fetch(url: url, responseType: [Location].self, body: nil as String?)
-            locations = response // Update the locations array with the fetched data
+            locations = response // Update the friends array with the fetched data
         } catch {
             errorMessage = "Failed to fetch locations: \(error.localizedDescription)"
         }
@@ -117,15 +119,14 @@ struct AddLocationsView: View {
                         ForEach(filteredLocations, id: \.id) { location in
                             Button(action: {
                                 withAnimation() {
-                                    if selectedLocationSet.contains(location.id) {
-                                        selectedLocationSet.remove(location.id)
+                                    if let index = orderLocationDTOS.firstIndex(where: { $0.locationId == location.id }) {
+                                        orderLocationDTOS.remove(at: index)
                                     } else {
-                                        selectedLocationSet.insert(location.id)
+                                        let dto = OrderLocationDTO(locationId: location.id, name: location.name, address: location.address)
+                                        orderLocationDTOS.append(dto)
                                     }
                                     
                                     saveLocationsButton = selectedLocationSet.count > 0
-                                    
-                                    print(selectedLocationSet)
                                 }
                             }) {
                                 HStack(spacing: 12) {
@@ -172,22 +173,26 @@ struct AddLocationsView: View {
                     }
                     
                     if (saveLocationsButton) {
-                        Button(action: {
-                            Task {
-                                print("Created food order")
+                        VStack {
+                            Spacer()
+                            Button(action: {
+                                Task {
+                                    print("Created food order")
+                                }
+                            }) {
+                                HStack {
+                                    Image(systemName: "checkmark.circle")
+                                    Text("Set Locations")
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
                             }
-                        }) {
-                            HStack {
-                                Image(systemName: "checkmark.circle")
-                                Text("Set Locations")
-                            }
-                            .frame(maxWidth: .infinity)
+                            .background(Color.orange)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                            .contentShape(Rectangle())
                         }
-                        .padding(.vertical, 16)
-                        .background(Color.orange)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                        .contentShape(Rectangle())
+                        .padding(.horizontal, 16)
                     }
                 }
                 
@@ -201,18 +206,4 @@ struct AddLocationsView: View {
             }
         }
     }
-<<<<<<< Updated upstream
-    
-    private func fetchLocations() async {
-        do {
-            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-            let url = "\(apiUrl)/locations"
-            let response: [Location] = try await fetch(url: url, responseType: [Location].self, body: nil as String?)
-            locations = response // Update the friends array with the fetched data
-        } catch {
-            errorMessage = "Failed to fetch locations: \(error.localizedDescription)"
-        }
-    }
-=======
->>>>>>> Stashed changes
 }

@@ -17,6 +17,8 @@ struct AddGroupView: View {
     @State private var selectedLocations: String = "Select locations:"
     @State private var comments: String = ""
     
+    @State private var orderLocationDTOs: [OrderLocationDTO] = []
+    
     @Environment(Clerk.self) private var clerk
     
     var body: some View {
@@ -56,7 +58,7 @@ struct AddGroupView: View {
                     showAddLocationSheet = true
                 }
                 .sheet(isPresented: $showAddLocationSheet) {
-                    AddLocationsView()
+                    AddLocationsView(orderLocationDTOS: $orderLocationDTOs)
                 }
                 .padding(.vertical, 16)
                 .padding(.horizontal, 16)
@@ -142,7 +144,7 @@ extension AddGroupView {
         do {
             if let user = clerk.user {
                 // maybe need to create route for clerkId
-                var order = Order(
+                let order = Order(
                     id: nil,
                     name: name,
                     creatorId: UUID(), // will be set in api using clerk_id
@@ -158,7 +160,7 @@ extension AddGroupView {
                 )
                 
                 let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-                let response: Order = try await fetch(
+                let _: Order = try await fetch(
                     url: "\(apiUrl)/orders",
                     method: "POST",
                     responseType: Order.self,

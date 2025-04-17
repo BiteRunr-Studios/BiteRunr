@@ -1,6 +1,6 @@
 import Foundation
 
-struct Friend: Codable, Identifiable {
+struct Friend: Codable, Hashable, Identifiable {
     var id: UUID
     var userId: UUID
     var friendId: UUID
