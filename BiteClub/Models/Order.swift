@@ -13,9 +13,9 @@ struct Order: Codable, Hashable, Identifiable {
     var paused: Bool
     var createdAt: Date
     var updatedAt: Date
-    
-    var orderUsers: [OrderUser]?
-    var orderLocations: [OrderLocation]?
+
+    var orderUsers: [OrderUserDTO]?
+    var orderLocations: [OrderLocationDTO]?
     var creator: User?
     
     var clerkId: String?
@@ -29,8 +29,8 @@ struct Order: Codable, Hashable, Identifiable {
         paused: Bool,
         createdAt: Date?,
         updatedAt: Date?,
-        orderUsers: [OrderUser]?,
-        orderLocations: [OrderLocation]?,
+        orderUsers: [OrderUserDTO]?,
+        orderLocations: [OrderLocationDTO]?,
         creator: User?,
         clerkId: String?
     ) {

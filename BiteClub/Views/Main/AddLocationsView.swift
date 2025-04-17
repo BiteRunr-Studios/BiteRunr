@@ -4,47 +4,21 @@ import Clerk
 struct AddLocationsView: View {
     @State private var searchText = ""
     @State private var isToggledOn = false
-
+    
     @State private var locations: [Location] = [] // Array to hold fetched locations
-    @State private var selectedLocationSet: Set<UUID> = [] // Set of selected locations
     @State private var saveLocationsButton: Bool = false
     @Binding var orderLocationDTOS: [OrderLocationDTO]
+    @Binding var isPresented: Bool
     
     @State private var errorMessage: String? // Optional error message
     @Environment(Clerk.self) private var clerk
-    
-    // Computed property to filter friends based on search text
-    private var filteredLocations: [Location] {
-        if searchText.isEmpty {
-            return locations
-        } else {
-            return locations.filter { location in
-                let locationName = "\(location.name)".lowercased()
-                let locationAddress = location.address.lowercased()
-                let searchQuery = searchText.lowercased()
-                
-                return locationName.contains(searchQuery) || locationAddress.contains(searchQuery)
-            }
-        }
-    }
-    
-    // Fetch locations on initial load
-    private func fetchLocations() async {
-        do {
-            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-            let url = "\(apiUrl)/locations"
-            let response: [Location] = try await fetch(url: url, responseType: [Location].self, body: nil as String?)
-            locations = response // Update the friends array with the fetched data
-        } catch {
-            errorMessage = "Failed to fetch locations: \(error.localizedDescription)"
-        }
-    }
     
     var body: some View {
         Capsule()
             .fill(Color.secondary.opacity(0.5))
             .frame(width: 120, height: 3)
             .padding(.vertical, 10)
+        
         VStack(alignment: .leading, spacing: 20) {
             Text("Add Locations")
                 .foregroundStyle(.secondary)
@@ -59,9 +33,12 @@ struct AddLocationsView: View {
                     .frame(height: 50)
                     .padding(.horizontal, 16)
                     .frame(height: 55)
+                
                 if !searchText.isEmpty {
                     Button(action: {
-                        searchText = ""
+                        withAnimation {
+                            searchText = ""
+                        }
                     }) {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundStyle(Color.secondary)
@@ -118,66 +95,25 @@ struct AddLocationsView: View {
                     ScrollView {
                         ForEach(filteredLocations, id: \.id) { location in
                             Button(action: {
-                                withAnimation() {
-                                    if let index = orderLocationDTOS.firstIndex(where: { $0.locationId == location.id }) {
-                                        orderLocationDTOS.remove(at: index)
-                                    } else {
-                                        let dto = OrderLocationDTO(locationId: location.id, name: location.name, address: location.address)
-                                        orderLocationDTOS.append(dto)
-                                    }
-                                    
-                                    saveLocationsButton = selectedLocationSet.count > 0
-                                }
+                                toggleLocation(location)
                             }) {
-                                HStack(spacing: 12) {
-                                    Image("locationIcon")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: 35, height: 35)
-                                    
-                                    VStack(alignment: .leading) {
-                                        Text(location.name)
-                                            .foregroundStyle(.primary)
-                                            .lineLimit(1)
-                                            .truncationMode(.tail)
-                                        Text(location.address)
-                                            .foregroundStyle(.secondary)
-                                            .lineLimit(1)
-                                            .truncationMode(.tail)
-                                    }
-                                    
-                                    Spacer()
-                                    ZStack {
-                                        RoundedRectangle(cornerRadius: 6)
-                                            .stroke(selectedLocationSet.contains(location.id) ? Color.orange : Color.gray.opacity(0.4), lineWidth: 1)
-                                            .frame(width: 20, height: 20)
-                                            .background(
-                                                RoundedRectangle(cornerRadius: 6)
-                                                    .fill(selectedLocationSet.contains(location.id) ? Color.orange : Color.clear)
-                                            )
-                                        
-                                        if selectedLocationSet.contains(location.id) {
-                                            Image(systemName: "checkmark")
-                                                .font(.system(size: 14, weight: .bold))
-                                                .foregroundColor(.white)
-                                        }
-                                    }
-                                }
+                                LocationSelectRow(
+                                    location: location,
+                                    isSelected: orderLocationDTOS.contains(where: { $0.orderLocationId == location.id })
+                                )
                             }
                             .buttonStyle(.plain)
                             .padding(.horizontal)
                             .padding(.vertical, 8)
                         }
-                        
-                        
                     }
                     
-                    if (saveLocationsButton) {
+                    if saveLocationsButton {
                         VStack {
                             Spacer()
                             Button(action: {
                                 Task {
-                                    print("Created food order")
+                                    isPresented = false
                                 }
                             }) {
                                 HStack {
@@ -192,10 +128,11 @@ struct AddLocationsView: View {
                             .cornerRadius(12)
                             .contentShape(Rectangle())
                         }
+                        .transition(.opacity) // Transition animation
                         .padding(.horizontal, 16)
                     }
                 }
-                
+                .animation(.easeInOut(duration: 0.2), value: saveLocationsButton) // Apply animation to ZStack
                 Spacer()
             }
         }
@@ -203,7 +140,51 @@ struct AddLocationsView: View {
         .onAppear {
             Task {
                 await fetchLocations()
+                withAnimation {
+                    saveLocationsButton = orderLocationDTOS.count > 0
+                }
             }
+        }
+    }
+}
+
+extension AddLocationsView {
+    // Computed property to filter friends based on search text
+    private var filteredLocations: [Location] {
+        if searchText.isEmpty {
+            return locations
+        } else {
+            return locations.filter { location in
+                let locationName = "\(location.name)".lowercased()
+                let locationAddress = location.address.lowercased()
+                let searchQuery = searchText.lowercased()
+                
+                return locationName.contains(searchQuery) || locationAddress.contains(searchQuery)
+            }
+        }
+    }
+    
+    // Fetch locations on initial load
+    private func fetchLocations() async {
+        do {
+            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let url = "\(apiUrl)/locations"
+            let response: [Location] = try await fetch(url: url, responseType: [Location].self, body: nil as String?)
+            locations = response // Update the friends array with the fetched data
+        } catch {
+            errorMessage = "Failed to fetch locations: \(error.localizedDescription)"
+        }
+    }
+    
+    private func toggleLocation(_ location: Location) {
+        if let index = orderLocationDTOS.firstIndex(where: { $0.orderLocationId == location.id }) {
+            orderLocationDTOS.remove(at: index)
+        } else {
+            let dto = OrderLocationDTO(orderLocationId: location.id)
+            orderLocationDTOS.append(dto)
+        }
+        withAnimation {
+            saveLocationsButton = orderLocationDTOS.count > 0
         }
     }
 }

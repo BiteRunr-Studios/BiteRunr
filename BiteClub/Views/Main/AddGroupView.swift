@@ -18,6 +18,7 @@ struct AddGroupView: View {
     @State private var comments: String = ""
     
     @State private var orderLocationDTOs: [OrderLocationDTO] = []
+    @State private var orderUsersDTOs: [OrderUserDTO] = []
     
     @Environment(Clerk.self) private var clerk
     
@@ -43,7 +44,7 @@ struct AddGroupView: View {
                 )
                 
                 HStack(spacing: 12) {
-                    Text(selectedLocationsDisplay.isEmpty ? "Select Locations" : selectedLocationsDisplay)
+                    Text(orderLocationDTOs.isEmpty ? "Select Locations" : "\(orderLocationDTOs.count) location(s) selected")
                         .foregroundStyle(selectedLocationsDisplay.isEmpty ? .secondary : .primary)
                         .lineLimit(1)
                     
@@ -58,7 +59,7 @@ struct AddGroupView: View {
                     showAddLocationSheet = true
                 }
                 .sheet(isPresented: $showAddLocationSheet) {
-                    AddLocationsView(orderLocationDTOS: $orderLocationDTOs)
+                    AddLocationsView(orderLocationDTOS: $orderLocationDTOs, isPresented: $showAddLocationSheet)
                 }
                 .padding(.vertical, 16)
                 .padding(.horizontal, 16)
@@ -71,7 +72,7 @@ struct AddGroupView: View {
                 
                 
                 HStack(spacing: 12) {
-                    Text(selectedFriendsDisplay.isEmpty ? "Select Friends" : selectedFriendsDisplay)
+                    Text(orderUsersDTOs.isEmpty ? "Select Friends" : "\(orderUsersDTOs.count) friend(s) selected")
                         .foregroundStyle(selectedFriendsDisplay.isEmpty ? .secondary : .primary)
                         .lineLimit(1)
                     
@@ -86,7 +87,7 @@ struct AddGroupView: View {
                     showAddFriendSheet = true
                 }
                 .sheet(isPresented: $showAddFriendSheet) {
-                    AddFriendView()
+                    AddFriendsView(orderFriendDTOS: $orderUsersDTOs, isPresented: $showAddFriendSheet)
                 }
                 .padding(.vertical, 16)
                 .padding(.horizontal, 16)
@@ -153,8 +154,8 @@ extension AddGroupView {
                     paused: false,
                     createdAt: nil,
                     updatedAt: nil,
-                    orderUsers: nil, // Selected users/friends
-                    orderLocations: nil, // Selected locations
+                    orderUsers: orderUsersDTOs, // Selected users/friends
+                    orderLocations: orderLocationDTOs, // Selected locations
                     creator: nil, // Not necessary creatorId set
                     clerkId: user.id
                 )
