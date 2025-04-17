@@ -61,8 +61,18 @@ export const insertOrdersSchema = createInsertSchema(orders).omit({
 
 export const insertOrdersDTOSchema = insertOrdersSchema.extend({
     clerk_id: z.string(),
-    order_locations: z.array(insertOrderLocationsSchema),
-    order_users: z.array(insertOrderUsersSchema),
+    order_locations: z.array(
+        z.object({
+            order_id: z.string().optional(),
+            location_id: z.string(),
+        })
+    ),
+    order_users: z.array(
+        z.object({
+            order_id: z.string().optional(),
+            user_id: z.string(),
+        })
+    ),
 });
 
 export const patchOrdersSchema = insertOrdersSchema.partial();
