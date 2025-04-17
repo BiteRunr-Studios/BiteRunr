@@ -11,7 +11,7 @@ import type { AppRouteHandler } from "@/lib/types";
 import { selectFriendsSchema } from "@/db/schema/friends";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const friends = await db.query.friends.findMany();
@@ -69,10 +69,16 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
 };
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
-    const { id } = c.req.valid("param");
+    const { friend_id } = c.req.valid("param");
+    
     const [deletedFriend] = await db
         .delete(friends)
-        .where(eq(friends.id, id))
+        .where(
+            or(
+                eq(friends.user_id, friend_id),
+                eq(friends.friend_id, friend_id)
+            )
+        )
         .returning();
 
     if (!deletedFriend) {

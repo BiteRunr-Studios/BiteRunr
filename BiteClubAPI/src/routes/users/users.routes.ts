@@ -25,7 +25,9 @@ export const list = createRoute({
     middleware: [authMiddleware] as const,
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            z.array(selectUserSchema),
+            z.array(selectUserSchema.extend({
+                image_url: z.string().nullable(),
+            })),
             "List of users"
         ),
     },

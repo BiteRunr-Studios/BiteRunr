@@ -104,13 +104,15 @@ export const patch = createRoute({
 });
 
 export const remove = createRoute({
-    path: "/friends/{id}",
+    path: "/friends/{friend_id}",
     method: "delete",
     tags,
     security: [{ Bearer: [] }],
     middleware: [authMiddleware] as const,
     request: {
-        params: IdUUIDParamsSchema,
+        params: z.object({
+            friend_id: z.string().uuid(),
+        }),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
@@ -122,8 +124,10 @@ export const remove = createRoute({
             "Friend not found"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-            createErrorSchema(IdUUIDParamsSchema),
-            "Invalid Id error"
+            createErrorSchema(z.object({
+                friend_id: z.string().uuid(),
+            })),
+            "Invalid friend_id error"
         ),
     },
 });

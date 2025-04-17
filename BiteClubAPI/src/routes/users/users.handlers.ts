@@ -16,8 +16,35 @@ import { eq } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const users = await db.query.users.findMany();
+    
+    // Fetch image_urls from Clerk for all users
+    const usersWithImages = await Promise.all(users.map(async (user) => {
+        try {
+            const response = await fetch(`https://api.clerk.com/v1/users/${user.clerk_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+            });
 
-    return c.json(users);
+            if (response.ok) {
+                const clerkUser = await response.json();
+                return {
+                    ...user,
+                    image_url: clerkUser.image_url || null,
+                };
+            }
+        } catch (error) {
+            console.error(`Error fetching Clerk user ${user.clerk_id}:`, error);
+        }
+        
+        return {
+            ...user,
+            image_url: null,
+        };
+    }));
+
+    return c.json(usersWithImages);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
