@@ -59,21 +59,26 @@ export const insertOrdersSchema = createInsertSchema(orders).omit({
     updated_at: true,
 });
 
-export const insertOrdersDTOSchema = insertOrdersSchema.extend({
-    clerk_id: z.string(),
-    order_locations: z.array(
-        z.object({
-            order_id: z.string().optional(),
-            location_id: z.string(),
-        })
-    ),
-    order_users: z.array(
-        z.object({
-            order_id: z.string().optional(),
-            user_id: z.string(),
-        })
-    ),
-});
+export const insertOrdersDTOSchema = insertOrdersSchema
+    .omit({
+        creator_id: true, // Remove the original creator_id definition
+    })
+    .extend({
+        creator_id: z.string().uuid().optional(), // Add creator_id as optional
+        clerk_id: z.string(),
+        order_locations: z.array(
+            z.object({
+                order_id: z.string().optional(),
+                location_id: z.string(),
+            })
+        ),
+        order_users: z.array(
+            z.object({
+                order_id: z.string().optional(),
+                user_id: z.string(),
+            })
+        ),
+    });
 
 export const patchOrdersSchema = insertOrdersSchema.partial();
 

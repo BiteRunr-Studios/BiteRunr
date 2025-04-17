@@ -13,6 +13,8 @@ import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { eq } from "drizzle-orm";
 import { orderLocations, orderUsers } from "@/db/schema";
+import { insertOrderLocationsSchema } from "@/db/schema/orderLocations";
+import { insertOrderUsersSchema } from "@/db/schema/orderUsers";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const orders = await db.query.orders.findMany();
@@ -56,14 +58,19 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
         ol.order_id = insertedOrder.id;
     });
 
+    let order_locations_parsed =
+        insertOrderLocationsSchema.parse(order_locations);
+
+    let order_users_parsed = insertOrderUsersSchema.parse(order_users);
+
     const insertedOrderLocations = await db
         .insert(orderLocations)
-        .values(order_locations)
+        .values(order_locations_parsed)
         .returning();
 
     const insertedOrderUsers = await db
         .insert(orderUsers)
-        .values(order_users)
+        .values(order_users_parsed)
         .returning();
 
     if (insertedOrderLocations.length == 0 || insertedOrderUsers.length == 0) {
