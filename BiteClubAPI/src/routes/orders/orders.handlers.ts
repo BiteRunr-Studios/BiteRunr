@@ -48,6 +48,14 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
         .values(newOrder)
         .returning();
 
+    // Populate order_users and order_locations with order_id
+    order_users.forEach((ou) => {
+        ou.order_id = insertedOrder.id;
+    });
+    order_locations.forEach((ol) => {
+        ol.order_id = insertedOrder.id;
+    });
+
     const insertedOrderLocations = await db
         .insert(orderLocations)
         .values(order_locations)

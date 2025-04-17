@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		14B82D062DA21A9D00C2D4AF /* Clerk in Frameworks */ = {isa = PBXBuildFile; productRef = 14B82D052DA21A9D00C2D4AF /* Clerk */; };
+		14A890002DB09E1A00007009 /* Clerk in Frameworks */ = {isa = PBXBuildFile; productRef = 14A88FFF2DB09E1A00007009 /* Clerk */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,7 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				14B82D062DA21A9D00C2D4AF /* Clerk in Frameworks */,
+				14A890002DB09E1A00007009 /* Clerk in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,7 +70,7 @@
 			);
 			name = BiteClub;
 			packageProductDependencies = (
-				14B82D052DA21A9D00C2D4AF /* Clerk */,
+				14A88FFF2DB09E1A00007009 /* Clerk */,
 			);
 			productName = BiteClub;
 			productReference = 14B82CF62DA20AC600C2D4AF /* BiteClub.app */;
@@ -101,7 +101,7 @@
 			mainGroup = 14B82CED2DA20AC600C2D4AF;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				14B82D042DA21A9D00C2D4AF /* XCRemoteSwiftPackageReference "clerk-ios" */,
+				14A88FFE2DB09E1A00007009 /* XCRemoteSwiftPackageReference "clerk-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 14B82CF72DA20AC600C2D4AF /* Products */;
@@ -339,7 +339,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		14B82D042DA21A9D00C2D4AF /* XCRemoteSwiftPackageReference "clerk-ios" */ = {
+		14A88FFE2DB09E1A00007009 /* XCRemoteSwiftPackageReference "clerk-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/clerk/clerk-ios";
 			requirement = {
@@ -350,9 +350,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		14B82D052DA21A9D00C2D4AF /* Clerk */ = {
+		14A88FFF2DB09E1A00007009 /* Clerk */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 14B82D042DA21A9D00C2D4AF /* XCRemoteSwiftPackageReference "clerk-ios" */;
+			package = 14A88FFE2DB09E1A00007009 /* XCRemoteSwiftPackageReference "clerk-ios" */;
 			productName = Clerk;
 		};
 /* End XCSwiftPackageProductDependency section */

@@ -64,6 +64,7 @@ export const insertOrdersDTOSchema = insertOrdersSchema.extend({
     order_locations: z.array(insertOrderLocationsSchema),
     order_users: z.array(insertOrderUsersSchema),
 });
+
 export const patchOrdersSchema = insertOrdersSchema.partial();
 
 export default orders;
