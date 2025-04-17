@@ -4,8 +4,12 @@ import Clerk
 struct AddLocationsView: View {
     @State private var searchText = ""
     @State private var isToggledOn = false
-    @State private var locations: [Location] = []
-    @State private var errorMessage: String?
+
+    @State private var locations: [Location] = [] // Array to hold fetched locations
+    @State private var selectedLocationSet: Set<UUID> = [] // Set of selected locations
+    @State private var saveLocationsButton: Bool = false
+    
+    @State private var errorMessage: String? // Optional error message
     @Environment(Clerk.self) private var clerk
     
     // Computed property to filter friends based on search text
@@ -23,21 +27,36 @@ struct AddLocationsView: View {
         }
     }
     
+    // Fetch locations on initial load
+    private func fetchLocations() async {
+        do {
+            let url = "http://localhost:3000/locations"
+            let response: [Location] = try await fetch(url: url, responseType: [Location].self, body: nil as String?)
+            locations = response // Update the locations array with the fetched data
+        } catch {
+            errorMessage = "Failed to fetch locations: \(error.localizedDescription)"
+        }
+    }
+    
     var body: some View {
         Capsule()
             .fill(Color.secondary.opacity(0.5))
             .frame(width: 120, height: 3)
             .padding(.vertical, 10)
-        
         VStack(alignment: .leading, spacing: 20) {
             Text("Add Locations")
                 .foregroundStyle(.secondary)
                 .font(.title2)
+                .padding(.horizontal)
+                .padding(.top, 15)
             
             HStack(spacing: 12) {
                 TextField("Search Locations", text: $searchText)
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
+                    .frame(height: 50)
+                    .padding(.horizontal, 16)
+                    .frame(height: 55)
                 if !searchText.isEmpty {
                     Button(action: {
                         searchText = ""
@@ -47,38 +66,39 @@ struct AddLocationsView: View {
                     }
                     .transition(.scale)
                     .animation(.default, value: searchText)
+                    .padding(.horizontal)
                 } else {
                     Image(systemName: "magnifyingglass")
                         .frame(width: 24, height: 24)
                         .foregroundStyle(Color.secondary.opacity(0.3))
+                        .padding(.horizontal)
                 }
             }
-            .padding(.vertical, 16)
-            .padding(.horizontal, 16)
             .background(Color(UIColor.systemBackground))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
             )
+            .padding(.horizontal, 16)
             
             if let errorMessage = errorMessage {
                 Text(errorMessage)
                     .foregroundColor(.red)
             } else if (filteredLocations.isEmpty && !searchText.isEmpty) {
-                    VStack(spacing: 10) {
-                        Image(systemName: "location.slash.circle.fill")
-                            .font(.system(size: 40))
-                            .foregroundColor(.secondary)
-                            .padding(.top, 20)
-                        
-                        Text("No locations found matching '\(searchText)'")
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 20)
+                VStack(spacing: 10) {
+                    Image(systemName: "location.slash.circle.fill")
+                        .font(.system(size: 40))
+                        .foregroundColor(.secondary)
+                        .padding(.top, 20)
+                    
+                    Text("No locations found matching '\(searchText)'")
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.top, 20)
+            }
             else if (filteredLocations.isEmpty && locations.isEmpty) {
                 VStack(spacing: 10) {
                     Image(systemName: "location.fill")
@@ -92,47 +112,96 @@ struct AddLocationsView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 20)
             } else {
-                ForEach(filteredLocations, id: \.id) { location in
-                    HStack(spacing: 12) {
-                        Image("locationIcon")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 35, height: 35)
-                        
-                        
-                        VStack(alignment: .leading) {
-                            Text(location.name)
-                                .foregroundStyle(.primary)
-                            Text(location.address)
-                                .foregroundStyle(.secondary)
+                ZStack {
+                    ScrollView {
+                        ForEach(filteredLocations, id: \.id) { location in
+                            Button(action: {
+                                withAnimation() {
+                                    if selectedLocationSet.contains(location.id) {
+                                        selectedLocationSet.remove(location.id)
+                                    } else {
+                                        selectedLocationSet.insert(location.id)
+                                    }
+                                    
+                                    saveLocationsButton = selectedLocationSet.count > 0
+                                    
+                                    print(selectedLocationSet)
+                                }
+                            }) {
+                                HStack(spacing: 12) {
+                                    Image("locationIcon")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 35, height: 35)
+                                    
+                                    VStack(alignment: .leading) {
+                                        Text(location.name)
+                                            .foregroundStyle(.primary)
+                                            .lineLimit(1)
+                                            .truncationMode(.tail)
+                                        Text(location.address)
+                                            .foregroundStyle(.secondary)
+                                            .lineLimit(1)
+                                            .truncationMode(.tail)
+                                    }
+                                    
+                                    Spacer()
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .stroke(selectedLocationSet.contains(location.id) ? Color.orange : Color.gray.opacity(0.4), lineWidth: 1)
+                                            .frame(width: 20, height: 20)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 6)
+                                                    .fill(selectedLocationSet.contains(location.id) ? Color.orange : Color.clear)
+                                            )
+                                        
+                                        if selectedLocationSet.contains(location.id) {
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 14, weight: .bold))
+                                                .foregroundColor(.white)
+                                        }
+                                    }
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
                         }
-                        Spacer()
                         
-                        Button {
-                            isToggledOn.toggle()
-                        } label: {
-                            Text("")
-                                .frame(width: 44, height: 24)
-                                .background(isToggledOn ? Color.orange : Color.gray.opacity(0.3))
-                                .foregroundColor(.white)
-                                .cornerRadius(6)
+                        
+                    }
+                    
+                    if (saveLocationsButton) {
+                        Button(action: {
+                            Task {
+                                print("Created food order")
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: "checkmark.circle")
+                                Text("Set Locations")
+                            }
+                            .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.plain)
-                        .padding(.horizontal)
-                        .animation(.easeInOut(duration: 0.2), value: isToggledOn)
+                        .padding(.vertical, 16)
+                        .background(Color.orange)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                        .contentShape(Rectangle())
                     }
                 }
+                
+                Spacer()
             }
-            
-            Spacer()
         }
-        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             Task {
                 await fetchLocations()
             }
         }
     }
+<<<<<<< Updated upstream
     
     private func fetchLocations() async {
         do {
@@ -144,4 +213,6 @@ struct AddLocationsView: View {
             errorMessage = "Failed to fetch locations: \(error.localizedDescription)"
         }
     }
+=======
+>>>>>>> Stashed changes
 }
