@@ -1,5 +1,9 @@
 import db from "@/db/index";
-import { orders } from "@/db/schema/orders";
+import {
+    insertOrdersDTOSchema,
+    insertOrdersSchema,
+    orders,
+} from "@/db/schema/orders";
 import type {
     CreateRoute,
     GetOneRoute,
@@ -45,9 +49,11 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
 
     newOrder.creator_id = user.id;
 
+    let newOrder_parsed = insertOrdersSchema.parse(newOrder);
+
     const [insertedOrder] = await db
         .insert(orders)
-        .values(newOrder)
+        .values(newOrder_parsed)
         .returning();
 
     // Populate order_users and order_locations with order_id
