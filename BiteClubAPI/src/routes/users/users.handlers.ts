@@ -1,5 +1,5 @@
 import db from "@/db/index";
-import { users, friends } from "@/db/schema/index";
+import { users, friends, friendRequests } from "@/db/schema/index";
 import type {
     CreateRoute,
     GetOneRoute,
@@ -8,6 +8,8 @@ import type {
     PatchRoute,
     RemoveRoute,
     GetFriendsRoute,
+    GetFriendRequestsRoute,
+    GetOneByClerkIdRoute,
 } from "./users.routes";
 import type { AppRouteHandler } from "@/lib/types";
 import * as HttpStatusCodes from "stoker/http-status-codes";
@@ -216,4 +218,112 @@ export const getFriends: AppRouteHandler<GetFriendsRoute> = async (c) => {
     console.log("Final friends list:", JSON.stringify(friendsList, null, 2));
 
     return c.json(friendsList, HttpStatusCodes.OK);
+};
+
+export const getFriendRequests: AppRouteHandler<GetFriendRequestsRoute> = async (c) => {
+    const { clerk_id } = c.req.valid("param");
+    
+    const user = await db.query.users.findFirst({
+        where(fields, operators) {
+            return operators.eq(fields.clerk_id, clerk_id);
+        },
+    });
+
+    if (!user) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    const requests = await db.query.friendRequests.findMany({
+        where(fields, operators) {
+            return operators.and(
+                operators.eq(fields.receiver_id, user.id),
+                operators.eq(fields.status, "pending")
+            );
+        },
+        with: {
+            sender: true,
+        },
+    });
+
+    const requesters = await Promise.all(requests.map(async (request) => {
+        const sender = request.sender;
+        
+        try {
+            const response = await fetch(`https://api.clerk.com/v1/users/${sender.clerk_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const clerkUser = await response.json();
+                return {
+                    ...sender,
+                    image_url: clerkUser.image_url || null,
+                    sender_id: request.sender_id,
+                    receiver_id: request.receiver_id,
+                };
+            }
+        } catch (error) {
+            console.error(`Error fetching Clerk user ${sender.clerk_id}:`, error);
+        }
+        
+        return {
+            ...sender,
+            image_url: null,
+            sender_id: request.sender_id,
+            receiver_id: request.receiver_id,
+        };
+    }));
+
+    return c.json(requesters, HttpStatusCodes.OK);
+};
+
+export const getOneByClerkId: AppRouteHandler<GetOneByClerkIdRoute> = async (c) => {
+    const { clerk_id } = c.req.valid("param");
+    
+    const user = await db.query.users.findFirst({
+        where(fields, operators) {
+            return operators.eq(fields.clerk_id, clerk_id);
+        },
+    });
+
+    if (!user) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    try {
+        const response = await fetch(`https://api.clerk.com/v1/users/${clerk_id}`, {
+            headers: {
+                'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const clerkUser = await response.json();
+            return c.json({
+                ...user,
+                image_url: clerkUser.image_url || null,
+            }, HttpStatusCodes.OK);
+        }
+    } catch (error) {
+        console.error(`Error fetching Clerk user ${clerk_id}:`, error);
+    }
+
+    return c.json({
+        ...user,
+        image_url: null,
+    }, HttpStatusCodes.OK);
 };

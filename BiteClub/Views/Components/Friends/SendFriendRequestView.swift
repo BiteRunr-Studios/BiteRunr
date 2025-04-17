@@ -12,7 +12,10 @@ struct SendFriendRequestView: View {
     @State private var searchText = ""
     @State private var isToggledOn = false
     @State private var friends: [User] = []
+    @State private var currentUser: User? = nil
     @State private var errorMessage: String?
+    @State private var requestedUserIDs: Set<UUID> = []
+    @State private var acceptedUserIDs: Set<UUID> = []
     @Environment(Clerk.self) private var clerk
     
     private var filteredFriends: [User] {
@@ -85,19 +88,7 @@ struct SendFriendRequestView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.top, 20)
-            } else if filteredFriends.isEmpty && friends.isEmpty {
-                VStack(spacing: 10) {
-                    Image(systemName: "person.3.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(.secondary)
-                        .padding(.top, 20)
-                    
-                    Text("No friends available")
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 20)
-            } else {
+            } else if !searchText.isEmpty {
                 ForEach(filteredFriends, id: \.id) { friend in
                     HStack(spacing: 12) {
                         if let imageUrlString = friend.imageUrl, let imageUrl = URL(string: imageUrlString) {
@@ -143,17 +134,37 @@ struct SendFriendRequestView: View {
                         Spacer()
                         
                         Button {
-                            isToggledOn.toggle()
+                            Task {
+                                await sendFriendRequest(to: friend)
+                            }
                         } label: {
-                            Text("")
-                                .frame(width: 44, height: 24)
-                                .background(isToggledOn ? Color.orange : Color.gray.opacity(0.3))
-                                .foregroundColor(.white)
-                                .cornerRadius(6)
+                            if acceptedUserIDs.contains(friend.id) {
+                                Text("Friends")
+                                    .fontWeight(.medium)
+                                    .frame(width: 100, height: 32)
+                                    .background(Color.green)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(6)
+                            } else if requestedUserIDs.contains(friend.id) {
+                                Text("Requested")
+                                    .fontWeight(.medium)
+                                    .frame(width: 100, height: 32)
+                                    .background(Color.orange)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(6)
+                            } else {
+                                Text("Friend")
+                                    .fontWeight(.medium)
+                                    .frame(width: 100, height: 32)
+                                    .background(Color.gray.opacity(0.3))
+                                    .foregroundColor(.primary)
+                                    .cornerRadius(6)
+                            }
                         }
                         .buttonStyle(.plain)
                         .padding(.horizontal)
-                        .animation(.easeInOut(duration: 0.2), value: isToggledOn)
+                        .animation(.spring(duration: 0.2), value: requestedUserIDs)
+                        .disabled(requestedUserIDs.contains(friend.id) || acceptedUserIDs.contains(friend.id))
                     }
                     .padding(.vertical, 4)
                 }
@@ -165,6 +176,9 @@ struct SendFriendRequestView: View {
         .onAppear {
             Task {
                 await fetchFriends()
+                await fetchCurrentUser()
+                await fetchSentFriendRequests()
+                await fetchAcceptedRequests()
             }
         }
     }
@@ -184,4 +198,74 @@ extension SendFriendRequestView {
             errorMessage = "Failed to fetch friends: \(error.localizedDescription)"
         }
     }
+    
+    private func fetchCurrentUser() async {
+        do {
+            if let clerkUser = clerk.user {
+                let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+                let url = "\(apiUrl)/users/clerk/\(clerkUser.id)"
+                let user: User = try await fetch(url: url, responseType: User.self, body: nil as String?)
+                currentUser = user
+            }
+        } catch {
+            errorMessage = "Failed to fetch current user: \(error.localizedDescription)"
+        }
+    }
+    
+    private func sendFriendRequest(to friend: User) async {
+        guard let currentUser = currentUser else { return }
+        do {
+            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let url = "\(apiUrl)/friend-requests"
+            let body = CreateFriendRequestBody(
+                sender_id: currentUser.id,
+                receiver_id: friend.id,
+                status: "pending"
+            )
+            _ = try await fetch(
+                url: url,
+                method: "POST",
+                responseType: FriendRequestResponse.self,
+                body: body
+            )
+            DispatchQueue.main.async {
+                requestedUserIDs.insert(friend.id)
+            }
+        } catch {
+            DispatchQueue.main.async {
+                errorMessage = "Failed to send friend request: \(error.localizedDescription)"
+            }
+        }
+    }
+    
+    private func fetchSentFriendRequests() async {
+        guard let currentUser = currentUser else { return }
+        do {
+            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let url = "\(apiUrl)/sent-friend-requests?userId=\(currentUser.id.uuidString)&status=pending"
+            let sentRequests: [SentFriendRequest] = try await fetch(url: url, responseType: [SentFriendRequest].self, body: nil as String?)
+            let ids = sentRequests.map { $0.receiver.id }
+            DispatchQueue.main.async {
+                requestedUserIDs = Set(ids)
+            }
+        } catch {
+            errorMessage = "Failed to fetch sent requests: \(error.localizedDescription)"
+        }
+    }
+    
+    private func fetchAcceptedRequests() async {
+        guard let currentUser = currentUser else { return }
+        do {
+            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let url = "\(apiUrl)/sent-friend-requests?userId=\(currentUser.id.uuidString)&status=accepted"
+            let sentRequests: [SentFriendRequest] = try await fetch(url: url, responseType: [SentFriendRequest].self, body: nil as String?)
+            let ids = sentRequests.map { $0.receiver.id }
+            DispatchQueue.main.async {
+                acceptedUserIDs = Set(ids)
+            }
+        } catch {
+            errorMessage = "Failed to fetch accepted requests: \(error.localizedDescription)"
+        }
+    }
+    
 }

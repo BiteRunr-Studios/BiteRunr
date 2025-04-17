@@ -6,12 +6,13 @@ import type {
     ListRoute,
     PatchRoute,
     RemoveRoute,
+    GetSentFriendRequestsRoute,
 } from "./friendRequests.routes";
 import type { AppRouteHandler } from "@/lib/types";
 import { selectFriendRequestsSchema } from "@/db/schema/friendRequests";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const friendRequests = await db.query.friendRequests.findMany();
@@ -72,10 +73,15 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
 };
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
-    const { id } = c.req.valid("param");
+    const { receiver_id, sender_id } = c.req.valid("query");
     const [deletedFriendRequest] = await db
         .delete(friendRequests)
-        .where(eq(friendRequests.id, id))
+        .where(
+            and(
+                eq(friendRequests.receiver_id, receiver_id),
+                eq(friendRequests.sender_id, sender_id)
+            )
+        )
         .returning();
 
     if (!deletedFriendRequest) {
@@ -88,4 +94,75 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
     }
 
     return c.json(deletedFriendRequest, HttpStatusCodes.OK);
+};
+
+export const getSentFriendRequests: AppRouteHandler<GetSentFriendRequestsRoute> = async (c) => {
+    const { userId, status } = c.req.valid("query");
+
+    // Get all sent friend requests
+    const requests = await db.query.friendRequests.findMany({
+        where(fields, operators) {
+            const conditions = [operators.eq(fields.sender_id, userId)];
+            if (status) {
+                conditions.push(operators.eq(fields.status, status));
+            }
+            return operators.and(...conditions);
+        },
+        with: {
+            receiver: true,
+        },
+    });
+
+    // Fetch Clerk image URLs for all receivers
+    const requestsWithImages = await Promise.all(requests.map(async (request) => {
+        const receiver = request.receiver;
+        
+        try {
+            const response = await fetch(`https://api.clerk.com/v1/users/${receiver.clerk_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const clerkUser = await response.json();
+                return {
+                    id: request.id,
+                    created_at: request.created_at.toISOString(),
+                    updated_at: request.updated_at.toISOString(),
+                    sender_id: request.sender_id,
+                    receiver_id: request.receiver_id,
+                    status: request.status,
+                    receiver: {
+                        id: receiver.id,
+                        clerk_id: receiver.clerk_id,
+                        first_name: receiver.first_name,
+                        last_name: receiver.last_name,
+                        image_url: clerkUser.image_url || null,
+                    },
+                };
+            }
+        } catch (error) {
+            console.error(`Error fetching Clerk user ${receiver.clerk_id}:`, error);
+        }
+        
+        return {
+            id: request.id,
+            created_at: request.created_at.toISOString(),
+            updated_at: request.updated_at.toISOString(),
+            sender_id: request.sender_id,
+            receiver_id: request.receiver_id,
+            status: request.status,
+            receiver: {
+                id: receiver.id,
+                clerk_id: receiver.clerk_id,
+                first_name: receiver.first_name,
+                last_name: receiver.last_name,
+                image_url: null,
+            },
+        };
+    }));
+
+    return c.json(requestsWithImages, HttpStatusCodes.OK);
 };

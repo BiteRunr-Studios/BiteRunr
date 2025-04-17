@@ -199,6 +199,62 @@ export const getClerkUser = createRoute({
     },
 });
 
+export const getFriendRequests = createRoute({
+    path: "/users/clerk/{clerk_id}/friend-requests",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            clerk_id: z.string(),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(selectUserSchema.extend({
+                image_url: z.string().nullable(),
+            })),
+            "List of users who have sent friend requests"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User not found"
+        ),
+    },
+});
+
+export const getOneByClerkId = createRoute({
+    path: "/users/clerk/{clerk_id}",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            clerk_id: z.string(),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            selectUserSchema.extend({
+                image_url: z.string().nullable(),
+            }),
+            "User by Clerk Id"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User not found"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(z.object({
+                clerk_id: z.string(),
+            })),
+            "Invalid Clerk Id error"
+        ),
+    },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
@@ -206,3 +262,5 @@ export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
 export type PatchClerkIdRoute = typeof patchClerkId;
 export type GetFriendsRoute = typeof getFriends;
+export type GetFriendRequestsRoute = typeof getFriendRequests;
+export type GetOneByClerkIdRoute = typeof getOneByClerkId;

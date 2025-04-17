@@ -113,13 +113,16 @@ export const patch = createRoute({
 });
 
 export const remove = createRoute({
-    path: "/friend-requests/{id}",
+    path: "/friend-requests",
     method: "delete",
     tags,
     security: [{ Bearer: [] }],
     middleware: [authMiddleware] as const,
     request: {
-        params: IdUUIDParamsSchema,
+        query: z.object({
+            receiver_id: z.string().uuid(),
+            sender_id: z.string().uuid(),
+        }),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
@@ -131,8 +134,49 @@ export const remove = createRoute({
             "Friend request not found"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-            createErrorSchema(IdUUIDParamsSchema),
-            "Invalid Id error"
+            createErrorSchema(z.object({
+                receiver_id: z.string().uuid(),
+                sender_id: z.string().uuid(),
+            })),
+            "Invalid IDs error"
+        ),
+    },
+});
+
+export const getSentFriendRequests = createRoute({
+    path: "/sent-friend-requests",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        query: z.object({
+            userId: z.string().uuid(),
+            status: z.enum(["pending", "accepted", "rejected"]).optional(),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(z.object({
+                id: z.string().uuid(),
+                created_at: z.string(),
+                updated_at: z.string(),
+                sender_id: z.string().uuid(),
+                receiver_id: z.string().uuid(),
+                status: z.enum(["pending", "accepted", "rejected"]),
+                receiver: z.object({
+                    id: z.string().uuid(),
+                    clerk_id: z.string(),
+                    first_name: z.string(),
+                    last_name: z.string(),
+                    image_url: z.string().nullable(),
+                }),
+            })),
+            "List of sent friend requests"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User not found"
         ),
     },
 });
@@ -142,3 +186,4 @@ export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
+export type GetSentFriendRequestsRoute = typeof getSentFriendRequests;

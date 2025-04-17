@@ -10,5 +10,7 @@ const router = createRouter()
     .openapi(routes.remove, handlers.remove)
     .openapi(routes.patchClerkId, handlers.patchClerkId)
     .openapi(routes.getFriends, handlers.getFriends)
+    .openapi(routes.getFriendRequests, handlers.getFriendRequests)
+    .openapi(routes.getOneByClerkId, handlers.getOneByClerkId);
 
 export default router;
