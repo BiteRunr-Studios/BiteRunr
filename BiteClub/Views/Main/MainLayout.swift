@@ -7,35 +7,40 @@ struct MainLayout: View {
     @Environment(Clerk.self) private var clerk
     
     var body: some View {
-        VStack(spacing: 0) {
-            TopBarView(showProfileSheet: $showProfileSheet)
-            
-            selectedTab.view
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            Divider()
-            
-            HStack {
-                ForEach(Tab.allCases, id: \.self) { tab in
-                    Spacer()
-                    Button(action: {
-                        selectedTab = tab
-                    }) {
-                        Image(systemName: selectedTab == tab ? tab.filledIcon : tab.icon)
-                            .font(.system(size: 24))
-                            .foregroundColor(selectedTab == tab ? .orange : .gray)
-                        
+        ZStack {
+            Color.clear // Makes the whole screen tappable
+                .contentShape(Rectangle()) // Ensures taps are detected
+
+            VStack(spacing: 0) {
+                TopBarView(showProfileSheet: $showProfileSheet)
+
+                selectedTab.view
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                Divider()
+
+                HStack {
+                    ForEach(Tab.allCases, id: \.self) { tab in
+                        Spacer()
+                        Button(action: {
+                            selectedTab = tab
+                        }) {
+                            Image(systemName: selectedTab == tab ? tab.filledIcon : tab.icon)
+                                .font(.system(size: 24))
+                                .foregroundColor(selectedTab == tab ? .orange : .gray)
+                        }
+                        Spacer()
                     }
-                    Spacer()
                 }
+                .padding()
+                .background(Color(.systemBackground))
             }
-            .padding()
-            .background(Color(.systemBackground))
-        }
-        .sheet(isPresented: $showProfileSheet) {
-            ProfileView()
+            .sheet(isPresented: $showProfileSheet) {
+                ProfileView()
+            }
         }
     }
+
 }
 
 enum Tab: Int, CaseIterable {

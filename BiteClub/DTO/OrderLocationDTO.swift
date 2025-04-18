@@ -2,9 +2,11 @@ import Foundation
 
 struct OrderLocationDTO: Codable, Hashable {
     var orderLocationId: UUID
+    var orderId: UUID?
     
     enum CodingKeys: String, CodingKey {
-        case orderLocationId = "order_location_id"
+        case orderLocationId = "location_id"
+        case orderId = "order_id"
     }
     
     init(orderLocationId: UUID) {

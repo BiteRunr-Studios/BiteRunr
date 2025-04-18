@@ -14,134 +14,136 @@ struct AddLocationsView: View {
     @Environment(Clerk.self) private var clerk
     
     var body: some View {
-        Capsule()
-            .fill(Color.secondary.opacity(0.5))
-            .frame(width: 120, height: 3)
-            .padding(.vertical, 10)
-        
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Add Locations")
-                .foregroundStyle(.secondary)
-                .font(.title2)
-                .padding(.horizontal)
-                .padding(.top, 15)
+        VStack {
+            Capsule()
+                .fill(Color.secondary.opacity(0.5))
+                .frame(width: 120, height: 3)
+                .padding(.vertical, 10)
             
-            HStack(spacing: 12) {
-                TextField("Search Locations", text: $searchText)
-                    .autocapitalization(.none)
-                    .disableAutocorrection(true)
-                    .frame(height: 50)
-                    .padding(.horizontal, 16)
-                    .frame(height: 55)
-                
-                if !searchText.isEmpty {
-                    Button(action: {
-                        withAnimation {
-                            searchText = ""
-                        }
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(Color.secondary)
-                    }
-                    .transition(.scale)
-                    .animation(.default, value: searchText)
+            VStack(alignment: .leading, spacing: 20) {
+                Text("Add Locations")
+                    .foregroundStyle(.secondary)
+                    .font(.title2)
                     .padding(.horizontal)
-                } else {
-                    Image(systemName: "magnifyingglass")
-                        .frame(width: 24, height: 24)
-                        .foregroundStyle(Color.secondary.opacity(0.3))
-                        .padding(.horizontal)
-                }
-            }
-            .background(Color(UIColor.systemBackground))
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-            )
-            .padding(.horizontal, 16)
-            
-            if let errorMessage = errorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.red)
-            } else if (filteredLocations.isEmpty && !searchText.isEmpty) {
-                VStack(spacing: 10) {
-                    Image(systemName: "location.slash.circle.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(.secondary)
-                        .padding(.top, 20)
-                    
-                    Text("No locations found matching '\(searchText)'")
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 20)
-            }
-            else if (filteredLocations.isEmpty && locations.isEmpty) {
-                VStack(spacing: 10) {
-                    Image(systemName: "location.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(.secondary)
-                        .padding(.top, 20)
-                    
-                    Text("No locations available")
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.top, 20)
-            } else {
-                ZStack {
-                    ScrollView {
-                        ForEach(filteredLocations, id: \.id) { location in
-                            Button(action: {
-                                toggleLocation(location)
-                            }) {
-                                LocationSelectRow(
-                                    location: location,
-                                    isSelected: orderLocationDTOS.contains(where: { $0.orderLocationId == location.id })
-                                )
-                            }
-                            .buttonStyle(.plain)
-                            .padding(.horizontal)
-                            .padding(.vertical, 8)
-                        }
-                    }
-                    
-                    if saveLocationsButton {
-                        VStack {
-                            Spacer()
-                            Button(action: {
-                                Task {
-                                    isPresented = false
-                                }
-                            }) {
-                                HStack {
-                                    Image(systemName: "checkmark.circle")
-                                    Text("Set Locations")
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                            }
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                            .contentShape(Rectangle())
-                        }
-                        .transition(.opacity) // Transition animation
+                    .padding(.top, 15)
+                
+                HStack(spacing: 12) {
+                    TextField("Search Locations", text: $searchText)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                        .frame(height: 50)
                         .padding(.horizontal, 16)
+                        .frame(height: 55)
+                    
+                    if !searchText.isEmpty {
+                        Button(action: {
+                            withAnimation {
+                                searchText = ""
+                            }
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(Color.secondary)
+                        }
+                        .transition(.scale)
+                        .animation(.default, value: searchText)
+                        .padding(.horizontal)
+                    } else {
+                        Image(systemName: "magnifyingglass")
+                            .frame(width: 24, height: 24)
+                            .foregroundStyle(Color.secondary.opacity(0.3))
+                            .padding(.horizontal)
                     }
                 }
-                .animation(.easeInOut(duration: 0.2), value: saveLocationsButton) // Apply animation to ZStack
-                Spacer()
+                .background(Color(UIColor.systemBackground))
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                )
+                .padding(.horizontal, 16)
+                
+                if let errorMessage = errorMessage {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
+                } else if (filteredLocations.isEmpty && !searchText.isEmpty) {
+                    VStack(spacing: 10) {
+                        Image(systemName: "location.slash.circle.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(.secondary)
+                            .padding(.top, 20)
+                        
+                        Text("No locations found matching '\(searchText)'")
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 20)
+                }
+                else if (filteredLocations.isEmpty && locations.isEmpty) {
+                    VStack(spacing: 10) {
+                        Image(systemName: "location.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(.secondary)
+                            .padding(.top, 20)
+                        
+                        Text("No locations available")
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 20)
+                } else {
+                    ZStack {
+                        ScrollView {
+                            ForEach(filteredLocations, id: \.id) { location in
+                                Button(action: {
+                                    toggleLocation(location)
+                                }) {
+                                    LocationSelectRow(
+                                        location: location,
+                                        isSelected: orderLocationDTOS.contains(where: { $0.orderLocationId == location.id })
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
+                            }
+                        }
+                        
+                        if saveLocationsButton {
+                            VStack {
+                                Spacer()
+                                Button(action: {
+                                    Task {
+                                        isPresented = false
+                                    }
+                                }) {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle")
+                                        Text("Set Locations")
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 16)
+                                }
+                                .background(Color.orange)
+                                .foregroundColor(.white)
+                                .cornerRadius(12)
+                                .contentShape(Rectangle())
+                            }
+                            .transition(.opacity) // Transition animation
+                            .padding(.horizontal, 16)
+                        }
+                    }
+                    .animation(.easeInOut(duration: 0.2), value: saveLocationsButton) // Apply animation to ZStack
+                    Spacer()
+                }
             }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .onAppear {
-            Task {
-                await fetchLocations()
-                withAnimation {
-                    saveLocationsButton = orderLocationDTOS.count > 0
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .onAppear {
+                Task {
+                    await fetchLocations()
+                    withAnimation {
+                        saveLocationsButton = orderLocationDTOS.count > 0
+                    }
                 }
             }
         }

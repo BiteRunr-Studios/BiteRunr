@@ -1,36 +1,54 @@
 import Foundation
 
-enum Status: String, Codable {
-    case created, active, cancelled, completed
-}
 
-struct Order: Codable, Hashable, Identifiable {
+struct OrderDTO: Codable, Hashable, Identifiable {
     var id: UUID
     var name: String
-    var creatorId: UUID
+    var creatorId: UUID?
     var comments: String?
     var status: Status
     var paused: Bool
     var createdAt: Date
     var updatedAt: Date
 
-    var orderUsers: [OrderUser]?
-    var orderLocations: [OrderLocation]?
+    var orderUsers: [OrderUserDTO]?
+    var orderLocations: [OrderLocationDTO]?
     var creator: User?
     
     var clerkId: String?
     
+    //    {
+    //      "name": "",
+    //      "comments": null,
+    //      "status": "created",
+    //      "paused": true,
+    //      "creator_id?": "",
+    //      "clerk_id": "",
+    //      "order_locations": [
+    //        {
+    //          "order_id?": "",
+    //          "location_id": ""
+    //        }
+    //      ],
+    //      "order_users": [
+    //        {
+    //          "order_id?": "",
+    //          "user_id": ""
+    //        }
+    //      ]
+    //    }
+    
     init(
         id: UUID?,
         name: String,
-        creatorId: UUID,
+        creatorId: UUID?,
         comments: String?,
         status: Status,
         paused: Bool,
         createdAt: Date?,
         updatedAt: Date?,
-        orderUsers: [OrderUser]?,
-        orderLocations: [OrderLocation]?,
+        orderUsers: [OrderUserDTO]?,
+        orderLocations: [OrderLocationDTO]?,
         creator: User?,
         clerkId: String?
     ) {
@@ -47,6 +65,7 @@ struct Order: Codable, Hashable, Identifiable {
         self.creator = creator
         self.clerkId = clerkId
     }
+
     
     enum CodingKeys: String, CodingKey {
         case id = "id"
@@ -63,3 +82,4 @@ struct Order: Codable, Hashable, Identifiable {
         case clerkId = "clerk_id"
     }
 }
+
