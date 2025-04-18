@@ -9,6 +9,7 @@ import locations from "@/routes/locations/locations.index";
 import orderItems from "@/routes/orderItems/orderItems.index";
 import orderLocations from "@/routes/orderLocations/orderLocations.index";
 import orderUsers from "@/routes/orderUsers/orderUsers.index";
+import webhooks from "@/routes/webhooks/webhooks.index";
 
 const app = createApp();
 
@@ -23,6 +24,7 @@ const routes = [
     orderItems,
     orderLocations,
     orderUsers,
+    webhooks,
 ];
 configureOpenAPI(app);
 routes.forEach((route) => {

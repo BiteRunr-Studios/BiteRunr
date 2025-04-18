@@ -18,33 +18,41 @@ import { eq } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const users = await db.query.users.findMany();
-    
-    // Fetch image_urls from Clerk for all users
-    const usersWithImages = await Promise.all(users.map(async (user) => {
-        try {
-            const response = await fetch(`https://api.clerk.com/v1/users/${user.clerk_id}`, {
-                headers: {
-                    'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
-                    'Content-Type': 'application/json',
-                },
-            });
 
-            if (response.ok) {
-                const clerkUser = await response.json();
-                return {
-                    ...user,
-                    image_url: clerkUser.image_url || null,
-                };
+    // Fetch image_urls from Clerk for all users
+    const usersWithImages = await Promise.all(
+        users.map(async (user) => {
+            try {
+                const response = await fetch(
+                    `https://api.clerk.com/v1/users/${user.clerk_id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                if (response.ok) {
+                    const clerkUser = await response.json();
+                    return {
+                        ...user,
+                        image_url: clerkUser.image_url || null,
+                    };
+                }
+            } catch (error) {
+                console.error(
+                    `Error fetching Clerk user ${user.clerk_id}:`,
+                    error
+                );
             }
-        } catch (error) {
-            console.error(`Error fetching Clerk user ${user.clerk_id}:`, error);
-        }
-        
-        return {
-            ...user,
-            image_url: null,
-        };
-    }));
+
+            return {
+                ...user,
+                image_url: null,
+            };
+        })
+    );
 
     return c.json(usersWithImages);
 };
@@ -142,7 +150,7 @@ export const patchClerkId: AppRouteHandler<PatchClerkIdRoute> = async (c) => {
 export const getFriends: AppRouteHandler<GetFriendsRoute> = async (c) => {
     const { clerk_id } = c.req.valid("param");
     console.log("Looking for user with clerk_id:", clerk_id);
-    
+
     // First find the user by clerk_id
     const user = await db.query.users.findFirst({
         where(fields, operators) {
@@ -153,18 +161,21 @@ export const getFriends: AppRouteHandler<GetFriendsRoute> = async (c) => {
     console.log("Found user:", user);
 
     if (!user) {
-        console.log("User not found in database. Available users:", await db.query.users.findMany({
-            columns: {
-                id: true,
-                clerk_id: true,
-                first_name: true,
-                last_name: true,
-            }
-        }));
+        console.log(
+            "User not found in database. Available users:",
+            await db.query.users.findMany({
+                columns: {
+                    id: true,
+                    clerk_id: true,
+                    first_name: true,
+                    last_name: true,
+                },
+            })
+        );
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
-                details: `No user found with clerk_id: ${clerk_id}`
+                details: `No user found with clerk_id: ${clerk_id}`,
             },
             HttpStatusCodes.NOT_FOUND
         );
@@ -187,42 +198,55 @@ export const getFriends: AppRouteHandler<GetFriendsRoute> = async (c) => {
     console.log("Found friendships:", JSON.stringify(userFriends, null, 2));
 
     // Map the friends to get the actual friend user objects and fetch their image_urls
-    const friendsList = await Promise.all(userFriends.map(async (friendship) => {
-        const friend = friendship.user_id === user.id ? friendship.friend : friendship.user;
-        
-        try {
-            const response = await fetch(`https://api.clerk.com/v1/users/${friend.clerk_id}`, {
-                headers: {
-                    'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
-                    'Content-Type': 'application/json',
-                },
-            });
+    const friendsList = await Promise.all(
+        userFriends.map(async (friendship) => {
+            const friend =
+                friendship.user_id === user.id
+                    ? friendship.friend
+                    : friendship.user;
 
-            if (response.ok) {
-                const clerkUser = await response.json();
-                return {
-                    ...friend,
-                    image_url: clerkUser.image_url || null,
-                };
+            try {
+                const response = await fetch(
+                    `https://api.clerk.com/v1/users/${friend.clerk_id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                if (response.ok) {
+                    const clerkUser = await response.json();
+                    return {
+                        ...friend,
+                        image_url: clerkUser.image_url || null,
+                    };
+                }
+            } catch (error) {
+                console.error(
+                    `Error fetching Clerk user ${friend.clerk_id}:`,
+                    error
+                );
             }
-        } catch (error) {
-            console.error(`Error fetching Clerk user ${friend.clerk_id}:`, error);
-        }
-        
-        return {
-            ...friend,
-            image_url: null,
-        };
-    }));
+
+            return {
+                ...friend,
+                image_url: null,
+            };
+        })
+    );
 
     console.log("Final friends list:", JSON.stringify(friendsList, null, 2));
 
     return c.json(friendsList, HttpStatusCodes.OK);
 };
 
-export const getFriendRequests: AppRouteHandler<GetFriendRequestsRoute> = async (c) => {
+export const getFriendRequests: AppRouteHandler<
+    GetFriendRequestsRoute
+> = async (c) => {
     const { clerk_id } = c.req.valid("param");
-    
+
     const user = await db.query.users.findFirst({
         where(fields, operators) {
             return operators.eq(fields.clerk_id, clerk_id);
@@ -250,44 +274,54 @@ export const getFriendRequests: AppRouteHandler<GetFriendRequestsRoute> = async 
         },
     });
 
-    const requesters = await Promise.all(requests.map(async (request) => {
-        const sender = request.sender;
-        
-        try {
-            const response = await fetch(`https://api.clerk.com/v1/users/${sender.clerk_id}`, {
-                headers: {
-                    'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
-                    'Content-Type': 'application/json',
-                },
-            });
+    const requesters = await Promise.all(
+        requests.map(async (request) => {
+            const sender = request.sender;
 
-            if (response.ok) {
-                const clerkUser = await response.json();
-                return {
-                    ...sender,
-                    image_url: clerkUser.image_url || null,
-                    sender_id: request.sender_id,
-                    receiver_id: request.receiver_id,
-                };
+            try {
+                const response = await fetch(
+                    `https://api.clerk.com/v1/users/${sender.clerk_id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                if (response.ok) {
+                    const clerkUser = await response.json();
+                    return {
+                        ...sender,
+                        image_url: clerkUser.image_url || null,
+                        sender_id: request.sender_id,
+                        receiver_id: request.receiver_id,
+                    };
+                }
+            } catch (error) {
+                console.error(
+                    `Error fetching Clerk user ${sender.clerk_id}:`,
+                    error
+                );
             }
-        } catch (error) {
-            console.error(`Error fetching Clerk user ${sender.clerk_id}:`, error);
-        }
-        
-        return {
-            ...sender,
-            image_url: null,
-            sender_id: request.sender_id,
-            receiver_id: request.receiver_id,
-        };
-    }));
+
+            return {
+                ...sender,
+                image_url: null,
+                sender_id: request.sender_id,
+                receiver_id: request.receiver_id,
+            };
+        })
+    );
 
     return c.json(requesters, HttpStatusCodes.OK);
 };
 
-export const getOneByClerkId: AppRouteHandler<GetOneByClerkIdRoute> = async (c) => {
+export const getOneByClerkId: AppRouteHandler<GetOneByClerkIdRoute> = async (
+    c
+) => {
     const { clerk_id } = c.req.valid("param");
-    
+
     const user = await db.query.users.findFirst({
         where(fields, operators) {
             return operators.eq(fields.clerk_id, clerk_id);
@@ -304,26 +338,35 @@ export const getOneByClerkId: AppRouteHandler<GetOneByClerkIdRoute> = async (c) 
     }
 
     try {
-        const response = await fetch(`https://api.clerk.com/v1/users/${clerk_id}`, {
-            headers: {
-                'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await fetch(
+            `https://api.clerk.com/v1/users/${clerk_id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
         if (response.ok) {
             const clerkUser = await response.json();
-            return c.json({
-                ...user,
-                image_url: clerkUser.image_url || null,
-            }, HttpStatusCodes.OK);
+            return c.json(
+                {
+                    ...user,
+                    image_url: clerkUser.image_url || null,
+                },
+                HttpStatusCodes.OK
+            );
         }
     } catch (error) {
         console.error(`Error fetching Clerk user ${clerk_id}:`, error);
     }
 
-    return c.json({
-        ...user,
-        image_url: null,
-    }, HttpStatusCodes.OK);
+    return c.json(
+        {
+            ...user,
+            image_url: null,
+        },
+        HttpStatusCodes.OK
+    );
 };
