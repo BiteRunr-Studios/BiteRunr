@@ -65,9 +65,7 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
         ol.order_id = insertedOrder.id;
     });
 
-    let order_locations_parsed = z
-        .array(insertOrderLocationsSchema)
-        .parse(order_locations);
+    let order_locations_parsed = z.array(insertOrderLocationsSchema).parse(order_locations);
 
     let order_users_parsed = z.array(insertOrderUsersSchema).parse(order_users);
 
