@@ -2,8 +2,9 @@ import { pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import { orders, locations, orderItems } from "./index";
-import { sql, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import { selectOrderItemsSchema } from "./orderItems";
+import { z } from "zod";
 
 export const orderLocations = pgTable("order_locations", {
     id: uuid().primaryKey().defaultRandom(),
@@ -40,13 +41,16 @@ export const selectOrderLocationsSchema = createSelectSchema(
 ).extend({
     order_items: selectOrderItemsSchema.optional(),
 });
-export const insertOrderLocationsSchema = createInsertSchema(
-    orderLocations
-).omit({
-    id: true,
-    created_at: true,
-    updated_at: true,
-});
+export const insertOrderLocationsSchema = createInsertSchema(orderLocations)
+    .omit({
+        id: true,
+        created_at: true,
+        updated_at: true,
+    })
+    .extend({
+        order_id: z.string().nonempty("Order Id is required"),
+        location_id: z.string().nonempty("Location Id is required"),
+    });
 export const patchOrderLocationsSchema = insertOrderLocationsSchema.partial();
 
 export default orderLocations;

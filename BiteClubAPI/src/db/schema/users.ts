@@ -51,7 +51,10 @@ export const selectUserSchema = createSelectSchema(users).extend({
 });
 export const insertUserSchema = createInsertSchema(users)
     .extend({
-        email: z.string().email(),
+        email: z.string().nonempty("Email is required").email(),
+        first_name: z.string().nonempty("First Name is required"),
+        last_name: z.string().nonempty("Last Name is required"),
+        clerk_id: z.string().nonempty("Clerk Id is required"),
     })
     .omit({
         id: true,

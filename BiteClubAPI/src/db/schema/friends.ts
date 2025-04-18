@@ -2,7 +2,8 @@ import { pgTable, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import users from "./users";
-import { sql, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
+import { z } from "zod";
 
 export const friends = pgTable(
     "friends",
@@ -35,11 +36,16 @@ export const friendsRelations = relations(friends, ({ one }) => ({
 }));
 
 export const selectFriendsSchema = createSelectSchema(friends);
-export const insertFriendsSchema = createInsertSchema(friends).omit({
-    id: true,
-    created_at: true,
-    updated_at: true,
-});
+export const insertFriendsSchema = createInsertSchema(friends)
+    .omit({
+        id: true,
+        created_at: true,
+        updated_at: true,
+    })
+    .extend({
+        user_id: z.string().nonempty("User Id is required"),
+        friend_id: z.string().nonempty("Friend Id is required"),
+    });
 export const patchFriendsSchema = insertFriendsSchema.partial();
 
 export default friends;

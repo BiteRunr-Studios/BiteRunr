@@ -12,7 +12,8 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import users from "./users";
 import orderLocations from "./orderLocations";
-import { sql, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
+import { z } from "zod";
 
 export const orderItems = pgTable(
     "order_items",
@@ -48,11 +49,18 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 }));
 
 export const selectOrderItemsSchema = createSelectSchema(orderItems);
-export const insertOrderItemsSchema = createInsertSchema(orderItems).omit({
-    id: true,
-    created_at: true,
-    updated_at: true,
-});
+export const insertOrderItemsSchema = createInsertSchema(orderItems)
+    .omit({
+        id: true,
+        created_at: true,
+        updated_at: true,
+    })
+    .extend({
+        order_location_id: z.string().nonempty("Order Location Id is required"),
+        user_id: z.string().nonempty("User Id is required"),
+        name: z.string().nonempty("Name is required"),
+        quantity: z.number().min(1, "Quantity must be 1 or more"),
+    });
 export const patchOrderItemsSchema = insertOrderItemsSchema.partial();
 
 export default orderItems;

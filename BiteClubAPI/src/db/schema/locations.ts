@@ -2,6 +2,7 @@ import { pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { orderLocations, selectOrderLocationsSchema } from "./orderLocations";
+import { z } from "zod";
 
 export const locations = pgTable("locations", {
     id: uuid().primaryKey().defaultRandom(),
@@ -16,9 +17,13 @@ export const locationsRelations = relations(locations, ({ many }) => ({
 export const selectLocationsSchema = createSelectSchema(locations).extend({
     order_locations: selectOrderLocationsSchema.optional(),
 });
-export const insertLocationsSchema = createInsertSchema(locations).omit({
-    id: true,
-});
+export const insertLocationsSchema = createInsertSchema(locations)
+    .omit({
+        id: true,
+    })
+    .extend({
+        name: z.string().nonempty("Name is required"),
+    });
 export const patchLocationsSchema = insertLocationsSchema.partial();
 
 export default locations;

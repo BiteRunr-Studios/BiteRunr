@@ -2,6 +2,7 @@ import { pgTable, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { orders, users } from "./index";
 import { sql, relations } from "drizzle-orm";
+import { z } from "zod";
 
 export const orderUsers = pgTable(
     "order_users",
@@ -34,11 +35,16 @@ export const orderUsersRelations = relations(orderUsers, ({ one }) => ({
 }));
 
 export const selectOrderUsersSchema = createSelectSchema(orderUsers);
-export const insertOrderUsersSchema = createInsertSchema(orderUsers).omit({
-    id: true,
-    created_at: true,
-    updated_at: true,
-});
+export const insertOrderUsersSchema = createInsertSchema(orderUsers)
+    .omit({
+        id: true,
+        created_at: true,
+        updated_at: true,
+    })
+    .extend({
+        user_id: z.string().nonempty("User Id is required"),
+        order_id: z.string().nonempty("Order Id is required"),
+    });
 export const patchOrderUsersSchema = insertOrderUsersSchema.partial();
 
 export default orderUsers;

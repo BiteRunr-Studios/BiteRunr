@@ -19,6 +19,7 @@ import { eq } from "drizzle-orm";
 import { orderLocations, orderUsers } from "@/db/schema";
 import { insertOrderLocationsSchema } from "@/db/schema/orderLocations";
 import { insertOrderUsersSchema } from "@/db/schema/orderUsers";
+import { z } from "zod";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const orders = await db.query.orders.findMany();
@@ -64,10 +65,11 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
         ol.order_id = insertedOrder.id;
     });
 
-    let order_locations_parsed =
-        insertOrderLocationsSchema.parse(order_locations);
+    let order_locations_parsed = z
+        .array(insertOrderLocationsSchema)
+        .parse(order_locations);
 
-    let order_users_parsed = insertOrderUsersSchema.parse(order_users);
+    let order_users_parsed = z.array(insertOrderUsersSchema).parse(order_users);
 
     const insertedOrderLocations = await db
         .insert(orderLocations)

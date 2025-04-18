@@ -2,7 +2,8 @@ import { pgTable, timestamp, uuid, pgEnum, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 import users from "./users";
-import { sql, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
+import { z } from "zod";
 
 export const friendRequestStatusEnum = pgEnum("friend_request_status_enum", [
     "pending",
@@ -44,13 +45,16 @@ export const friendRequestsRelations = relations(friendRequests, ({ one }) => ({
 }));
 
 export const selectFriendRequestsSchema = createSelectSchema(friendRequests);
-export const insertFriendRequestsSchema = createInsertSchema(
-    friendRequests
-).omit({
-    id: true,
-    created_at: true,
-    updated_at: true,
-});
+export const insertFriendRequestsSchema = createInsertSchema(friendRequests)
+    .omit({
+        id: true,
+        created_at: true,
+        updated_at: true,
+    })
+    .extend({
+        sender_id: z.string().nonempty("Sender Id is required"),
+        receiver_id: z.string().nonempty("Receiver Id is required"),
+    });
 export const patchFriendRequestsSchema = insertFriendRequestsSchema.partial();
 
 export default friendRequests;

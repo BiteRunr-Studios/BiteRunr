@@ -65,19 +65,24 @@ export const insertOrdersDTOSchema = insertOrdersSchema
     })
     .extend({
         creator_id: z.string().uuid().optional(), // Add creator_id as optional
-        clerk_id: z.string(),
-        order_locations: z.array(
-            z.object({
-                order_id: z.string().optional(),
-                location_id: z.string(),
-            })
-        ),
-        order_users: z.array(
-            z.object({
-                order_id: z.string().optional(),
-                user_id: z.string(),
-            })
-        ),
+        name: z.string().nonempty("Name is required"),
+        clerk_id: z.string().nonempty("Clerk Id is required"),
+        order_locations: z
+            .array(
+                z.object({
+                    order_id: z.string().optional(),
+                    location_id: z.string().nonempty("Location Id is required"),
+                })
+            )
+            .nonempty("At least one order location required"),
+        order_users: z
+            .array(
+                z.object({
+                    order_id: z.string().optional(),
+                    user_id: z.string().nonempty("User Id is required"),
+                })
+            )
+            .nonempty("At least one order user is required"),
     });
 
 export const patchOrdersSchema = insertOrdersSchema.partial();
