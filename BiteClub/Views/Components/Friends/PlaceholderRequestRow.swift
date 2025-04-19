@@ -128,6 +128,10 @@ extension PlaceholderRequestRow {
         }
         isDeleting = false
     }
+    
+    private func acceptFriendRequest() async {
+        
+    }
 }
 
 struct EmptyResponseDeleted: Decodable {}

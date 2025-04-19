@@ -41,7 +41,6 @@ struct RequestsPlaceholderView: View {
                 
             }
             .padding()
-            .background(Color(.systemGray6))
             .cornerRadius(12)
             .padding(.horizontal)
             .padding(.top, 20)

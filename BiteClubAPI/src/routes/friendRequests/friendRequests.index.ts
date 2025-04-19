@@ -8,6 +8,7 @@ const router = createRouter()
     .openapi(routes.getOne, handlers.getOne)
     .openapi(routes.patch, handlers.patch)
     .openapi(routes.remove, handlers.remove)
-    .openapi(routes.getSentFriendRequests, handlers.getSentFriendRequests);
+    .openapi(routes.getSentFriendRequests, handlers.getSentFriendRequests)
+    .openapi(routes.acceptFriendRequest, handlers.acceptFriendRequest);
 
 export default router;
