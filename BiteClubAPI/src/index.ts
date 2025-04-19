@@ -16,9 +16,7 @@ app.get(
         onMessage(event, ws) {
             const message = event.data;
             for (const client of clients) {
-                if (client.readyState === WebSocket.OPEN) {
-                    client.send(`Broadcast: ${message}`);
-                }
+                client.send(`Broadcast: ${message}`);
             }
         },
         onClose(event, ws) {
