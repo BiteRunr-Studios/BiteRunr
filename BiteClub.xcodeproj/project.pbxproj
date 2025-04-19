@@ -14,9 +14,22 @@
 		14B82CF62DA20AC600C2D4AF /* BiteClub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BiteClub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		148C762B2DB3439600B63430 /* Exceptions for "BiteClub" folder in "BiteClub" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 14B82CF52DA20AC600C2D4AF /* BiteClub */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		14B82CF82DA20AC600C2D4AF /* BiteClub */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				148C762B2DB3439600B63430 /* Exceptions for "BiteClub" folder in "BiteClub" target */,
+			);
 			path = BiteClub;
 			sourceTree = "<group>";
 		};
@@ -265,6 +278,7 @@
 				DEVELOPMENT_TEAM = 6K8R8337BL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BiteClub/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = BiteRunr;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -295,6 +309,7 @@
 				DEVELOPMENT_TEAM = 6K8R8337BL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BiteClub/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = BiteRunr;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

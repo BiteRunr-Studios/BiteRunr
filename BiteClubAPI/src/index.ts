@@ -1,8 +1,33 @@
-import { serve } from "@hono/node-server";
 import app from "./app";
+import { createNodeWebSocket } from "@hono/node-ws";
+import { serve } from "@hono/node-server";
 import env from "./env";
 
-serve(
+const clients = new Set<WebSocket>();
+
+const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+
+app.get(
+    "/ws",
+    upgradeWebSocket(() => ({
+        onOpen(event, ws) {
+            clients.add(ws.raw);
+        },
+        onMessage(event, ws) {
+            const message = event.data;
+            for (const client of clients) {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(`Broadcast: ${message}`);
+                }
+            }
+        },
+        onClose(event, ws) {
+            clients.delete(ws.raw);
+        },
+    }))
+);
+
+const server = serve(
     {
         fetch: app.fetch,
         port: env.PORT,
@@ -13,3 +38,5 @@ serve(
         );
     }
 );
+
+injectWebSocket(server);

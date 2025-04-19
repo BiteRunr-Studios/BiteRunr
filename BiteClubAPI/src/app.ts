@@ -25,7 +25,8 @@ const routes = [
     orderLocations,
     orderUsers,
     webhooks,
-];
+] as const;
+
 configureOpenAPI(app);
 routes.forEach((route) => {
     app.route("/", route);

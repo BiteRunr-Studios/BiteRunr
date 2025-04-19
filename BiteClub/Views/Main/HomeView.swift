@@ -4,14 +4,15 @@ import Clerk
 struct HomeView: View {
     @Environment(Clerk.self) private var clerk
     @State private var isPressed = false
+    @ObservedObject var websocket = Websocket()
     
     var body: some View {
         VStack(spacing: 0) {
             
             NavigationStack {
-                Text("Welcome to BiteRunr!")
-                    .navigationTitle("")
-                    .navigationBarTitleDisplayMode(.inline)
+                List(websocket.messages) { message in
+                    Text(message)
+                }
             }
         }
     }

@@ -17,6 +17,9 @@ importers:
       '@hono/node-server':
         specifier: ^1.14.0
         version: 1.14.0(hono@4.7.6)
+      '@hono/node-ws':
+        specifier: ^1.1.1
+        version: 1.1.1(@hono/node-server@1.14.0(hono@4.7.6))(hono@4.7.6)
       '@hono/zod-openapi':
         specifier: 0.18.4
         version: 0.18.4(hono@4.7.6)(zod@3.24.2)
@@ -530,6 +533,13 @@ packages:
     peerDependencies:
       hono: ^4
 
+  '@hono/node-ws@1.1.1':
+    resolution: {integrity: sha512-iFJrAw5GuBTstehBzLY2FyW5rRlXmO3Uwpijpm4Liv75owNP/UjZe3KExsLuEK4w+u+xhvHqOoQUyEKWUvyghw==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      '@hono/node-server': ^1.11.1
+      hono: ^4.6.0
+
   '@hono/zod-openapi@0.18.4':
     resolution: {integrity: sha512-6NHMHU96Hh32B1yDhb94Z4Z5/POsmEu2AXpWLWcBq9arskRnOMt2752yEoXoADV8WUAc7H1IkNaQHGj1ytXbYw==}
     engines: {node: '>=16.0.0'}
@@ -913,6 +923,18 @@ packages:
     engines: {node: ^16.13.0 || >=18.0.0}
     hasBin: true
 
+  ws@8.18.1:
+    resolution: {integrity: sha512-RKW2aJZMXeMxVpnZ6bck+RswznaxmzdULiBr6KY7XkTnW8uvt0iT9H5DkHUChXrc+uurzwa0rVI16n/Xzjdz1w==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   yaml@2.7.1:
     resolution: {integrity: sha512-10ULxpnOCQXxJvBgxsn9ptjq6uviG/htZKk9veJGhlqn3w/DxQ631zFF+nlQXLwmImeS5amR2dl2U8sg6U9jsQ==}
     engines: {node: '>= 14'}
@@ -1182,6 +1204,15 @@ snapshots:
   '@hono/node-server@1.14.0(hono@4.7.6)':
     dependencies:
       hono: 4.7.6
+
+  '@hono/node-ws@1.1.1(@hono/node-server@1.14.0(hono@4.7.6))(hono@4.7.6)':
+    dependencies:
+      '@hono/node-server': 1.14.0(hono@4.7.6)
+      hono: 4.7.6
+      ws: 8.18.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   '@hono/zod-openapi@0.18.4(hono@4.7.6)(zod@3.24.2)':
     dependencies:
@@ -1521,6 +1552,8 @@ snapshots:
   which@4.0.0:
     dependencies:
       isexe: 3.1.1
+
+  ws@8.18.1: {}
 
   yaml@2.7.1: {}
 
