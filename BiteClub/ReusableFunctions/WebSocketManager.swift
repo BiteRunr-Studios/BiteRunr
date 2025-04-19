@@ -1,47 +1,62 @@
 import Foundation
+import Combine
 
-class Websocket: ObservableObject {
-    @Published var messages = [String]()
-    
+class WebSocketManager: ObservableObject {
     private var webSocketTask: URLSessionWebSocketTask?
+    @Published var items: [String] = []
     
-    init() {
-        self.connect()
-    }
-    
-    private func connect() {
-        guard let url = URL(string: "ws://localhost:3000/ws") else { return }
-        let request = URLRequest(url: url)
-        webSocketTask = URLSession.shared.webSocketTask(with: request)
+    func connect() {
+        guard let url = URL(string: "wss://biterunrapisockets.omniquark.me/ws") else { return }
+        webSocketTask = URLSession.shared.webSocketTask(with: url)
         webSocketTask?.resume()
-        receiveMessage()
+        receive()
     }
     
-    private func receiveMessage() {
-        webSocketTask?.receive { result in
+    private func receive() {
+        webSocketTask?.receive { [weak self] result in
             switch result {
+            case .success(.string(let message)):
+//                if let data = message.data(using: .utf8),
+//                   let json = try? JSONDecoder().decode(ItemUpdate.self, from: data) {
+                    DispatchQueue.main.async {
+                        self?.items.append(message)
+                    }
+//                }
+                self?.receive() // Continue listening
             case .failure(let error):
-                print(error.localizedDescription)
-            case .success(let message):
-                switch message {
-                case .string(let text):
-                    self.messages.append(text)
-                case .data(let data):
-                    // Handle binary data
-                    break
-                @unknown default:
-                    break
-                }
+                print("WebSocket receive error: \(error)")
+            default:
+                break
             }
         }
     }
     
-    func sendMessage(_ message: String) {
-        guard let data = message.data(using: .utf8) else { return }
-        webSocketTask?.send(.string(message)) { error in
+    func send(itemName: String) {
+//        let newItem = ItemUpdate(type: "new_item", item: Item(id: Int(Date().timeIntervalSince1970), name: itemName))
+//        guard let data = try? JSONEncoder().encode(newItem),
+//              let message = String(data: data, encoding: .utf8) else {
+//            print("Failed to encode message")
+//            return
+//        }
+        
+        webSocketTask?.send(.string(itemName)) { error in
             if let error = error {
-                print(error.localizedDescription)
+                print("WebSocket send error: \(error)")
             }
         }
     }
+    
+    func disconnect() {
+        webSocketTask?.cancel(with: .goingAway, reason: nil)
+    }
+}
+
+struct ItemUpdate: Codable {
+    let type: String
+    let item: Item
+}
+
+struct Item: Codable {
+    let id: Int
+    let name: String
 }

@@ -4,16 +4,32 @@ import Clerk
 struct HomeView: View {
     @Environment(Clerk.self) private var clerk
     @State private var isPressed = false
-    @ObservedObject var websocket = Websocket()
+    @StateObject private var wsManager = WebSocketManager()
+    @State private var newItemName: String = ""
     
     var body: some View {
         VStack(spacing: 0) {
-            
             NavigationStack {
-                List(websocket.messages) { message in
-                    Text(message)
+                List(wsManager.items, id: \.self) { item in
+                    Text(item)
                 }
+                
+                HStack {
+                    TextField("New item", text: $newItemName)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    Button("Send") {
+                        wsManager.send(itemName: newItemName)
+                        newItemName = ""
+                    }
+                }
+                .padding()
             }
+        }
+        .onAppear {
+            wsManager.connect()
+        }
+        .onDisappear {
+            wsManager.disconnect()
         }
     }
 }
