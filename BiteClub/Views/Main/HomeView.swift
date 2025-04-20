@@ -11,7 +11,7 @@ struct HomeView: View {
         VStack(spacing: 0) {
             NavigationStack {
                 List(wsManager.items, id: \.self) { item in
-                    Text(item)
+                    Text("Name: \(item.name) | #: \(item.quantity)")
                 }
                 
                 HStack {

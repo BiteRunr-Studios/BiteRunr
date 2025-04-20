@@ -13,6 +13,31 @@ struct OrderItem: Codable, Hashable, Identifiable {
     var orderLocation: OrderLocation?
     var user: User?
     
+    init(
+        id: UUID?,
+        orderLocationId: UUID,
+        userId: UUID,
+        name: String,
+        comments: String? = nil,
+        quantity: Int,
+        createdAt: Date?,
+        updatedAt: Date?,
+        orderLocation: OrderLocation? = nil,
+        user: User? = nil
+    ) {
+        self.id = id ?? UUID()
+        self.orderLocationId = orderLocationId
+        self.userId = userId
+        self.name = name
+        self.comments = comments
+        self.quantity = quantity
+        self.createdAt = createdAt ?? Date()
+        self.updatedAt = updatedAt ?? Date()
+        self.orderLocation = orderLocation
+        self.user = user
+    }
+    
+    
     enum CodingKeys: String, CodingKey {
         case id = "id"
         case orderLocationId = "order_location_id"
