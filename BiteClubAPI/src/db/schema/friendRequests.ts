@@ -45,7 +45,7 @@ export const friendRequestsRelations = relations(friendRequests, ({ one }) => ({
 }));
 
 export const selectFriendRequestsSchema = createSelectSchema(friendRequests);
-export const insertFriendRequestsSchema = createInsertSchema(friendRequests)
+const baseSchema = createInsertSchema(friendRequests)
     .omit({
         id: true,
         created_at: true,
@@ -55,6 +55,29 @@ export const insertFriendRequestsSchema = createInsertSchema(friendRequests)
         sender_id: z.string().nonempty("Sender Id is required"),
         receiver_id: z.string().nonempty("Receiver Id is required"),
     });
-export const patchFriendRequestsSchema = insertFriendRequestsSchema.partial();
+
+export const insertFriendRequestsSchema = baseSchema.refine(
+    (data) => data.sender_id !== data.receiver_id,
+    {
+        message: "Sender and receiver cannot be the same user.",
+        path: ["receiver_id", "sender_id"],
+    }
+);
+
+export const patchFriendRequestsSchema = baseSchema
+    .partial()
+    .superRefine((data, ctx) => {
+        if (
+            data.sender_id !== undefined &&
+            data.receiver_id !== undefined &&
+            data.sender_id === data.receiver_id
+        ) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Sender and receiver cannot be the same user.",
+                path: ["receiver_id", "sender_id"],
+            });
+        }
+    });
 
 export default friendRequests;
