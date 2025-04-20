@@ -15,6 +15,7 @@ import type { AppRouteHandler } from "@/lib/types";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { eq } from "drizzle-orm";
+import env from "@/env";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const users = await db.query.users.findMany();
@@ -27,7 +28,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
                     `https://api.clerk.com/v1/users/${user.clerk_id}`,
                     {
                         headers: {
-                            Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+                            Authorization: `Bearer ${env.CLERK_SECRET_KEY}`,
                             "Content-Type": "application/json",
                         },
                     }

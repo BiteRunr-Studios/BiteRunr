@@ -16,7 +16,12 @@ export const orderItemsHook = createRoute({
         body: jsonContentRequired(z.unknown(), ""),
     },
     responses: {
-        [HttpStatusCodes.OK]: jsonContent(z.unknown(), ""),
+        [HttpStatusCodes.OK]: jsonContent(
+            z.object({
+                message: z.string(),
+            }),
+            ""
+        ),
     },
 });
 
