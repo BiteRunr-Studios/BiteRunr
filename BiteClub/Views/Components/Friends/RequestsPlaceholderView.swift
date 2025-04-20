@@ -11,12 +11,15 @@ import Clerk
 struct RequestsPlaceholderView: View {
     @Environment(Clerk.self) private var clerk
     @State private var errorMessage: String?
-    @State var friendRequests: [FriendRequestUser]
+    let friendRequests: [FriendRequestUser]
     @State private var isLoading = false
+    
+    var onRequestAccepted: ((FriendRequestUser) -> Void)?
+    var onRequestRejected: ((FriendRequestUser) -> Void)?
+    
     var body: some View {
-        VStack(spacing: 20) {
-            
-            VStack(spacing: 16) {
+        ScrollView {
+            VStack(spacing: 0) {
                 if friendRequests.isEmpty {
                     EmptyStateView(
                         icon: "person.2.slash",
@@ -29,23 +32,21 @@ struct RequestsPlaceholderView: View {
                             user: request.user,
                             senderId: request.senderId,
                             receiverId: request.receiverId,
+                            friendRequestId: request.id,
                             onDelete: {
-                                if let idx = friendRequests.firstIndex(where: { $0.id == request.id }) {
-                                    friendRequests.remove(at: idx)
-                                }
+                                onRequestRejected?(request)
+                            },
+                            onAccept: {
+                                onRequestAccepted?(request)
                             }
                         )
                     }
-
                 }
-                
             }
-            .padding()
-            .cornerRadius(12)
-            .padding(.horizontal)
-            .padding(.top, 20)
-            
-            Spacer()
         }
+        .padding(.top)
+        .padding()
+        
+        Spacer()
     }
 }

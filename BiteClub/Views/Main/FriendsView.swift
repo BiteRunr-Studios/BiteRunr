@@ -20,112 +20,130 @@ struct FriendsView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // Custom tab selector
-                HStack(spacing: 0) {
-                    TabButton(title: "Friends", isSelected: selectedTab == 0) {
-                        selectedTab = 0
-                    }
-                    
-                    TabButton(title: "Requests", isSelected: selectedTab == 1, badgeCount: friendRequests.count) {
-                        selectedTab = 1
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.top, 8)
-                
-                // Search bar
-                HStack(spacing: 12) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundStyle(Color.secondary)
-                    
-                    TextField("Search", text: $searchText)
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
-                    
-                    if !searchText.isEmpty {
-                        Button(action: {
-                            searchText = ""
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(Color.secondary)
+            ScrollView {
+                VStack(spacing: 0) {
+                    // Custom tab selector
+                    HStack(spacing: 0) {
+                        TabButton(title: "Friends", isSelected: selectedTab == 0) {
+                            selectedTab = 0
+                        }
+                        
+                        TabButton(title: "Requests", isSelected: selectedTab == 1, badgeCount: friendRequests.count) {
+                            selectedTab = 1
                         }
                     }
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
-                .padding(.horizontal)
-                .padding(.top, 8)
-                
-                if selectedTab == 0 {
-                    // Friends tab
-                    if isLoading {
-                        Spacer()
-                        ProgressView()
-                        Spacer()
-                    } else if let error = errorMessage {
-                        Spacer()
-                        VStack(spacing: 16) {
-                            Image(systemName: "exclamationmark.triangle")
-                                .font(.system(size: 50))
-                                .foregroundColor(.orange)
-                            Text(error)
-                                .multilineTextAlignment(.center)
-                            Button("Try Again") {
-                                Task {
-                                    await loadFriends()
-                                }
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    
+                    // Search bar
+                    HStack(spacing: 12) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundStyle(Color.secondary)
+                        
+                        TextField("Search", text: $searchText)
+                            .autocapitalization(.none)
+                            .disableAutocorrection(true)
+                        
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(Color.secondary)
                             }
-                            .buttonStyle(.bordered)
                         }
-                        .padding()
-                        Spacer()
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    
+                    if selectedTab == 0 {
+                        // Friends tab
+                        if isLoading {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        } else if let error = errorMessage {
+                            Spacer()
+                            VStack(spacing: 16) {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.orange)
+                                Text(error)
+                                    .multilineTextAlignment(.center)
+                                Button("Try Again") {
+                                    Task {
+                                        await loadFriends()
+                                    }
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                            .padding()
+                            Spacer()
+                        } else {
+                            FriendsListView(
+                                friends: filteredFriends,
+                                onFriendDeleted: { deletedFriend in
+                                    // Remove the friend from the local array
+                                    if let index = friends.firstIndex(where: { $0.id == deletedFriend.id }) {
+                                        friends.remove(at: index)
+                                    }
+                                }
+                            )
+                            .transition(.opacity)
+                        }
                     } else {
-                        FriendsListView(
-                            friends: filteredFriends,
-                            onFriendDeleted: { deletedFriend in
-                                // Remove the friend from the local array
-                                if let index = friends.firstIndex(where: { $0.id == deletedFriend.id }) {
-                                    friends.remove(at: index)
+                        RequestsPlaceholderView(
+                            friendRequests: filteredFriendRequests,
+                            onRequestAccepted: { acceptedRequest in
+                                if let index = friendRequests.firstIndex(where: { $0.id == acceptedRequest.id }) {
+                                    friendRequests.remove(at: index)
+                                }
+                                friends.append(acceptedRequest.user)
+                            },
+                            onRequestRejected: { rejectedRequest in
+                                if let index = friendRequests.firstIndex(where: { $0.id == rejectedRequest.id }) {
+                                    friendRequests.remove(at: index)
                                 }
                             }
+                            
                         )
                         .transition(.opacity)
                     }
-                } else {
-                    RequestsPlaceholderView(
-                        friendRequests: filteredFriendRequests
-                    )
-                    .transition(.opacity)
                 }
-            }
-            .navigationTitle("Friends")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showAddFriendSheet = true
-                    } label: {
-                        Image(systemName: "person.badge.plus")
+                .navigationTitle("Friends")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showAddFriendSheet = true
+                        } label: {
+                            Image(systemName: "person.badge.plus")
+                        }
                     }
                 }
-            }
-            .sheet(isPresented: $showAddFriendSheet) {
-                SendFriendRequestView()
-                    .presentationDetents([
-                        .height(UIScreen.main.bounds.height * 0.82),
-                        .large
-                    ])
-                    .presentationDragIndicator(.hidden)
-            }
-            .onAppear {
-                Task {
-                    await loadFriends()
-                    await loadFriendRequests()
+                .sheet(isPresented: $showAddFriendSheet) {
+                    SendFriendRequestView()
+                        .presentationDetents([
+                            .height(UIScreen.main.bounds.height * 0.82),
+                            .large
+                        ])
+                        .presentationDragIndicator(.hidden)
                 }
+                .onAppear {
+                    Task {
+                        await loadFriends()
+                        await loadFriendRequests()
+                    }
+                }
+                .animation(.bouncy, value: selectedTab)
             }
-            .animation(.bouncy, value: selectedTab)
+            .refreshable {
+                await loadFriends()
+                await loadFriendRequests()
+            }
         }
     }
     
@@ -143,6 +161,10 @@ extension FriendsView {
                 friendRequests = try await fetch(url: friendRequestsUrl, responseType: [FriendRequestUser].self, body: nil as String?)
             }
         } catch {
+            if (error as? URLError)?.code == .cancelled {
+                // Ignore cancellation error
+                return
+            }
             errorMessage = "Failed to load friend requests: \(error.localizedDescription)"
         }
         

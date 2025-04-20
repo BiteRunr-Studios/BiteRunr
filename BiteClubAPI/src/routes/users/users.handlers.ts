@@ -10,6 +10,7 @@ import type {
     GetFriendsRoute,
     GetFriendRequestsRoute,
     GetOneByClerkIdRoute,
+    GetAllUsersExceptAuthenticatedRoute,
 } from "./users.routes";
 import type { AppRouteHandler } from "@/lib/types";
 import * as HttpStatusCodes from "stoker/http-status-codes";
@@ -369,4 +370,44 @@ export const getOneByClerkId: AppRouteHandler<GetOneByClerkIdRoute> = async (
         },
         HttpStatusCodes.OK
     );
+};
+
+export const getAllUsersExceptAuthenticated: AppRouteHandler<GetAllUsersExceptAuthenticatedRoute> = async (c) => {
+    const { clerkId } = c.req.valid("param");
+
+    // Get all users except the specified user
+    const otherUsers = await db.query.users.findMany({
+        where(fields, operators) {
+            return operators.not(eq(fields.clerk_id, clerkId));
+        },
+    });
+
+    // Fetch Clerk image URLs for all users
+    const usersWithImages = await Promise.all(otherUsers.map(async (user) => {
+        try {
+            const response = await fetch(`https://api.clerk.com/v1/users/${user.clerk_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const clerkUser = await response.json();
+                return {
+                    ...user,
+                    image_url: clerkUser.image_url || null,
+                };
+            }
+        } catch (error) {
+            console.error(`Error fetching Clerk user ${user.clerk_id}:`, error);
+        }
+        
+        return {
+            ...user,
+            image_url: null,
+        };
+    }));
+
+    return c.json(usersWithImages, HttpStatusCodes.OK);
 };

@@ -11,10 +11,13 @@ struct PlaceholderRequestRow: View {
     let user: User
     let senderId: String
     let receiverId: String
+    let friendRequestId: String
     var onDelete: (() -> Void)?
+    var onAccept: (() -> Void)?
     
     @State private var isDeleting = false
     @State private var errorMessage: String?
+    @State private var showingOptions = false
     
     var body: some View {
         ScrollView {
@@ -66,29 +69,26 @@ struct PlaceholderRequestRow: View {
                 Spacer()
                 
                 HStack(spacing: 12) {
-                    Button(action: {
-                        Task { await deleteFriendRequest() }
-                    }) {
-                        Circle()
-                            .fill(Color.red.opacity(0.3))
-                            .frame(width: 36, height: 36)
-                            .overlay(
-                                Image(systemName: "xmark")
-                                    .foregroundColor(.black)
-                            )
+                    // Options button
+                    Button {
+                        showingOptions = true
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .padding(8)
+                            .foregroundColor(.primary)
                     }
-                    .disabled(isDeleting)
-                    
-                    Button(action: {
-                        print("Friend Added.")
-                    }) {
-                        Circle()
-                            .fill(Color.green.opacity(0.3))
-                            .frame(width: 36, height: 36)
-                            .overlay(
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.black)
-                            )
+                    .confirmationDialog("Friend Options", isPresented: $showingOptions) {
+                        Button("Reject Request", role: .destructive) {
+                            Task {
+                                await deleteFriendRequest()
+                            }
+                        }
+                        Button("Approve Request") {
+                            Task {
+                                await acceptFriendRequest()
+                            }
+                        }
+                        Button("Cancel", role: .cancel) {}
                     }
                     
                 }
@@ -130,8 +130,33 @@ extension PlaceholderRequestRow {
     }
     
     private func acceptFriendRequest() async {
-        
+        isDeleting = true
+        errorMessage = nil
+        do {
+            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let url = "\(apiUrl)/friends"
+            let body: [String: String] = [
+                "user_id": senderId,
+                "friend_id": receiverId
+            ]
+            let friendship: Friendship = try await fetch(
+                url: url,
+                method: "POST",
+                responseType: Friendship.self,
+                body: body
+            )
+            DispatchQueue.main.async {
+                onAccept?() 
+                onDelete?()
+            }
+        } catch {
+            DispatchQueue.main.async {
+                errorMessage = "Failed to accept request: \(error.localizedDescription)"
+            }
+        }
+        isDeleting = false
     }
+    
 }
 
 struct EmptyResponseDeleted: Decodable {}

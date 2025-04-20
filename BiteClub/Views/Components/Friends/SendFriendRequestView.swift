@@ -192,7 +192,7 @@ extension SendFriendRequestView {
         do {
             if let user = clerk.user {
                 let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-                let url = "\(apiUrl)/users"
+                let url = "\(apiUrl)/users/all-except/\(user.id)"
                 let response: [User] = try await fetch(url: url, responseType: [User].self, body: nil as String?)
                 friends = response
             }

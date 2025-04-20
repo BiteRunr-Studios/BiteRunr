@@ -1,5 +1,6 @@
 import db from "@/db/index";
 import { friends } from "@/db/schema/friends";
+import { friendRequests } from "@/db/schema/friendRequests";
 import type {
     CreateRoute,
     GetOneRoute,
@@ -11,7 +12,7 @@ import type { AppRouteHandler } from "@/lib/types";
 import { selectFriendsSchema } from "@/db/schema/friends";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
-import { eq, or } from "drizzle-orm";
+import { eq, or, and } from "drizzle-orm";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const friends = await db.query.friends.findMany();
@@ -21,9 +22,30 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
     const newFriend = c.req.valid("json");
-    const [inserted] = await db.insert(friends).values(newFriend).returning();
 
-    return c.json(inserted, HttpStatusCodes.OK);
+    // Start a transaction
+    const result = await db.transaction(async (tx) => {
+        // Create the friendship
+        const [friendship] = await tx
+            .insert(friends)
+            .values(newFriend)
+            .returning();
+
+        // Update the friend request status to accepted
+        await tx
+            .update(friendRequests)
+            .set({ status: "accepted" })
+            .where(
+                and(
+                    eq(friendRequests.sender_id, newFriend.user_id),
+                    eq(friendRequests.receiver_id, newFriend.friend_id)
+                )
+            );
+
+        return friendship;
+    });
+
+    return c.json(result, HttpStatusCodes.OK);
 };
 
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
@@ -70,18 +92,54 @@ export const patch: AppRouteHandler<PatchRoute> = async (c) => {
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
     const { friend_id } = c.req.valid("param");
-    
-    const [deletedFriend] = await db
-        .delete(friends)
-        .where(
-            or(
-                eq(friends.user_id, friend_id),
-                eq(friends.friend_id, friend_id)
-            )
-        )
-        .returning();
 
-    if (!deletedFriend) {
+    // Start a transaction
+    const result = await db.transaction(async (tx) => {
+        // First get the friendship to find the user IDs
+        const friendship = await tx.query.friends.findFirst({
+            where(fields, operators) {
+                return operators.or(
+                    operators.eq(fields.user_id, friend_id),
+                    operators.eq(fields.friend_id, friend_id)
+                );
+            },
+        });
+
+        if (!friendship) {
+            return null;
+        }
+
+        // Delete the friendship
+        const [deletedFriend] = await tx
+            .delete(friends)
+            .where(
+                or(
+                    eq(friends.user_id, friend_id),
+                    eq(friends.friend_id, friend_id)
+                )
+            )
+            .returning();
+
+        // Delete the corresponding friend request
+        await tx
+            .delete(friendRequests)
+            .where(
+                or(
+                    and(
+                        eq(friendRequests.sender_id, friendship.user_id),
+                        eq(friendRequests.receiver_id, friendship.friend_id)
+                    ),
+                    and(
+                        eq(friendRequests.sender_id, friendship.friend_id),
+                        eq(friendRequests.receiver_id, friendship.user_id)
+                    )
+                )
+            );
+
+        return deletedFriend;
+    });
+
+    if (!result) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -90,5 +148,5 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
         );
     }
 
-    return c.json(deletedFriend, HttpStatusCodes.OK);
+    return c.json(result, HttpStatusCodes.OK);
 };

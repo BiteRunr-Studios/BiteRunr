@@ -7,7 +7,6 @@ import type {
     PatchRoute,
     RemoveRoute,
     GetSentFriendRequestsRoute,
-    AcceptFriendRequestRoute,
 } from "./friendRequests.routes";
 import type { AppRouteHandler } from "@/lib/types";
 import { selectFriendRequestsSchema } from "@/db/schema/friendRequests";
@@ -167,50 +166,4 @@ export const getSentFriendRequests: AppRouteHandler<GetSentFriendRequestsRoute> 
     }));
 
     return c.json(requestsWithImages, HttpStatusCodes.OK);
-};
-
-export const acceptFriendRequest: AppRouteHandler<AcceptFriendRequestRoute> = async (c) => {
-    const { friend_request_id } = c.req.valid("json");
-
-    // Start a transaction
-    const result = await db.transaction(async (tx) => {
-        // Get the friend request
-        const friendRequest = await tx.query.friendRequests.findFirst({
-            where(fields, operators) {
-                return operators.eq(fields.id, friend_request_id);
-            },
-        });
-
-        if (!friendRequest) {
-            return null;
-        }
-
-        // Update the friend request status to accepted
-        await tx
-            .update(friendRequests)
-            .set({ status: "accepted" })
-            .where(eq(friendRequests.id, friend_request_id));
-
-        // Create the friendship
-        const [friendship] = await tx
-            .insert(friends)
-            .values({
-                user_id: friendRequest.sender_id,
-                friend_id: friendRequest.receiver_id,
-            })
-            .returning();
-
-        return friendship;
-    });
-
-    if (!result) {
-        return c.json(
-            {
-                message: HttpStatusPhrases.NOT_FOUND,
-            },
-            HttpStatusCodes.NOT_FOUND
-        );
-    }
-
-    return c.json(result, HttpStatusCodes.OK);
 };

@@ -255,6 +255,27 @@ export const getOneByClerkId = createRoute({
     },
 });
 
+export const getAllUsersExceptAuthenticated = createRoute({
+    path: "/users/all-except/{clerkId}",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            clerkId: z.string(),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(selectUserSchema.extend({
+                image_url: z.string().nullable(),
+            })),
+            "List of all users except the specified user"
+        ),
+    },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
@@ -264,3 +285,4 @@ export type PatchClerkIdRoute = typeof patchClerkId;
 export type GetFriendsRoute = typeof getFriends;
 export type GetFriendRequestsRoute = typeof getFriendRequests;
 export type GetOneByClerkIdRoute = typeof getOneByClerkId;
+export type GetAllUsersExceptAuthenticatedRoute = typeof getAllUsersExceptAuthenticated;

@@ -181,48 +181,9 @@ export const getSentFriendRequests = createRoute({
     },
 });
 
-export const acceptFriendRequest = createRoute({
-    path: "/friend-requests/accept",
-    method: "post",
-    tags,
-    security: [{ Bearer: [] }],
-    middleware: [authMiddleware] as const,
-    request: {
-        body: jsonContentRequired(
-            z.object({
-                friend_request_id: z.string().uuid(),
-            }),
-            "Accept a friend request"
-        ),
-    },
-    responses: {
-        [HttpStatusCodes.OK]: jsonContent(
-            z.object({
-                id: z.string().uuid(),
-                user_id: z.string().uuid(),
-                friend_id: z.string().uuid(),
-                created_at: z.string(),
-                updated_at: z.string(),
-            }),
-            "Accepted friend request and created friendship"
-        ),
-        [HttpStatusCodes.NOT_FOUND]: jsonContent(
-            notFoundSchema,
-            "Friend request not found"
-        ),
-        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-            createErrorSchema(z.object({
-                friend_request_id: z.string().uuid(),
-            })),
-            "Invalid friend request ID"
-        ),
-    },
-});
-
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
 export type GetSentFriendRequestsRoute = typeof getSentFriendRequests;
-export type AcceptFriendRequestRoute = typeof acceptFriendRequest;
