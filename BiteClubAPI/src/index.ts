@@ -6,6 +6,11 @@ import type { MessageSource, WSMessage } from "@/lib/types";
 import db from "./db";
 import { orderItems } from "./db/schema";
 import { eq } from "drizzle-orm";
+import {
+    insertOrderItemsSchema,
+    patchOrderItemsSchema,
+} from "./db/schema/orderItems";
+import { z } from "zod";
 
 const clients = new Set<WebSocket>();
 
@@ -23,14 +28,25 @@ async function handleDbOperation(msg: WSMessage) {
     const { type, payload } = msg;
 
     if (type === "create") {
-        await db.insert(orderItems).values(payload);
+        let insertPayload = insertOrderItemsSchema.parse(payload);
+        await db.insert(orderItems).values(insertPayload);
     } else if (type === "update") {
+        let patchPayload = patchOrderItemsSchema
+            .extend({
+                id: z.string(),
+            })
+            .parse(payload);
         await db
             .update(orderItems)
             .set(payload)
-            .where(eq(orderItems.id, payload.id));
+            .where(eq(orderItems.id, patchPayload.id));
     } else if (type === "delete") {
-        await db.delete(orderItems).where(eq(orderItems.id, payload.id));
+        let deletePayload = patchOrderItemsSchema
+            .extend({
+                id: z.string(),
+            })
+            .parse(payload);
+        await db.delete(orderItems).where(eq(orderItems.id, deletePayload.id));
     }
 }
 
