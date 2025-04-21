@@ -13,7 +13,16 @@ export const orderItemsHook: AppRouteHandler<CreateRoute> = async (c) => {
     const orderId = "c4d3803d-7f6c-4034-8ee7-d7c84b3af364";
 
     const items = await db
-        .select()
+        .select({
+            id: orderItems.id,
+            order_location_id: orderItems.order_location_id,
+            user_id: orderItems.user_id,
+            name: orderItems.name,
+            comments: orderItems.comments,
+            quantity: orderItems.quantity,
+            created_at: orderItems.created_at,
+            updated_at: orderItems.updated_at,
+        })
         .from(orderItems)
         .innerJoin(
             orderLocations,
