@@ -11,6 +11,7 @@ import Clerk
 struct SendFriendRequestView: View {
     @State private var searchText = ""
     @State private var isToggledOn = false
+    @State private var users: [User] = []
     @State private var friends: [User] = []
     @State private var currentUser: User? = nil
     @State private var errorMessage: String?
@@ -18,13 +19,13 @@ struct SendFriendRequestView: View {
     @State private var acceptedUserIDs: Set<UUID> = []
     @Environment(Clerk.self) private var clerk
     
-    private var filteredFriends: [User] {
+    private var filteredUsers: [User] {
         if searchText.isEmpty {
-            return friends
+            return users
         } else {
-            return friends.filter { friend in
-                let fullName = "\(friend.firstName) \(friend.lastName)".lowercased()
-                let email = friend.email.lowercased()
+            return users.filter { user in
+                let fullName = "\(user.firstName) \(user.lastName)".lowercased()
+                let email = user.email.lowercased()
                 let searchQuery = searchText.lowercased()
                 
                 return fullName.contains(searchQuery) || email.contains(searchQuery)
@@ -76,7 +77,7 @@ struct SendFriendRequestView: View {
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
                         .foregroundColor(.red)
-                } else if filteredFriends.isEmpty && !searchText.isEmpty {
+                } else if users.isEmpty && !searchText.isEmpty {
                     VStack(spacing: 10) {
                         Image(systemName: "person.fill.questionmark")
                             .font(.system(size: 40))
@@ -90,7 +91,7 @@ struct SendFriendRequestView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.top, 20)
                 } else if !searchText.isEmpty {
-                    ForEach(filteredFriends, id: \.id) { friend in
+                    ForEach(filteredUsers, id: \.id) { friend in
                         HStack(spacing: 12) {
                             if let imageUrlString = friend.imageUrl, let imageUrl = URL(string: imageUrlString) {
                                 AsyncImage(url: imageUrl) { phase in
@@ -134,38 +135,41 @@ struct SendFriendRequestView: View {
                             }
                             Spacer()
                             
+                            let isFriend = friends.contains(where: { $0.id == friend.id })
+                            let isRequested = requestedUserIDs.contains(friend.id)
+                            
                             Button {
                                 Task {
                                     await sendFriendRequest(to: friend)
                                 }
                             } label: {
-                                if acceptedUserIDs.contains(friend.id) {
-                                    Text("Friends")
-                                        .fontWeight(.medium)
-                                        .frame(width: 100, height: 32)
-                                        .background(Color.green)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(6)
-                                } else if requestedUserIDs.contains(friend.id) {
-                                    Text("Requested")
-                                        .fontWeight(.medium)
-                                        .frame(width: 100, height: 32)
-                                        .background(Color.orange)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(6)
-                                } else {
-                                    Text("Add")
-                                        .fontWeight(.medium)
-                                        .frame(width: 100, height: 32)
-                                        .background(Color.gray.opacity(0.3))
-                                        .foregroundColor(.primary)
-                                        .cornerRadius(6)
-                                }
+                                if isFriend {
+                                        Text("Friends")
+                                            .fontWeight(.medium)
+                                            .frame(width: 100, height: 32)
+                                            .background(Color.green)
+                                            .foregroundColor(.white)
+                                            .cornerRadius(6)
+                                    } else if isRequested {
+                                        Text("Requested")
+                                            .fontWeight(.medium)
+                                            .frame(width: 100, height: 32)
+                                            .background(Color.orange)
+                                            .foregroundColor(.white)
+                                            .cornerRadius(6)
+                                    } else {
+                                        Text("Add")
+                                            .fontWeight(.medium)
+                                            .frame(width: 100, height: 32)
+                                            .background(Color.gray.opacity(0.3))
+                                            .foregroundColor(.primary)
+                                            .cornerRadius(6)
+                                    }
                             }
                             .buttonStyle(.plain)
                             .padding(.horizontal)
                             .animation(.spring(duration: 0.2), value: requestedUserIDs)
-                            .disabled(requestedUserIDs.contains(friend.id) || acceptedUserIDs.contains(friend.id))
+                            .disabled(isFriend || isRequested)
                         }
                         .padding(.vertical, 4)
                     }
@@ -176,10 +180,11 @@ struct SendFriendRequestView: View {
             .padding()
             .onAppear {
                 Task {
-                    await fetchFriends()
+                    await fetchUsers()
                     await fetchCurrentUser()
                     await fetchSentFriendRequests()
                     await fetchAcceptedRequests()
+                    await fetchFriends()
                 }
             }
         }
@@ -188,18 +193,36 @@ struct SendFriendRequestView: View {
 }
 
 extension SendFriendRequestView {
-    private func fetchFriends() async {
+    private func fetchUsers() async {
         do {
             if let user = clerk.user {
                 let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
                 let url = "\(apiUrl)/users/all-except/\(user.id)"
                 let response: [User] = try await fetch(url: url, responseType: [User].self, body: nil as String?)
-                friends = response
+                users = response
             }
         } catch {
             errorMessage = "Failed to fetch friends: \(error.localizedDescription)"
         }
     }
+    
+    private func fetchFriends() async {
+        do {
+            if let user = clerk.user {
+                let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+                let url = "\(apiUrl)/users/clerk/\(user.id)/friends"
+                let response: [User] = try await fetch(url: url, responseType: [User].self, body: nil as String?)
+                DispatchQueue.main.async {
+                    friends = response
+                }
+            }
+        } catch {
+            DispatchQueue.main.async {
+                errorMessage = "Failed to fetch friends: \(error.localizedDescription)"
+            }
+        }
+    }
+
     
     private func fetchCurrentUser() async {
         do {

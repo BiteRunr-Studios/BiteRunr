@@ -9,11 +9,9 @@ import type {
     GetSentFriendRequestsRoute,
 } from "./friendRequests.routes";
 import type { AppRouteHandler } from "@/lib/types";
-import { selectFriendRequestsSchema } from "@/db/schema/friendRequests";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { eq, and } from "drizzle-orm";
-import { friends } from "@/db/schema/friends";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const friendRequests = await db.query.friendRequests.findMany();
