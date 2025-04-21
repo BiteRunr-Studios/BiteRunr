@@ -14,12 +14,3 @@ export type AppRouteHandler<R extends RouteConfig> = RouteHandler<
     R,
     AppBindings
 >;
-
-export type MessageSource = "client" | "server" | "webhook";
-export type OperationType = "create" | "update" | "delete";
-
-export type WSMessage<T = any> = {
-    type: OperationType;
-    payload: T;
-    source: MessageSource;
-};

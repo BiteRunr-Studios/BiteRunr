@@ -1,76 +1,32 @@
 import app from "./app";
-import { createNodeWebSocket } from "@hono/node-ws";
 import { serve } from "@hono/node-server";
 import env from "./env";
-import type { MessageSource, WSMessage } from "@/lib/types";
-import db from "./db";
-import { orderItems } from "./db/schema";
-import { eq } from "drizzle-orm";
-import {
-    insertOrderItemsSchema,
-    patchOrderItemsSchema,
-} from "./db/schema/orderItems";
-import { z } from "zod";
+import { streamSSE } from "hono/streaming";
 
-const clients = new Set<WebSocket>();
+export const subscribers: Map<string, Set<any>> = new Map();
 
-const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+app.get("/sse/order_items", (c) => {
+    const orderId = c.req.query("orderId");
+    if (!orderId) return c.json({ message: "Missing orderId" }, 400);
 
-export function broadcast<T>(data: WSMessage<T>, exclude?: WebSocket) {
-    for (const client of clients) {
-        if (client !== exclude) {
-            client.send(JSON.stringify(data));
+    return streamSSE(c, async (stream) => {
+        if (!subscribers.has(orderId)) {
+            subscribers.set(orderId, new Set());
         }
-    }
-}
+        subscribers.get(orderId)!.add(stream);
 
-async function handleDbOperation(msg: WSMessage) {
-    const { type, payload } = msg;
-
-    if (type === "create") {
-        let insertPayload = insertOrderItemsSchema.parse(payload);
-        await db.insert(orderItems).values(insertPayload);
-    } else if (type === "update") {
-        let patchPayload = patchOrderItemsSchema
-            .extend({
-                id: z.string(),
-            })
-            .parse(payload);
-        await db
-            .update(orderItems)
-            .set(payload)
-            .where(eq(orderItems.id, patchPayload.id));
-    } else if (type === "delete") {
-        let deletePayload = patchOrderItemsSchema
-            .extend({
-                id: z.string(),
-            })
-            .parse(payload);
-        await db.delete(orderItems).where(eq(orderItems.id, deletePayload.id));
-    }
-}
-
-app.get(
-    "/ws",
-    upgradeWebSocket(() => ({
-        onOpen(event, ws) {
-            clients.add(ws.raw);
-        },
-        async onMessage(event, ws) {
-            const msg: WSMessage = JSON.parse(event.data.toString());
-
-            if (msg.source === "client") {
-                await handleDbOperation(msg);
+        stream.onAbort(() => {
+            subscribers.get(orderId)!.delete(stream);
+            if (subscribers.get(orderId)!.size === 0) {
+                subscribers.delete(orderId);
             }
-            if (msg.source === "webhook") {
-                broadcast({ ...msg, source: "server" }, ws.raw);
-            }
-        },
-        onClose(event, ws) {
-            clients.delete(ws.raw);
-        },
-    }))
-);
+        });
+
+        while (true) {
+            await stream.sleep(60 * 60 * 1000);
+        }
+    });
+});
 
 const server = serve(
     {
@@ -83,5 +39,3 @@ const server = serve(
         );
     }
 );
-
-injectWebSocket(server);
