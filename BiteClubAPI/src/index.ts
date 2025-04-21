@@ -28,7 +28,7 @@ app.get("/sse/order_items", (c) => {
     });
 });
 
-const server = serve(
+serve(
     {
         fetch: app.fetch,
         port: env.PORT,

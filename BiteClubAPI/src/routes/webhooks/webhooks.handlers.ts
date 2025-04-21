@@ -3,6 +3,8 @@ import type { AppRouteHandler } from "@/lib/types";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import db from "@/db";
 import { subscribers } from "@/index";
+import { orderItems, orderLocations } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export const orderItemsHook: AppRouteHandler<CreateRoute> = async (c) => {
     // Not needed
@@ -10,11 +12,14 @@ export const orderItemsHook: AppRouteHandler<CreateRoute> = async (c) => {
 
     const orderId = "c4d3803d-7f6c-4034-8ee7-d7c84b3af364";
 
-    const items = await db.query.orderItems.findFirst({
-        where(fields, operators) {
-            return operators.eq(fields.id, orderId);
-        },
-    });
+    const items = await db
+        .select()
+        .from(orderItems)
+        .innerJoin(
+            orderLocations,
+            eq(orderItems.order_location_id, orderLocations.id)
+        )
+        .where(eq(orderLocations.order_id, orderId));
 
     const streams = subscribers.get(orderId);
     if (streams) {
