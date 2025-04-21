@@ -183,7 +183,6 @@ struct SendFriendRequestView: View {
                     await fetchUsers()
                     await fetchCurrentUser()
                     await fetchSentFriendRequests()
-                    await fetchAcceptedRequests()
                     await fetchFriends()
                 }
             }
@@ -275,21 +274,6 @@ extension SendFriendRequestView {
             }
         } catch {
             errorMessage = "Failed to fetch sent requests: \(error.localizedDescription)"
-        }
-    }
-    
-    private func fetchAcceptedRequests() async {
-        guard let currentUser = currentUser else { return }
-        do {
-            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-            let url = "\(apiUrl)/sent-friend-requests?userId=\(currentUser.id.uuidString)&status=accepted"
-            let sentRequests: [SentFriendRequest] = try await fetch(url: url, responseType: [SentFriendRequest].self, body: nil as String?)
-            let ids = sentRequests.map { $0.receiver.id }
-            DispatchQueue.main.async {
-                acceptedUserIDs = Set(ids)
-            }
-        } catch {
-            errorMessage = "Failed to fetch accepted requests: \(error.localizedDescription)"
         }
     }
     
