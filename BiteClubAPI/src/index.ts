@@ -23,7 +23,8 @@ app.get("/sse/order_items", (c) => {
         });
 
         while (true) {
-            await stream.sleep(60 * 60 * 1000);
+            await stream.write(":keep-alive\n\n");
+            await stream.sleep(30_000);
         }
     });
 });
