@@ -4,32 +4,25 @@ import Clerk
 struct HomeView: View {
     @Environment(Clerk.self) private var clerk
     @State private var isPressed = false
-    @StateObject private var wsManager = WebSocketManager()
-    @State private var newItemName: String = ""
+    @StateObject var sseClient = OrderItemsSSEClient()
+    @State var orderId: String = "c4d3803d-7f6c-4034-8ee7-d7c84b3af364"
     
     var body: some View {
         VStack(spacing: 0) {
-            NavigationStack {
-                List(wsManager.items, id: \.self) { item in
-                    Text("Name: \(item.name) | #: \(item.quantity)")
-                }
-                
-                HStack {
-                    TextField("New item", text: $newItemName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    Button("Send") {
-                        wsManager.send(itemName: newItemName)
-                        newItemName = ""
-                    }
-                }
-                .padding()
+            Button("Connect") {
+                sseClient.connect(orderId: orderId)
             }
-        }
-        .onAppear {
-            wsManager.connect()
-        }
-        .onDisappear {
-            wsManager.disconnect()
+            Button("Disconnect") {
+                sseClient.disconnect()
+            }
+            List(sseClient.orderItems) { item in
+                VStack(alignment: .leading) {
+                    Text(item.name)
+                    Text("Quantity: \(item.quantity)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
         }
     }
 }
