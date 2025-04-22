@@ -12,4 +12,5 @@ export {
     orderLocationsRelations,
 } from "./orderLocations";
 export { default as orders, ordersRelations, orderStatusEnum } from "./orders";
-export { default as orderUsers, orderUsersRelations } from "./orderUsers";
+export { default as orderUsers, orderUsersRelations, orderUsersStatusEnum } from "./orderUsers";
+export { default as items, itemsRelations } from "./items";
