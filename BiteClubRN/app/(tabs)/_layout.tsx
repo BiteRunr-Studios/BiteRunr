@@ -36,13 +36,26 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
-                name="explore"
+                name="create-group"
                 options={{
-                    title: "Explore",
+                    title: "Create",
                     tabBarIcon: ({ color }) => (
                         <IconSymbol
                             size={28}
-                            name="paperplane.fill"
+                            name="plus.circle.fill"
+                            color={color}
+                        />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="join"
+                options={{
+                    title: "Join",
+                    tabBarIcon: ({ color }) => (
+                        <IconSymbol
+                            size={28}
+                            name="arrow.trianglehead.merge"
                             color={color}
                         />
                     ),
