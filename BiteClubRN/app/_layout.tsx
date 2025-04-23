@@ -8,10 +8,12 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { ClerkProvider } from "@clerk/clerk-expo";
+import { tokenCache } from "@clerk/clerk-expo/token-cache";
+
 import "react-native-reanimated";
 import "../global.css";
-
-import { useColorScheme } from "@/hooks/useColorScheme";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -33,13 +35,24 @@ export default function RootLayout() {
     }
 
     return (
-        <ThemeProvider
-            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-            <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="+not-found" />
-            </Stack>
-            <StatusBar style="auto" />
-        </ThemeProvider>
+        <ClerkProvider
+            tokenCache={tokenCache}
+            publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+            <ThemeProvider
+                value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+                <Stack>
+                    <Stack.Screen
+                        name="(auth)"
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                        name="(tabs)"
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen name="+not-found" />
+                </Stack>
+                <StatusBar style="auto" />
+            </ThemeProvider>
+        </ClerkProvider>
     );
 }
