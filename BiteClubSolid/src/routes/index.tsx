@@ -1,9 +1,9 @@
-import { A } from "@solidjs/router";
+import ProtectedRoute from "~/components/ProtectedRoute";
 
 export default function Home() {
     return (
-        <main class="">
-            <button class="btn btn-primary">Test</button>
-        </main>
+        <ProtectedRoute>
+            <main class="h-full">test</main>
+        </ProtectedRoute>
     );
 }
