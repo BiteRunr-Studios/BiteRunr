@@ -1,7 +1,15 @@
 import { useSignIn } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useState } from "react";
+import {
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    Image,
+} from "react-native";
+import { useState, useEffect } from "react";
+import Icon from "@/components/Icon";
 
 export default function Page() {
     const { signIn, setActive, isLoaded } = useSignIn();
@@ -12,7 +20,10 @@ export default function Page() {
 
     // Handle the submission of the sign-in form
     const onSignInPress = async () => {
-        if (!isLoaded) return;
+        if (!isLoaded) {
+            console.log("Sign in attempted before Clerk was loaded");
+            return;
+        }
 
         // Start the sign-in process using the email and password provided
         try {
@@ -40,7 +51,13 @@ export default function Page() {
 
     return (
         <View>
-            <Text>Sign in</Text>
+            <View style={styles.container}>
+                <Image
+                    style={styles.image}
+                    source={require("@/assets/signUpIcon.png")}
+                />
+            </View>
+            <Text style={styles.title}>Sign in</Text>
             <TextInput
                 autoCapitalize="none"
                 value={emailAddress}
@@ -65,3 +82,20 @@ export default function Page() {
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        width: "100%",
+    },
+    image: {
+        width: "100%",
+        height: 350,
+        resizeMode: "cover",
+    },
+    title: {
+        width: "100%",
+        textAlign: "center",
+        paddingVertical: 12,
+        fontSize: 22,
+    },
+});

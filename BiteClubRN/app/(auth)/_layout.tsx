@@ -9,9 +9,5 @@ export default function AuthRoutesLayout() {
         return <Redirect href={"/"} />;
     }
 
-    return (
-        <SafeAreaView>
-            <Slot />
-        </SafeAreaView>
-    );
+    return <Slot />;
 }

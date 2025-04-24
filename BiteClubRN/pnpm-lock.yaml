@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@clerk/clerk-expo':
-        specifier: ^2.9.15
+        specifier: ^2.10.0
         version: 2.10.0(ewm4b4yl22zjjmrfsirdpbxpsi)
       '@expo/vector-icons':
         specifier: ^14.0.2
