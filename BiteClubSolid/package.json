@@ -7,10 +7,14 @@
     "start": "vinxi start"
   },
   "dependencies": {
+    "@auth/core": "^0.39.0",
+    "@auth/solid-start": "^0.17.0",
+    "@solid-mediakit/auth": "^3.1.3",
     "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^0.15.0",
     "@solidjs/start": "^1.1.0",
     "@tanstack/solid-query": "^5.74.4",
+    "dotenv": "^16.5.0",
     "lucide-solid": "^0.503.0",
     "solid-js": "^1.9.5",
     "vinxi": "^0.5.3"
