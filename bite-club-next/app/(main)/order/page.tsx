@@ -19,7 +19,7 @@ export default function CreateOrder() {
                 <DrawerTrigger asChild>
                     <Button>Open</Button>
                 </DrawerTrigger>
-                <DrawerContent className="h-[80vh]">
+                <DrawerContent className="h-[90vh]">
                     <DrawerHeader>
                         <DrawerTitle>Are you absolutely sure?</DrawerTitle>
                         <DrawerDescription>
