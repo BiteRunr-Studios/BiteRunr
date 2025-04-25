@@ -6,11 +6,11 @@ struct AwaitingOrders: View {
     
     var body: some View {
         DisableBackSwipeView {
-                   VStack {
-                       Text("Hello")
-                   }
-                   .navigationBarBackButtonHidden(true)
-               }
-
+            VStack {
+                Text("Hello")
+            }
+            .navigationBarBackButtonHidden(true)
+        }
+        
     }
 }

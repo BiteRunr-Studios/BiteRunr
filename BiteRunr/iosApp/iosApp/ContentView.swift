@@ -11,11 +11,11 @@ struct ContentView: View {
                     .ignoresSafeArea(edges: .top)
                     .frame(height: geometry.safeAreaInsets.top)
                 VStack {
-                    if let _ = user {
+//                    if let _ = user {
                         MainLayout()
-                    } else {
-                        SignUpOrSignInView()
-                    }
+//                    } else {
+//                        SignUpOrSignInView()
+//                    }
                 }
             }
         }

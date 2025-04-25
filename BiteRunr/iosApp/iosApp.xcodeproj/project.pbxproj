@@ -9,6 +9,31 @@
 /* Begin PBXBuildFile section */
 		058557BB273AAA24004C7B11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557BA273AAA24004C7B11 /* Assets.xcassets */; };
 		058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */; };
+		14156DBB2DBB28B800F4E56B /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156D9C2DBB28B800F4E56B /* SignUpView.swift */; };
+		14156DBC2DBB28B800F4E56B /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156D9E2DBB28B800F4E56B /* EmptyStateView.swift */; };
+		14156DBD2DBB28B800F4E56B /* TabButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA42DBB28B800F4E56B /* TabButton.swift */; };
+		14156DBE2DBB28B800F4E56B /* SendFriendRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA32DBB28B800F4E56B /* SendFriendRequestView.swift */; };
+		14156DBF2DBB28B800F4E56B /* FriendRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156D9F2DBB28B800F4E56B /* FriendRow.swift */; };
+		14156DC02DBB28B800F4E56B /* FriendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DB42DBB28B800F4E56B /* FriendsView.swift */; };
+		14156DC12DBB28B800F4E56B /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DB82DBB28B800F4E56B /* ProfileView.swift */; };
+		14156DC22DBB28B800F4E56B /* PlaceholderRequestRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA12DBB28B800F4E56B /* PlaceholderRequestRow.swift */; };
+		14156DC32DBB28B800F4E56B /* FriendsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA02DBB28B800F4E56B /* FriendsListView.swift */; };
+		14156DC42DBB28B800F4E56B /* AddLocationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DB22DBB28B800F4E56B /* AddLocationsView.swift */; };
+		14156DC52DBB28B800F4E56B /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DB52DBB28B800F4E56B /* HomeView.swift */; };
+		14156DC62DBB28B800F4E56B /* MainLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DB72DBB28B800F4E56B /* MainLayout.swift */; };
+		14156DC72DBB28B800F4E56B /* AwaitingOrders.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DB32DBB28B800F4E56B /* AwaitingOrders.swift */; };
+		14156DC82DBB28B800F4E56B /* JoinGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DB62DBB28B800F4E56B /* JoinGroupView.swift */; };
+		14156DC92DBB28B800F4E56B /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156D9A2DBB28B800F4E56B /* SignInView.swift */; };
+		14156DCA2DBB28B800F4E56B /* LocationSelectRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DAB2DBB28B800F4E56B /* LocationSelectRow.swift */; };
+		14156DCB2DBB28B800F4E56B /* AddFriendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DB02DBB28B800F4E56B /* AddFriendsView.swift */; };
+		14156DCC2DBB28B800F4E56B /* DisableBackSwipeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DAE2DBB28B800F4E56B /* DisableBackSwipeView.swift */; };
+		14156DCD2DBB28B800F4E56B /* AddGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DB12DBB28B800F4E56B /* AddGroupView.swift */; };
+		14156DCE2DBB28B800F4E56B /* FriendSelectRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DAA2DBB28B800F4E56B /* FriendSelectRow.swift */; };
+		14156DCF2DBB28B800F4E56B /* KeyboardResponder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA62DBB28B800F4E56B /* KeyboardResponder.swift */; };
+		14156DD02DBB28B800F4E56B /* SignUpOrSignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156D9B2DBB28B800F4E56B /* SignUpOrSignInView.swift */; };
+		14156DD12DBB28B800F4E56B /* TopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA82DBB28B800F4E56B /* TopBarView.swift */; };
+		14156DD22DBB28B800F4E56B /* RequestsPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA22DBB28B800F4E56B /* RequestsPlaceholderView.swift */; };
+		14156DD32DBB28B800F4E56B /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA72DBB28B800F4E56B /* MainTabView.swift */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
 /* End PBXBuildFile section */
@@ -16,6 +41,31 @@
 /* Begin PBXFileReference section */
 		058557BA273AAA24004C7B11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		14156D9A2DBB28B800F4E56B /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		14156D9B2DBB28B800F4E56B /* SignUpOrSignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpOrSignInView.swift; sourceTree = "<group>"; };
+		14156D9C2DBB28B800F4E56B /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
+		14156D9E2DBB28B800F4E56B /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyStateView.swift; sourceTree = "<group>"; };
+		14156D9F2DBB28B800F4E56B /* FriendRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendRow.swift; sourceTree = "<group>"; };
+		14156DA02DBB28B800F4E56B /* FriendsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendsListView.swift; sourceTree = "<group>"; };
+		14156DA12DBB28B800F4E56B /* PlaceholderRequestRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderRequestRow.swift; sourceTree = "<group>"; };
+		14156DA22DBB28B800F4E56B /* RequestsPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestsPlaceholderView.swift; sourceTree = "<group>"; };
+		14156DA32DBB28B800F4E56B /* SendFriendRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendFriendRequestView.swift; sourceTree = "<group>"; };
+		14156DA42DBB28B800F4E56B /* TabButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabButton.swift; sourceTree = "<group>"; };
+		14156DA62DBB28B800F4E56B /* KeyboardResponder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardResponder.swift; sourceTree = "<group>"; };
+		14156DA72DBB28B800F4E56B /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		14156DA82DBB28B800F4E56B /* TopBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopBarView.swift; sourceTree = "<group>"; };
+		14156DAA2DBB28B800F4E56B /* FriendSelectRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendSelectRow.swift; sourceTree = "<group>"; };
+		14156DAB2DBB28B800F4E56B /* LocationSelectRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSelectRow.swift; sourceTree = "<group>"; };
+		14156DAE2DBB28B800F4E56B /* DisableBackSwipeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisableBackSwipeView.swift; sourceTree = "<group>"; };
+		14156DB02DBB28B800F4E56B /* AddFriendsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddFriendsView.swift; sourceTree = "<group>"; };
+		14156DB12DBB28B800F4E56B /* AddGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddGroupView.swift; sourceTree = "<group>"; };
+		14156DB22DBB28B800F4E56B /* AddLocationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLocationsView.swift; sourceTree = "<group>"; };
+		14156DB32DBB28B800F4E56B /* AwaitingOrders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AwaitingOrders.swift; sourceTree = "<group>"; };
+		14156DB42DBB28B800F4E56B /* FriendsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendsView.swift; sourceTree = "<group>"; };
+		14156DB52DBB28B800F4E56B /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		14156DB62DBB28B800F4E56B /* JoinGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinGroupView.swift; sourceTree = "<group>"; };
+		14156DB72DBB28B800F4E56B /* MainLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainLayout.swift; sourceTree = "<group>"; };
+		14156DB82DBB28B800F4E56B /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
 		7555FF7B242A565900829871 /* BiteRunr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BiteRunr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7555FF82242A565900829871 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -40,6 +90,94 @@
 				058557D8273AAEEB004C7B11 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		14156D9D2DBB28B800F4E56B /* Authentication */ = {
+			isa = PBXGroup;
+			children = (
+				14156D9A2DBB28B800F4E56B /* SignInView.swift */,
+				14156D9B2DBB28B800F4E56B /* SignUpOrSignInView.swift */,
+				14156D9C2DBB28B800F4E56B /* SignUpView.swift */,
+			);
+			path = Authentication;
+			sourceTree = "<group>";
+		};
+		14156DA52DBB28B800F4E56B /* Friends */ = {
+			isa = PBXGroup;
+			children = (
+				14156D9E2DBB28B800F4E56B /* EmptyStateView.swift */,
+				14156D9F2DBB28B800F4E56B /* FriendRow.swift */,
+				14156DA02DBB28B800F4E56B /* FriendsListView.swift */,
+				14156DA12DBB28B800F4E56B /* PlaceholderRequestRow.swift */,
+				14156DA22DBB28B800F4E56B /* RequestsPlaceholderView.swift */,
+				14156DA32DBB28B800F4E56B /* SendFriendRequestView.swift */,
+				14156DA42DBB28B800F4E56B /* TabButton.swift */,
+			);
+			path = Friends;
+			sourceTree = "<group>";
+		};
+		14156DA92DBB28B800F4E56B /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				14156DA62DBB28B800F4E56B /* KeyboardResponder.swift */,
+				14156DA72DBB28B800F4E56B /* MainTabView.swift */,
+				14156DA82DBB28B800F4E56B /* TopBarView.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		14156DAC2DBB28B800F4E56B /* Order */ = {
+			isa = PBXGroup;
+			children = (
+				14156DAA2DBB28B800F4E56B /* FriendSelectRow.swift */,
+				14156DAB2DBB28B800F4E56B /* LocationSelectRow.swift */,
+			);
+			path = Order;
+			sourceTree = "<group>";
+		};
+		14156DAD2DBB28B800F4E56B /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				14156DA52DBB28B800F4E56B /* Friends */,
+				14156DA92DBB28B800F4E56B /* Navigation */,
+				14156DAC2DBB28B800F4E56B /* Order */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		14156DAF2DBB28B800F4E56B /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				14156DAE2DBB28B800F4E56B /* DisableBackSwipeView.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		14156DB92DBB28B800F4E56B /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				14156DB02DBB28B800F4E56B /* AddFriendsView.swift */,
+				14156DB12DBB28B800F4E56B /* AddGroupView.swift */,
+				14156DB22DBB28B800F4E56B /* AddLocationsView.swift */,
+				14156DB32DBB28B800F4E56B /* AwaitingOrders.swift */,
+				14156DB42DBB28B800F4E56B /* FriendsView.swift */,
+				14156DB52DBB28B800F4E56B /* HomeView.swift */,
+				14156DB62DBB28B800F4E56B /* JoinGroupView.swift */,
+				14156DB72DBB28B800F4E56B /* MainLayout.swift */,
+				14156DB82DBB28B800F4E56B /* ProfileView.swift */,
+			);
+			path = Main;
+			sourceTree = "<group>";
+		};
+		14156DBA2DBB28B800F4E56B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				14156D9D2DBB28B800F4E56B /* Authentication */,
+				14156DAD2DBB28B800F4E56B /* Components */,
+				14156DAF2DBB28B800F4E56B /* Helpers */,
+				14156DB92DBB28B800F4E56B /* Main */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		42799AB246E5F90AF97AA0EF /* Frameworks */ = {
@@ -70,6 +208,7 @@
 		7555FF7D242A565900829871 /* iosApp */ = {
 			isa = PBXGroup;
 			children = (
+				14156DBA2DBB28B800F4E56B /* Views */,
 				058557BA273AAA24004C7B11 /* Assets.xcassets */,
 				7555FF82242A565900829871 /* ContentView.swift */,
 				7555FF8C242A565B00829871 /* Info.plist */,
@@ -203,6 +342,31 @@
 			buildActionMask = 2147483647;
 			files = (
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
+				14156DBB2DBB28B800F4E56B /* SignUpView.swift in Sources */,
+				14156DBC2DBB28B800F4E56B /* EmptyStateView.swift in Sources */,
+				14156DBD2DBB28B800F4E56B /* TabButton.swift in Sources */,
+				14156DBE2DBB28B800F4E56B /* SendFriendRequestView.swift in Sources */,
+				14156DBF2DBB28B800F4E56B /* FriendRow.swift in Sources */,
+				14156DC02DBB28B800F4E56B /* FriendsView.swift in Sources */,
+				14156DC12DBB28B800F4E56B /* ProfileView.swift in Sources */,
+				14156DC22DBB28B800F4E56B /* PlaceholderRequestRow.swift in Sources */,
+				14156DC32DBB28B800F4E56B /* FriendsListView.swift in Sources */,
+				14156DC42DBB28B800F4E56B /* AddLocationsView.swift in Sources */,
+				14156DC52DBB28B800F4E56B /* HomeView.swift in Sources */,
+				14156DC62DBB28B800F4E56B /* MainLayout.swift in Sources */,
+				14156DC72DBB28B800F4E56B /* AwaitingOrders.swift in Sources */,
+				14156DC82DBB28B800F4E56B /* JoinGroupView.swift in Sources */,
+				14156DC92DBB28B800F4E56B /* SignInView.swift in Sources */,
+				14156DCA2DBB28B800F4E56B /* LocationSelectRow.swift in Sources */,
+				14156DCB2DBB28B800F4E56B /* AddFriendsView.swift in Sources */,
+				14156DCC2DBB28B800F4E56B /* DisableBackSwipeView.swift in Sources */,
+				14156DCD2DBB28B800F4E56B /* AddGroupView.swift in Sources */,
+				14156DCE2DBB28B800F4E56B /* FriendSelectRow.swift in Sources */,
+				14156DCF2DBB28B800F4E56B /* KeyboardResponder.swift in Sources */,
+				14156DD02DBB28B800F4E56B /* SignUpOrSignInView.swift in Sources */,
+				14156DD12DBB28B800F4E56B /* TopBarView.swift in Sources */,
+				14156DD22DBB28B800F4E56B /* RequestsPlaceholderView.swift in Sources */,
+				14156DD32DBB28B800F4E56B /* MainTabView.swift in Sources */,
 				7555FF83242A565900829871 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
