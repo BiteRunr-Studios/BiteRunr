@@ -22,34 +22,34 @@ struct ProfileView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     HStack {
-                        if let user = clerk.user, let url = URL(string: user.imageUrl) {
-                            AsyncImage(url: url) { image in
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                                    .clipShape(Circle())
-                                    .shadow(radius: 3)
-                                    .overlay {
-                                        Circle().stroke(.secondary, lineWidth: 2)
-                                    }
-                            } placeholder: {
-                                ProgressView()
-                            }
-                            .frame(width: 40, height: 40)
-                            
-                            VStack(alignment: .leading) {
-                                if let firstName = user.firstName, !firstName.isEmpty,
-                                   let lastName = user.lastName, !lastName.isEmpty {
-                                    Text("\(firstName) \(lastName)")
-                                } else {
-                                    Text("User")
-                                }
-                                
-                                Text(user.primaryEmailAddress?.emailAddress ?? "No Email")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.primary)
-                            }
-                        }
+//                        if let user = clerk.user, let url = URL(string: user.imageUrl) {
+//                            AsyncImage(url: url) { image in
+//                                image
+//                                    .resizable()
+//                                    .scaledToFill()
+//                                    .clipShape(Circle())
+//                                    .shadow(radius: 3)
+//                                    .overlay {
+//                                        Circle().stroke(.secondary, lineWidth: 2)
+//                                    }
+//                            } placeholder: {
+//                                ProgressView()
+//                            }
+//                            .frame(width: 40, height: 40)
+//                            
+//                            VStack(alignment: .leading) {
+//                                if let firstName = user.firstName, !firstName.isEmpty,
+//                                   let lastName = user.lastName, !lastName.isEmpty {
+//                                    Text("\(firstName) \(lastName)")
+//                                } else {
+//                                    Text("User")
+//                                }
+//                                
+//                                Text(user.primaryEmailAddress?.emailAddress ?? "No Email")
+//                                    .font(.subheadline)
+//                                    .foregroundStyle(.primary)
+//                            }
+//                        }
                     }
                     .padding(.vertical, 8)
                     

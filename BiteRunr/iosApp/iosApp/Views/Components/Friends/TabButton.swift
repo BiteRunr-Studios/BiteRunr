@@ -1,10 +1,3 @@
-//
-//  TabButton.swift
-//  BiteClub
-//
-//  Created by Ryan Somers on 4/16/25.
-//
-
 import SwiftUI
 
 // Custom tab button

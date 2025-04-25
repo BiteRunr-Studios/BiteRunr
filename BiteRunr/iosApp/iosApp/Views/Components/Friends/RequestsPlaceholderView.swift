@@ -1,11 +1,5 @@
-//
-//  RequestsPlaceholderView.swift
-//  BiteClub
-//
-//  Created by Ryan Somers on 4/16/25.
-//
-
 import SwiftUI
+import Shared
 //import Clerk
 
 struct RequestsPlaceholderView: View {
@@ -27,9 +21,9 @@ struct RequestsPlaceholderView: View {
                         message: "You are very lonely right now (or maybe you just really want to make friends)."
                     )
                 } else {
-                    ForEach(friendRequests) { request in
+                    ForEach(friendRequests, id: \.id) { request in
                         PlaceholderRequestRow(
-                            user: request.user,
+                            user: request.toUser(),
                             senderId: request.senderId,
                             receiverId: request.receiverId,
                             friendRequestId: request.id,

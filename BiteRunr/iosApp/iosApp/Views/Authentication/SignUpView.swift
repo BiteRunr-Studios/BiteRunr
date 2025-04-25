@@ -29,7 +29,7 @@ struct SignUpView: View {
                     if isVerifying {
                         TextField("Code", text: $code)
                         Button("Verify") {
-                            Task { await verify(code: code) }
+                            Task { /*await verify(code: code)*/ }
                         }
                     } else {
                         HStack(spacing: 12) {

@@ -33,7 +33,6 @@
 		14156DD02DBB28B800F4E56B /* SignUpOrSignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156D9B2DBB28B800F4E56B /* SignUpOrSignInView.swift */; };
 		14156DD12DBB28B800F4E56B /* TopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA82DBB28B800F4E56B /* TopBarView.swift */; };
 		14156DD22DBB28B800F4E56B /* RequestsPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA22DBB28B800F4E56B /* RequestsPlaceholderView.swift */; };
-		14156DD32DBB28B800F4E56B /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA72DBB28B800F4E56B /* MainTabView.swift */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
 /* End PBXBuildFile section */
@@ -52,7 +51,6 @@
 		14156DA32DBB28B800F4E56B /* SendFriendRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendFriendRequestView.swift; sourceTree = "<group>"; };
 		14156DA42DBB28B800F4E56B /* TabButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabButton.swift; sourceTree = "<group>"; };
 		14156DA62DBB28B800F4E56B /* KeyboardResponder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardResponder.swift; sourceTree = "<group>"; };
-		14156DA72DBB28B800F4E56B /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		14156DA82DBB28B800F4E56B /* TopBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopBarView.swift; sourceTree = "<group>"; };
 		14156DAA2DBB28B800F4E56B /* FriendSelectRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendSelectRow.swift; sourceTree = "<group>"; };
 		14156DAB2DBB28B800F4E56B /* LocationSelectRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSelectRow.swift; sourceTree = "<group>"; };
@@ -120,7 +118,6 @@
 			isa = PBXGroup;
 			children = (
 				14156DA62DBB28B800F4E56B /* KeyboardResponder.swift */,
-				14156DA72DBB28B800F4E56B /* MainTabView.swift */,
 				14156DA82DBB28B800F4E56B /* TopBarView.swift */,
 			);
 			path = Navigation;
@@ -366,7 +363,6 @@
 				14156DD02DBB28B800F4E56B /* SignUpOrSignInView.swift in Sources */,
 				14156DD12DBB28B800F4E56B /* TopBarView.swift in Sources */,
 				14156DD22DBB28B800F4E56B /* RequestsPlaceholderView.swift in Sources */,
-				14156DD32DBB28B800F4E56B /* MainTabView.swift in Sources */,
 				7555FF83242A565900829871 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -508,7 +504,7 @@
 					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
 				);
 				INFOPLIST_FILE = iosApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -535,7 +531,7 @@
 					"$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
 				);
 				INFOPLIST_FILE = iosApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

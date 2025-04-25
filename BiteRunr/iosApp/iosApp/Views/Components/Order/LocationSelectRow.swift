@@ -1,4 +1,5 @@
 import SwiftUI
+import Shared
 //import Clerk
 
 struct LocationSelectRow: View {

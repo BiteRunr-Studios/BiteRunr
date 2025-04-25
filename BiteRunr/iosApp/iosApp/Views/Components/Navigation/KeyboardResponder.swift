@@ -1,10 +1,3 @@
-//
-//  KeyboardResponder.swift
-//  BiteClub
-//
-//  Created by Ryan Somers on 4/18/25.
-//
-
 import SwiftUI
 import Combine
 

@@ -1,14 +1,8 @@
-//
-//  FriendRow.swift
-//  BiteClub
-//
-//  Created by Ryan Somers on 4/16/25.
-//
-
 import SwiftUI
+import Shared
 
 struct FriendRow: View {
-    let user: User
+    let user: UserProfile
     @State private var showingOptions = false
     @State private var isDeleting = false
     @State private var deleteError: String? = nil
@@ -17,47 +11,47 @@ struct FriendRow: View {
     var body: some View {
         HStack(spacing: 12) {
             // Profile image
-            if let imageUrlString = user.imageUrl, let imageUrl = URL(string: imageUrlString) {
-                AsyncImage(url: imageUrl) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                            .frame(width: 50, height: 50)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 50, height: 50)
-                            .clipShape(Circle())
-                    case .failure:
-                        Image(systemName: "person.circle.fill")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(.gray)
-                    @unknown default:
-                        Image(systemName: "person.circle.fill")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(.gray)
-                    }
-                }
-            } else {
-                Image(systemName: "person.circle.fill")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 50, height: 50)
-                    .foregroundColor(.gray)
-            }
+            //            if let imageUrlString = user.imageUrl, let imageUrl = URL(string: imageUrlString) {
+            //                AsyncImage(url: imageUrl) { phase in
+            //                    switch phase {
+            //                    case .empty:
+            //                        ProgressView()
+            //                            .frame(width: 50, height: 50)
+            //                    case .success(let image):
+            //                        image
+            //                            .resizable()
+            //                            .aspectRatio(contentMode: .fill)
+            //                            .frame(width: 50, height: 50)
+            //                            .clipShape(Circle())
+            //                    case .failure:
+            //                        Image(systemName: "person.circle.fill")
+            //                            .resizable()
+            //                            .aspectRatio(contentMode: .fill)
+            //                            .frame(width: 50, height: 50)
+            //                            .foregroundColor(.gray)
+            //                    @unknown default:
+            //                        Image(systemName: "person.circle.fill")
+            //                            .resizable()
+            //                            .aspectRatio(contentMode: .fill)
+            //                            .frame(width: 50, height: 50)
+            //                            .foregroundColor(.gray)
+            //                    }
+            //                }
+            //            } else {
+            Image(systemName: "person.circle.fill")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 50, height: 50)
+                .foregroundColor(.gray)
+            //            }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(user.firstName + " " + user.lastName)
                     .fontWeight(.medium)
                 
-                Text(user.email)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+//                Text(user.email)
+//                    .font(.subheadline)
+//                    .foregroundColor(.secondary)
             }
             
             Spacer()
@@ -104,29 +98,29 @@ extension FriendRow {
         isDeleting = true
         deleteError = nil
         
-        do {
-            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-            let deleteUrl = "\(apiUrl)/friends/\(user.id)"
-            
-            let _: Friend = try await fetch(
-                url: deleteUrl,
-                method: "DELETE",
-                responseType: Friend.self,
-                body: nil as String?
-            )
-            
-            DispatchQueue.main.async {
-                onDelete?()
-            }
-        } catch {
-            DispatchQueue.main.async {
-                if let error = error as? ErrorResponse {
-                    deleteError = "Failed to delete friend: \(error.self )"
-                } else {
-                    deleteError = "Failed to delete friend: \(error.localizedDescription)"
-                }
-            }
-        }
+//        do {
+//            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+//            let deleteUrl = "\(apiUrl)/friends/\(user.id)"
+//            
+//            let _: Friend = try await fetch(
+//                url: deleteUrl,
+//                method: "DELETE",
+//                responseType: Friend.self,
+//                body: nil as String?
+//            )
+//            
+//            DispatchQueue.main.async {
+//                onDelete?()
+//            }
+//        } catch {
+//            DispatchQueue.main.async {
+//                if let error = error as? ErrorResponse {
+//                    deleteError = "Failed to delete friend: \(error.self )"
+//                } else {
+//                    deleteError = "Failed to delete friend: \(error.localizedDescription)"
+//                }
+//            }
+//        }
         
         DispatchQueue.main.async {
             isDeleting = false

@@ -1,15 +1,9 @@
-//
-//  FriendsListView.swift
-//  BiteClub
-//
-//  Created by Ryan Somers on 4/16/25.
-//
-
 import SwiftUI
+import Shared
 
 struct FriendsListView: View {
-    let friends: [User]
-    var onFriendDeleted: ((User) -> Void)? 
+    let friends: [UserProfile]
+    var onFriendDeleted: ((UserProfile) -> Void)? 
     
     var body: some View {
         ScrollView {

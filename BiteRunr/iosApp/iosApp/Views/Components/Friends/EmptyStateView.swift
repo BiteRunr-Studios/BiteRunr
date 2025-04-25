@@ -1,10 +1,3 @@
-//
-//  EmptyStateView.swift
-//  BiteClub
-//
-//  Created by Ryan Somers on 4/16/25.
-//
-
 import SwiftUI
 
 struct EmptyStateView: View {

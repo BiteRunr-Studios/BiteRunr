@@ -1,14 +1,8 @@
-//
-//  PlaceholderRequestRow.swift
-//  BiteClub
-//
-//  Created by Ryan Somers on 4/16/25.
-//
-
 import SwiftUI
+import Shared
 
 struct PlaceholderRequestRow: View {
-    let user: User
+    let user: UserProfile
     let senderId: String
     let receiverId: String
     let friendRequestId: String
@@ -22,48 +16,49 @@ struct PlaceholderRequestRow: View {
     var body: some View {
         ScrollView {
             HStack(spacing: 12) {
-                if let imageUrlString = user.imageUrl, let imageUrl = URL(string: imageUrlString) {
-                    AsyncImage(url: imageUrl) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                                .frame(width: 50, height: 50)
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 50, height: 50)
-                                .clipShape(Circle())
-                        case .failure:
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 50, height: 50)
-                                .foregroundColor(.gray)
-                        @unknown default:
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 50, height: 50)
-                                .foregroundColor(.gray)
-                        }
-                    }
-                } else {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 50, height: 50)
-                        .foregroundColor(.gray)
-                }
+                //                if let imageUrlString = user.imageUrl, let imageUrl = URL(string: imageUrlString) {
+                //                    AsyncImage(url: imageUrl) { phase in
+                //                        switch phase {
+                //                        case .empty:
+                //                            ProgressView()
+                //                                .frame(width: 50, height: 50)
+                //                        case .success(let image):
+                //                            image
+                //                                .resizable()
+                //                                .aspectRatio(contentMode: .fill)
+                //                                .frame(width: 50, height: 50)
+                //                                .clipShape(Circle())
+                //                        case .failure:
+                //                            Image(systemName: "person.circle.fill")
+                //                                .resizable()
+                //                                .aspectRatio(contentMode: .fill)
+                //                                .frame(width: 50, height: 50)
+                //                                .foregroundColor(.gray)
+                //                        @unknown default:
+                //                            Image(systemName: "person.circle.fill")
+                //                                .resizable()
+                //                                .aspectRatio(contentMode: .fill)
+                //                                .frame(width: 50, height: 50)
+                //                                .foregroundColor(.gray)
+                //                        }
+                //                    }
+                //                }
+                //                else {
+                Image(systemName: "person.circle.fill")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 50, height: 50)
+                    .foregroundColor(.gray)
+                //                }
                 
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(user.firstName + " " + user.lastName)
                         .fontWeight(.medium)
                     
-                    Text(user.email)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+//                    Text(user.email)
+//                        .font(.subheadline)
+//                        .foregroundColor(.secondary)
                 }
                 
                 Spacer()
@@ -80,14 +75,14 @@ struct PlaceholderRequestRow: View {
                     .confirmationDialog("Friend Options", isPresented: $showingOptions) {
                         Button("Reject Request", role: .destructive) {
                             Task {
-//                                await deleteFriendRequest()
-                                    print("Friend request rejected")
+                                //                                await deleteFriendRequest()
+                                print("Friend request rejected")
                             }
                         }
                         Button("Approve Request") {
                             Task {
-//                                await acceptFriendRequest()
-                                    print("Friend request accepted")
+                                //                                await acceptFriendRequest()
+                                print("Friend request accepted")
                             }
                         }
                         Button("Cancel", role: .cancel) {}
@@ -108,56 +103,56 @@ struct PlaceholderRequestRow: View {
 }
 
 extension PlaceholderRequestRow {
-//    private func deleteFriendRequest() async {
-//        isDeleting = true
-//        errorMessage = nil
-//        do {
-//            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-//            let url = "\(apiUrl)/friend-requests?sender_id=\(senderId)&receiver_id=\(receiverId)"
-//            let _: EmptyResponseDeleted = try await fetch(
-//                url: url,
-//                method: "DELETE",
-//                responseType: EmptyResponseDeleted.self,
-//                body: nil as String?
-//            )
-//            DispatchQueue.main.async {
-//                onDelete?()
-//            }
-//        } catch {
-//            DispatchQueue.main.async {
-//                errorMessage = "Failed to reject request: \(error.localizedDescription)"
-//            }
-//        }
-//        isDeleting = false
-//    }
-//
-//    private func acceptFriendRequest() async {
-//        isDeleting = true
-//        errorMessage = nil
-//        do {
-//            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-//            let url = "\(apiUrl)/friends"
-//            let body: [String: String] = [
-//                "user_id": senderId,
-//                "friend_id": receiverId
-//            ]
-//            let friendship: Friendship = try await fetch(
-//                url: url,
-//                method: "POST",
-//                responseType: Friendship.self,
-//                body: body
-//            )
-//            DispatchQueue.main.async {
-//                onAccept?()
-//                onDelete?()
-//            }
-//        } catch {
-//            DispatchQueue.main.async {
-//                errorMessage = "Failed to accept request: \(error.localizedDescription)"
-//            }
-//        }
-//        isDeleting = false
-//    }
+    //    private func deleteFriendRequest() async {
+    //        isDeleting = true
+    //        errorMessage = nil
+    //        do {
+    //            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+    //            let url = "\(apiUrl)/friend-requests?sender_id=\(senderId)&receiver_id=\(receiverId)"
+    //            let _: EmptyResponseDeleted = try await fetch(
+    //                url: url,
+    //                method: "DELETE",
+    //                responseType: EmptyResponseDeleted.self,
+    //                body: nil as String?
+    //            )
+    //            DispatchQueue.main.async {
+    //                onDelete?()
+    //            }
+    //        } catch {
+    //            DispatchQueue.main.async {
+    //                errorMessage = "Failed to reject request: \(error.localizedDescription)"
+    //            }
+    //        }
+    //        isDeleting = false
+    //    }
+    //
+    //    private func acceptFriendRequest() async {
+    //        isDeleting = true
+    //        errorMessage = nil
+    //        do {
+    //            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+    //            let url = "\(apiUrl)/friends"
+    //            let body: [String: String] = [
+    //                "user_id": senderId,
+    //                "friend_id": receiverId
+    //            ]
+    //            let friendship: Friendship = try await fetch(
+    //                url: url,
+    //                method: "POST",
+    //                responseType: Friendship.self,
+    //                body: body
+    //            )
+    //            DispatchQueue.main.async {
+    //                onAccept?()
+    //                onDelete?()
+    //            }
+    //        } catch {
+    //            DispatchQueue.main.async {
+    //                errorMessage = "Failed to accept request: \(error.localizedDescription)"
+    //            }
+    //        }
+    //        isDeleting = false
+    //    }
     
 }
 
