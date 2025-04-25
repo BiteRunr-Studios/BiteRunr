@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
-    id("co.touchlab.skie") version "0.10.1" // SKIE plugin added
+    id("co.touchlab.skie") version "0.10.1"
 }
 
 kotlin {
