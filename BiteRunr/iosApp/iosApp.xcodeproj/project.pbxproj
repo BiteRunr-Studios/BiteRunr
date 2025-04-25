@@ -34,6 +34,7 @@
 		14156DD12DBB28B800F4E56B /* TopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA82DBB28B800F4E56B /* TopBarView.swift */; };
 		14156DD22DBB28B800F4E56B /* RequestsPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA22DBB28B800F4E56B /* RequestsPlaceholderView.swift */; };
 		14156EA22DBB360700F4E56B /* MapValidationErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156EA12DBB360200F4E56B /* MapValidationErrors.swift */; };
+		14BBB4862DBBBAAA00A3C7E9 /* PollingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BBB4852DBBBAA600A3C7E9 /* PollingHelper.swift */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
 /* End PBXBuildFile section */
@@ -66,6 +67,7 @@
 		14156DB72DBB28B800F4E56B /* MainLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainLayout.swift; sourceTree = "<group>"; };
 		14156DB82DBB28B800F4E56B /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		14156EA12DBB360200F4E56B /* MapValidationErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapValidationErrors.swift; sourceTree = "<group>"; };
+		14BBB4852DBBBAA600A3C7E9 /* PollingHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PollingHelper.swift; sourceTree = "<group>"; };
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
 		7555FF7B242A565900829871 /* BiteRunr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BiteRunr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7555FF82242A565900829871 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -147,6 +149,7 @@
 		14156DAF2DBB28B800F4E56B /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				14BBB4852DBBBAA600A3C7E9 /* PollingHelper.swift */,
 				14156DAE2DBB28B800F4E56B /* DisableBackSwipeView.swift */,
 			);
 			path = Helpers;
@@ -352,6 +355,7 @@
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
 				14156DBB2DBB28B800F4E56B /* SignUpView.swift in Sources */,
 				14156DBC2DBB28B800F4E56B /* EmptyStateView.swift in Sources */,
+				14BBB4862DBBBAAA00A3C7E9 /* PollingHelper.swift in Sources */,
 				14156DBD2DBB28B800F4E56B /* TabButton.swift in Sources */,
 				14156DBE2DBB28B800F4E56B /* SendFriendRequestView.swift in Sources */,
 				14156DBF2DBB28B800F4E56B /* FriendRow.swift in Sources */,
