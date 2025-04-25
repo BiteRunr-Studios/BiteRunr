@@ -7,7 +7,6 @@ struct HomeView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            
             NavigationStack {
                 Text("Welcome to BiteRunr!")
                     .navigationTitle("")

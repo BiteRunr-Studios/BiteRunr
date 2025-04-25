@@ -8,6 +8,12 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 import kotlinx.serialization.json.*
 
+import kotlinx.serialization.json.Json
+
+suspend fun parseErrorResponse(json: String): ErrorResponse {
+    return Json.decodeFromString(json)
+}
+
 @Serializable
 data class ErrorResponse(
     @SerialName("success")
@@ -15,7 +21,7 @@ data class ErrorResponse(
 
     @SerialName("error")
     val error: ErrorDetails
-)
+) : Throwable()
 
 @Serializable
 data class ErrorDetails(
