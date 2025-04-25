@@ -1,33 +1,27 @@
 import SwiftUI
-import Shared
 
 struct ContentView: View {
-    @State private var showContent = false
-    var body: some View {
-        VStack {
-            Button("Click me!") {
-                withAnimation {
-                    showContent = !showContent
-                }
-            }
+//    @Environment(Clerk.self) private var clerk
 
-            if showContent {
-                VStack(spacing: 16) {
-                    Image(systemName: "swift")
-                        .font(.system(size: 200))
-                        .foregroundColor(.accentColor)
-                    Text("SwiftUI: \(Greeting().greet())")
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .top) {
+                Color(UIColor(red: 1.0, green: 0.533, blue: 0.0, alpha: 1.0))
+                    .ignoresSafeArea(edges: .top)
+                    .frame(height: geometry.safeAreaInsets.top)
+                VStack {
+                    if let _ = user {
+                        MainLayout()
+                    } else {
+                        SignUpOrSignInView()
+                    }
                 }
-                .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .padding()
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+#Preview {
+    ContentView()
 }
