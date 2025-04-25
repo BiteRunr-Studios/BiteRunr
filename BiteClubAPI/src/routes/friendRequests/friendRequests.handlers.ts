@@ -95,7 +95,9 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
     return c.json(deletedFriendRequest, HttpStatusCodes.OK);
 };
 
-export const getSentFriendRequests: AppRouteHandler<GetSentFriendRequestsRoute> = async (c) => {
+export const getSentFriendRequests: AppRouteHandler<
+    GetSentFriendRequestsRoute
+> = async (c) => {
     const { userId, status } = c.req.valid("query");
 
     // Get all sent friend requests
@@ -113,55 +115,63 @@ export const getSentFriendRequests: AppRouteHandler<GetSentFriendRequestsRoute> 
     });
 
     // Fetch Clerk image URLs for all receivers
-    const requestsWithImages = await Promise.all(requests.map(async (request) => {
-        const receiver = request.receiver;
-        
-        try {
-            const response = await fetch(`https://api.clerk.com/v1/users/${receiver.clerk_id}`, {
-                headers: {
-                    'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
-                    'Content-Type': 'application/json',
-                },
-            });
+    const requestsWithImages = await Promise.all(
+        requests.map(async (request) => {
+            const receiver = request.receiver;
 
-            if (response.ok) {
-                const clerkUser = await response.json();
-                return {
-                    id: request.id,
-                    created_at: request.created_at.toISOString(),
-                    updated_at: request.updated_at.toISOString(),
-                    sender_id: request.sender_id,
-                    receiver_id: request.receiver_id,
-                    status: request.status,
-                    receiver: {
-                        id: receiver.id,
-                        clerk_id: receiver.clerk_id,
-                        first_name: receiver.first_name,
-                        last_name: receiver.last_name,
-                        image_url: clerkUser.image_url || null,
-                    },
-                };
+            try {
+                const response = await fetch(
+                    `https://api.clerk.com/v1/users/${receiver.clerk_id}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                if (response.ok) {
+                    const clerkUser = await response.json();
+                    return {
+                        id: request.id,
+                        created_at: request.created_at.toISOString(),
+                        updated_at: request.updated_at.toISOString(),
+                        sender_id: request.sender_id,
+                        receiver_id: request.receiver_id,
+                        status: request.status,
+                        receiver: {
+                            id: receiver.id,
+                            clerk_id: receiver.clerk_id,
+                            first_name: receiver.first_name,
+                            last_name: receiver.last_name,
+                            image_url: clerkUser.image_url || null,
+                        },
+                    };
+                }
+            } catch (error) {
+                console.error(
+                    `Error fetching Clerk user ${receiver.clerk_id}:`,
+                    error
+                );
             }
-        } catch (error) {
-            console.error(`Error fetching Clerk user ${receiver.clerk_id}:`, error);
-        }
-        
-        return {
-            id: request.id,
-            created_at: request.created_at.toISOString(),
-            updated_at: request.updated_at.toISOString(),
-            sender_id: request.sender_id,
-            receiver_id: request.receiver_id,
-            status: request.status,
-            receiver: {
-                id: receiver.id,
-                clerk_id: receiver.clerk_id,
-                first_name: receiver.first_name,
-                last_name: receiver.last_name,
-                image_url: null,
-            },
-        };
-    }));
+
+            return {
+                id: request.id,
+                created_at: request.created_at.toISOString(),
+                updated_at: request.updated_at.toISOString(),
+                sender_id: request.sender_id,
+                receiver_id: request.receiver_id,
+                status: request.status,
+                receiver: {
+                    id: receiver.id,
+                    clerk_id: receiver.clerk_id,
+                    first_name: receiver.first_name,
+                    last_name: receiver.last_name,
+                    image_url: null,
+                },
+            };
+        })
+    );
 
     return c.json(requestsWithImages, HttpStatusCodes.OK);
 };
