@@ -7,7 +7,8 @@
         "dev:db": "tsx watch src/db/index.ts",
         "db:push": "pnpm drizzle-kit push",
         "db:generate": "pnpm drizzle-kit generate",
-        "db:migrate": "pnpm drizzle-kit migrate"
+        "db:migrate": "pnpm drizzle-kit migrate",
+        "db:pull": "pnpm drizzle-kit pull"
     },
     "dependencies": {
         "@asteasolutions/zod-to-openapi": "^7.3.0",
