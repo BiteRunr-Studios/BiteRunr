@@ -1,9 +1,8 @@
 import SwiftUI
 
 struct ContentView: View {
-//    @Environment(Clerk.self) private var clerk
-
-
+    @EnvironmentObject var supabaseState: SupabaseState
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
@@ -11,12 +10,15 @@ struct ContentView: View {
                     .ignoresSafeArea(edges: .top)
                     .frame(height: geometry.safeAreaInsets.top)
                 VStack {
-//                    if let _ = user {
+                    if supabaseState.isLoggedIn {
                         MainLayout()
-//                    } else {
-//                        SignUpOrSignInView()
-//                    }
+                            .transition(.opacity)
+                    } else {
+                        SignUpOrSignInView()
+                            .transition(.opacity)
+                    }
                 }
+                .animation(.easeInOut, value: supabaseState.isLoggedIn)
             }
         }
     }

@@ -35,6 +35,7 @@
 		14156DD22DBB28B800F4E56B /* RequestsPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA22DBB28B800F4E56B /* RequestsPlaceholderView.swift */; };
 		14156EA22DBB360700F4E56B /* MapValidationErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156EA12DBB360200F4E56B /* MapValidationErrors.swift */; };
 		14BBB4862DBBBAAA00A3C7E9 /* PollingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BBB4852DBBBAA600A3C7E9 /* PollingHelper.swift */; };
+		14BBB4EF2DBC0EA000A3C7E9 /* SupabaseState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BBB4EE2DBC0E9800A3C7E9 /* SupabaseState.swift */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
 /* End PBXBuildFile section */
@@ -68,6 +69,7 @@
 		14156DB82DBB28B800F4E56B /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		14156EA12DBB360200F4E56B /* MapValidationErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapValidationErrors.swift; sourceTree = "<group>"; };
 		14BBB4852DBBBAA600A3C7E9 /* PollingHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PollingHelper.swift; sourceTree = "<group>"; };
+		14BBB4EE2DBC0E9800A3C7E9 /* SupabaseState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseState.swift; sourceTree = "<group>"; };
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
 		7555FF7B242A565900829871 /* BiteRunr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BiteRunr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7555FF82242A565900829871 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -149,6 +151,7 @@
 		14156DAF2DBB28B800F4E56B /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				14BBB4EE2DBC0E9800A3C7E9 /* SupabaseState.swift */,
 				14BBB4852DBBBAA600A3C7E9 /* PollingHelper.swift */,
 				14156DAE2DBB28B800F4E56B /* DisableBackSwipeView.swift */,
 			);
@@ -245,7 +248,7 @@
 			buildConfigurationList = 7555FFA5242A565B00829871 /* Build configuration list for PBXNativeTarget "iosApp" */;
 			buildPhases = (
 				F36B1CEA2AD836FC00CB74D5 /* Compile Kotlin Framework */,
-				14CC9DB32DBAD3E50046BEE2 /* ShellScript */,
+				14BBB4F02DBC654700A3C7E9 /* Run Script */,
 				7555FF77242A565900829871 /* Sources */,
 				B92378962B6B1156000C7307 /* Frameworks */,
 				7555FF79242A565900829871 /* Resources */,
@@ -310,7 +313,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		14CC9DB32DBAD3E50046BEE2 /* ShellScript */ = {
+		14BBB4F02DBC654700A3C7E9 /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -319,6 +322,7 @@
 			);
 			inputPaths = (
 			);
+			name = "Run Script";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -376,6 +380,7 @@
 				14156DCE2DBB28B800F4E56B /* FriendSelectRow.swift in Sources */,
 				14156DCF2DBB28B800F4E56B /* KeyboardResponder.swift in Sources */,
 				14156DD02DBB28B800F4E56B /* SignUpOrSignInView.swift in Sources */,
+				14BBB4EF2DBC0EA000A3C7E9 /* SupabaseState.swift in Sources */,
 				14156DD12DBB28B800F4E56B /* TopBarView.swift in Sources */,
 				14156DD22DBB28B800F4E56B /* RequestsPlaceholderView.swift in Sources */,
 				14156EA22DBB360700F4E56B /* MapValidationErrors.swift in Sources */,
@@ -513,7 +518,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
-				DEVELOPMENT_TEAM = 4Y37NK9A5D;
+				DEVELOPMENT_TEAM = 6K8R8337BL;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -525,7 +530,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.biterunr-studios.biterunr";
+				PRODUCT_BUNDLE_IDENTIFIER = com.RunrStudios.BiteRunrKMP;
 				PRODUCT_NAME = "${APP_NAME}";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
@@ -540,7 +545,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
-				DEVELOPMENT_TEAM = 4Y37NK9A5D;
+				DEVELOPMENT_TEAM = 6K8R8337BL;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -552,7 +557,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.biterunr-studios.biterunr";
+				PRODUCT_BUNDLE_IDENTIFIER = com.RunrStudios.BiteRunrKMP;
 				PRODUCT_NAME = "${APP_NAME}";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;

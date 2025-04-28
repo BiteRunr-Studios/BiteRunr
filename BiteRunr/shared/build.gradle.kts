@@ -28,6 +28,7 @@ kotlin {
     }
 
     val ktorVersion = "3.1.1"
+    val settingsVersion = "1.3.0"
 
     sourceSets {
         commonMain.dependencies {
@@ -37,11 +38,14 @@ kotlin {
             implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+            implementation("com.russhwolf:multiplatform-settings:1.3.0")
+            implementation("com.russhwolf:multiplatform-settings-coroutines:1.3.0")
         }
 
         androidMain.dependencies {
             implementation("io.ktor:ktor-client-android:$ktorVersion")
         }
+
         iosMain.dependencies {
             implementation("io.ktor:ktor-client-darwin:$ktorVersion")
         }

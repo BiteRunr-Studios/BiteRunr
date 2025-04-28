@@ -1,14 +1,21 @@
 import SwiftUI
+import Shared
 
 struct SignInView: View {
+    let screen = UIScreen.main.bounds
     @Environment(\.colorScheme) var colorScheme
+    
+    @EnvironmentObject var supabaseState: SupabaseState
     
     @State private var email = ""
     @State private var password = ""
     @State private var isPasswordVisible: Bool = false
     @State private var isPressed = false
     
-    let screen = UIScreen.main.bounds
+    let api = SupabaseAuthApi(
+        supabaseUrl: "https://gpsyyguiopnrnztzwboq.supabase.co",
+        supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdwc3l5Z3Vpb3Bucm56dHp3Ym9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxMzUyMjgsImV4cCI6MjA1OTcxMTIyOH0.ZbukR17lKPXnTW8guz8DCb9Q4a8Id30iYxBawqkoVYA"
+    )
     
     var body: some View {
         ScrollView {
@@ -67,6 +74,7 @@ struct SignInView: View {
                             isPressed = true
                         }
                         Task {
+                            await submit(email: email, password: password)
                             withAnimation(.easeOut(duration: 0.1)) {
                                 isPressed = false
                             }
@@ -141,6 +149,17 @@ struct SignInView: View {
                 }
                 .padding()
             }
+        }
+    }
+}
+
+extension SignInView {
+    func submit(email: String, password: String) async {
+        do {
+            let response = try await api.signIn(email: email, password: password)
+            supabaseState.saveToken(token: response.access_token)
+        } catch {
+            print("Error: \(error)")
         }
     }
 }

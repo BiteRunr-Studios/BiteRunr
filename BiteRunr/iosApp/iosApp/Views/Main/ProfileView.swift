@@ -11,7 +11,7 @@ struct UpdateUserResponse: Decodable {}
 
 struct ProfileView: View {
     @State var showProfileSheet: Bool = false
-//    @Environment(Clerk.self) private var clerk
+    @EnvironmentObject var supabaseState: SupabaseState
     @State private var isPressed = false
     
     @State private var userFields = UpdateUserRequest(first_name: "", last_name: "")
@@ -140,7 +140,7 @@ struct ProfileView: View {
                             isPressed = true
                         }
                         Task {
-//                            try? await clerk.signOut()
+                            supabaseState.logout()
                             withAnimation(.easeOut(duration: 0.1)) {
                                 isPressed = false
                             }
