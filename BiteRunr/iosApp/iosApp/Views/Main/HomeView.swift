@@ -1,9 +1,8 @@
 import SwiftUI
 import Shared
-//import Clerk
 
 struct HomeView: View {
-    //    @Environment(Clerk.self) private var clerk
+    @EnvironmentObject var supabaseState: SupabaseState
     @State private var isPressed = false
     @StateObject private var poller = Poller()
     
@@ -14,31 +13,7 @@ struct HomeView: View {
                     .navigationTitle("")
                     .navigationBarTitleDisplayMode(.inline)
             }
-            .onAppear() {
-                Task {
-                    guard let apiUrl = ProcessInfo.processInfo.environment["API_URL"] else {
-                        print("API_URL not set")
-                        return
-                    }
-                    let url = "\(apiUrl)/locations"
-                    poller.startPolling(
-                        interval: 5,
-                        pollBlock: { try await getLocations(url: url) },
-                        onResult: { locations in
-                            print("Polled locations: \(locations.count)")
-                        },
-                        onError: { error in
-                            print("Polling error: \(error)")
-                        }
-                    )
-                
-                }
-            }
-            .onDisappear(){
-                Task {
-                    poller.stopPolling()
-                }
-            }
+            Text(supabaseState.getToken(tokenKey: "supbase_user_id") ?? "None")
         }
     }
 }

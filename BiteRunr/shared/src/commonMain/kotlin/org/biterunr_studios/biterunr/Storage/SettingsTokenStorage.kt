@@ -3,21 +3,19 @@ package org.biterunr_studios.biterunr.Storage
 import com.russhwolf.settings.Settings
 
 class SettingsTokenStorage(private val settings: Settings) : TokenStorage {
-    private val tokenKey = "supabase_access_token"
-
-    override fun saveToken(token: String) {
+    override fun saveToken(tokenKey: String, token: String) {
         settings.putString(tokenKey, token)
     }
 
-    override fun getToken(): String? {
+    override fun getToken(tokenKey: String): String? {
         return if (settings.hasKey(tokenKey)) settings.getString(tokenKey, "") else null
     }
 
-    override fun clearToken() {
+    override fun clearToken(tokenKey: String) {
         settings.remove(tokenKey)
     }
 
-    override fun hasToken(): Boolean {
+    override fun hasToken(tokenKey: String): Boolean {
         return settings.hasKey(tokenKey) && settings.getString(tokenKey, "").isNotEmpty()
     }
 }

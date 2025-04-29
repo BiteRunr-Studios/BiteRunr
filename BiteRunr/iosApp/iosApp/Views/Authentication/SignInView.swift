@@ -157,7 +157,8 @@ extension SignInView {
     func submit(email: String, password: String) async {
         do {
             let response = try await api.signIn(email: email, password: password)
-            supabaseState.saveToken(token: response.access_token)
+            supabaseState.saveToken(tokenKey: "supabase_access_token", token: response.access_token)
+            supabaseState.saveToken(tokenKey: "supabase_user_id", token: response.user.id)
         } catch {
             print("Error: \(error)")
         }

@@ -3,19 +3,19 @@ package org.biterunr_studios.biterunr.Auth
 import org.biterunr_studios.biterunr.Storage.TokenStorage
 
 class SupabaseTokenManager(private val tokenStorage: TokenStorage) {
-    fun saveAccessToken(token: String) {
-        tokenStorage.saveToken(token)
+    fun saveAccessToken(tokenKey: String, token: String) {
+        tokenStorage.saveToken(tokenKey, token)
     }
 
-    fun getAccessToken(): String? {
-        return tokenStorage.getToken()
+    fun getAccessToken(tokenKey: String): String? {
+        return tokenStorage.getToken(tokenKey)
     }
 
-    fun clearAccessToken() {
-        tokenStorage.clearToken()
+    fun clearAccessToken(tokenKey: String) {
+        tokenStorage.clearToken(tokenKey)
     }
 
-    fun isLoggedIn(): Boolean {
-        return tokenStorage.hasToken()
+    fun isLoggedIn(tokenKey: String): Boolean {
+        return tokenStorage.hasToken(tokenKey)
     }
 }

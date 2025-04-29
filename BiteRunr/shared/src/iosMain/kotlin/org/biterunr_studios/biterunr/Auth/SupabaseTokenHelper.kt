@@ -11,13 +11,13 @@ public class SupabaseTokenHelper {
     private val tokenManager = SupabaseTokenManager(tokenStorage)
     private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    fun isUserLoggedIn(): Boolean = tokenManager.isLoggedIn()
+    fun isUserLoggedIn(): Boolean = tokenManager.isLoggedIn("supabase_access_token")
 
-    fun getUserToken(): String? = tokenManager.getAccessToken()
+    fun getUserToken(tokenKey: String): String? = tokenManager.getAccessToken("supabase_access_token")
 
-    fun saveUserToken(token: String) {
+    fun saveUserToken(tokenKey: String, token: String) {
         try {
-            tokenManager.saveAccessToken(token)
+            tokenManager.saveAccessToken(tokenKey, token)
         } catch (e: Exception) {
             println("Error saving token: ${e.message}")
         }
@@ -25,7 +25,8 @@ public class SupabaseTokenHelper {
 
     fun clearUserToken() {
         try {
-            tokenManager.clearAccessToken()
+            tokenManager.clearAccessToken("supabase_access_token")
+            tokenManager.clearAccessToken("supabase_user_id")
             coroutineScope.coroutineContext.cancelChildren()
         } catch (e: Exception) {
             println("Error clearing token: ${e.message}")
