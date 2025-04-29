@@ -13,7 +13,7 @@ public class SupabaseTokenHelper {
 
     fun isUserLoggedIn(): Boolean = tokenManager.isLoggedIn("supabase_access_token")
 
-    fun getUserToken(tokenKey: String): String? = tokenManager.getAccessToken("supabase_access_token")
+    fun getUserToken(tokenKey: String): String? = tokenManager.getAccessToken(tokenKey)
 
     fun saveUserToken(tokenKey: String, token: String) {
         try {
