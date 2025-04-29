@@ -14,6 +14,7 @@ import {
 } from "@/db/schema/users";
 
 import {
+    insertAuthUserSchema,
     selectAuthUserSchema
 } from "@/db/schema/authUsers"
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
@@ -38,45 +39,46 @@ export const list = createRoute({
     },
 });
 
-// export const create = createRoute({
-//     path: "/users",
-//     method: "post",
-//     tags,
-//     security: [{ Bearer: [] }],
-//     middleware: [authMiddleware] as const,
-//     request: {
-//         body: jsonContentRequired(insertUserSchema, "Create a user"),
-//     },
-//     responses: {
-//         [HttpStatusCodes.OK]: jsonContent(selectUserSchema, "Create a user"),
-//         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-//             createErrorSchema(insertUserSchema),
-//             "Validation error(s)"
-//         ),
-//     },
-// });
+export const create = createRoute({
+    path: "/users",
+    method: "post",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        body: jsonContentRequired(insertAuthUserSchema, "Create a user"),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(selectAuthUserSchema, "Create a user"),
+        [HttpStatusCodes.BAD_REQUEST]: jsonContent(createErrorSchema(selectAuthUserSchema), "Error occured while creating user"),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(insertAuthUserSchema),
+            "Validation error(s)"
+        ),
+    },
+});
 
-// export const getOne = createRoute({
-//     path: "/users/{id}",
-//     method: "get",
-//     tags,
-//     security: [{ Bearer: [] }],
-//     middleware: [authMiddleware] as const,
-//     request: {
-//         params: IdUUIDParamsSchema,
-//     },
-//     responses: {
-//         [HttpStatusCodes.OK]: jsonContent(selectUserSchema, "User by Id"),
-//         [HttpStatusCodes.NOT_FOUND]: jsonContent(
-//             notFoundSchema,
-//             "User not found"
-//         ),
-//         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-//             createErrorSchema(IdUUIDParamsSchema),
-//             "Invalid Id error"
-//         ),
-//     },
-// });
+export const getOne = createRoute({
+    path: "/users/{id}",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: IdUUIDParamsSchema,
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(selectAuthUserSchema, "User by Id"),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User not found"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(IdUUIDParamsSchema),
+            "Invalid Id error"
+        ),
+    },
+});
 
 // export const patch = createRoute({
 //     path: "/users/{id}",
@@ -282,8 +284,8 @@ export const list = createRoute({
 // });
 
 export type ListRoute = typeof list;
-// export type CreateRoute = typeof create;
-// export type GetOneRoute = typeof getOne;
+export type CreateRoute = typeof create;
+export type GetOneRoute = typeof getOne;
 // export type PatchRoute = typeof patch;
 // export type RemoveRoute = typeof remove;
 // export type PatchClerkIdRoute = typeof patchClerkId;

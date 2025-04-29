@@ -1,61 +1,101 @@
 import db from "@/db/index";
-import { users, friends, friendRequests, selectAuthUserSchema } from "@/db/schema/index";
+import {
+  users,
+  friends,
+  friendRequests,
+  selectAuthUserSchema,
+  authUsers,
+} from "@/db/schema/index";
 import type {
-    // CreateRoute,
-    // GetOneRoute,
-    ListRoute,
-    // PatchClerkIdRoute,
-    // PatchRoute,
-    // RemoveRoute,
-    // GetFriendsRoute,
-    // GetFriendRequestsRoute,
-    // GetOneByClerkIdRoute,
-    // GetAllUsersExceptAuthenticatedRoute,
+  CreateRoute,
+  GetOneRoute,
+  ListRoute,
+  // PatchClerkIdRoute,
+  // PatchRoute,
+  // RemoveRoute,
+  // GetFriendsRoute,
+  // GetFriendRequestsRoute,
+  // GetOneByClerkIdRoute,
+  // GetAllUsersExceptAuthenticatedRoute,
 } from "./users.routes";
 import type { AppRouteHandler } from "@/lib/types";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
-import { eq } from "drizzle-orm";
+import { eq, getTableColumns } from "drizzle-orm";
 import { z } from "zod";
+import { profile } from "console";
+import { supabase } from "@/lib/supabase";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
-    const users = await db.query.authUsers.findMany({
-        with: {
-            profile: true
-        }
-    });
+  const users = await db.query.authUsers.findMany({
+    with: {
+      profile: true,
+    },
+  });
 
-    // const res = z.array(selectAuthUserSchema).parse(users)
-
-    return c.json(users);
+  return c.json(users);
 };
 
-// export const create: AppRouteHandler<CreateRoute> = async (c) => {
-//     const newUser = c.req.valid("json");
-//     const [inserted] = await db.insert(users).values(newUser).returning();
+export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
+  const { id } = c.req.valid("param");
 
-//     return c.json(inserted, HttpStatusCodes.OK);
-// };
+  const user = await db.query.authUsers.findFirst({
+    where(fields, operators) {
+      return operators.eq(fields.id, id);
+    },
+    with: {
+      profile: {
+        columns: {
+          id: false,
+        },
+      },
+    },
+  });
 
-// export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
-//     const { id } = c.req.valid("param");
-//     const user = await db.query.users.findFirst({
-//         where(fields, operators) {
-//             return operators.eq(fields.id, id);
-//         },
-//     });
+  if (!user) {
+    return c.json(
+      {
+        message: HttpStatusPhrases.NOT_FOUND,
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
 
-//     if (!user) {
-//         return c.json(
-//             {
-//                 message: HttpStatusPhrases.NOT_FOUND,
-//             },
-//             HttpStatusCodes.NOT_FOUND
-//         );
-//     }
+  return c.json(user, HttpStatusCodes.OK);
+};
 
-//     return c.json(user, HttpStatusCodes.OK);
-// };
+export const create: AppRouteHandler<CreateRoute> = async (c) => {
+  const newUser = c.req.valid("json");
+
+  // supabase auth user insertion
+  const { data, error } = await supabase.auth.signUp({
+    email: newUser.email,
+    password: newUser.password,
+  });
+
+  if (error || !data.user) return c.json(error, HttpStatusCodes.BAD_REQUEST);
+
+  // user profile insertion
+  const user = {
+    id: data.user!.id,
+    first_name: newUser.profile.first_name,
+    last_name: newUser.profile.last_name,
+  };
+  const [inserted] = await db.insert(users).values(user).returning();
+
+  const response = {
+    id: inserted.id,
+    email: data.user!.email!,
+    profile: {
+      first_name: inserted.first_name,
+      last_name: inserted.last_name,
+      created_at: inserted.created_at,
+      updated_at: inserted.updated_at,
+    },
+  };
+
+  return c.json(response, HttpStatusCodes.OK);
+};
 
 // export const patch: AppRouteHandler<PatchRoute> = async (c) => {
 //     const { id } = c.req.valid("param");
@@ -374,7 +414,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 //         } catch (error) {
 //             console.error(`Error fetching Clerk user ${user.clerk_id}:`, error);
 //         }
-        
+
 //         return {
 //             ...user,
 //             image_url: null,
