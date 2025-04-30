@@ -43,7 +43,7 @@ struct FriendSelectRow: View {
             //            }
             
             VStack(alignment: .leading) {
-                Text(friend.firstName + " " + friend.lastName)
+                Text(friend.profile.firstName + " " + friend.profile.lastName)
                     .foregroundStyle(.primary)
                 //                Text(friend.email)
                 //                    .foregroundStyle(.secondary)

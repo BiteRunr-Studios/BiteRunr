@@ -53,12 +53,12 @@ struct PlaceholderRequestRow: View {
                 
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(user.firstName + " " + user.lastName)
+                    Text(user.profile.firstName + " " + user.profile.lastName)
                         .fontWeight(.medium)
                     
-//                    Text(user.email)
-//                        .font(.subheadline)
-//                        .foregroundColor(.secondary)
+                    Text(user.email)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
                 
                 Spacer()

@@ -2,6 +2,7 @@ package org.biterunr_studios.biterunr.DTO
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.biterunr_studios.biterunr.Models.Profile
 import org.biterunr_studios.biterunr.Models.UserProfile
 
 @Serializable
@@ -16,13 +17,7 @@ data class FriendRequestUser(
     val lastName: String,
 
     @SerialName("email")
-    val email: String,
-
-    @SerialName("clerk_id")
-    val clerkId: String,
-
-    @SerialName("image_url")
-    val imageUrl: String? = null,
+    val email: String? = null,
 
     @SerialName("sender_id")
     val senderId: String,
@@ -32,15 +27,12 @@ data class FriendRequestUser(
 ) {
     fun toUser(): UserProfile = UserProfile(
         id = id,
-        firstName = firstName,
-        lastName = lastName,
-        createdAt = kotlinx.datetime.Clock.System.now(),
-        updatedAt = kotlinx.datetime.Clock.System.now(),
-        createdOrders = null,
-        orderUsers = null,
-        orderItems = null,
-        friends = null,
-        sentFriendRequests = null,
-        receivedFriendRequests = null
+        email = email ?: "",
+        profile = Profile(
+            firstName = firstName,
+            lastName = lastName,
+            createdAt = kotlinx.datetime.Clock.System.now(),
+            updatedAt = kotlinx.datetime.Clock.System.now()
+        )
     )
 }

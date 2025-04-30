@@ -156,30 +156,28 @@ export const getOne = createRoute({
 //     },
 // });
 
-// export const getFriends = createRoute({
-//     path: "/users/clerk/{clerk_id}/friends",
-//     method: "get",
-//     tags,
-//     security: [{ Bearer: [] }],
-//     middleware: [authMiddleware] as const,
-//     request: {
-//         params: z.object({
-//             clerk_id: z.string(),
-//         }),
-//     },
-//     responses: {
-//         [HttpStatusCodes.OK]: jsonContent(
-//             z.array(selectUserSchema.extend({
-//                 image_url: z.string().nullable(),
-//             })),
-//             "List of user's friends"
-//         ),
-//         [HttpStatusCodes.NOT_FOUND]: jsonContent(
-//             notFoundSchema,
-//             "User not found"
-//         ),
-//     },
-// });
+export const getFriends = createRoute({
+    path: "/users/:user_id/friends",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            user_id: z.string(),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(selectUserSchema),
+            "List of user's friends"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User not found"
+        ),
+    },
+});
 
 // export const getClerkUser = createRoute({
 //     path: "/users/clerk/{clerk_id}",
@@ -206,30 +204,28 @@ export const getOne = createRoute({
 //     },
 // });
 
-// export const getFriendRequests = createRoute({
-//     path: "/users/clerk/{clerk_id}/friend-requests",
-//     method: "get",
-//     tags,
-//     security: [{ Bearer: [] }],
-//     middleware: [authMiddleware] as const,
-//     request: {
-//         params: z.object({
-//             clerk_id: z.string(),
-//         }),
-//     },
-//     responses: {
-//         [HttpStatusCodes.OK]: jsonContent(
-//             z.array(selectUserSchema.extend({
-//                 image_url: z.string().nullable(),
-//             })),
-//             "List of users who have sent friend requests"
-//         ),
-//         [HttpStatusCodes.NOT_FOUND]: jsonContent(
-//             notFoundSchema,
-//             "User not found"
-//         ),
-//     },
-// });
+export const getFriendRequests = createRoute({
+    path: "/users/:user_id/friend-requests",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            user_id: z.string(),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(selectUserSchema),
+            "List of users who have sent friend requests"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User not found"
+        ),
+    },
+});
 
 // export const getOneByClerkId = createRoute({
 //     path: "/users/clerk/{clerk_id}",
@@ -289,7 +285,7 @@ export type GetOneRoute = typeof getOne;
 // export type PatchRoute = typeof patch;
 // export type RemoveRoute = typeof remove;
 // export type PatchClerkIdRoute = typeof patchClerkId;
-// export type GetFriendsRoute = typeof getFriends;
-// export type GetFriendRequestsRoute = typeof getFriendRequests;
+export type GetFriendsRoute = typeof getFriends;
+export type GetFriendRequestsRoute = typeof getFriendRequests;
 // export type GetOneByClerkIdRoute = typeof getOneByClerkId;
 // export type GetAllUsersExceptAuthenticatedRoute = typeof getAllUsersExceptAuthenticated;
