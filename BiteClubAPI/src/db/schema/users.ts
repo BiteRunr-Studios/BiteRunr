@@ -48,7 +48,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   }),
 }));
 
-export const baseUserSchema = createSelectSchema(users).omit({id: true})
+export const baseUserSchema = createSelectSchema(users).omit({ id: true });
 
 export const selectUserSchema = createSelectSchema(users).extend({
   created_orders: selectOrdersSchema.optional(),
@@ -69,7 +69,10 @@ export const insertUserSchema = createInsertSchema(users)
     created_at: true,
     updated_at: true,
   });
-  
-export const patchUserSchema = insertUserSchema.partial();
+
+export const patchUserSchema = insertUserSchema.partial().extend({
+  first_name: z.string().optional().or(z.literal("").or(z.null())),
+  last_name: z.string().optional().or(z.literal("").or(z.null())),
+});
 
 export default users;
