@@ -13,12 +13,12 @@ class SupabaseState: ObservableObject {
         self.isLoggedIn = tokenHelper.isUserLoggedIn()
     }
     
-    func getToken() -> String? {
-        return tokenHelper.getUserToken()
+    func getToken(tokenKey: String) -> String? {
+        return tokenHelper.getUserToken(tokenKey: tokenKey)
     }
     
-    func saveToken(token: String) {
-        tokenHelper.saveUserToken(token: token)
+    func saveToken(tokenKey: String, token: String) {
+        tokenHelper.saveUserToken(tokenKey: tokenKey, token: token)
         
         DispatchQueue.main.async {
             self.isLoggedIn = true

@@ -156,10 +156,24 @@ struct SignInView: View {
 extension SignInView {
     func submit(email: String, password: String) async {
         do {
-            let response = try await api.signIn(email: email, password: password)
-            supabaseState.saveToken(token: response.access_token)
+            let result = try await api.signIn(
+                email: email,
+                password: password
+            )
+            
+            if let success = result as? SignInResult.Success {
+                let response = success.response
+                supabaseState.saveToken(tokenKey: "supabase_access_token", token: response.access_token)
+                supabaseState.saveToken(tokenKey: "supabase_user_id", token: response.user.id)
+                print("Sign-in successful!")
+            } else if let error = result as? SignInResult.Error {
+                print("Sign-in failed: \(error.message)")
+            } else {
+                print("Unknown result from signIn")
+            }
         } catch {
-            print("Error: \(error)")
+            print("Sign-in failed with error: \(error.localizedDescription)")
         }
     }
+
 }

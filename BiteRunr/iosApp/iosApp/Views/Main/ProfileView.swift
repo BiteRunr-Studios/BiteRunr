@@ -1,5 +1,4 @@
 import SwiftUI
-//import Clerk
 import Foundation
 
 struct UpdateUserRequest: Encodable {

@@ -11,6 +11,9 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonIgnoreUnknownKeys
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class SupabaseAuthApi(
     private val supabaseUrl: String,
@@ -41,14 +44,38 @@ class SupabaseAuthApi(
             // Other headers
         }
     }
-    
-    suspend fun signIn(email: String, password: String): AuthResponse {
-        val response: HttpResponse = httpClient.post("$supabaseUrl/auth/v1/token?grant_type=password") {
-            contentType(ContentType.Application.Json)
-            header("apikey", supabaseAnonKey)
-            setBody(SignInRequest(email, password))
+
+    suspend fun signIn(
+        email: String,
+        password: String
+    ): SignInResult {
+        try {
+            val response: HttpResponse =
+                httpClient.post("$supabaseUrl/auth/v1/token?grant_type=password") {
+                    contentType(ContentType.Application.Json)
+                    header("apikey", supabaseAnonKey)
+                    setBody(mapOf("email" to email, "password" to password))
+                }
+
+            return if (response.status == HttpStatusCode.OK) {
+                val authResponse = Json.decodeFromString<AuthResponse>(response.bodyAsText())
+                SignInResult.Success(authResponse)
+            } else {
+                val errorBody = response.bodyAsText()
+                val errorMessage = try {
+                    val json = Json.parseToJsonElement(errorBody).jsonObject
+                    json["error_description"]?.jsonPrimitive?.content
+                        ?: json["msg"]?.jsonPrimitive?.content
+                        ?: json["error"]?.jsonPrimitive?.content
+                        ?: "Authentication failed"
+                } catch (e: Exception) {
+                    "Authentication failed: ${e.message}"
+                }
+                SignInResult.Error(errorMessage)
+            }
+        } catch (e: Exception) {
+            return SignInResult.Error("Authentication failed: ${e.message}")
         }
-        return response.body()
     }
 }
 
@@ -56,6 +83,7 @@ class SupabaseAuthApi(
 data class SignInRequest(val email: String, val password: String)
 
 @Serializable
+@JsonIgnoreUnknownKeys
 data class AuthResponse(
     val access_token: String,
     val refresh_token: String,
@@ -65,7 +93,14 @@ data class AuthResponse(
 )
 
 @Serializable
+@JsonIgnoreUnknownKeys
 data class User(
     val id: String,
     val email: String
 )
+
+@JsonIgnoreUnknownKeys
+sealed class SignInResult {
+    data class Success(val response: AuthResponse) : SignInResult()
+    data class Error(val message: String) : SignInResult()
+}
