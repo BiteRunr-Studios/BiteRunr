@@ -3,6 +3,7 @@ package org.biterunr_studios.biterunr.ReusableFunctions
 import org.biterunr_studios.biterunr.Models.Location
 import io.ktor.http.*
 import org.biterunr_studios.biterunr.DTO.FriendRequestUser
+import org.biterunr_studios.biterunr.DTO.FriendUser
 import org.biterunr_studios.biterunr.Models.FriendRequest
 import org.biterunr_studios.biterunr.Models.UserProfile
 
@@ -11,9 +12,9 @@ suspend fun getLocations(url: String): List<Location> {
     return result.getOrThrow()
 }
 
-suspend fun getFriends(baseUrl: String, user_id: String): List<UserProfile> {
+suspend fun getFriends(baseUrl: String, user_id: String): List<FriendUser> {
     val url = "$baseUrl/users/$user_id/friends"
-    val result = fetch<Unit, List<UserProfile>>(url = url, method = HttpMethod.Get, body = null)
+    val result = fetch<Unit, List<FriendUser>>(url = url, method = HttpMethod.Get, body = null)
     return result.getOrThrow()
 }
 

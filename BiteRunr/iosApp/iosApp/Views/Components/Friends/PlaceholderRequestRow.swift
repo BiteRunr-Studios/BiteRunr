@@ -56,9 +56,9 @@ struct PlaceholderRequestRow: View {
                     Text(user.profile.firstName + " " + user.profile.lastName)
                         .fontWeight(.medium)
                     
-                    Text(user.email)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+//                    Text(user.email)
+//                        .font(.subheadline)
+//                        .foregroundColor(.secondary)
                 }
                 
                 Spacer()

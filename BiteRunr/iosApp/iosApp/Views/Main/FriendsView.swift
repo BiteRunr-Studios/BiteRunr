@@ -14,7 +14,7 @@ struct FriendsView: View {
     @State private var searchText = ""
     @State private var selectedTab = 0
     @State private var showAddFriendSheet = false
-    @State private var friends: [UserProfile] = []
+    @State private var friends: [FriendUser] = []
     @State private var friendRequests: [FriendRequestUser] = []
     @State private var isLoading = false
     @State private var errorMessage: String? = nil
@@ -111,7 +111,7 @@ struct FriendsView: View {
                                 if let index = friendRequests.firstIndex(where: { $0.id == acceptedRequest.id }) {
                                     friendRequests.remove(at: index)
                                 }
-                                friends.append(acceptedRequest.toUser())
+//                                friends.append(acceptedRequest.toUser())
                             },
                             onRequestRejected: { rejectedRequest in
                                 if let index = friendRequests.firstIndex(where: { $0.id == rejectedRequest.id }) {
@@ -199,12 +199,12 @@ extension FriendsView {
     }
     //
     // friends filtering
-    private var filteredFriends: [UserProfile] {
+    private var filteredFriends: [FriendUser] {
         if searchText.isEmpty {
             return friends
         } else {
             return friends.filter { friend in
-                let fullName = "\(friend.profile.firstName) \(friend.profile.lastName)".lowercased()
+                let fullName = "\(friend.firstName) \(friend.lastName))".lowercased()
                 return fullName.contains(searchText.lowercased())
                 //                    || friend.email.lowercased().contains(searchText.lowercased())
             }

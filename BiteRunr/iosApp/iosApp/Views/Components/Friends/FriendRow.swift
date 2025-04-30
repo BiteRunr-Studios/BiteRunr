@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct FriendRow: View {
-    let user: UserProfile
+    let user: FriendUser
     @State private var showingOptions = false
     @State private var isDeleting = false
     @State private var deleteError: String? = nil
@@ -46,8 +46,10 @@ struct FriendRow: View {
             //            }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(user.profile.firstName + " " + user.profile.lastName)
+                Text(user.firstName + " " + user.lastName)
                     .fontWeight(.medium)
+                Text(user.email ?? "")
+                    .font(.subheadline)
                 
             }
             
