@@ -3,6 +3,8 @@ export {
   insertAuthUserSchema,
   selectAuthUserSchema,
   authUsersRelations,
+  patchAuthUserSchema,
+  resetUserAuthPasswordSchema
 } from "./authUsers";
 export {
   default as users,

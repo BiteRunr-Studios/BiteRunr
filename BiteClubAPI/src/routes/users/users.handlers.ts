@@ -5,12 +5,18 @@ import {
   friendRequests,
   selectAuthUserSchema,
   authUsers,
+  patchAuthUserSchema,
 } from "@/db/schema/index";
 import type {
   CreateRoute,
   GetOneRoute,
   ListRoute,
   // PatchClerkIdRoute,
+  PatchRoute,
+  RemoveRoute,
+  ResetPasswordRoute,
+  // GetFriendsRoute,
+  // GetFriendRequestsRoute,
   // PatchRoute,
   // RemoveRoute,
   GetFriendsRoute,
@@ -25,6 +31,7 @@ import { eq, getTableColumns } from "drizzle-orm";
 import { z } from "zod";
 import { profile } from "console";
 import { supabase } from "@/lib/supabase";
+import type { User } from "@supabase/supabase-js";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const users = await db.query.authUsers.findMany({
@@ -97,68 +104,166 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
   return c.json(response, HttpStatusCodes.OK);
 };
 
-// export const patch: AppRouteHandler<PatchRoute> = async (c) => {
-//     const { id } = c.req.valid("param");
-//     const updates = c.req.valid("json");
+export const patch: AppRouteHandler<PatchRoute> = async (c) => {
+  const { id } = c.req.valid("param");
+  const updates = c.req.valid("json");
 
-//     const [updatedUser] = await db
-//         .update(users)
-//         .set(updates)
-//         .where(eq(users.id, id))
-//         .returning();
+  // 1. Extract tokens (assume sent in request body for this example)
+  const { access_token, refresh_token } = updates;
 
-//     if (!updatedUser) {
-//         return c.json(
-//             {
-//                 message: HttpStatusPhrases.NOT_FOUND,
-//             },
-//             HttpStatusCodes.NOT_FOUND
-//         );
-//     }
+  // 2. Set session if tokens are present
+  if (access_token && refresh_token) {
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: access_token,
+      refresh_token: refresh_token,
+    });
+    if (sessionError) {
+      return c.json(sessionError, HttpStatusCodes.UNAUTHORIZED);
+    }
+  }
 
-//     return c.json(updatedUser, HttpStatusCodes.OK);
-// };
+  if (updates.email) {
+    // 3. Now update the user
+    const { data, error } = await supabase.auth.updateUser({
+      email: updates.email,
+    });
 
-// export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
-//     const { id } = c.req.valid("param");
-//     const [deletedUser] = await db
-//         .delete(users)
-//         .where(eq(users.id, id))
-//         .returning();
+    if (error || !data.user) return c.json(error, HttpStatusCodes.BAD_REQUEST);
+  }
 
-//     if (!deletedUser) {
-//         return c.json(
-//             {
-//                 message: HttpStatusPhrases.NOT_FOUND,
-//             },
-//             HttpStatusCodes.NOT_FOUND
-//         );
-//     }
+  const [existingUser] = await db.select().from(users).where(eq(users.id, id));
+  const [existingAuthUser] = await db
+    .select()
+    .from(authUsers)
+    .where(eq(authUsers.id, id));
 
-//     return c.json(deletedUser, HttpStatusCodes.OK);
-// };
+  if (!existingUser) {
+    return c.json(
+      { message: HttpStatusPhrases.NOT_FOUND },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
 
-// export const patchClerkId: AppRouteHandler<PatchClerkIdRoute> = async (c) => {
-//     const { clerk_id } = c.req.valid("param");
-//     const updates = c.req.valid("json");
+  const user = {
+    first_name:
+      updates.profile.first_name !== undefined &&
+      updates.profile.first_name !== null &&
+      updates.profile.first_name !== ""
+        ? updates.profile.first_name
+        : existingUser.first_name,
+    last_name:
+      updates.profile.last_name !== undefined &&
+      updates.profile.last_name !== null &&
+      updates.profile.last_name !== ""
+        ? updates.profile.last_name
+        : existingUser.last_name,
+  };
 
-//     const [updatedUser] = await db
-//         .update(users)
-//         .set(updates)
-//         .where(eq(users.clerk_id, clerk_id))
-//         .returning();
+  const [updatedUser] = await db
+    .update(users)
+    .set(user)
+    .where(eq(users.id, id))
+    .returning();
 
-//     if (!updatedUser) {
-//         return c.json(
-//             {
-//                 message: HttpStatusPhrases.NOT_FOUND,
-//             },
-//             HttpStatusCodes.NOT_FOUND
-//         );
-//     }
+  if (!updatedUser) {
+    return c.json(
+      { message: HttpStatusPhrases.NOT_FOUND },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
 
-//     return c.json(updatedUser, HttpStatusCodes.OK);
-// };
+  const response = selectAuthUserSchema.parse({
+    id: updatedUser.id,
+    email: existingAuthUser.email, // If email was updated, use the new value
+    profile: {
+      first_name: updatedUser.first_name,
+      last_name: updatedUser.last_name,
+      created_at: updatedUser.created_at,
+      updated_at: updatedUser.updated_at,
+    },
+  });
+
+  return c.json(response, HttpStatusCodes.OK);
+};
+
+export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+  const { id } = c.req.valid("param");
+  const [deletedUser] = await db
+    .delete(users)
+    .where(eq(users.id, id))
+    .returning();
+
+  if (!deletedUser) {
+    return c.json(
+      {
+        message: HttpStatusPhrases.NOT_FOUND,
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.json(deletedUser, HttpStatusCodes.OK);
+};
+
+export const resetPassword: AppRouteHandler<ResetPasswordRoute> = async (c) => {
+  const { id } = c.req.valid("param");
+  const resetPasswordObject = c.req.valid("json");
+
+  const authUser = await db.query.authUsers.findFirst({
+    where(fields, operators) {
+      return operators.eq(fields.id, id);
+    },
+    with: {
+      profile: {
+        columns: {
+          id: false,
+        },
+      },
+    },
+  });
+
+  if (!authUser) {
+    return c.json(
+      { message: HttpStatusPhrases.NOT_FOUND },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: authUser.email,
+    password: resetPasswordObject.old_password,
+  });
+
+  if (signInError) {
+    return c.json(
+      {
+        error: {
+          issues: [
+            {
+              code: "invalid_password",
+              path: ["old_password"],
+              message: "Old password is incorrect",
+            },
+          ],
+          name: "ValidationError",
+        },
+        success: false,
+      },
+      HttpStatusCodes.UNAUTHORIZED
+    );
+  }
+
+  const { data, error } = await supabase.auth.updateUser({
+    email: authUser.email,
+    password: resetPasswordObject.password,
+  });
+
+  if (error || !data.user) return c.json(error, HttpStatusCodes.BAD_REQUEST);
+
+  const response = selectAuthUserSchema.parse(authUser);
+
+  return c.json(response, HttpStatusCodes.OK);
+};
 
 export const getFriends: AppRouteHandler<GetFriendsRoute> = async (c) => {
     const { user_id } = c.req.valid("param");
@@ -315,6 +420,33 @@ export const getFriendRequests: AppRouteHandler<
 //         },
 //         HttpStatusCodes.OK
 //     );
+// };
+//                 if (response.ok) {
+//                     const clerkUser = await response.json();
+//                     return {
+//                         ...sender,
+//                         image_url: clerkUser.image_url || null,
+//                         sender_id: request.sender_id,
+//                         receiver_id: request.receiver_id,
+//                     };
+//                 }
+//             } catch (error) {
+//                 console.error(
+//                     `Error fetching Clerk user ${sender.clerk_id}:`,
+//                     error
+//                 );
+//             }
+
+//             return {
+//                 ...sender,
+//                 image_url: null,
+//                 sender_id: request.sender_id,
+//                 receiver_id: request.receiver_id,
+//             };
+//         })
+//     );
+
+//     return c.json(requesters, HttpStatusCodes.OK);
 // };
 
 // export const getAllUsersExceptAuthenticated: AppRouteHandler<GetAllUsersExceptAuthenticatedRoute> = async (c) => {
