@@ -64,4 +64,22 @@ export const resetUserAuthPasswordSchema = insertAuthUserSchema
     profile: true,
   });
 
+export const sessionSchema = z.object({
+  access_token: z.string().nonempty("Access token is required"),
+  refresh_token: z.string().nonempty("Refresh token is required"),
+  user: selectAuthUserSchema.omit({
+    profile: true,
+    email: true,
+  }),
+});
+
+export const insertAuthUserSSOSchema = baseUserSchema
+  .extend({
+    id: z.string().nonempty("User id is required"),
+  })
+  .omit({
+    created_at: true,
+    updated_at: true,
+  });
+
 export default authUsers;
