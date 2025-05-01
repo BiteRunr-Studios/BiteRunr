@@ -18,9 +18,12 @@ import {
   patchAuthUserSchema,
   resetUserAuthPasswordSchema,
   selectAuthUserSchema,
+  sessionSchema,
+  insertAuthUserSSOSchema,
 } from "@/db/schema/authUsers";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
+import { type Session } from "@supabase/supabase-js";
 import { authMiddleware } from "@/middlewares/clerk-auth";
 
 const tags = ["Users"];
@@ -47,13 +50,13 @@ export const create = createRoute({
   path: "/users",
   method: "post",
   tags,
-  security: [{ Bearer: [] }],
-  middleware: [authMiddleware] as const,
+  // security: [{ Bearer: [] }],
+  // middleware: [authMiddleware] as const,
   request: {
     body: jsonContentRequired(insertAuthUserSchema, "Create a user"),
   },
   responses: {
-    [HttpStatusCodes.OK]: jsonContent(selectAuthUserSchema, "Create a user"),
+    [HttpStatusCodes.OK]: jsonContent(sessionSchema, "User created"),
     [HttpStatusCodes.BAD_REQUEST]: jsonContent(
       createErrorSchema(selectAuthUserSchema),
       "Error occured while creating user"
@@ -165,6 +168,29 @@ export const resetPassword = createRoute({
       createErrorSchema(resetUserAuthPasswordSchema),
       "Error occured while creating user"
     ),
+  },
+});
+
+export const createFromSSO = createRoute({
+  path: "users/sso",
+  method: "post",
+  tags,
+  request: {
+    body: jsonContentRequired(
+      insertAuthUserSSOSchema,
+      "Create SSO user profile"
+    ),
+  },
+  responses: {
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+      [
+        createErrorSchema(insertAuthUserSSOSchema),
+        createErrorSchema(IdUUIDParamsSchema),
+      ],
+      "Validation error(s)"
+    ),
+    [HttpStatusCodes.OK]: jsonContent(selectAuthUserSchema, "User created"),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Auth user not found"),
   },
 });
 
@@ -329,6 +355,7 @@ export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
 export type ResetPasswordRoute = typeof resetPassword;
+export type SSOCreateRoute = typeof createFromSSO;
 // export type PatchClerkIdRoute = typeof patchClerkId;
 // export type GetFriendsRoute = typeof getFriends;
 // export type GetFriendRequestsRoute = typeof getFriendRequests;
