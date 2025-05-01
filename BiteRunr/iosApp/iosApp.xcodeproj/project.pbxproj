@@ -34,6 +34,13 @@
 		14156DD12DBB28B800F4E56B /* TopBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA82DBB28B800F4E56B /* TopBarView.swift */; };
 		14156DD22DBB28B800F4E56B /* RequestsPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA22DBB28B800F4E56B /* RequestsPlaceholderView.swift */; };
 		14156EA22DBB360700F4E56B /* MapValidationErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156EA12DBB360200F4E56B /* MapValidationErrors.swift */; };
+		143C5F4A2DC2F49F008052A5 /* Supabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 143C5F492DC2F49B008052A5 /* Supabase.swift */; };
+		1472B7B82DC2F55400274F56 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 1472B7B72DC2F55400274F56 /* Auth */; };
+		1472B7BA2DC2F55400274F56 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = 1472B7B92DC2F55400274F56 /* Functions */; };
+		1472B7BC2DC2F55400274F56 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 1472B7BB2DC2F55400274F56 /* PostgREST */; };
+		1472B7BE2DC2F55400274F56 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 1472B7BD2DC2F55400274F56 /* Realtime */; };
+		1472B7C02DC2F55400274F56 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 1472B7BF2DC2F55400274F56 /* Storage */; };
+		1472B7C22DC2F55400274F56 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 1472B7C12DC2F55400274F56 /* Supabase */; };
 		14BBB4862DBBBAAA00A3C7E9 /* PollingHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BBB4852DBBBAA600A3C7E9 /* PollingHelper.swift */; };
 		14BBB4EF2DBC0EA000A3C7E9 /* SupabaseState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BBB4EE2DBC0E9800A3C7E9 /* SupabaseState.swift */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
@@ -68,6 +75,7 @@
 		14156DB72DBB28B800F4E56B /* MainLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainLayout.swift; sourceTree = "<group>"; };
 		14156DB82DBB28B800F4E56B /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		14156EA12DBB360200F4E56B /* MapValidationErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapValidationErrors.swift; sourceTree = "<group>"; };
+		143C5F492DC2F49B008052A5 /* Supabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Supabase.swift; sourceTree = "<group>"; };
 		14BBB4852DBBBAA600A3C7E9 /* PollingHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PollingHelper.swift; sourceTree = "<group>"; };
 		14BBB4EE2DBC0E9800A3C7E9 /* SupabaseState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseState.swift; sourceTree = "<group>"; };
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
@@ -82,6 +90,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1472B7BC2DC2F55400274F56 /* PostgREST in Frameworks */,
+				1472B7BA2DC2F55400274F56 /* Functions in Frameworks */,
+				1472B7C22DC2F55400274F56 /* Supabase in Frameworks */,
+				1472B7B82DC2F55400274F56 /* Auth in Frameworks */,
+				1472B7C02DC2F55400274F56 /* Storage in Frameworks */,
+				1472B7BE2DC2F55400274F56 /* Realtime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -151,6 +165,7 @@
 		14156DAF2DBB28B800F4E56B /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				143C5F492DC2F49B008052A5 /* Supabase.swift */,
 				14BBB4EE2DBC0E9800A3C7E9 /* SupabaseState.swift */,
 				14BBB4852DBBBAA600A3C7E9 /* PollingHelper.swift */,
 				14156DAE2DBB28B800F4E56B /* DisableBackSwipeView.swift */,
@@ -259,6 +274,12 @@
 			);
 			name = iosApp;
 			packageProductDependencies = (
+				1472B7B72DC2F55400274F56 /* Auth */,
+				1472B7B92DC2F55400274F56 /* Functions */,
+				1472B7BB2DC2F55400274F56 /* PostgREST */,
+				1472B7BD2DC2F55400274F56 /* Realtime */,
+				1472B7BF2DC2F55400274F56 /* Storage */,
+				1472B7C12DC2F55400274F56 /* Supabase */,
 			);
 			productName = iosApp;
 			productReference = 7555FF7B242A565900829871 /* BiteRunr.app */;
@@ -290,6 +311,7 @@
 			);
 			mainGroup = 7555FF72242A565900829871;
 			packageReferences = (
+				143C5F482DC2D024008052A5 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			productRefGroup = 7555FF7C242A565900829871 /* Products */;
 			projectDirPath = "";
@@ -381,6 +403,7 @@
 				14156DCF2DBB28B800F4E56B /* KeyboardResponder.swift in Sources */,
 				14156DD02DBB28B800F4E56B /* SignUpOrSignInView.swift in Sources */,
 				14BBB4EF2DBC0EA000A3C7E9 /* SupabaseState.swift in Sources */,
+				143C5F4A2DC2F49F008052A5 /* Supabase.swift in Sources */,
 				14156DD12DBB28B800F4E56B /* TopBarView.swift in Sources */,
 				14156DD22DBB28B800F4E56B /* RequestsPlaceholderView.swift in Sources */,
 				14156EA22DBB360700F4E56B /* MapValidationErrors.swift in Sources */,
@@ -587,6 +610,50 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		143C5F482DC2D024008052A5 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1472B7B72DC2F55400274F56 /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 143C5F482DC2D024008052A5 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		1472B7B92DC2F55400274F56 /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 143C5F482DC2D024008052A5 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		1472B7BB2DC2F55400274F56 /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 143C5F482DC2D024008052A5 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		1472B7BD2DC2F55400274F56 /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 143C5F482DC2D024008052A5 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		1472B7BF2DC2F55400274F56 /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 143C5F482DC2D024008052A5 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		1472B7C12DC2F55400274F56 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 143C5F482DC2D024008052A5 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 7555FF73242A565900829871 /* Project object */;
 }

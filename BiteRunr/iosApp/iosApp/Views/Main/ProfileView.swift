@@ -139,7 +139,7 @@ struct ProfileView: View {
                             isPressed = true
                         }
                         Task {
-                            supabaseState.logout()
+                            try? await supabase.auth.signOut()
                             withAnimation(.easeOut(duration: 0.1)) {
                                 isPressed = false
                             }

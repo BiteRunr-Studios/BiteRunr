@@ -12,7 +12,6 @@ struct HomeView: View {
                     .navigationTitle("")
                     .navigationBarTitleDisplayMode(.inline)
             }
-            Text(supabaseState.getToken(tokenKey: "supabase_user_id") ?? "None")
         }
     }
 }

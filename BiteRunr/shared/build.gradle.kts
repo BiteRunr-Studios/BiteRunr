@@ -40,6 +40,9 @@ kotlin {
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
             implementation("com.russhwolf:multiplatform-settings:1.3.0")
             implementation("com.russhwolf:multiplatform-settings-coroutines:1.3.0")
+            implementation(project.dependencies.platform("io.github.jan-tennert.supabase:bom:3.1.4"))
+            implementation("io.github.jan-tennert.supabase:auth-kt")
+            implementation("io.github.jan-tennert.supabase:postgrest-kt")
         }
 
         androidMain.dependencies {

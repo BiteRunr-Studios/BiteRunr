@@ -1,5 +1,5 @@
 import SwiftUI
-import Shared
+import Supabase
 
 struct SignInView: View {
     let screen = UIScreen.main.bounds
@@ -9,13 +9,11 @@ struct SignInView: View {
     
     @State private var email = ""
     @State private var password = ""
+    @State var isLoading = false
+    @State var result: Result<Void, Error>?
+    @State private var errorMessage: String?
     @State private var isPasswordVisible: Bool = false
     @State private var isPressed = false
-    
-    let api = SupabaseAuthApi(
-        supabaseUrl: "https://gpsyyguiopnrnztzwboq.supabase.co",
-        supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdwc3l5Z3Vpb3Bucm56dHp3Ym9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxMzUyMjgsImV4cCI6MjA1OTcxMTIyOH0.ZbukR17lKPXnTW8guz8DCb9Q4a8Id30iYxBawqkoVYA"
-    )
     
     var body: some View {
         ScrollView {
@@ -32,6 +30,9 @@ struct SignInView: View {
                         .foregroundColor(.secondary)
                     HStack(spacing: 12) {
                         TextField("Email", text: $email)
+                            .textContentType(.emailAddress)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
                         Image(systemName: "envelope.fill")
                             .frame(width: 24, height: 24)
                             .foregroundStyle(Color.secondary.opacity(0.3))
@@ -69,12 +70,19 @@ struct SignInView: View {
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
                     )
+                    
+                    if let errorMessage = errorMessage {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                    }
+                    
                     Button(action: {
                         withAnimation(.easeIn(duration: 0.1)) {
                             isPressed = true
                         }
                         Task {
-                            await submit(email: email, password: password)
+                            await signIn()
                             withAnimation(.easeOut(duration: 0.1)) {
                                 isPressed = false
                             }
@@ -108,7 +116,7 @@ struct SignInView: View {
                     .padding(.horizontal)
                     
                     Button(action: {
-                        print("Continue with Google")
+                        //                        signInGoogle()
                     }) {
                         HStack {
                             Image("GoogleIcon")
@@ -127,7 +135,7 @@ struct SignInView: View {
                     )
                     
                     Button(action: {
-                        print("Continue with Apple")
+                        //                        signInApple()
                     }) {
                         HStack {
                             Image("Apple")
@@ -154,26 +162,14 @@ struct SignInView: View {
 }
 
 extension SignInView {
-    func submit(email: String, password: String) async {
+    private func signIn() async {
+        isLoading = true
+        defer { isLoading = false }
         do {
-            let result = try await api.signIn(
-                email: email,
-                password: password
-            )
-            
-            if let success = result as? SignInResult.Success {
-                let response = success.response
-                supabaseState.saveToken(tokenKey: "supabase_access_token", token: response.access_token)
-                supabaseState.saveToken(tokenKey: "supabase_user_id", token: response.user.id)
-                print("Sign-in successful!")
-            } else if let error = result as? SignInResult.Error {
-                print("Sign-in failed: \(error.message)")
-            } else {
-                print("Unknown result from signIn")
-            }
+            try await supabase.auth.signIn(email: email, password: password)
+            result = .success(())
         } catch {
-            print("Sign-in failed with error: \(error.localizedDescription)")
+            result = .failure(error)
         }
     }
-
 }

@@ -1,4 +1,5 @@
 import SwiftUI
+import Supabase
 
 struct ContentView: View {
     @EnvironmentObject var supabaseState: SupabaseState
@@ -10,7 +11,7 @@ struct ContentView: View {
                     .ignoresSafeArea(edges: .top)
                     .frame(height: geometry.safeAreaInsets.top)
                 VStack {
-                    if supabaseState.isLoggedIn {
+                    if supabaseState.isAuthenticated {
                         MainLayout()
                             .transition(.opacity)
                     } else {
@@ -18,7 +19,7 @@ struct ContentView: View {
                             .transition(.opacity)
                     }
                 }
-                .animation(.easeInOut, value: supabaseState.isLoggedIn)
+                .animation(.easeInOut, value: supabaseState.isAuthenticated)
             }
         }
     }

@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct TopBarView: View {
-    @Binding var showProfileSheet: Bool
     @EnvironmentObject var supabaseState: SupabaseState
+    @Binding var showProfileSheet: Bool
     
     var body: some View {
         HStack {
@@ -17,7 +17,7 @@ struct TopBarView: View {
             Button(action: {
                 showProfileSheet = true
             }) {
-                if supabaseState.isLoggedIn {
+                if supabaseState.isAuthenticated {
                     Circle()
                         .scaledToFill()
                         .clipShape(Circle())

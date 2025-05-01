@@ -1,106 +1,75 @@
 package org.biterunr_studios.biterunr.Auth
 
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.defaultRequest
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
+import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.user.UserSession
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class SupabaseAuthApi(
-    private val supabaseUrl: String,
-    private val supabaseAnonKey: String
+val supabase = createSupabaseClient(
+    supabaseUrl = "https://gpsyyguiopnrnztzwboq.supabase.co/",
+    supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdwc3l5Z3Vpb3Bucm56dHp3Ym9xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxMzUyMjgsImV4cCI6MjA1OTcxMTIyOH0.ZbukR17lKPXnTW8guz8DCb9Q4a8Id30iYxBawqkoVYA"
 ) {
-    private val httpClient = HttpClient {
-        install(HttpTimeout) {
-            requestTimeoutMillis = 30000  // 30 seconds
-            connectTimeoutMillis = 15000  // 15 seconds
-        }
-        
-        install(io.ktor.client.plugins.HttpRequestRetry) {
-            retryOnServerErrors(maxRetries = 3)
-            retryOnException(maxRetries = 3, retryOnTimeout = true)
-            exponentialDelay()
-        }
+    install(Auth) {
+        host = "auth-callback"
+        scheme = "biterunr"
+    }
+}
 
-        install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = false
-                isLenient = true
-                ignoreUnknownKeys = true
-            })
-        }
-
-        defaultRequest {
-            contentType(ContentType.Application.Json)
-            // Other headers
+class SupabaseAuthApi() {
+    suspend fun signIn(email: String, password: String): UserSession {
+        try {
+            supabase.auth.signInWith(Email) {
+                this.email = email
+                this.password = password
+            }
+            val userSession = supabase.auth.currentSessionOrNull()
+                ?: throw Exception("Invalid credentials or user not found")
+            return userSession
+        } catch (e: Exception) {
+            if (e.message?.contains("invalid_credentials", ignoreCase = true) == true) {
+                throw Exception("Invalid credentials or user not found")
+            }
+            throw e
         }
     }
 
-    suspend fun signIn(
+    fun signIn(
         email: String,
-        password: String
-    ): SignInResult {
-        try {
-            val response: HttpResponse =
-                httpClient.post("$supabaseUrl/auth/v1/token?grant_type=password") {
-                    contentType(ContentType.Application.Json)
-                    header("apikey", supabaseAnonKey)
-                    setBody(mapOf("email" to email, "password" to password))
-                }
-
-            return if (response.status == HttpStatusCode.OK) {
-                val authResponse = Json.decodeFromString<AuthResponse>(response.bodyAsText())
-                SignInResult.Success(authResponse)
-            } else {
-                val errorBody = response.bodyAsText()
-                val errorMessage = try {
-                    val json = Json.parseToJsonElement(errorBody).jsonObject
-                    json["error_description"]?.jsonPrimitive?.content
-                        ?: json["msg"]?.jsonPrimitive?.content
-                        ?: json["error"]?.jsonPrimitive?.content
-                        ?: "Authentication failed"
-                } catch (e: Exception) {
-                    "Authentication failed: ${e.message}"
-                }
-                SignInResult.Error(errorMessage)
+        password: String,
+        onResult: (UserSession) -> Unit,
+        onError: (Throwable) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val user = signIn(email, password)
+                onResult(user)
+            } catch (e: Exception) {
+                onError(e)
             }
-        } catch (e: Exception) {
-            return SignInResult.Error("Authentication failed: ${e.message}")
+        }
+    }
+
+    fun signOut(
+        onResult: () -> Unit,
+        onError: (Throwable) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                supabase.auth.signOut()
+                onResult()
+            } catch (e: Exception) {
+                onError(e)
+            }
         }
     }
 }
+
+expect fun handleDeeplink(data: Any)
 
 @Serializable
 data class SignInRequest(val email: String, val password: String)
-
-@Serializable
-@JsonIgnoreUnknownKeys
-data class AuthResponse(
-    val access_token: String,
-    val refresh_token: String,
-    val token_type: String,
-    val expires_in: Int,
-    val user: User
-)
-
-@Serializable
-@JsonIgnoreUnknownKeys
-data class User(
-    val id: String,
-    val email: String
-)
-
-@JsonIgnoreUnknownKeys
-sealed class SignInResult {
-    data class Success(val response: AuthResponse) : SignInResult()
-    data class Error(val message: String) : SignInResult()
-}

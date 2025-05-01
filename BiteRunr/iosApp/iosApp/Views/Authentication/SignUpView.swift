@@ -1,6 +1,9 @@
 import SwiftUI
+import Shared
 
 struct SignUpView: View {
+    private let api = SupabaseAuthApi()
+    @EnvironmentObject var supabaseState: SupabaseState
     @Environment(\.colorScheme) var colorScheme
     
     @State private var email = ""
@@ -8,6 +11,7 @@ struct SignUpView: View {
     @State private var lastName = ""
     @State private var password = ""
     @State private var code = ""
+    @State private var errorMessage: String?
     @State private var isVerifying = false
     @State private var isPasswordVisible: Bool = false
     @State private var isPressed = false
@@ -101,6 +105,12 @@ struct SignUpView: View {
                                 .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
                         )
                         
+                        if let errorMessage = errorMessage {
+                            Text(errorMessage)
+                                .foregroundColor(.red)
+                                .font(.caption)
+                        }
+                        
                         Button(action: {
                             withAnimation(.easeIn(duration: 0.1)) {
                                 isPressed = true
@@ -120,6 +130,64 @@ struct SignUpView: View {
                                 .scaleEffect(isPressed ? 0.995 : 1.0)
                         }
                         .contentShape(Rectangle())
+                        
+                        HStack {
+                            Rectangle()
+                                .frame(height: 1)
+                                .foregroundColor(Color.secondary.opacity(0.3))
+                                .cornerRadius(12)
+                            
+                            Text("OR")
+                                .padding(.horizontal, 8)
+                                .foregroundColor(Color.secondary.opacity(0.3))
+                            
+                            Rectangle()
+                                .frame(height: 1)
+                                .foregroundColor(Color.secondary.opacity(0.3))
+                                .cornerRadius(12)
+                        }
+                        .padding(.horizontal)
+                        
+                        Button(action: {
+//                            signUpGoogle()
+                        }) {
+                            HStack {
+                                Image("GoogleIcon")
+                                Text("Continue with Google")
+                                    .foregroundColor(.secondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .padding(.vertical, 16)
+                        .background(Color(UIColor.systemBackground))
+                        .foregroundStyle(.primary)
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                        )
+                        
+                        Button(action: {
+//                            signUpApple()
+                        }) {
+                            HStack {
+                                Image("Apple")
+                                    .renderingMode(.template)
+                                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                                Text("Continue with Apple")
+                                    .foregroundColor(.secondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .padding(.vertical, 16)
+                        .background(Color(UIColor.systemBackground))
+                        .foregroundStyle(.primary)
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                        )
+
                     }
                 }
                 .padding()
@@ -128,4 +196,8 @@ struct SignUpView: View {
         .ignoresSafeArea(.keyboard, edges: .bottom)
 
     }
+}
+
+extension SignUpView {
+
 }
