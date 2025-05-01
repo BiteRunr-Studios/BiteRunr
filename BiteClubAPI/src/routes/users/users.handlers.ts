@@ -6,6 +6,7 @@ import {
   selectAuthUserSchema,
   authUsers,
   patchAuthUserSchema,
+  sessionSchema,
 } from "@/db/schema/index";
 import type {
   CreateRoute,
@@ -15,6 +16,7 @@ import type {
   PatchRoute,
   RemoveRoute,
   ResetPasswordRoute,
+  SSOCreateRoute,
   // GetFriendsRoute,
   // GetFriendRequestsRoute,
   // GetOneByClerkIdRoute,
@@ -84,18 +86,10 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
     first_name: newUser.profile.first_name,
     last_name: newUser.profile.last_name,
   };
-  const [inserted] = await db.insert(users).values(user).returning();
 
-  const response = {
-    id: inserted.id,
-    email: data.user!.email!,
-    profile: {
-      first_name: inserted.first_name,
-      last_name: inserted.last_name,
-      created_at: inserted.created_at,
-      updated_at: inserted.updated_at,
-    },
-  };
+  await db.insert(users).values(user);
+
+  const response = sessionSchema.parse(data.session);
 
   return c.json(response, HttpStatusCodes.OK);
 };
@@ -257,6 +251,33 @@ export const resetPassword: AppRouteHandler<ResetPasswordRoute> = async (c) => {
   if (error || !data.user) return c.json(error, HttpStatusCodes.BAD_REQUEST);
 
   const response = selectAuthUserSchema.parse(authUser);
+
+  return c.json(response, HttpStatusCodes.OK);
+};
+
+export const createSSOUserProfile: AppRouteHandler<SSOCreateRoute> = async (
+  c
+) => {
+  const profile = c.req.valid("json");
+
+  const [existingAuthUser] = await db
+    .select()
+    .from(authUsers)
+    .where(eq(users.id, profile.id));
+
+  if (!existingAuthUser) {
+    return c.json(
+      { message: HttpStatusPhrases.NOT_FOUND },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  const [inserted] = await db.insert(users).values(profile).returning();
+
+  const response = {
+    ...existingAuthUser,
+    profile: inserted,
+  };
 
   return c.json(response, HttpStatusCodes.OK);
 };
