@@ -42,4 +42,17 @@ suspend fun deleteFriend(baseUrl: String, user_id: String): Unit {
     return result.getOrThrow()
 }
 
+suspend fun deleteFriendRequest(baseUrl: String, sender_id: String, receiver_id: String): Unit {
+    val url = "$baseUrl/friend-requests?sender_id=$sender_id&receiver_id=$receiver_id"
+    val result = fetch<Unit, Unit>(url = url, method = HttpMethod.Delete, body = null)
+    return result.getOrThrow()
+}
+
+suspend fun acceptFriendRequest(baseUrl: String, sender_id: String, receiver_id: String): Unit {
+    val url = "$baseUrl/friend-requests?sender_id=$sender_id&receiver_id=$receiver_id"
+    val result = fetch<Unit, Unit>(url = url, method = HttpMethod.Post, body = null)
+    return result.getOrThrow()
+
+}
+
 
