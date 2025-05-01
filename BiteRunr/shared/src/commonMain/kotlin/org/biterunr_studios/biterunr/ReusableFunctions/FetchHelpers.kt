@@ -36,4 +36,10 @@ suspend fun getUserProfile(baseUrl: String, user_id: String): UserProfile {
     return result.getOrThrow()
 }
 
+suspend fun deleteFriend(baseUrl: String, user_id: String): Unit {
+    val url = "$baseUrl/friends/$user_id"
+    val result = fetch<Unit, Unit>(url = url, method = HttpMethod.Delete, body = null)
+    return result.getOrThrow()
+}
+
 
