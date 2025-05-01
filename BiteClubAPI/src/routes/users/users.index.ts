@@ -9,6 +9,7 @@ const router = createRouter()
     .openapi(routes.patch, handlers.patch)
     .openapi(routes.remove, handlers.remove)
     .openapi(routes.resetPassword, handlers.resetPassword)
+    .openapi(routes.createFromSSO, handlers.createSSOUserProfile)
     // .openapi(routes.getFriends, handlers.getFriends)
     // .openapi(routes.getFriendRequests, handlers.getFriendRequests)
     // .openapi(routes.getAllUsersExceptAuthenticated, handlers.getAllUsersExceptAuthenticated);
