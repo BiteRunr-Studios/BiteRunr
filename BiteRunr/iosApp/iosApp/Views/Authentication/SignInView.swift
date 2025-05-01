@@ -5,8 +5,6 @@ struct SignInView: View {
     let screen = UIScreen.main.bounds
     @Environment(\.colorScheme) var colorScheme
     
-    @EnvironmentObject var supabaseState: SupabaseState
-    
     @State private var email = ""
     @State private var password = ""
     @State var isLoading = false
@@ -116,7 +114,9 @@ struct SignInView: View {
                     .padding(.horizontal)
                     
                     Button(action: {
-                        //                        signInGoogle()
+                        Task {
+                            try? await supabase.auth.signInWithOAuth(provider: .google, redirectTo: URL(string: "biterunr://auth-callback")!)
+                        }
                     }) {
                         HStack {
                             Image("GoogleIcon")
@@ -135,13 +135,15 @@ struct SignInView: View {
                     )
                     
                     Button(action: {
-                        //                        signInApple()
+                        Task {
+                            try? await supabase.auth.signInWithOAuth(provider: .github, redirectTo: URL(string: "biterunr://auth-callback")!)
+                        }
                     }) {
                         HStack {
-                            Image("Apple")
+                            Image("GitHub")
                                 .renderingMode(.template)
                                 .foregroundColor(colorScheme == .dark ? .white : .black)
-                            Text("Continue with Apple")
+                            Text("Continue with GitHub")
                                 .foregroundColor(.secondary)
                         }
                         .frame(maxWidth: .infinity)
