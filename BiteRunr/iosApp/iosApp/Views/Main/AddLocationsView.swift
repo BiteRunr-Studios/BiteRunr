@@ -109,6 +109,8 @@ struct AddLocationsView: View {
                                 .padding(.horizontal)
                                 .padding(.vertical, 8)
                             }
+                            HStack {
+                            }.padding(.bottom, 50)
                         }
                         
                         if saveLocationsButton {
