@@ -8,10 +8,10 @@ const router = createRouter()
     .openapi(routes.getOne, handlers.getOne)
     .openapi(routes.patch, handlers.patch)
     .openapi(routes.remove, handlers.remove)
-    .openapi(routes.patchClerkId, handlers.patchClerkId)
-    .openapi(routes.getFriends, handlers.getFriends)
-    .openapi(routes.getFriendRequests, handlers.getFriendRequests)
-    .openapi(routes.getOneByClerkId, handlers.getOneByClerkId)
-    .openapi(routes.getAllUsersExceptAuthenticated, handlers.getAllUsersExceptAuthenticated);
+    .openapi(routes.resetPassword, handlers.resetPassword)
+    .openapi(routes.createFromSSO, handlers.createSSOUserProfile)
+    // .openapi(routes.getFriends, handlers.getFriends)
+    // .openapi(routes.getFriendRequests, handlers.getFriendRequests)
+    // .openapi(routes.getAllUsersExceptAuthenticated, handlers.getAllUsersExceptAuthenticated);
 
 export default router;
