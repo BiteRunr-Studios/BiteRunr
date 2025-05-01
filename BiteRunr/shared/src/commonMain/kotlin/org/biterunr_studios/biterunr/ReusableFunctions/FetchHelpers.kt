@@ -24,6 +24,12 @@ suspend fun getFriendRequests(baseUrl: String, user_id: String): List<FriendRequ
     return result.getOrThrow()
 }
 
+suspend fun getAllUsersExceptAuthenticated(baseUrl: String, user_id: String): List<FriendUser> {
+    val url = "$baseUrl/users/all-except/$user_id"
+    val result = fetch<Unit, List<FriendUser>>(url = url, method = HttpMethod.Get, body = null)
+    return result.getOrThrow()
+}
+
 suspend fun getUserProfile(baseUrl: String, user_id: String): UserProfile {
     val url = "$baseUrl/users/$user_id"
     val result = fetch<Unit, UserProfile>(url = url, method = HttpMethod.Get, body = null)
