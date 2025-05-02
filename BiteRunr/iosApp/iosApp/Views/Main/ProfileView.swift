@@ -175,7 +175,7 @@ extension ProfileView {
         errorMessage = nil
         
         do {
-            guard let apiUrl = ProcessInfo.processInfo.environment["API_URL_LOCAL"] else {
+            guard let apiUrl = ProcessInfo.processInfo.environment["API_URL"] else {
                 errorMessage = "API_URL not set"
                 return
             }
