@@ -1,14 +1,6 @@
-//
-//  FriendsView.swift
-//  BiteClub
-//
-//  Created by Ryan Somers on 4/16/25.
-//
-
 import Shared
 import SwiftUI
-
-//import Clerk
+import Supabase
 
 struct FriendsView: View {
     @State private var searchText = ""
@@ -19,7 +11,6 @@ struct FriendsView: View {
     @State private var isLoading = false
     @State private var errorMessage: String? = nil
     @EnvironmentObject var supabaseState: SupabaseState
-    //    @Environment(Clerk.self) private var clerk
     
     var body: some View {
         NavigationStack {
@@ -166,7 +157,7 @@ extension FriendsView {
                     errorMessage = "API_URL not set"
                     return
                 }
-                let user_id = supabaseState.getToken(tokenKey: "supabase_user_id") ?? ""
+                let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
                 let response = try await getFriendRequests(baseUrl: apiUrl, user_id: user_id)
                 print(response)
                 friendRequests = response
@@ -187,7 +178,7 @@ extension FriendsView {
                 errorMessage = "API_URL not set"
                 return
             }
-            let user_id = supabaseState.getToken(tokenKey: "supabase_user_id") ?? ""
+            let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
             let response = try await getFriends(baseUrl: apiUrl, user_id: user_id)
             print(response)
             friends = response

@@ -1,6 +1,7 @@
 import SwiftUI
 import Shared
 import Foundation
+import Supabase
 
 struct UpdateUserRequest: Encodable {
     var first_name: String
@@ -131,7 +132,7 @@ struct ProfileView: View {
                         isPressed = true
                     }
                     Task {
-                        supabaseState.logout()
+                        try await supabase.auth.signOut()
                         withAnimation(.easeOut(duration: 0.1)) {
                             isPressed = false
                         }
@@ -178,7 +179,7 @@ extension ProfileView {
                 errorMessage = "API_URL not set"
                 return
             }
-            guard let user_id = supabaseState.getToken(tokenKey: "supabase_user_id"), !user_id.isEmpty else {
+            guard let user_id = supabase.auth.currentUser?.id.uuidString, !user_id.isEmpty else {
                 errorMessage = "User ID not found"
                 return
             }

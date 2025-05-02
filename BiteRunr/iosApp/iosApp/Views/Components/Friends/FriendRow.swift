@@ -1,5 +1,6 @@
 import SwiftUI
 import Shared
+import Supabase
 
 struct FriendRow: View {
     let user: FriendUser
@@ -100,7 +101,7 @@ extension FriendRow {
 
         do {
             let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-            let user_id = supabaseState.getToken(tokenKey: "supabase_user_id") ?? ""
+            let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
             try await Shared.deleteFriend(baseUrl: apiUrl, user_id: user_id)
             DispatchQueue.main.async {
                 onDelete?()

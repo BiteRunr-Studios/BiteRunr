@@ -1,6 +1,6 @@
 import SwiftUI
 import Shared
-//import Clerk
+import Supabase
 
 struct SendFriendRequestView: View {
     @State private var searchText = ""
@@ -12,7 +12,7 @@ struct SendFriendRequestView: View {
     @State private var requestedUserIDs: Set<UUID> = []
     @State private var acceptedUserIDs: Set<UUID> = []
     @EnvironmentObject private var supabaseState: SupabaseState
-    //    @Environment(Clerk.self) private var clerk
+
     
     private var filteredUsers: [FriendUser] {
         if searchText.isEmpty {
@@ -178,7 +178,7 @@ extension SendFriendRequestView {
                 errorMessage = "API_URL not set"
                 return
             }
-            let user_id = supabaseState.getToken(tokenKey: "supabase_user_id") ?? ""
+            let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
             let response = try await getAllUsersExceptAuthenticated(baseUrl: apiUrl, user_id: user_id)
             print(response)
             users = response
