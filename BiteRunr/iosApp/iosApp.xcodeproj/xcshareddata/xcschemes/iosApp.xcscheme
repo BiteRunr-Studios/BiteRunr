@@ -56,6 +56,11 @@
             value = "https://biterunrapi.omniquark.me"
             isEnabled = "YES">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "API_URL_LOCAL"
+            value = "http://localhost:3000"
+            isEnabled = "YES">
+         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction

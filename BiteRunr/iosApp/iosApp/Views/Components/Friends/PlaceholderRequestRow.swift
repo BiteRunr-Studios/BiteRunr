@@ -53,7 +53,7 @@ struct PlaceholderRequestRow: View {
                 
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(user.firstName + " " + user.lastName)
+                    Text(user.profile.firstName + " " + user.profile.lastName)
                         .fontWeight(.medium)
                     
 //                    Text(user.email)
@@ -75,13 +75,13 @@ struct PlaceholderRequestRow: View {
                     .confirmationDialog("Friend Options", isPresented: $showingOptions) {
                         Button("Reject Request", role: .destructive) {
                             Task {
-                                //                                await deleteFriendRequest()
+                                await deleteFriendRequest()
                                 print("Friend request rejected")
                             }
                         }
                         Button("Approve Request") {
                             Task {
-                                //                                await acceptFriendRequest()
+                                await acceptFriendRequest()
                                 print("Friend request accepted")
                             }
                         }
@@ -103,56 +103,50 @@ struct PlaceholderRequestRow: View {
 }
 
 extension PlaceholderRequestRow {
-    //    private func deleteFriendRequest() async {
-    //        isDeleting = true
-    //        errorMessage = nil
-    //        do {
-    //            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-    //            let url = "\(apiUrl)/friend-requests?sender_id=\(senderId)&receiver_id=\(receiverId)"
-    //            let _: EmptyResponseDeleted = try await fetch(
-    //                url: url,
-    //                method: "DELETE",
-    //                responseType: EmptyResponseDeleted.self,
-    //                body: nil as String?
-    //            )
-    //            DispatchQueue.main.async {
-    //                onDelete?()
-    //            }
-    //        } catch {
-    //            DispatchQueue.main.async {
-    //                errorMessage = "Failed to reject request: \(error.localizedDescription)"
-    //            }
-    //        }
-    //        isDeleting = false
-    //    }
+    private func deleteFriendRequest() async {
+        isDeleting = true
+        errorMessage = nil
+        do {
+            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            try await Shared.deleteFriendRequest(
+                baseUrl: apiUrl,
+                sender_id: senderId,
+                receiver_id: receiverId
+            )
+            DispatchQueue.main.async {
+                onDelete?()
+            }
+        } catch {
+            DispatchQueue.main.async {
+                errorMessage = "Failed to reject request: \(error.localizedDescription)"
+            }
+        }
+        isDeleting = false
+    }
+
     //
-    //    private func acceptFriendRequest() async {
-    //        isDeleting = true
-    //        errorMessage = nil
-    //        do {
-    //            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-    //            let url = "\(apiUrl)/friends"
-    //            let body: [String: String] = [
-    //                "user_id": senderId,
-    //                "friend_id": receiverId
-    //            ]
-    //            let friendship: Friendship = try await fetch(
-    //                url: url,
-    //                method: "POST",
-    //                responseType: Friendship.self,
-    //                body: body
-    //            )
-    //            DispatchQueue.main.async {
-    //                onAccept?()
-    //                onDelete?()
-    //            }
-    //        } catch {
-    //            DispatchQueue.main.async {
-    //                errorMessage = "Failed to accept request: \(error.localizedDescription)"
-    //            }
-    //        }
-    //        isDeleting = false
-    //    }
+    private func acceptFriendRequest() async {
+        isDeleting = true
+        errorMessage = nil
+        do {
+            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            try await Shared.acceptFriendRequest(
+                baseUrl: apiUrl,
+                sender_id: senderId,
+                receiver_id: receiverId
+            )
+            DispatchQueue.main.async {
+                onAccept?()
+                onDelete?()
+            }
+        } catch {
+            DispatchQueue.main.async {
+                errorMessage = "Failed to accept request: \(error.localizedDescription)"
+            }
+        }
+        isDeleting = false
+    }
+
     
 }
 

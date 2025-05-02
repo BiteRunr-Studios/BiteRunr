@@ -19,6 +19,11 @@ import type {
   SSOCreateRoute,
   // GetFriendsRoute,
   // GetFriendRequestsRoute,
+  // PatchRoute,
+  // RemoveRoute,
+  GetFriendsRoute,
+  GetFriendRequestsRoute,
+  GetAllUsersExceptAuthenticatedRoute,
   // GetOneByClerkIdRoute,
   // GetAllUsersExceptAuthenticatedRoute,
 } from "./users.routes";
@@ -282,148 +287,162 @@ export const createSSOUserProfile: AppRouteHandler<SSOCreateRoute> = async (
   return c.json(response, HttpStatusCodes.OK);
 };
 
-// export const getFriends: AppRouteHandler<GetFriendsRoute> = async (c) => {
-//     const { clerk_id } = c.req.valid("param");
-//     console.log("Looking for user with clerk_id:", clerk_id);
+export const getFriends: AppRouteHandler<GetFriendsRoute> = async (c) => {
+    const { user_id } = c.req.valid("param");
+    console.log("Looking for user with id:", user_id);
 
-//     // First find the user by clerk_id
+    // Find the user by id (user_id from user_profiles)
+    const user = await db.query.users.findFirst({
+        where(fields, operators) {
+            return operators.eq(fields.id, user_id);
+        },
+    });
+
+    console.log("Found user:", user);
+
+    if (!user) {
+        console.log(
+            "User not found in database. Available users:",
+            await db.query.users.findMany({
+                columns: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                },
+            })
+        );
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+                details: `No user found with id: ${user_id}`,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    // Get all friends where the user is either the user_id or friend_id
+    const userFriends = await db.query.friends.findMany({
+        where(fields, operators) {
+            return operators.or(
+                operators.eq(fields.user_id, user.id),
+                operators.eq(fields.friend_id, user.id)
+            );
+        },
+        with: {
+            user: true,
+            friend: true,
+        },
+    });
+
+    console.log("Found friendships:", JSON.stringify(userFriends, null, 2));
+
+    // Map to friends (user objects) without external Clerk API calls
+    const friendsList = userFriends.map((friendship) => {
+        return friendship.user_id === user.id ? friendship.friend : friendship.user;
+    });
+
+    console.log("Final friends list:", JSON.stringify(friendsList, null, 2));
+
+    return c.json(friendsList, HttpStatusCodes.OK);
+};
+
+export const getFriendRequests: AppRouteHandler<
+    GetFriendRequestsRoute
+> = async (c) => {
+    const { user_id } = c.req.valid("param");
+
+    const user = await db.query.users.findFirst({
+        where(fields, operators) {
+            return operators.eq(fields.id, user_id);
+        },
+    });
+
+    if (!user) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    const requests = await db.query.friendRequests.findMany({
+        where(fields, operators) {
+            return operators.and(
+                operators.eq(fields.receiver_id, user.id),
+                operators.eq(fields.status, "pending")
+            );
+        },
+        with: {
+            sender: true,
+        },
+    });
+
+    const requesters = requests.map((request) => {
+        const sender = request.sender;
+        return {
+            ...sender,
+            sender_id: request.sender_id,
+            receiver_id: request.receiver_id,
+        };
+    });
+
+    return c.json(requesters, HttpStatusCodes.OK);
+};
+
+// export const getOneByClerkId: AppRouteHandler<GetOneByClerkIdRoute> = async (
+//     c
+// ) => {
+//     const { clerk_id } = c.req.valid("param");
+
 //     const user = await db.query.users.findFirst({
 //         where(fields, operators) {
 //             return operators.eq(fields.clerk_id, clerk_id);
 //         },
 //     });
 
-//     console.log("Found user:", user);
-
 //     if (!user) {
-//         console.log(
-//             "User not found in database. Available users:",
-//             await db.query.users.findMany({
-//                 columns: {
-//                     id: true,
-//                     clerk_id: true,
-//                     first_name: true,
-//                     last_name: true,
+//         return c.json(
+//             {
+//                 message: HttpStatusPhrases.NOT_FOUND,
+//             },
+//             HttpStatusCodes.NOT_FOUND
+//         );
+//     }
+
+//     try {
+//         const response = await fetch(
+//             `https://api.clerk.com/v1/users/${clerk_id}`,
+//             {
+//                 headers: {
+//                     Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+//                     "Content-Type": "application/json",
 //                 },
-//             })
-//         );
-//         return c.json(
-//             {
-//                 message: HttpStatusPhrases.NOT_FOUND,
-//                 details: `No user found with clerk_id: ${clerk_id}`,
-//             },
-//             HttpStatusCodes.NOT_FOUND
-//         );
-//     }
-
-//     // Get all friends where the user is either the user_id or friend_id
-//     const userFriends = await db.query.friends.findMany({
-//         where(fields, operators) {
-//             return operators.or(
-//                 operators.eq(fields.user_id, user.id),
-//                 operators.eq(fields.friend_id, user.id)
-//             );
-//         },
-//         with: {
-//             user: true,
-//             friend: true,
-//         },
-//     });
-
-//     console.log("Found friendships:", JSON.stringify(userFriends, null, 2));
-
-//     // Map the friends to get the actual friend user objects and fetch their image_urls
-//     const friendsList = await Promise.all(
-//         userFriends.map(async (friendship) => {
-//             const friend =
-//                 friendship.user_id === user.id
-//                     ? friendship.friend
-//                     : friendship.user;
-
-//             try {
-//                 const response = await fetch(
-//                     `https://api.clerk.com/v1/users/${friend.clerk_id}`,
-//                     {
-//                         headers: {
-//                             Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
-//                             "Content-Type": "application/json",
-//                         },
-//                     }
-//                 );
-
-//                 if (response.ok) {
-//                     const clerkUser = await response.json();
-//                     return {
-//                         ...friend,
-//                         image_url: clerkUser.image_url || null,
-//                     };
-//                 }
-//             } catch (error) {
-//                 console.error(
-//                     `Error fetching Clerk user ${friend.clerk_id}:`,
-//                     error
-//                 );
 //             }
-
-//             return {
-//                 ...friend,
-//                 image_url: null,
-//             };
-//         })
-//     );
-
-//     console.log("Final friends list:", JSON.stringify(friendsList, null, 2));
-
-//     return c.json(friendsList, HttpStatusCodes.OK);
-// };
-
-// export const getFriendRequests: AppRouteHandler<
-//     GetFriendRequestsRoute
-// > = async (c) => {
-//     const { clerk_id } = c.req.valid("param");
-
-//     const user = await db.query.users.findFirst({
-//         where(fields, operators) {
-//             return operators.eq(fields.clerk_id, clerk_id);
-//         },
-//     });
-
-//     if (!user) {
-//         return c.json(
-//             {
-//                 message: HttpStatusPhrases.NOT_FOUND,
-//             },
-//             HttpStatusCodes.NOT_FOUND
 //         );
+
+//         if (response.ok) {
+//             const clerkUser = await response.json();
+//             return c.json(
+//                 {
+//                     ...user,
+//                     image_url: clerkUser.image_url || null,
+//                 },
+//                 HttpStatusCodes.OK
+//             );
+//         }
+//     } catch (error) {
+//         console.error(`Error fetching Clerk user ${clerk_id}:`, error);
 //     }
 
-//     const requests = await db.query.friendRequests.findMany({
-//         where(fields, operators) {
-//             return operators.and(
-//                 operators.eq(fields.receiver_id, user.id),
-//                 operators.eq(fields.status, "pending")
-//             );
+//     return c.json(
+//         {
+//             ...user,
+//             image_url: null,
 //         },
-//         with: {
-//             sender: true,
-//         },
-//     });
-
-//     const requesters = await Promise.all(
-//         requests.map(async (request) => {
-//             const sender = request.sender;
-
-//             try {
-//                 const response = await fetch(
-//                     `https://api.clerk.com/v1/users/${sender.clerk_id}`,
-//                     {
-//                         headers: {
-//                             Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
-//                             "Content-Type": "application/json",
-//                         },
-//                     }
-//                 );
-
+//         HttpStatusCodes.OK
+//     );
+// };
 //                 if (response.ok) {
 //                     const clerkUser = await response.json();
 //                     return {
@@ -452,42 +471,15 @@ export const createSSOUserProfile: AppRouteHandler<SSOCreateRoute> = async (
 //     return c.json(requesters, HttpStatusCodes.OK);
 // };
 
-// export const getAllUsersExceptAuthenticated: AppRouteHandler<GetAllUsersExceptAuthenticatedRoute> = async (c) => {
-//     const { clerkId } = c.req.valid("param");
+export const getAllUsersExceptAuthenticated: AppRouteHandler<GetAllUsersExceptAuthenticatedRoute> = async (c) => {
+  const { user_id } = c.req.valid("param");
 
-//     // Get all users except the specified user
-//     const otherUsers = await db.query.users.findMany({
-//         where(fields, operators) {
-//             return operators.not(eq(fields.clerk_id, clerkId));
-//         },
-//     });
+  // Get all users except the specified user
+  const otherUsers = await db.query.users.findMany({
+      where(fields, operators) {
+          return operators.not(eq(fields.id, user_id));
+      },
+  });
 
-//     // Fetch Clerk image URLs for all users
-//     const usersWithImages = await Promise.all(otherUsers.map(async (user) => {
-//         try {
-//             const response = await fetch(`https://api.clerk.com/v1/users/${user.clerk_id}`, {
-//                 headers: {
-//                     'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
-//                     'Content-Type': 'application/json',
-//                 },
-//             });
-
-//             if (response.ok) {
-//                 const clerkUser = await response.json();
-//                 return {
-//                     ...user,
-//                     image_url: clerkUser.image_url || null,
-//                 };
-//             }
-//         } catch (error) {
-//             console.error(`Error fetching Clerk user ${user.clerk_id}:`, error);
-//         }
-
-//         return {
-//             ...user,
-//             image_url: null,
-//         };
-//     }));
-
-//     return c.json(usersWithImages, HttpStatusCodes.OK);
-// };
+  return c.json(otherUsers, HttpStatusCodes.OK);
+};

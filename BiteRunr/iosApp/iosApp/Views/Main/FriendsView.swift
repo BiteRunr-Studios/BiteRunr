@@ -14,10 +14,11 @@ struct FriendsView: View {
     @State private var searchText = ""
     @State private var selectedTab = 0
     @State private var showAddFriendSheet = false
-    @State private var friends: [UserProfile] = []
+    @State private var friends: [FriendUser] = []
     @State private var friendRequests: [FriendRequestUser] = []
     @State private var isLoading = false
     @State private var errorMessage: String? = nil
+    @EnvironmentObject var supabaseState: SupabaseState
     //    @Environment(Clerk.self) private var clerk
     
     var body: some View {
@@ -84,7 +85,7 @@ struct FriendsView: View {
                                     .multilineTextAlignment(.center)
                                 Button("Try Again") {
                                     Task {
-                                        //                                        await loadFriends()
+                                        await loadFriends()
                                     }
                                 }
                                 .buttonStyle(.bordered)
@@ -110,7 +111,7 @@ struct FriendsView: View {
                                 if let index = friendRequests.firstIndex(where: { $0.id == acceptedRequest.id }) {
                                     friendRequests.remove(at: index)
                                 }
-                                friends.append(acceptedRequest.toUser())
+//                                friends.append(acceptedRequest.toUser())
                             },
                             onRequestRejected: { rejectedRequest in
                                 if let index = friendRequests.firstIndex(where: { $0.id == rejectedRequest.id }) {
@@ -143,8 +144,8 @@ struct FriendsView: View {
                 }
                 .onAppear {
                     Task {
-                        //                        await loadFriends()
-                        //                        await loadFriendRequests()
+                        await loadFriends()
+                        await loadFriendRequests()
                     }
                 }
                 .animation(.bouncy, value: selectedTab)
@@ -155,52 +156,55 @@ struct FriendsView: View {
 }
 
 extension FriendsView {
-    //    // fetch friend requests as users
-    //    private func loadFriendRequests() async {
-    //        errorMessage = nil
-    //
-    //        do {
-    //            if let user = clerk.user {
-    //                let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-    //                let friendRequestsUrl = "\(apiUrl)/users/clerk/\(user.id)/friend-requests"
-    //                friendRequests = try await fetch(url: friendRequestsUrl, responseType: [FriendRequestUser].self, body: nil as String?)
-    //            }
-    //        } catch {
-    //            if (error as? URLError)?.code == .cancelled {
-    //                // Ignore cancellation error
-    //                return
-    //            }
-    //            errorMessage = "Failed to load friend requests: \(error.localizedDescription)"
-    //        }
-    //
-    //        isLoading = false
-    //    }
-    //
-    //    // fetch friends
-    //    private func loadFriends() async {
-    //        isLoading = true
-    //        errorMessage = nil
-    //
-    //        do {
-    //            if let user = clerk.user {
-    //                let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-    //                let friendsUrl = "\(apiUrl)/users/clerk/\(user.id)/friends"
-    //                friends = try await fetch(url: friendsUrl, responseType: [User].self, body: nil as String?)
-    //            }
-    //        } catch {
-    //            errorMessage = "Failed to load friends: \(error.localizedDescription)"
-    //        }
-    //
-    //        isLoading = false
-    //    }
+        // fetch friend requests as users
+        private func loadFriendRequests() async {
+            isLoading = true
+            errorMessage = nil
+            
+            do {
+                guard let apiUrl = ProcessInfo.processInfo.environment["API_URL_LOCAL"] else {
+                    errorMessage = "API_URL not set"
+                    return
+                }
+                let user_id = supabaseState.getToken(tokenKey: "supabase_user_id") ?? ""
+                let response = try await getFriendRequests(baseUrl: apiUrl, user_id: user_id)
+                print(response)
+                friendRequests = response
+            } catch {
+                errorMessage = "Failed to fetch friend requests: \(error.localizedDescription)"
+            }
+            
+            isLoading = false
+        }
+    
+    // fetch friends
+    private func loadFriends() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            guard let apiUrl = ProcessInfo.processInfo.environment["API_URL_LOCAL"] else {
+                errorMessage = "API_URL not set"
+                return
+            }
+            let user_id = supabaseState.getToken(tokenKey: "supabase_user_id") ?? ""
+            let response = try await getFriends(baseUrl: apiUrl, user_id: user_id)
+            print(response)
+            friends = response
+        } catch {
+            errorMessage = "Failed to fetch friends: \(error.localizedDescription)"
+        }
+        
+        isLoading = false
+    }
     //
     // friends filtering
-    private var filteredFriends: [UserProfile] {
+    private var filteredFriends: [FriendUser] {
         if searchText.isEmpty {
             return friends
         } else {
             return friends.filter { friend in
-                let fullName = "\(friend.firstName) \(friend.lastName)".lowercased()
+                let fullName = "\(friend.firstName) \(friend.lastName))".lowercased()
                 return fullName.contains(searchText.lowercased())
                 //                    || friend.email.lowercased().contains(searchText.lowercased())
             }
@@ -213,7 +217,7 @@ extension FriendsView {
             return friendRequests
         } else {
             return friendRequests.filter { friendRequest in
-                let fullName = "\(friendRequest.toUser().lastName) \(friendRequest.toUser().lastName))".lowercased()
+                let fullName = "\(friendRequest.toUser().profile.firstName) \(friendRequest.toUser().profile.lastName))".lowercased()
                 return fullName.contains(searchText.lowercased())
                 //                    || friendRequest.user.email.lowercased().contains(searchText.lowercased())
             }

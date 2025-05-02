@@ -2,8 +2,8 @@ import SwiftUI
 import Shared
 
 struct FriendsListView: View {
-    let friends: [UserProfile]
-    var onFriendDeleted: ((UserProfile) -> Void)? 
+    let friends: [FriendUser]
+    var onFriendDeleted: ((FriendUser) -> Void)?
     
     var body: some View {
         ScrollView {

@@ -2,10 +2,11 @@ import SwiftUI
 import Shared
 
 struct FriendRow: View {
-    let user: UserProfile
+    let user: FriendUser
     @State private var showingOptions = false
     @State private var isDeleting = false
     @State private var deleteError: String? = nil
+    @EnvironmentObject private var supabaseState: SupabaseState
     var onDelete: (() -> Void)?
     
     var body: some View {
@@ -48,10 +49,9 @@ struct FriendRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(user.firstName + " " + user.lastName)
                     .fontWeight(.medium)
+                Text(user.email ?? "")
+                    .font(.subheadline)
                 
-//                Text(user.email)
-//                    .font(.subheadline)
-//                    .foregroundColor(.secondary)
             }
             
             Spacer()
@@ -97,31 +97,20 @@ extension FriendRow {
     private func deleteFriend() async {
         isDeleting = true
         deleteError = nil
-        
-//        do {
-//            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-//            let deleteUrl = "\(apiUrl)/friends/\(user.id)"
-//            
-//            let _: Friend = try await fetch(
-//                url: deleteUrl,
-//                method: "DELETE",
-//                responseType: Friend.self,
-//                body: nil as String?
-//            )
-//            
-//            DispatchQueue.main.async {
-//                onDelete?()
-//            }
-//        } catch {
-//            DispatchQueue.main.async {
-//                if let error = error as? ErrorResponse {
-//                    deleteError = "Failed to delete friend: \(error.self )"
-//                } else {
-//                    deleteError = "Failed to delete friend: \(error.localizedDescription)"
-//                }
-//            }
-//        }
-        
+
+        do {
+            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let user_id = supabaseState.getToken(tokenKey: "supabase_user_id") ?? ""
+            try await Shared.deleteFriend(baseUrl: apiUrl, user_id: user_id)
+            DispatchQueue.main.async {
+                onDelete?()
+            }
+        } catch {
+            DispatchQueue.main.async {
+                deleteError = "Failed to delete friend: \(error.localizedDescription)"
+            }
+        }
+
         DispatchQueue.main.async {
             isDeleting = false
         }

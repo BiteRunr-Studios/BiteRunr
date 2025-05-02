@@ -1,12 +1,13 @@
 package org.biterunr_studios.biterunr.DTO
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.biterunr_studios.biterunr.Models.Profile
 import org.biterunr_studios.biterunr.Models.UserProfile
 
 @Serializable
-data class FriendRequestUser(
+data class FriendUser(
     @SerialName("id")
     val id: String,
 
@@ -19,11 +20,12 @@ data class FriendRequestUser(
     @SerialName("email")
     val email: String? = null,
 
-    @SerialName("sender_id")
-    val senderId: String,
+    @SerialName("created_at")
+    val createdAt: Instant,
 
-    @SerialName("receiver_id")
-    val receiverId: String
+    @SerialName("updated_at")
+    val updatedAt: Instant
+
 ) {
     fun toUser(): UserProfile = UserProfile(
         id = id,
