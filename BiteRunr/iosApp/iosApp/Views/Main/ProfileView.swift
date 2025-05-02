@@ -9,7 +9,7 @@ struct UpdateUserRequest: Encodable {
 struct UpdateUserResponse: Decodable {}
 
 struct ProfileView: View {
-    @State var showProfileSheet: Bool = false
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var supabaseState: SupabaseState
     @State private var isPressed = false
     
@@ -139,8 +139,17 @@ struct ProfileView: View {
                             isPressed = true
                         }
                         Task {
-                            try? await supabase.auth.signOut()
-                            withAnimation(.easeOut(duration: 0.1)) {
+                            // First dismiss the sheet
+                            dismiss()
+                            
+                            // Then perform the sign out
+                            do {
+                                try await supabase.auth.signOut()
+                            } catch {
+                                print("Sign out error: \(error.localizedDescription)")
+                            }
+                            
+                            withAnimation(.easeInOut(duration: 0.3)) {
                                 isPressed = false
                             }
                         }
