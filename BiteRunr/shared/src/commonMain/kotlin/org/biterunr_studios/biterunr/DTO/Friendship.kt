@@ -20,3 +20,11 @@ data class Friendship(
     @SerialName("updated_at")
     val updatedAt: String
 )
+
+@Serializable
+data class AcceptFriendRequestBody(
+    val user_id: String,
+    val friend_id: String
+)
+
+

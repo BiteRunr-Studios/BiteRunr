@@ -132,9 +132,10 @@ extension PlaceholderRequestRow {
             let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
             try await Shared.acceptFriendRequest(
                 baseUrl: apiUrl,
-                sender_id: senderId,
-                receiver_id: receiverId
+                user_id: senderId,
+                friend_id: receiverId
             )
+            print("\(senderId) accepted \(receiverId)")
             DispatchQueue.main.async {
                 onAccept?()
                 onDelete?()

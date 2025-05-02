@@ -2,6 +2,7 @@ package org.biterunr_studios.biterunr.ReusableFunctions
 
 import org.biterunr_studios.biterunr.Models.Location
 import io.ktor.http.*
+import org.biterunr_studios.biterunr.DTO.AcceptFriendRequestBody
 import org.biterunr_studios.biterunr.DTO.FriendRequestUser
 import org.biterunr_studios.biterunr.DTO.FriendUser
 import org.biterunr_studios.biterunr.Models.FriendRequest
@@ -48,11 +49,15 @@ suspend fun deleteFriendRequest(baseUrl: String, sender_id: String, receiver_id:
     return result.getOrThrow()
 }
 
-suspend fun acceptFriendRequest(baseUrl: String, sender_id: String, receiver_id: String): Unit {
-    val url = "$baseUrl/friend-requests?sender_id=$sender_id&receiver_id=$receiver_id"
-    val result = fetch<Unit, Unit>(url = url, method = HttpMethod.Post, body = null)
+suspend fun acceptFriendRequest(baseUrl: String, user_id: String, friend_id: String): Unit {
+    val url = "$baseUrl/friends"
+    val body = AcceptFriendRequestBody(user_id, friend_id)
+    val result = fetch<AcceptFriendRequestBody, Unit>(
+        url = url,
+        method = HttpMethod.Post,
+        body = body
+    )
     return result.getOrThrow()
-
 }
 
 
