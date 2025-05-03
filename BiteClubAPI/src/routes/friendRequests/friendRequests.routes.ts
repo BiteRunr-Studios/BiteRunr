@@ -166,10 +166,8 @@ export const getSentFriendRequests = createRoute({
                 status: z.enum(["pending", "accepted", "rejected"]),
                 receiver: z.object({
                     id: z.string().uuid(),
-                    clerk_id: z.string(),
                     first_name: z.string(),
                     last_name: z.string(),
-                    image_url: z.string().nullable(),
                 }),
             })),
             "List of sent friend requests"
