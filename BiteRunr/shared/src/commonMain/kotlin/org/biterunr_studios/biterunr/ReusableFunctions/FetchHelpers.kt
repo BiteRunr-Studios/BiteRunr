@@ -4,6 +4,8 @@ import org.biterunr_studios.biterunr.Models.Location
 import io.ktor.http.*
 import org.biterunr_studios.biterunr.DTO.AcceptFriendRequestBody
 import org.biterunr_studios.biterunr.DTO.CreateFriendRequestBody
+import org.biterunr_studios.biterunr.DTO.CreateUserBody
+import org.biterunr_studios.biterunr.DTO.CreateUserSSOBody
 import org.biterunr_studios.biterunr.DTO.FriendRequestResponse
 import org.biterunr_studios.biterunr.DTO.FriendRequestUser
 import org.biterunr_studios.biterunr.DTO.FriendUser
@@ -28,7 +30,7 @@ suspend fun getFriendRequests(baseUrl: String, user_id: String): List<FriendRequ
     return result.getOrThrow()
 }
 
-    suspend fun getAllUsersExceptAuthenticated(baseUrl: String, user_id: String): List<FriendUser> {
+suspend fun getAllUsersExceptAuthenticated(baseUrl: String, user_id: String): List<FriendUser> {
     val url = "$baseUrl/users/all-except/$user_id"
     val result = fetch<Unit, List<FriendUser>>(url = url, method = HttpMethod.Get, body = null)
     return result.getOrThrow()
@@ -89,5 +91,13 @@ suspend fun sendFriendRequest(
     return result.getOrThrow()
 }
 
-
-
+suspend fun createUserProfile(baseUrl: String, authUserId: String, firstName: String, lastName: String): UserProfile {
+    val url = "$baseUrl/users/sso"
+    val body = CreateUserSSOBody(
+        id = authUserId,
+        firstName = firstName,
+        lastName = lastName,
+    )
+    val result = fetch<CreateUserSSOBody, UserProfile>(url = url, method = HttpMethod.Post, body = body)
+    return result.getOrThrow()
+}

@@ -159,7 +159,6 @@ extension FriendsView {
                 }
                 let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
                 let response = try await getFriendRequests(baseUrl: apiUrl, user_id: user_id)
-                print(response)
                 friendRequests = response
             } catch {
                 errorMessage = "Failed to fetch friend requests: \(error.localizedDescription)"
@@ -180,7 +179,6 @@ extension FriendsView {
             }
             let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
             let response = try await getFriends(baseUrl: apiUrl, user_id: user_id)
-            print(response)
             friends = response
         } catch {
             errorMessage = "Failed to fetch friends: \(error.localizedDescription)"

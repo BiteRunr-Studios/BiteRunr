@@ -1,16 +1,16 @@
-package org.biterunr_studios.biterunr.Models
+package org.biterunr_studios.biterunr.DTO
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.datetime.Instant
 
 @Serializable
-data class UserProfile(
-    @SerialName("id")
-    val id: String,
-
+data class CreateUserBody(
     @SerialName("email")
     val email: String,
+
+    @SerialName("password")
+    val password: String,
 
     @SerialName("profile")
     val profile: Profile
@@ -23,10 +23,4 @@ data class Profile(
 
     @SerialName("last_name")
     val lastName: String,
-
-    @SerialName("created_at")
-    val createdAt: Instant,
-
-    @SerialName("updated_at")
-    val updatedAt: Instant
 )

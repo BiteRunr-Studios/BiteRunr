@@ -1,6 +1,5 @@
 import SwiftUI
 import Shared
-import Foundation
 import Supabase
 
 struct UpdateUserRequest: Encodable {
@@ -184,7 +183,6 @@ extension ProfileView {
                 return
             }
             let response = try await getUserProfile(baseUrl: apiUrl, user_id: user_id)
-            print(response)
             user = response
         } catch {
             errorMessage = "Failed to fetch user: \(error.localizedDescription)"

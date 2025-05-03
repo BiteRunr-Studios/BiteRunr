@@ -1,4 +1,5 @@
 import SwiftUI
+import Shared
 import Supabase
 
 struct SignInView: View {
@@ -115,7 +116,8 @@ struct SignInView: View {
                     
                     Button(action: {
                         Task {
-                            try? await supabase.auth.signInWithOAuth(provider: .google, redirectTo: URL(string: "biterunr://auth-callback")!)
+                            let session = try? await supabase.auth.signInWithOAuth(provider: .google, redirectTo: URL(string: "biterunr://auth-callback")!)
+                            await createUser(session: session)
                         }
                     }) {
                         HStack {
@@ -136,7 +138,8 @@ struct SignInView: View {
                     
                     Button(action: {
                         Task {
-                            try? await supabase.auth.signInWithOAuth(provider: .github, redirectTo: URL(string: "biterunr://auth-callback")!)
+                            let session = try? await supabase.auth.signInWithOAuth(provider: .github, redirectTo: URL(string: "biterunr://auth-callback")!)
+                            await createUser(session: session)
                         }
                     }) {
                         HStack {
@@ -168,10 +171,42 @@ extension SignInView {
         isLoading = true
         defer { isLoading = false }
         do {
-            try await supabase.auth.signIn(email: email, password: password)
+            let session = try await supabase.auth.signIn(email: email, password: password)
+            await createUser(session: session)
             result = .success(())
         } catch {
             result = .failure(error)
+        }
+    }
+    
+    private func createUser(session: Session?) async {
+        guard let user = session?.user else {
+            return
+        }
+        do {
+            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let fullName = user.userMetadata["full_name"]?.value as? String ?? ""
+            let _ = try await createUserProfile(
+                baseUrl: apiUrl,
+                authUserId: user.id.uuidString,
+                firstName: {
+                    if let spaceIndex = fullName.firstIndex(of: " ") {
+                        return String(fullName[..<spaceIndex])
+                    } else {
+                        return fullName
+                    }
+                }(),
+                lastName: {
+                    if let spaceIndex = fullName.firstIndex(of: " ") {
+                        let nextIndex = fullName.index(after: spaceIndex)
+                        return String(fullName[nextIndex...])
+                    } else {
+                        return ""
+                    }
+                }()
+            )
+        } catch {
+            print("\(error)")
         }
     }
 }
