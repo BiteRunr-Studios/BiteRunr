@@ -73,4 +73,11 @@ These models are designed to support serialization with ‎⁠kotlinx.serializat
     ```
     pnpm dev
     ```
+
 6. Open the Kotlin Multiplatform app in Android Studio and run it on a simulator or device
+
+---
+Copyright (c) 2025 RunrStudios
+All rights reserved.
+
+Unauthorized copying, use, or distribution of this code is strictly prohibited.
