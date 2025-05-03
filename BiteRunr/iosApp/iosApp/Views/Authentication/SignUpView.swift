@@ -70,6 +70,7 @@ struct SignUpView: View {
                             Image(systemName: "envelope.fill")
                                 .frame(width: 24, height: 24)
                                 .foregroundStyle(Color.secondary.opacity(0.3))
+                                .textInputAutocapitalization(.never)
                         }
                         .padding(.vertical, 16)
                         .padding(.horizontal, 16)

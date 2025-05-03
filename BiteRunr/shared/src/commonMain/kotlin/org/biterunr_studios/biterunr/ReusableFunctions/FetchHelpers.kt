@@ -3,8 +3,11 @@ package org.biterunr_studios.biterunr.ReusableFunctions
 import org.biterunr_studios.biterunr.Models.Location
 import io.ktor.http.*
 import org.biterunr_studios.biterunr.DTO.AcceptFriendRequestBody
+import org.biterunr_studios.biterunr.DTO.CreateFriendRequestBody
+import org.biterunr_studios.biterunr.DTO.FriendRequestResponse
 import org.biterunr_studios.biterunr.DTO.FriendRequestUser
 import org.biterunr_studios.biterunr.DTO.FriendUser
+import org.biterunr_studios.biterunr.DTO.SentFriendRequest
 import org.biterunr_studios.biterunr.Models.FriendRequest
 import org.biterunr_studios.biterunr.Models.UserProfile
 
@@ -25,7 +28,7 @@ suspend fun getFriendRequests(baseUrl: String, user_id: String): List<FriendRequ
     return result.getOrThrow()
 }
 
-suspend fun getAllUsersExceptAuthenticated(baseUrl: String, user_id: String): List<FriendUser> {
+    suspend fun getAllUsersExceptAuthenticated(baseUrl: String, user_id: String): List<FriendUser> {
     val url = "$baseUrl/users/all-except/$user_id"
     val result = fetch<Unit, List<FriendUser>>(url = url, method = HttpMethod.Get, body = null)
     return result.getOrThrow()
@@ -34,6 +37,12 @@ suspend fun getAllUsersExceptAuthenticated(baseUrl: String, user_id: String): Li
 suspend fun getUserProfile(baseUrl: String, user_id: String): UserProfile {
     val url = "$baseUrl/users/$user_id"
     val result = fetch<Unit, UserProfile>(url = url, method = HttpMethod.Get, body = null)
+    return result.getOrThrow()
+}
+
+suspend fun getSentFriendRequests(baseUrl: String, user_id: String): List<SentFriendRequest> {
+    val url = "$baseUrl/sent-friend-requests?userId=$user_id&status=pending"
+    val result = fetch<Unit, List<SentFriendRequest>>(url = url, method = HttpMethod.Get, body = null)
     return result.getOrThrow()
 }
 
@@ -59,5 +68,26 @@ suspend fun acceptFriendRequest(baseUrl: String, user_id: String, friend_id: Str
     )
     return result.getOrThrow()
 }
+
+suspend fun sendFriendRequest(
+    baseUrl: String,
+    senderId: String,
+    receiverId: String,
+    status: String = "pending"
+): FriendRequestResponse {
+    val url = "$baseUrl/friend-requests"
+    val body = CreateFriendRequestBody(
+        senderId = senderId,
+        receiverId = receiverId,
+        status = status
+    )
+    val result = fetch<CreateFriendRequestBody, FriendRequestResponse>(
+        url = url,
+        method = HttpMethod.Post,
+        body = body
+    )
+    return result.getOrThrow()
+}
+
 
 
