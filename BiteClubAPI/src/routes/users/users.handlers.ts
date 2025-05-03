@@ -269,6 +269,18 @@ export const createSSOUserProfile: AppRouteHandler<SSOCreateRoute> = async (
 ) => {
     const profile = c.req.valid("json");
 
+    const [existingUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, profile.id));
+
+    if (existingUser) {
+        return c.json(
+            { message: HttpStatusPhrases.ACCEPTED },
+            HttpStatusCodes.ACCEPTED
+        );
+    }
+
     const [existingAuthUser] = await db
         .select()
         .from(authUsers)
