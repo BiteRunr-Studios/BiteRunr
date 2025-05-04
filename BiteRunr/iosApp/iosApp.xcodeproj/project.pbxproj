@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -87,6 +87,10 @@
 		D938D34B2DC5898F009CAE40 /* SendFriendRequestRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendFriendRequestRow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		D9F217B62DC7B94000AB6BD6 /* Home */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Home; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		B92378962B6B1156000C7307 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
@@ -158,6 +162,7 @@
 		14156DAD2DBB28B800F4E56B /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				D9F217B62DC7B94000AB6BD6 /* Home */,
 				14156DA52DBB28B800F4E56B /* Friends */,
 				14156DA92DBB28B800F4E56B /* Navigation */,
 				14156DAC2DBB28B800F4E56B /* Order */,
@@ -274,6 +279,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				D9F217B62DC7B94000AB6BD6 /* Home */,
 			);
 			name = iosApp;
 			packageProductDependencies = (
