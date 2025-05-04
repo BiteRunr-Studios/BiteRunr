@@ -25,7 +25,7 @@ struct AddGroupView: View {
     @State private var orderUsersDTOs: [OrderUserDTO] = []
     @State private var showConfirmation: Bool = false
     @State private var newOrder: Order? = nil
-    
+
     @Environment(\.colorScheme) var colorScheme
 
     
@@ -231,7 +231,7 @@ struct AddGroupView: View {
                                     newOrder = result.data!
                                     navigate = true
                                 }
-                                
+
                                 mapValidationErrors(result, handlers: [
                                    "name": { nameError = $0 },
                                    "order_locations": { orderLocationsError = $0 },
