@@ -24,6 +24,7 @@ struct AddGroupView: View {
     @State private var orderLocationDTOs: [OrderLocationDTO] = []
     @State private var orderUsersDTOs: [OrderUserDTO] = []
     @State private var showConfirmation: Bool = false
+    @State private var newOrder: Order? = nil
     
     @Environment(\.colorScheme) var colorScheme
 
@@ -226,6 +227,11 @@ struct AddGroupView: View {
                                 )
                                 let result = try await createOrder(baseUrl: apiUrl, order: order)
                                 
+                                if (result.success) {
+                                    newOrder = result.data!
+                                    navigate = true
+                                }
+                                
                                 mapValidationErrors(result, handlers: [
                                    "name": { nameError = $0 },
                                    "order_locations": { orderLocationsError = $0 },
@@ -247,7 +253,7 @@ struct AddGroupView: View {
                             .contentShape(Rectangle())
                         }
                         .navigationDestination(isPresented: $navigate) {
-//                            AwaitingOrders()
+                            AwaitingOrders(order: $newOrder)
                         }
                     }
                     .padding()

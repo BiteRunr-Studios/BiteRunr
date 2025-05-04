@@ -4,8 +4,8 @@ import SwiftUI
 struct MainLayout: View {
     @State private var selectedTab: Tab = .home
     @State private var showProfileSheet = false
+    @State private var showAwaitingOrders = false
     @StateObject private var keyboard = KeyboardResponder()
-//    @Environment(Clerk.self) private var clerk
 
     var body: some View {
         ZStack(alignment: .bottom) {
