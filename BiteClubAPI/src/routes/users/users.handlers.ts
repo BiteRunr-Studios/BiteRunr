@@ -49,7 +49,18 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     const { id } = c.req.valid("param");
 
-    const user = await db.query.authUsers.findFirst({
+    const user = await db.select().from(users).where(eq(users.id, id));
+
+    if (!user) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    const authUser = await db.query.authUsers.findFirst({
         where(fields, operators) {
             return operators.eq(fields.id, id);
         },
@@ -62,7 +73,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         },
     });
 
-    if (!user) {
+    if (!authUser) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -71,7 +82,7 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
         );
     }
 
-    return c.json(user, HttpStatusCodes.OK);
+    return c.json(authUser, HttpStatusCodes.OK);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
