@@ -208,9 +208,7 @@ export const createFromSSO = createRoute({
             "Validation error(s)"
         ),
         [HttpStatusCodes.ACCEPTED]: jsonContent(
-            z.object({
-                message: z.string(),
-            }),
+            selectAuthUserSchema,
             "User already exists"
         ),
         [HttpStatusCodes.OK]: jsonContent(selectAuthUserSchema, "User created"),

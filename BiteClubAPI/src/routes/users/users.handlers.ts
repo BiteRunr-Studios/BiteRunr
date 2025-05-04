@@ -269,18 +269,6 @@ export const createSSOUserProfile: AppRouteHandler<SSOCreateRoute> = async (
 ) => {
     const profile = c.req.valid("json");
 
-    const [existingUser] = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, profile.id));
-
-    if (existingUser) {
-        return c.json(
-            { message: HttpStatusPhrases.ACCEPTED },
-            HttpStatusCodes.ACCEPTED
-        );
-    }
-
     const [existingAuthUser] = await db
         .select()
         .from(authUsers)
@@ -291,6 +279,19 @@ export const createSSOUserProfile: AppRouteHandler<SSOCreateRoute> = async (
             { message: HttpStatusPhrases.NOT_FOUND },
             HttpStatusCodes.NOT_FOUND
         );
+    }
+
+    const [existingUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, profile.id));
+
+    if (existingUser) {
+        const response = {
+            ...existingAuthUser,
+            profile: existingUser,
+        };
+        return c.json(response, HttpStatusCodes.ACCEPTED);
     }
 
     const [inserted] = await db.insert(users).values(profile).returning();
