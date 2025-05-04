@@ -183,7 +183,7 @@ extension ProfileView {
                 return
             }
             let response = try await getUserProfile(baseUrl: apiUrl, user_id: user_id)
-            user = response
+            user = response.data
         } catch {
             errorMessage = "Failed to fetch user: \(error.localizedDescription)"
         }

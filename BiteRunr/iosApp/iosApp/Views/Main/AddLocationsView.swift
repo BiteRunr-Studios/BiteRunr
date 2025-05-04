@@ -110,7 +110,7 @@ struct AddLocationsView: View {
                                 .padding(.vertical, 8)
                             }
                             HStack {
-                            }.padding(.bottom, 50)
+                            }.padding(.bottom, 60)
                         }
                         
                         if saveLocationsButton {
@@ -179,7 +179,7 @@ extension AddLocationsView {
             }
             let url = "\(apiUrl)/locations"
             let response = try await getLocations(url: url)
-            locations = response
+            locations = response.data as! [Location]
         } catch {
             errorMessage = "Failed to fetch locations: \(error.localizedDescription)"
         }

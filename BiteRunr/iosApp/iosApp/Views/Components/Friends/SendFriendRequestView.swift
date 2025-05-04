@@ -148,7 +148,7 @@ extension SendFriendRequestView {
             let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
             let response = try await getAllUsersExceptAuthenticated(baseUrl: apiUrl, user_id: user_id)
             print(response)
-            users = response
+            users = response.data as! [FriendUser]
         } catch {
             errorMessage = "Failed to fetch users: \(error.localizedDescription)"
         }
@@ -161,7 +161,7 @@ extension SendFriendRequestView {
             let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
             let response = try await getFriends(baseUrl: apiUrl, user_id: user_id)
             DispatchQueue.main.async {
-                friends = response
+                friends = response.data as! [FriendUser]
             }
     } catch {
         DispatchQueue.main.async {
@@ -176,7 +176,7 @@ private func fetchCurrentUser() async {
         let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
         let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
         let response = try await getUserProfile(baseUrl: apiUrl, user_id: user_id)
-        currentUser = response
+        currentUser = response.data
     } catch {
         errorMessage = "Failed to fetch current user: \(error.localizedDescription)"
     }
@@ -208,7 +208,8 @@ private func fetchSentFriendRequests() async {
         let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
         let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
         let sentRequests = try await getSentFriendRequests(baseUrl: apiUrl, user_id: user_id)
-        let ids = sentRequests.map { $0.receiver.id }
+        let sentFriendRequests = sentRequests.data as! [SentFriendRequest]
+        let ids = sentFriendRequests.map { $0.receiver.id }
         DispatchQueue.main.async {
             requestedUserIDs = Set(ids)
         }

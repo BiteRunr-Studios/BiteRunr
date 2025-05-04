@@ -11,7 +11,7 @@ struct LocationSelectRow: View {
             Image("locationIcon")
                 .resizable()
                 .aspectRatio(contentMode: .fill)
-                .frame(width: 35, height: 35)
+                .frame(width: 40, height: 40)
 
             VStack(alignment: .leading) {
                 Text(location.name)

@@ -10,58 +10,66 @@ import org.biterunr_studios.biterunr.DTO.CreateUserSSOBody
 import org.biterunr_studios.biterunr.DTO.FriendRequestResponse
 import org.biterunr_studios.biterunr.DTO.FriendRequestUser
 import org.biterunr_studios.biterunr.DTO.FriendUser
+import org.biterunr_studios.biterunr.DTO.OrderDTO
 import org.biterunr_studios.biterunr.DTO.SentFriendRequest
-import org.biterunr_studios.biterunr.Models.FriendRequest
+import org.biterunr_studios.biterunr.Models.FetchResponse
+import org.biterunr_studios.biterunr.Models.Order
 import org.biterunr_studios.biterunr.Models.UserProfile
 
-suspend fun getLocations(url: String): List<Location> {
+suspend fun getLocations(url: String): FetchResponse<List<Location>> {
     val result = fetch<Unit, List<Location>>(url = url, method = HttpMethod.Get, body = null)
-    return result.getOrThrow()
+    return result
 }
 
-suspend fun getFriends(baseUrl: String, user_id: String): List<FriendUser> {
+suspend fun getFriends(baseUrl: String, user_id: String): FetchResponse<List<FriendUser>> {
     val url = "$baseUrl/users/$user_id/friends"
     val result = fetch<Unit, List<FriendUser>>(url = url, method = HttpMethod.Get, body = null)
-    return result.getOrThrow()
+    return result
 }
 
-suspend fun getFriendRequests(baseUrl: String, user_id: String): List<FriendRequestUser> {
+suspend fun getFriendRequests(baseUrl: String, user_id: String): FetchResponse<List<FriendRequestUser>> {
     val url = "$baseUrl/users/$user_id/friend-requests"
-    val result = fetch<Unit, List<FriendRequestUser>>(url = url, method = HttpMethod.Get, body = null)
-    return result.getOrThrow()
+    val result =
+        fetch<Unit, List<FriendRequestUser>>(url = url, method = HttpMethod.Get, body = null)
+    return result
 }
 
+<<<<<<< Updated upstream
 suspend fun getAllUsersExceptAuthenticated(baseUrl: String, user_id: String): List<FriendUser> {
+=======
+suspend fun getAllUsersExceptAuthenticated(baseUrl: String, user_id: String): FetchResponse<List<FriendUser>> {
+>>>>>>> Stashed changes
     val url = "$baseUrl/users/all-except/$user_id"
     val result = fetch<Unit, List<FriendUser>>(url = url, method = HttpMethod.Get, body = null)
-    return result.getOrThrow()
+    return result
 }
 
-suspend fun getUserProfile(baseUrl: String, user_id: String): UserProfile {
+suspend fun getUserProfile(baseUrl: String, user_id: String): FetchResponse<UserProfile> {
     val url = "$baseUrl/users/$user_id"
     val result = fetch<Unit, UserProfile>(url = url, method = HttpMethod.Get, body = null)
-    return result.getOrThrow()
+    return result
 }
 
-suspend fun getSentFriendRequests(baseUrl: String, user_id: String): List<SentFriendRequest> {
+suspend fun getSentFriendRequests(baseUrl: String, user_id: String): FetchResponse<List<SentFriendRequest>> {
     val url = "$baseUrl/sent-friend-requests?userId=$user_id&status=pending"
-    val result = fetch<Unit, List<SentFriendRequest>>(url = url, method = HttpMethod.Get, body = null)
-    return result.getOrThrow()
+    val result =
+        fetch<Unit, List<SentFriendRequest>>(url = url, method = HttpMethod.Get, body = null)
+    return result
 }
 
-suspend fun deleteFriend(baseUrl: String, user_id: String): Unit {
+suspend fun deleteFriend(baseUrl: String, user_id: String): FetchResponse<Unit> {
     val url = "$baseUrl/friends/$user_id"
     val result = fetch<Unit, Unit>(url = url, method = HttpMethod.Delete, body = null)
-    return result.getOrThrow()
+    return result
 }
 
-suspend fun deleteFriendRequest(baseUrl: String, sender_id: String, receiver_id: String): Unit {
+suspend fun deleteFriendRequest(baseUrl: String, sender_id: String, receiver_id: String): FetchResponse<Unit> {
     val url = "$baseUrl/friend-requests?sender_id=$sender_id&receiver_id=$receiver_id"
     val result = fetch<Unit, Unit>(url = url, method = HttpMethod.Delete, body = null)
-    return result.getOrThrow()
+    return result
 }
 
-suspend fun acceptFriendRequest(baseUrl: String, user_id: String, friend_id: String): Unit {
+suspend fun acceptFriendRequest(baseUrl: String, user_id: String, friend_id: String): FetchResponse<Unit> {
     val url = "$baseUrl/friends"
     val body = AcceptFriendRequestBody(user_id, friend_id)
     val result = fetch<AcceptFriendRequestBody, Unit>(
@@ -69,7 +77,7 @@ suspend fun acceptFriendRequest(baseUrl: String, user_id: String, friend_id: Str
         method = HttpMethod.Post,
         body = body
     )
-    return result.getOrThrow()
+    return result
 }
 
 suspend fun sendFriendRequest(
@@ -77,7 +85,7 @@ suspend fun sendFriendRequest(
     senderId: String,
     receiverId: String,
     status: String = "pending"
-): FriendRequestResponse {
+): FetchResponse<FriendRequestResponse> {
     val url = "$baseUrl/friend-requests"
     val body = CreateFriendRequestBody(
         senderId = senderId,
@@ -89,9 +97,10 @@ suspend fun sendFriendRequest(
         method = HttpMethod.Post,
         body = body
     )
-    return result.getOrThrow()
+    return result
 }
 
+<<<<<<< Updated upstream
 suspend fun createUserProfile(baseUrl: String, authUserId: String, firstName: String, lastName: String): UserProfile {
     val url = "$baseUrl/users/sso"
     val body = CreateUserSSOBody(
@@ -103,3 +112,18 @@ suspend fun createUserProfile(baseUrl: String, authUserId: String, firstName: St
     
     return result.getOrThrow()
 }
+=======
+suspend fun createOrder(baseUrl: String, order: OrderDTO): FetchResponse<Order> {
+    val url = "$baseUrl/orders"
+
+    val result = fetch<OrderDTO, Order>(
+        url = url,
+        method = HttpMethod.Post,
+        body = order
+    )
+
+    return result
+}
+
+
+>>>>>>> Stashed changes

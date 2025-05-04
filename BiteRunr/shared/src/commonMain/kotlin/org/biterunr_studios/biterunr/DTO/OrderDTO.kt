@@ -3,13 +3,14 @@ package org.biterunr_studios.biterunr.DTO
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
 import org.biterunr_studios.biterunr.Models.Status
 import org.biterunr_studios.biterunr.Models.UserProfile
 
 @Serializable
 data class OrderDTO(
     @SerialName("id")
-    val id: String,
+    val id: String? = null,
 
     @SerialName("name")
     val name: String,
@@ -27,10 +28,10 @@ data class OrderDTO(
     val paused: Boolean,
 
     @SerialName("created_at")
-    val createdAt: Instant,
+    val createdAt: LocalDateTime? = null,
 
     @SerialName("updated_at")
-    val updatedAt: Instant,
+    val updatedAt: LocalDateTime? = null,
 
     @SerialName("order_users")
     val orderUsers: List<OrderUserDTO>? = null,
@@ -40,7 +41,4 @@ data class OrderDTO(
 
     @SerialName("creator")
     val creator: UserProfile? = null,
-
-    @SerialName("clerk_id")
-    val clerkId: String? = null
 )

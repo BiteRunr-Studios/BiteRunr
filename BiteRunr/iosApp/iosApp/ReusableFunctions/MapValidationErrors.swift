@@ -1,10 +1,14 @@
 import Shared
 
-func mapValidationErrors(
-    _ errorResponse: ErrorResponse,
+func mapValidationErrors<T>(
+    _ fetchResponse: FetchResponse<T>,
     handlers: [String: (String) -> Void]
 ) {
-    for issue in errorResponse.error.issues {
+    guard let fetchError = fetchResponse.error else {
+        return
+    }
+    
+    for issue in fetchError.issues {
         let pathKey = issue.path.map { pathElement in
             if let stringElement = pathElement as? PathElement.StringElement {
                 return stringElement.value

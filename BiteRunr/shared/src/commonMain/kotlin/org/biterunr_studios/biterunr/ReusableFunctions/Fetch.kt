@@ -8,7 +8,9 @@ import io.ktor.http.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
-import org.biterunr_studios.biterunr.Models.ErrorResponse
+import org.biterunr_studios.biterunr.Models.ErrorDetails
+import org.biterunr_studios.biterunr.Models.FetchResponse
+import org.biterunr_studios.biterunr.Models.Issue
 
 val httpClient = HttpClient {
     install(ContentNegotiation) {
@@ -16,12 +18,13 @@ val httpClient = HttpClient {
     }
 }
 
+val json = Json { ignoreUnknownKeys = true }
+
 suspend inline fun <reified Req : Any, reified Res : Any> fetch(
     url: String,
     method: HttpMethod = HttpMethod.Get,
     body: Req? = null
-): Result<Res> {
-    return try {
+): FetchResponse<Res> {
         val response: HttpResponse = httpClient.request(url) {
             this.method = method
             if (body != null && method != HttpMethod.Get) {
@@ -29,20 +32,38 @@ suspend inline fun <reified Req : Any, reified Res : Any> fetch(
                 setBody(body)
             }
         }
-        if (response.status.isSuccess()) {
-            Result.success(response.body())
-        } else {
-            val errorBody = response.bodyAsText()
-            try {
-                val errorResponse = Json.decodeFromString<ErrorResponse>(errorBody)
-                Result.failure(errorResponse)
-            } catch (e: Exception) {
-                Result.failure(Exception("HTTP error: ${response.status}. Body: $errorBody", e))
-            }
+
+    return if (response.status.isSuccess()) {
+        val resBody = response.body<Res>()
+        FetchResponse(
+            success = true,
+            data = resBody,
+            error = null
+        )
+    } else {
+        val errorBody = response.bodyAsText()
+        try {
+            val fetchResponse = json.decodeFromString<FetchResponse<Unit>>(errorBody)
+            return FetchResponse(
+                success = false,
+                data = null,
+                error = fetchResponse.error
+            )
+        } catch (e: Exception) {
+            return FetchResponse(
+                success = false,
+                data = null,
+                error = ErrorDetails(
+                    issues = listOf(
+                        Issue(
+                            code = "unknown",
+                            path = emptyList(),
+                            message = "Unknown error: ${e.message}"
+                        )
+                    ),
+                    name = "UnknownError"
+                )
+            )
         }
-    } catch (e: ErrorResponse) {
-        Result.failure(e)
-    } catch (e: Exception) {
-        Result.failure(Exception("Fetch failed: ${e.message}", e))
     }
 }

@@ -1,6 +1,5 @@
 import SwiftUI
 import Shared
-//import Clerk
 
 struct AddGroupView: View {
     // Sheets
@@ -14,8 +13,6 @@ struct AddGroupView: View {
     
     // Fields
     @State private var name: String = ""
-    @State private var selectedFriends: String = "Select friends:"
-    @State private var selectedLocations: String = "Select locations:"
     @State private var comments: String = ""
     
     // Field Error Messages
@@ -28,7 +25,6 @@ struct AddGroupView: View {
     @State private var orderUsersDTOs: [OrderUserDTO] = []
     @State private var showConfirmation: Bool = false
     
-//    @Environment(Clerk.self) private var clerk
     @Environment(\.colorScheme) var colorScheme
 
     
@@ -213,7 +209,29 @@ struct AddGroupView: View {
                                 isPressed = true
                             }
                             Task {
-//                                navigate = await createOrder(status: .active)
+                                guard let creatorId = supabase.auth.currentUser?.id.uuidString else { return }
+                                let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+                                let order = OrderDTO(
+                                    id: nil,
+                                    name: name,
+                                    creatorId: creatorId,
+                                    comments: comments,
+                                    status: .active,
+                                    paused: false,
+                                    createdAt: nil,
+                                    updatedAt: nil,
+                                    orderUsers: orderUsersDTOs,
+                                    orderLocations: orderLocationDTOs,
+                                    creator: nil
+                                )
+                                let result = try await createOrder(baseUrl: apiUrl, order: order)
+                                
+                                mapValidationErrors(result, handlers: [
+                                   "name": { nameError = $0 },
+                                   "order_locations": { orderLocationsError = $0 },
+                                   "order_users": { orderUsersError = $0 },
+                                   "comments": { commentsError = $0 }
+                               ])
                             }
                         }) {
                             HStack {
@@ -237,62 +255,6 @@ struct AddGroupView: View {
             }
         }
     }
-}
-
-extension AddGroupView {
-//    func createOrder(status: Status) async -> Bool {
-//        do {
-//            guard let user = clerk.user else {
-//                print("Broken Order")
-//                return false
-//            }
-//
-//            // maybe need to create route for clerkId
-//            let order = OrderDTO(
-//                id: nil,
-//                name: name,
-//                creatorId: nil, // will be set in api using clerk_id
-//                comments: comments,
-//                status: status,
-//                paused: false,
-//                createdAt: nil,
-//                updatedAt: nil,
-//                orderUsers: orderUsersDTOs, // Selected users/friends
-//                orderLocations: orderLocationDTOs, // Selected locations
-//                creator: nil, // Not necessary creatorId set
-//                clerkId: user.id
-//            )
-//
-//            name = ""
-//            orderLocationDTOs = []
-//            orderUsersDTOs = []
-//            comments = ""
-//
-//            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
-//            let _: Order = try await fetch(
-//                url: "\(apiUrl)/orders",
-//                method: "POST",
-//                responseType: Order.self,
-//                body: order
-//            )
-//        } catch {
-//            guard let errorResponse = error as? ErrorResponse else {
-//                print("Unexpected error: \(error)")
-//                return false
-//            }
-//
-//            mapValidationErrors(errorResponse, handlers: [
-//                "name": { nameError = $0 },
-//                "order_locations": { orderLocationsError = $0 },
-//                "order_users": { orderUsersError = $0 },
-//                "comments": { commentsError = $0 }
-//            ])
-//
-//            return false
-//        }
-//
-//        return true
-//    }
 }
 
 #Preview {
