@@ -73,7 +73,7 @@ export const insertOrdersDTOSchema = insertOrdersSchema
                     location_id: z.string().nonempty("Location Id is required"),
                 })
             )
-            .nonempty("At least one order location required"),
+            .nonempty("At least one location required"),
         order_users: z
             .array(
                 z.object({
@@ -81,7 +81,7 @@ export const insertOrdersDTOSchema = insertOrdersSchema
                     user_id: z.string().nonempty("User Id is required"),
                 })
             )
-            .nonempty("At least one order user is required"),
+            .nonempty("At least one friend is required"),
     });
 
 export const patchOrdersSchema = insertOrdersSchema.partial();
