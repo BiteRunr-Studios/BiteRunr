@@ -47,9 +47,15 @@ struct SignInView: View {
                     HStack(spacing: 12) {
                         if isPasswordVisible {
                             TextField("Password", text: $password)
+                                .textContentType(.password)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
                         }
                         else {
                             SecureField("Password", text: $password)
+                                .textContentType(.password)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
                         }
                         Button(action: {
                             isPasswordVisible.toggle()

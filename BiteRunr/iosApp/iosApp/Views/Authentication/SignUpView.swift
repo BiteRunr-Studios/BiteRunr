@@ -67,6 +67,9 @@ struct SignUpView: View {
                         )
                         HStack(spacing: 12) {
                             TextField("Email", text: $email)
+                                .textContentType(.emailAddress)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
                             Image(systemName: "envelope.fill")
                                 .frame(width: 24, height: 24)
                                 .foregroundStyle(Color.secondary.opacity(0.3))
@@ -84,9 +87,15 @@ struct SignUpView: View {
                         HStack(spacing: 12) {
                             if isPasswordVisible {
                                 TextField("Password", text: $password)
+                                    .textContentType(.password)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
                             }
                             else {
                                 SecureField("Password", text: $password)
+                                    .textContentType(.password)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
                             }
                             Button(action: {
                                 isPasswordVisible.toggle()
