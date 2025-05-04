@@ -34,11 +34,7 @@ suspend fun getFriendRequests(baseUrl: String, user_id: String): FetchResponse<L
     return result
 }
 
-<<<<<<< Updated upstream
-suspend fun getAllUsersExceptAuthenticated(baseUrl: String, user_id: String): List<FriendUser> {
-=======
 suspend fun getAllUsersExceptAuthenticated(baseUrl: String, user_id: String): FetchResponse<List<FriendUser>> {
->>>>>>> Stashed changes
     val url = "$baseUrl/users/all-except/$user_id"
     val result = fetch<Unit, List<FriendUser>>(url = url, method = HttpMethod.Get, body = null)
     return result
@@ -99,9 +95,8 @@ suspend fun sendFriendRequest(
     )
     return result
 }
-
-<<<<<<< Updated upstream
-suspend fun createUserProfile(baseUrl: String, authUserId: String, firstName: String, lastName: String): UserProfile {
+    
+suspend fun createUserProfile(baseUrl: String, authUserId: String, firstName: String, lastName: String): FetchResponse<UserProfile> {
     val url = "$baseUrl/users/sso"
     val body = CreateUserSSOBody(
         id = authUserId,
@@ -110,9 +105,9 @@ suspend fun createUserProfile(baseUrl: String, authUserId: String, firstName: St
     )
     val result = fetch<CreateUserSSOBody, UserProfile>(url = url, method = HttpMethod.Post, body = body)
     
-    return result.getOrThrow()
+    return result
 }
-=======
+
 suspend fun createOrder(baseUrl: String, order: OrderDTO): FetchResponse<Order> {
     val url = "$baseUrl/orders"
 
@@ -124,6 +119,3 @@ suspend fun createOrder(baseUrl: String, order: OrderDTO): FetchResponse<Order> 
 
     return result
 }
-
-
->>>>>>> Stashed changes
