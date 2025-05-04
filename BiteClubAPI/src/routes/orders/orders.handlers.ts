@@ -30,25 +30,7 @@ export const list: AppRouteHandler<ListRoute> = async (c) => {
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
     const newCompleteOrder = c.req.valid("json");
 
-    const { clerk_id, order_users, order_locations, ...newOrder } =
-        newCompleteOrder;
-
-    const user = await db.query.users.findFirst({
-        where(fields, operators) {
-            return operators.eq(fields.clerk_id, clerk_id);
-        },
-    });
-
-    if (!user) {
-        return c.json(
-            {
-                message: "User not found",
-            },
-            HttpStatusCodes.BAD_REQUEST
-        );
-    }
-
-    newOrder.creator_id = user.id;
+    const { order_users, order_locations, ...newOrder } = newCompleteOrder;
 
     let newOrder_parsed = insertOrdersSchema.parse(newOrder);
 
@@ -65,7 +47,9 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
         ol.order_id = insertedOrder.id;
     });
 
-    let order_locations_parsed = z.array(insertOrderLocationsSchema).parse(order_locations);
+    let order_locations_parsed = z
+        .array(insertOrderLocationsSchema)
+        .parse(order_locations);
 
     let order_users_parsed = z.array(insertOrderUsersSchema).parse(order_users);
 

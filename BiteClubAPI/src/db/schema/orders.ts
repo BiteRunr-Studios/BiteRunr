@@ -66,7 +66,6 @@ export const insertOrdersDTOSchema = insertOrdersSchema
     .extend({
         creator_id: z.string().uuid().optional(), // Add creator_id as optional
         name: z.string().nonempty("Name is required"),
-        clerk_id: z.string().nonempty("Clerk Id is required"),
         order_locations: z
             .array(
                 z.object({
