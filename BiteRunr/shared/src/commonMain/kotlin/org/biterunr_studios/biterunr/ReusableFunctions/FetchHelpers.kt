@@ -2,6 +2,7 @@ package org.biterunr_studios.biterunr.ReusableFunctions
 
 import org.biterunr_studios.biterunr.Models.Location
 import io.ktor.http.*
+import io.ktor.util.reflect.instanceOf
 import org.biterunr_studios.biterunr.DTO.AcceptFriendRequestBody
 import org.biterunr_studios.biterunr.DTO.CreateFriendRequestBody
 import org.biterunr_studios.biterunr.DTO.CreateUserBody
@@ -99,5 +100,6 @@ suspend fun createUserProfile(baseUrl: String, authUserId: String, firstName: St
         lastName = lastName,
     )
     val result = fetch<CreateUserSSOBody, UserProfile>(url = url, method = HttpMethod.Post, body = body)
+    
     return result.getOrThrow()
 }
