@@ -95,7 +95,7 @@ suspend fun sendFriendRequest(
     )
     return result
 }
-    
+
 suspend fun createUserProfile(baseUrl: String, authUserId: String, firstName: String, lastName: String): FetchResponse<UserProfile> {
     val url = "$baseUrl/users/sso"
     val body = CreateUserSSOBody(
