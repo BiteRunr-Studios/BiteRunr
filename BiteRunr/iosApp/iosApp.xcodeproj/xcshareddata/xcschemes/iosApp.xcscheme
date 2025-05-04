@@ -53,7 +53,7 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "API_URL"
-            value = "https://biterunrapi.omniquark.me"
+            value = "https://biterunrapi-4bmpv.kinsta.app"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
