@@ -1,6 +1,5 @@
 import SwiftUI
 import Shared
-//import Clerk
 
 struct AddLocationsView: View {
     @State private var searchText = ""
@@ -12,7 +11,6 @@ struct AddLocationsView: View {
     @Binding var isPresented: Bool
     
     @State private var errorMessage: String? // Optional error message
-    //    @Environment(Clerk.self) private var clerk
     
     var body: some View {
         VStack {
@@ -155,7 +153,6 @@ struct AddLocationsView: View {
 }
 
 extension AddLocationsView {
-    // Computed property to filter friends based on search text
     private var filteredLocations: [Location] {
         if searchText.isEmpty {
             return locations
@@ -170,7 +167,6 @@ extension AddLocationsView {
         }
     }
     
-    // Fetch locations on initial load
     private func fetchLocations() async {
         do {
             guard let apiUrl = ProcessInfo.processInfo.environment["API_URL"] else {
