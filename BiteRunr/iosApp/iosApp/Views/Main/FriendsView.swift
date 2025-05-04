@@ -102,11 +102,17 @@ struct FriendsView: View {
                                 if let index = friendRequests.firstIndex(where: { $0.id == acceptedRequest.id }) {
                                     friendRequests.remove(at: index)
                                 }
-//                                friends.append(acceptedRequest.toUser())
+                                Task {
+                                    await loadFriends()
+                                }
                             },
+
                             onRequestRejected: { rejectedRequest in
                                 if let index = friendRequests.firstIndex(where: { $0.id == rejectedRequest.id }) {
                                     friendRequests.remove(at: index)
+                                }
+                                Task {
+                                    await loadFriends()
                                 }
                             }
                             
