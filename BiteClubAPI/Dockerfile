@@ -6,20 +6,17 @@ RUN apk add --no-cache gcompat
 WORKDIR /app
 
 # Copy dependency files first for better caching
-COPY package.json pnpm-lock.yaml tsconfig.json ./
+COPY package.json tsconfig.json ./
 COPY src ./src
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
 # Install dependencies (including devDependencies for build)
-RUN pnpm install
+RUN npm i
 
 # Build the project (requires typescript in devDependencies)
-RUN pnpm run build
+RUN npm run build
 
 # Remove devDependencies for production
-RUN pnpm prune --prod
+RUN npm prune --production
 
 FROM base AS runner
 WORKDIR /app
