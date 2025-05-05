@@ -1,4 +1,4 @@
-import { z, ZodSchema } from "zod";
+import { z } from "zod";
 
 export const receiptDetails = z.object({
     items: z.array(

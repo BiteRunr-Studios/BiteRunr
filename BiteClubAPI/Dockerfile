@@ -1,15 +1,27 @@
-FROM node:20-alpine
+FROM node:22-alpine AS base
 
+FROM base AS builder
+
+RUN apk add --no-cache gcompat
 WORKDIR /app
 
-RUN npm install -g pnpm@9.15.1
+COPY package*json tsconfig.json src ./
 
-COPY package.json pnpm-lock.yaml ./
+RUN npm ci && \
+    npm run build && \
+    npm prune --production
 
-RUN pnpm install --frozen-lockfile
+FROM base AS runner
+WORKDIR /app
 
-COPY . .
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 hono
 
+COPY --from=builder --chown=hono:nodejs /app/node_modules /app/node_modules
+COPY --from=builder --chown=hono:nodejs /app/dist /app/dist
+COPY --from=builder --chown=hono:nodejs /app/package.json /app/package.json
+
+USER hono
 EXPOSE 3000
 
-CMD ["pnpm", "dev"]
+CMD ["node", "/app/dist/index.js"]

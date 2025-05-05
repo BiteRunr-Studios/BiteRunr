@@ -4,6 +4,8 @@
     "type": "module",
     "scripts": {
         "dev": "tsx watch src/index.ts",
+        "build": "tsc",
+        "start": "node dist/index.js",
         "dev:db": "tsx watch src/db/index.ts",
         "db:push": "pnpm drizzle-kit push",
         "db:generate": "pnpm drizzle-kit generate",
