@@ -33,7 +33,8 @@
     "devDependencies": {
         "@types/node": "^20.11.17",
         "drizzle-kit": "^0.30.6",
-        "tsx": "^4.19.3"
+        "tsx": "^4.19.3",
+        "typescript": "^5.8.3"
     },
     "packageManager": "pnpm@9.15.1"
 }
