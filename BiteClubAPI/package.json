@@ -23,6 +23,7 @@
         "drizzle-zod": "^0.7.1",
         "hono": "^4.7.6",
         "hono-pino": "^0.8.0",
+        "openai": "^4.97.0",
         "postgres": "^3.4.5",
         "stoker": "^1.4.2",
         "zod": "^3.24.2"
