@@ -3,25 +3,59 @@ import Shared
 
 struct AwaitingOrders: View {
     @Binding var order: Order?
+    @State private var orderUsers: [FriendUser] = []
+    @State private var errorMessage: String?
     
     var body: some View {
-        DisableBackSwipeView {
-            VStack {
-                Text(order?.id ?? "")
-                Text(order?.name ?? "")
-                Text(order?.comments ?? "")
+        VStack {
+            OrderStatusBoxView(
+                startDate: Date(),
+                orderGroupName: order?.name ?? "",
+                orderGroupDescription: order?.comments ?? ""
+            )
+            if orderUsers.isEmpty {
+                Text("No friends listed")
+                    .foregroundColor(.secondary)
+                    .padding()
+            } else {
+                ForEach(orderUsers, id: \.id) { user in
+                    OrderUsersRow(user: user)
+                }
             }
-            .navigationBarBackButtonHidden(true)
         }
+        .padding()
+        .task {
+            await fetchOrderUsers()
+        }
+        
+        Spacer()
         
     }
 }
 
 
 extension AwaitingOrders {
-//    private func getOrderDetails() {
-//        guard let userId = supabase.auth.currentUser?.id.uuidString else { return }
-//        
-//        
-//    }
+    private func fetchOrderUsers() async {
+        errorMessage = nil
+        
+        do {
+            guard let apiUrl = ProcessInfo.processInfo.environment["API_URL"] else {
+                errorMessage = "API_URL not set"
+                return
+            }
+            guard let orderId = order?.id, !orderId.isEmpty else {
+                errorMessage = "Order ID is missing"
+                return
+            }
+            let response = try await getOrderUsers(baseUrl: apiUrl, orderId: orderId)
+            if let users = response.data as? [FriendUser] {
+                orderUsers = users
+            } else {
+                errorMessage = "Failed to decode users."
+            }
+        } catch {
+            errorMessage = "Failed to fetch order users: \(error.localizedDescription)"
+            print("Error fetching users: \(error)")
+        }
+    }
 }

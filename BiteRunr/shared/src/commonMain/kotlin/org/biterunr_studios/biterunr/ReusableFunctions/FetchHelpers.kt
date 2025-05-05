@@ -13,6 +13,7 @@ import org.biterunr_studios.biterunr.DTO.FriendUser
 import org.biterunr_studios.biterunr.DTO.OrderDTO
 import org.biterunr_studios.biterunr.DTO.SentFriendRequest
 import org.biterunr_studios.biterunr.Models.FetchResponse
+import org.biterunr_studios.biterunr.Models.Friend
 import org.biterunr_studios.biterunr.Models.Order
 import org.biterunr_studios.biterunr.Models.UserProfile
 
@@ -50,6 +51,13 @@ suspend fun getSentFriendRequests(baseUrl: String, user_id: String): FetchRespon
     val url = "$baseUrl/sent-friend-requests?userId=$user_id&status=pending"
     val result =
         fetch<Unit, List<SentFriendRequest>>(url = url, method = HttpMethod.Get, body = null)
+    return result
+}
+
+suspend fun getOrderUsers(baseUrl: String, orderId: String): FetchResponse<List<FriendUser>> {
+    val url = "$baseUrl/orders/$orderId/users"
+    val result =
+        fetch<Unit, List<FriendUser>>(url = url, method = HttpMethod.Get, body = null)
     return result
 }
 
@@ -119,3 +127,4 @@ suspend fun createOrder(baseUrl: String, order: OrderDTO): FetchResponse<Order> 
 
     return result
 }
+

@@ -3,6 +3,7 @@ import { orderUsers } from "@/db/schema/orderUsers";
 import type {
     CreateRoute,
     GetOneRoute,
+    GetOrderUsersRoute,
     ListRoute,
     PatchRoute,
     RemoveRoute,
@@ -85,4 +86,33 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
     }
 
     return c.json(deletedUser, HttpStatusCodes.OK);
+};
+
+export const getOrderUsers: AppRouteHandler<GetOrderUsersRoute> = async (c) => {
+    const { id } = c.req.valid("param");
+
+    const orderUserLinks = await db.query.orderUsers.findMany({
+        where(fields, operators) {
+            return operators.eq(fields.order_id, id);
+        },
+    });
+
+    if (!orderUserLinks || orderUserLinks.length === 0) {
+        return c.json(
+            { message: "Order or users not found" },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    // Extract user_ids from the orderUserLinks
+    const userIds = orderUserLinks.map((ou) => ou.user_id);
+
+    // Now fetch user details for these user_ids
+    const users = await db.query.users.findMany({
+        where(fields, operators) {
+            return operators.inArray(fields.id, userIds);
+        },
+    });
+
+    return c.json(users, HttpStatusCodes.OK);
 };
