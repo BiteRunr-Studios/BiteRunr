@@ -11,6 +11,7 @@ import orderLocations from "@/routes/orderLocations/orderLocations.index";
 import orderUsers from "@/routes/orderUsers/orderUsers.index";
 import webhooks from "@/routes/webhooks/webhooks.index";
 import items from "@/routes/items/items.index";
+import receiptDetails from "@/routes/receiptDetails/receiptDetails.index";
 
 const app = createApp();
 
@@ -25,6 +26,7 @@ const routes = [
     orderItems,
     orderLocations,
     orderUsers,
+    receiptDetails,
     webhooks,
 ];
 configureOpenAPI(app);
