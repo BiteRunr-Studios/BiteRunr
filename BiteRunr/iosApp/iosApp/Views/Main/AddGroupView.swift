@@ -25,9 +25,9 @@ struct AddGroupView: View {
     @State private var orderUsersDTOs: [OrderUserDTO] = []
     @State private var showConfirmation: Bool = false
     @State private var newOrder: Order? = nil
-
+    
     @Environment(\.colorScheme) var colorScheme
-
+    var onOrderCreated: ((Order?) -> Void)? = nil
     
     var body: some View {
         NavigationStack {
@@ -226,18 +226,22 @@ struct AddGroupView: View {
                                     creator: nil
                                 )
                                 let result = try await createOrder(baseUrl: apiUrl, order: order)
-                                
-                                if (result.success) {
+                                if result.success, let createdOrder = result.data {
+                                    name = ""
+                                    orderUsersDTOs = []
+                                    orderLocationDTOs = []
+                                    comments = ""
                                     newOrder = result.data!
                                     navigate = true
+                                    onOrderCreated?(createdOrder)
                                 }
-
+                                
                                 mapValidationErrors(result, handlers: [
-                                   "name": { nameError = $0 },
-                                   "order_locations": { orderLocationsError = $0 },
-                                   "order_users": { orderUsersError = $0 },
-                                   "comments": { commentsError = $0 }
-                               ])
+                                    "name": { nameError = $0 },
+                                    "order_locations": { orderLocationsError = $0 },
+                                    "order_users": { orderUsersError = $0 },
+                                    "comments": { commentsError = $0 }
+                                ])
                             }
                         }) {
                             HStack {
@@ -253,7 +257,9 @@ struct AddGroupView: View {
                             .contentShape(Rectangle())
                         }
                         .navigationDestination(isPresented: $navigate) {
-                            AwaitingOrders(order: $newOrder)
+                            AwaitingOrders(order: $newOrder,  onDismiss: {
+                                onOrderCreated?(nil) // Pass nil to reset in MainLayout
+                            })
                         }
                     }
                     .padding()

@@ -38,5 +38,6 @@ struct FriendSelectRow: View {
                 }
             }
         }
+        .contentShape(Rectangle())
     }
 }

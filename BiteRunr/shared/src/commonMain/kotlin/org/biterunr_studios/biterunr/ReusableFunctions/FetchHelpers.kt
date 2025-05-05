@@ -128,3 +128,6 @@ suspend fun createOrder(baseUrl: String, order: OrderDTO): FetchResponse<Order> 
     return result
 }
 
+//suspend fun checkOrder(baseUrl: String, userId: String) {
+//    var url = "$baseUrl/order/"
+//}

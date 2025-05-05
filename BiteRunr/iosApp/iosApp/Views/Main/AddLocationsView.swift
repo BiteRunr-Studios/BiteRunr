@@ -100,7 +100,7 @@ struct AddLocationsView: View {
                                 }) {
                                     LocationSelectRow(
                                         location: location,
-                                        isSelected: orderLocationDTOS.contains(where: { $0.orderLocationId == location.id })
+                                        isSelected: orderLocationDTOS.contains(where: { $0.orderLocationId == location.id }),
                                     )
                                 }
                                 .buttonStyle(.plain)

@@ -1,6 +1,5 @@
 import SwiftUI
 import Shared
-//import Clerk
 
 struct LocationSelectRow: View {
     let location: Location
@@ -41,6 +40,6 @@ struct LocationSelectRow: View {
                 }
             }
         }
+        .contentShape(Rectangle())
     }
 }
-

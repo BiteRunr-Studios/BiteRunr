@@ -5,32 +5,43 @@ struct AwaitingOrders: View {
     @Binding var order: Order?
     @State private var orderUsers: [FriendUser] = []
     @State private var errorMessage: String?
+    var onDismiss: (() -> Void)?
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        VStack {
-            OrderStatusBoxView(
-                startDate: Date(),
-                orderGroupName: order?.name ?? "",
-                orderGroupDescription: order?.comments ?? ""
-            )
-            if orderUsers.isEmpty {
-                Text("No friends listed")
-                    .foregroundColor(.secondary)
-                    .padding()
-            } else {
-                ForEach(orderUsers, id: \.id) { user in
-                    OrderUsersRow(user: user)
+        DisableBackSwipeView {
+            HStack {
+                Button("Back") {
+                    dismiss()
+                    onDismiss?()
                 }
             }
+            VStack {
+                OrderStatusBoxView(
+                    startDate: Date(),
+                    orderGroupName: order?.name ?? "",
+                    orderGroupDescription: order?.comments ?? ""
+                )
+                if orderUsers.isEmpty {
+                    Text("No friends listed")
+                        .foregroundColor(.secondary)
+                        .padding()
+                } else {
+                    ForEach(orderUsers, id: \.id) { user in
+                        OrderUsersRow(user: user)
+                    }
+                }
+            }
+            .padding()
+            .task {
+                await fetchOrderUsers()
+            }
         }
-        .padding()
-        .task {
-            await fetchOrderUsers()
-        }
+        .navigationBarBackButtonHidden(true)
         
-        Spacer()
-        
+//        Spacer()
     }
+    
 }
 
 
