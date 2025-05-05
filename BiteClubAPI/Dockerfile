@@ -5,11 +5,18 @@ FROM base AS builder
 RUN apk add --no-cache gcompat
 WORKDIR /app
 
-COPY package*json tsconfig.json src ./
+# Copy dependency files first for better caching
+COPY package.json package-lock.json tsconfig.json ./
+COPY src ./src
 
-RUN npm i && \
-    npm run build && \
-    npm prune --production
+# Install dependencies (including devDependencies for build)
+RUN npm ci
+
+# Build the project (requires typescript in devDependencies)
+RUN npm run build
+
+# Remove devDependencies for production
+RUN npm prune --production
 
 FROM base AS runner
 WORKDIR /app
