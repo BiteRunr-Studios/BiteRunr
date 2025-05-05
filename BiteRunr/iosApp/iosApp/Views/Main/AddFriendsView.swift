@@ -149,6 +149,7 @@ struct AddFriendsView: View {
                 }
             }
         }
+        .ignoresSafeArea(.container, edges: .bottom)
     }
 }
 

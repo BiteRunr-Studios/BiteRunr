@@ -149,6 +149,7 @@ struct AddLocationsView: View {
                 }
             }
         }
+        .ignoresSafeArea(.container, edges: .bottom)
     }
 }
 
@@ -175,7 +176,9 @@ extension AddLocationsView {
             }
             let url = "\(apiUrl)/locations"
             let response = try await getLocations(url: url)
-            locations = response.data as! [Location]
+            if response.success {
+                locations = response.data as! [Location]
+            }
         } catch {
             errorMessage = "Failed to fetch locations: \(error.localizedDescription)"
         }
