@@ -184,8 +184,8 @@ export const isUserInActiveOrder: AppRouteHandler<
   const isOrderUser = order.orderUsers.some((ou) => ou.user_id === user_id);
 
   if (isCreator || isOrderUser && order.status == "active") {
-    return c.json({ isUserInOrder: true }, HttpStatusCodes.OK);
+    return c.json({ is_user_in_order: true }, HttpStatusCodes.OK);
   }
 
-  return c.json({ isUserInOrder: false }, HttpStatusCodes.OK);
+  return c.json({ is_user_in_order: false }, HttpStatusCodes.OK);
 };

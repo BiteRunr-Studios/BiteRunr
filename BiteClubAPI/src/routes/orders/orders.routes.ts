@@ -136,7 +136,7 @@ export const isUserInActiveOrder = createRoute({
   responses: {
     [HttpStatusCodes.OK]: jsonContent(
       z.object({
-        isUserInOrder: z.boolean(),
+        is_user_in_order: z.boolean(),
       }),
       "Is user in order?"
     ),
