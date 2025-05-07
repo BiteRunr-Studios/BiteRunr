@@ -9,7 +9,7 @@ struct AwaitingOrders: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        DisableBackSwipeView {
+        VStack {
             HStack {
                 Button("Back") {
                     dismiss()
@@ -33,13 +33,13 @@ struct AwaitingOrders: View {
                 }
             }
             .padding()
-            .task {
+        }
+        .navigationBarBackButtonHidden(true)
+        .onAppear {
+            Task {
                 await fetchOrderUsers()
             }
         }
-        .navigationBarBackButtonHidden(true)
-        
-//        Spacer()
     }
     
 }
