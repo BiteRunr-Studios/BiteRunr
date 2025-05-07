@@ -10,6 +10,7 @@
         "jsx": "react-jsx",
         "jsxImportSource": "hono/jsx",
         "outDir": "dist",
+        "rootDirs": ["src"],
         "paths": {
             "@/*": ["./src/*"]
         }
