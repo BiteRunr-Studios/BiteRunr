@@ -15,6 +15,9 @@ RUN npm i
 # Build the project (requires typescript in devDependencies)
 RUN npm run build
 
+RUN ls -l /app
+RUN ls -l /app/dist
+
 # Remove devDependencies for production
 RUN npm prune --production
 
