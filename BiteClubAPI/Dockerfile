@@ -6,7 +6,7 @@ RUN apk add --no-cache gcompat
 WORKDIR /app
 
 # Copy dependency files first for better caching
-COPY package.json package-lock.json tsconfig.json ./
+COPY package.json pnpm-lock.yaml tsconfig.json ./
 COPY src ./src
 
 # Install pnpm
