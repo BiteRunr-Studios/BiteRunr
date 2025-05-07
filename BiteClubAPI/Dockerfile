@@ -15,10 +15,6 @@ RUN npm i
 # Build the project (requires typescript in devDependencies)
 RUN npm run build
 
-RUN ls -l /app
-RUN ls -l /app/dist
-RUN ls -l /app/dist/src
-
 # Remove devDependencies for production
 RUN npm prune --production
 
@@ -35,4 +31,4 @@ COPY --from=builder --chown=hono:nodejs /app/package.json /app/package.json
 USER hono
 EXPOSE 3000
 
-CMD ["node", "/app/dist/src/index.js"]
+CMD ["node", "/app/dist/index.js"]
