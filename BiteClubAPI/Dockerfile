@@ -6,7 +6,7 @@ RUN apk add --no-cache gcompat
 WORKDIR /app
 
 # Copy dependency files first for better caching
-COPY package.json tsconfig.json ./
+COPY package.json package-lock.json tsconfig.json ./
 COPY src ./src
 
 # Install dependencies (including devDependencies for build)
