@@ -9,14 +9,17 @@ WORKDIR /app
 COPY package.json package-lock.json tsconfig.json ./
 COPY src ./src
 
-# Install dependencies (including devDependencies for build)
-RUN npm i
+# Install pnpm
+RUN npm install -g pnpm
 
-# Build the project (requires typescript in devDependencies)
-RUN npm run build
+# Install dependencies
+RUN pnpm install
+
+# Build the project
+RUN pnpm run build
 
 # Remove devDependencies for production
-RUN npm prune --production
+RUN pnpm prune --prod
 
 FROM base AS runner
 WORKDIR /app
