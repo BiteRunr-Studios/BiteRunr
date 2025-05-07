@@ -17,6 +17,7 @@ RUN npm run build
 
 RUN ls -l /app
 RUN ls -l /app/dist
+RUN ls -l /app/dist/src
 
 # Remove devDependencies for production
 RUN npm prune --production
