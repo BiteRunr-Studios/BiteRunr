@@ -54,6 +54,13 @@ suspend fun getSentFriendRequests(baseUrl: String, user_id: String): FetchRespon
     return result
 }
 
+suspend fun getOrders(baseUrl: String, userId: String): FetchResponse<List<Order>> {
+    val url = "$baseUrl/orders/user/$userId"
+    val result =
+        fetch<Unit, List<Order>>(url = url, method = HttpMethod.Get, body = null)
+    return result
+}
+
 suspend fun getOrderUsers(baseUrl: String, orderId: String): FetchResponse<List<FriendUser>> {
     val url = "$baseUrl/orders/$orderId/users"
     val result =

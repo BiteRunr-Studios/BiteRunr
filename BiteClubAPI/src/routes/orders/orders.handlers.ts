@@ -141,8 +141,11 @@ export const listByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
   const { id } = c.req.valid("param");
   const orders = await db.query.orders.findMany({
     where(fields, operators) {
-      return operators.eq(fields.creator_id, id);
-    },
+      return operators.and(
+        operators.eq(fields.creator_id, id),
+        operators.eq(fields.status, "active")
+      );
+    }    
   });
 
   if (!orders) {

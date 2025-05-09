@@ -33,6 +33,8 @@ struct AwaitingOrders: View {
                 }
             }
             .padding()
+            
+            Spacer()
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {

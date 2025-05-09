@@ -83,8 +83,8 @@ enum Tab: Int, CaseIterable, Hashable {
         switch self {
         case .home: return "house"
         case .addGroup: return "plus.circle"
-        case .joinGroup: return "arrow.triangle.2.circlepath.circle"
-        case .friends: return "person.3"
+        case .joinGroup: return "bag"
+        case .friends: return "person.2"
         }
     }
     
@@ -92,8 +92,8 @@ enum Tab: Int, CaseIterable, Hashable {
         switch self {
         case .home: return "house.fill"
         case .addGroup: return "plus.circle.fill"
-        case .joinGroup: return "arrow.triangle.2.circlepath.circle.fill"
-        case .friends : return "person.3.fill"
+        case .joinGroup: return "bag.fill"
+        case .friends : return "person.2.fill"
         }
     }
 }

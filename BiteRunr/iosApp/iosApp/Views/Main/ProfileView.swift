@@ -25,10 +25,24 @@ struct ProfileView: View {
                     HStack {
                         
                         if let user = user {
-                            Image(systemName: "person")
-                                .resizable()
-                                .shadow(radius: 3)
-                                .frame(width: 30, height: 30)
+                            let picture: String = supabase.auth.currentUser?.userMetadata["avatar_url"]?.value as? String ?? ""
+                            if !picture.isEmpty {
+                                AsyncImage(url: URL(string: picture)) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                        .clipShape(Circle())
+                                } placeholder: {
+                                    ProgressView()
+                                }
+                                .frame(width: 40, height: 40)
+                            } else {
+                                Image(systemName: "person.crop.circle.fill").resizable()
+                                    .scaledToFill()
+                                    .clipShape(Circle())
+                                    .frame(width: 40, height: 40)
+                                    .foregroundColor(.secondary)
+                            }
                             
                             VStack(alignment: .leading) {
                                 if !user.profile.firstName.isEmpty && !user.profile.lastName.isEmpty {
