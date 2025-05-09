@@ -38,15 +38,21 @@ struct MainLayout: View {
                                     selectedTab = tab
                                 }
                             }) {
-                                Image(systemName: selectedTab == tab ? tab.filledIcon : tab.icon)
-                                    .font(.system(size: 24))
-                                    .foregroundColor(selectedTab == tab ? .orange : .gray)
+                                VStack(spacing: 2) {
+                                    Image(systemName: selectedTab == tab ? tab.filledIcon : tab.icon)
+                                        .font(.system(size: 21))
+                                        .foregroundColor(selectedTab == tab ? .orange : .gray)
+                                    Text(tab.name)
+                                        .font(.caption2)
+                                        .foregroundColor(selectedTab == tab ? .orange : .gray)
+                                }
                             }
                             Spacer()
                         }
                     }
-                    .padding()
+                    .padding(.vertical, 4)
                     .background(Color(.systemBackground))
+
                 }
             }
             .sheet(isPresented: $showProfileSheet) {
@@ -85,6 +91,15 @@ enum Tab: Int, CaseIterable, Hashable {
         case .addGroup: return "plus.circle"
         case .joinGroup: return "bag"
         case .friends: return "person.2"
+        }
+    }
+    
+    var name: String {
+        switch self {
+        case .home: return "Home"
+        case .addGroup: return "Add Group"
+        case .joinGroup: return "Groups"
+        case .friends: return "Friends"
         }
     }
     

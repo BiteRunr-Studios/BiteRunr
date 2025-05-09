@@ -9,13 +9,14 @@ struct AwaitingOrders: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        VStack {
+        VStack (alignment: .leading) {
             HStack {
                 Button("Back") {
                     dismiss()
                     onDismiss?()
                 }
             }
+            .padding(.horizontal)
             VStack {
                 OrderStatusBoxView(
                     startDate: Date(),

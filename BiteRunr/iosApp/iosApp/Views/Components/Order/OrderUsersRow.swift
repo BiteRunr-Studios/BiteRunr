@@ -11,9 +11,10 @@ struct OrderUsersRow: View {
                 .aspectRatio(contentMode: .fill)
                 .frame(width: 35, height: 35)
                 .foregroundColor(.gray)
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading) {
                 Text(user.firstName + " " + user.lastName)
                     .font(.headline)
+                    .foregroundStyle(.primary)
                 Text("Adding Items...")
                     .foregroundStyle(.secondary)
                     .opacity(0.5)

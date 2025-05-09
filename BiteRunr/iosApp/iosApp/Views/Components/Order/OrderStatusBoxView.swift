@@ -28,7 +28,7 @@ struct OrderStatusBoxView: View {
                 .foregroundStyle(.primary)
             Text(orderGroupDescription)
                 .font(.body)
-                .foregroundStyle(.primary)
+                .foregroundStyle(.secondary)
         }
         .padding()
         .frame(
