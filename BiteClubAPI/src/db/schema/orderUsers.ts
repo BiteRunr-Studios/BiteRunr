@@ -40,9 +40,7 @@ export const orderUsersRelations = relations(orderUsers, ({ one }) => ({
     }),
 }));
 
-export const selectOrderUsersSchema = createSelectSchema(orderUsers).omit({
-    id: true,
-});
+export const selectOrderUsersSchema = createSelectSchema(orderUsers);
 
 export const insertOrderUsersSchema = createInsertSchema(orderUsers)
     .omit({

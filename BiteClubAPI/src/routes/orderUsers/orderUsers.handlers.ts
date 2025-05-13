@@ -95,9 +95,6 @@ export const getOrderUsers: AppRouteHandler<GetOrderUsersRoute> = async (c) => {
         where(fields, operators) {
             return operators.eq(fields.order_id, id);
         },
-        columns: {
-            id: false,
-        },
         with: {
             user: {
                 columns: {
