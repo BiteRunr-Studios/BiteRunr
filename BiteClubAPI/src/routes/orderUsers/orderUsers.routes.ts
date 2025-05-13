@@ -14,7 +14,10 @@ import orderUsers, {
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
 import { authMiddleware } from "@/middlewares/clerk-auth";
-import { selectUserSchema } from "@/db/schema/users";
+import {
+    selectOrderUsersWithUserSchema,
+    selectUserSchema,
+} from "@/db/schema/users";
 
 const tags = ["Order Users"];
 
@@ -149,7 +152,7 @@ export const getOrderUsers = createRoute({
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            z.array(selectUserSchema),
+            z.array(selectOrderUsersWithUserSchema),
             "List of users in the order"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
@@ -162,7 +165,6 @@ export const getOrderUsers = createRoute({
         ),
     },
 });
-
 
 export type GetOrderUsersRoute = typeof getOrderUsers;
 export type ListRoute = typeof list;

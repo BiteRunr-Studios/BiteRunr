@@ -13,11 +13,11 @@ data class CreateUserBody(
     val password: String,
 
     @SerialName("profile")
-    val profile: Profile
+    val profile: UserBodyProfile
 )
 
 @Serializable
-data class Profile(
+data class UserBodyProfile(
     @SerialName("first_name")
     val firstName: String,
 

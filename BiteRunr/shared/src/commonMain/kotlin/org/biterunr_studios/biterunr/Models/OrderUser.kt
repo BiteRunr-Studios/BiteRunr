@@ -25,5 +25,5 @@ data class OrderUser(
     val order: Order? = null,
 
     @SerialName("user")
-    val user: UserProfile? = null
+    val user: Profile
 )

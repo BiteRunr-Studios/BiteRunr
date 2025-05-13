@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct OrderUsersRow: View {
-    let user: FriendUser
+    let user: Profile
     
     var body: some View {
         HStack {

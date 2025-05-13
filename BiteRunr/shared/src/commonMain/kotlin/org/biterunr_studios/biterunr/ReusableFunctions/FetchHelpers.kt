@@ -15,6 +15,7 @@ import org.biterunr_studios.biterunr.DTO.SentFriendRequest
 import org.biterunr_studios.biterunr.Models.FetchResponse
 import org.biterunr_studios.biterunr.Models.Friend
 import org.biterunr_studios.biterunr.Models.Order
+import org.biterunr_studios.biterunr.Models.OrderUser
 import org.biterunr_studios.biterunr.Models.UserProfile
 
 suspend fun getLocations(url: String): FetchResponse<List<Location>> {
@@ -61,10 +62,10 @@ suspend fun getOrders(baseUrl: String, userId: String): FetchResponse<List<Order
     return result
 }
 
-suspend fun getOrderUsers(baseUrl: String, orderId: String): FetchResponse<List<FriendUser>> {
+suspend fun getOrderUsers(baseUrl: String, orderId: String): FetchResponse<List<OrderUser>> {
     val url = "$baseUrl/orders/$orderId/users"
     val result =
-        fetch<Unit, List<FriendUser>>(url = url, method = HttpMethod.Get, body = null)
+        fetch<Unit, List<OrderUser>>(url = url, method = HttpMethod.Get, body = null)
     return result
 }
 

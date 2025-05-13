@@ -1,6 +1,6 @@
 import { pgTable, timestamp, unique, uuid, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { orders, users } from "./index";
+import { baseUserSchema, orders, users } from "./index";
 import { sql, relations } from "drizzle-orm";
 import { z } from "zod";
 
@@ -40,7 +40,10 @@ export const orderUsersRelations = relations(orderUsers, ({ one }) => ({
     }),
 }));
 
-export const selectOrderUsersSchema = createSelectSchema(orderUsers);
+export const selectOrderUsersSchema = createSelectSchema(orderUsers).omit({
+    id: true,
+});
+
 export const insertOrderUsersSchema = createInsertSchema(orderUsers)
     .omit({
         id: true,

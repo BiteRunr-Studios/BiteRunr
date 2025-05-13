@@ -3,7 +3,7 @@ import Shared
 
 struct AwaitingOrders: View {
     @Binding var order: Order?
-    @State private var orderUsers: [FriendUser] = []
+    @State private var orderUsers: [OrderUser] = []
     @State private var errorMessage: String?
     var onDismiss: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
@@ -29,7 +29,7 @@ struct AwaitingOrders: View {
                         .padding()
                 } else {
                     ForEach(orderUsers, id: \.id) { user in
-                        OrderUsersRow(user: user)
+                        OrderUsersRow(user: user.user)
                     }
                 }
             }
@@ -62,7 +62,7 @@ extension AwaitingOrders {
                 return
             }
             let response = try await getOrderUsers(baseUrl: apiUrl, orderId: orderId)
-            if let users = response.data as? [FriendUser] {
+            if let users = response.data as? [OrderUser] {
                 orderUsers = users
             } else {
                 errorMessage = "Failed to decode users."
