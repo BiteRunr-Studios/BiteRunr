@@ -11,7 +11,6 @@ import type {
   ListRoute,
   PatchRoute,
   RemoveRoute,
-  IsUserInActiveOrderRoute,
 } from "./orders.routes";
 import type { AppRouteHandler } from "@/lib/types";
 import * as HttpStatusCodes from "stoker/http-status-codes";
@@ -158,37 +157,4 @@ export const listByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
   }
 
   return c.json(orders, HttpStatusCodes.OK);
-};
-
-export const isUserInActiveOrder: AppRouteHandler<
-  IsUserInActiveOrderRoute
-> = async (c) => {
-  const { order_id, user_id } = c.req.valid("json");
-
-  const order = await db.query.orders.findFirst({
-    with: {
-      orderUsers: true,
-    },
-    where(fields, operators) {
-      return operators.eq(fields.id, order_id);
-    },
-  });
-
-  if (!order) {
-    return c.json(
-      {
-        message: HttpStatusPhrases.NOT_FOUND,
-      },
-      HttpStatusCodes.NOT_FOUND
-    );
-  }
-
-  const isCreator = order.creator_id === user_id;
-  const isOrderUser = order.orderUsers.some((ou) => ou.user_id === user_id);
-
-  if (isCreator || isOrderUser && order.status == "active") {
-    return c.json({ is_user_in_order: true }, HttpStatusCodes.OK);
-  }
-
-  return c.json({ is_user_in_order: false }, HttpStatusCodes.OK);
 };

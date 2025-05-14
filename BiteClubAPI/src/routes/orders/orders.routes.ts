@@ -178,22 +178,9 @@ export const listByUserId = createRoute({
   },
 });
 
-export const isUserInOrder = createRoute({
-  path: "/orders/{orderId}/has-user/{userId}",
-  method: "get",
-  tags,
-  security: [{ Bearer: [] }],
-  middleware: [authMiddleware] as const,
-  request: {
-    params: IdUUIDParamsSchema,
-  },
-  responses: {},
-});
-
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
 export type ListByUserIdRoute = typeof listByUserId;
-export type IsUserInActiveOrderRoute = typeof isUserInActiveOrder;
