@@ -445,7 +445,7 @@ export const isUserInActiveOrder: AppRouteHandler<UserHasActiveOrders> = async (
   });
 
   const hasActiveOrder =
-    isMemberOfActiveOrder || Boolean(isCreatorOfActiveOrder);
+    isMemberOfActiveOrder == true || isCreatorOfActiveOrder != null;
 
   return c.json(hasActiveOrder, HttpStatusCodes.OK);
 };
