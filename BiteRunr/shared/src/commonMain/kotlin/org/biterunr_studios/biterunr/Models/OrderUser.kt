@@ -14,6 +14,9 @@ data class OrderUser(
 
     @SerialName("order_id")
     val orderId: String,
+    
+    @SerialName("status")
+    val status: String,
 
     @SerialName("created_at")
     val createdAt: Instant,

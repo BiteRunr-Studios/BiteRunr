@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct OrderUsersRow: View {
-    let user: Profile
+    let orderUser: OrderUser
     
     var body: some View {
         HStack {
@@ -12,10 +12,10 @@ struct OrderUsersRow: View {
                 .frame(width: 35, height: 35)
                 .foregroundColor(.gray)
             VStack(alignment: .leading) {
-                Text(user.firstName + " " + user.lastName)
+                Text(orderUser.user.firstName + " " + orderUser.user.lastName)
                     .font(.headline)
                     .foregroundStyle(.primary)
-                Text("Adding Items...")
+                Text(orderUser.status)
                     .foregroundStyle(.secondary)
                     .opacity(0.5)
             }

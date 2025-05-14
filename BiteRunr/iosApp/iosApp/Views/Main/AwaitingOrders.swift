@@ -28,8 +28,8 @@ struct AwaitingOrders: View {
                         .foregroundColor(.secondary)
                         .padding()
                 } else {
-                    ForEach(orderUsers, id: \.id) { user in
-                        OrderUsersRow(user: user.user)
+                    ForEach(orderUsers, id: \.id) { orderUser in
+                        OrderUsersRow(orderUser: orderUser)
                     }
                 }
             }
