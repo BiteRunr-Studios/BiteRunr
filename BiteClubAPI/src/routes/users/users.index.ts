@@ -11,6 +11,7 @@ const router = createRouter()
     .openapi(routes.resetPassword, handlers.resetPassword)
     // .openapi(routes.patch, handlers.patch)
     // .openapi(routes.remove, handlers.remove)
+    .openapi(routes.userHasActiveOrders, handlers.isUserInActiveOrder)
     .openapi(routes.getFriends, handlers.getFriends)
     .openapi(routes.getFriendRequests, handlers.getFriendRequests)
     .openapi(
