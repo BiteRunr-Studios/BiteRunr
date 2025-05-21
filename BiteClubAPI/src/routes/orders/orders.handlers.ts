@@ -140,11 +140,12 @@ export const listByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
   const { id } = c.req.valid("param");
   const orders = await db.query.orders.findMany({
     where(fields, operators) {
-      return operators.and(
-        operators.eq(fields.creator_id, id),
-        operators.eq(fields.status, "active")
-      );
-    }    
+      return operators.and(operators.eq(fields.creator_id, id));
+    },
+    orderBy: (fields, operators) => [
+      operators.desc(fields.created_at),
+      operators.asc(fields.id),
+    ],
   });
 
   if (!orders) {
