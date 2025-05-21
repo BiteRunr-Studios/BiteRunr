@@ -143,8 +143,7 @@ export const listByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
       return operators.and(operators.eq(fields.creator_id, id));
     },
     orderBy: (fields, operators) => [
-      operators.asc(fields.created_at),
-      operators.asc(fields.id),
+      operators.desc(fields.created_at),
     ],
   });
 
