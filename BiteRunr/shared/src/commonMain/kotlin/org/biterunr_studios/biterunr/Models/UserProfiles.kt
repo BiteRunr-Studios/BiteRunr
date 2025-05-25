@@ -43,6 +43,9 @@ data class Profile(
     @SerialName("last_name")
     val lastName: String,
 
+    @SerialName("avatar_url")
+    val avatarUrl: String? = null,
+
     @SerialName("created_at")
     val createdAt: Instant,
 

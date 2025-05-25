@@ -12,40 +12,34 @@ struct FriendRow: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            // Profile image
-            //            if let imageUrlString = user.imageUrl, let imageUrl = URL(string: imageUrlString) {
-            //                AsyncImage(url: imageUrl) { phase in
-            //                    switch phase {
-            //                    case .empty:
-            //                        ProgressView()
-            //                            .frame(width: 50, height: 50)
-            //                    case .success(let image):
-            //                        image
-            //                            .resizable()
-            //                            .aspectRatio(contentMode: .fill)
-            //                            .frame(width: 50, height: 50)
-            //                            .clipShape(Circle())
-            //                    case .failure:
-            //                        Image(systemName: "person.circle.fill")
-            //                            .resizable()
-            //                            .aspectRatio(contentMode: .fill)
-            //                            .frame(width: 50, height: 50)
-            //                            .foregroundColor(.gray)
-            //                    @unknown default:
-            //                        Image(systemName: "person.circle.fill")
-            //                            .resizable()
-            //                            .aspectRatio(contentMode: .fill)
-            //                            .frame(width: 50, height: 50)
-            //                            .foregroundColor(.gray)
-            //                    }
-            //                }
-            //            } else {
-            Image(systemName: "person.circle.fill")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 50, height: 50)
-                .foregroundColor(.gray)
-            //            }
+//            Profile image
+            if let imageUrlString = user.avatarUrl, let imageUrl = URL(string: imageUrlString) {
+                AsyncImage(url: imageUrl) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                            .frame(width: 50, height: 50)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 50, height: 50)
+                            .clipShape(Circle())
+                    case .failure:
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 50, height: 50)
+                            .foregroundColor(.gray)
+                    @unknown default:
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 50, height: 50)
+                            .foregroundColor(.gray)
+                    }
+                }
+            }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(user.firstName + " " + user.lastName)
@@ -96,7 +90,7 @@ extension FriendRow {
     private func deleteFriend() async {
         isDeleting = true
         deleteError = nil
-
+        
         do {
             let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
             let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
@@ -109,7 +103,7 @@ extension FriendRow {
                 deleteError = "Failed to delete friend: \(error.localizedDescription)"
             }
         }
-
+        
         DispatchQueue.main.async {
             isDeleting = false
         }

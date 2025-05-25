@@ -19,6 +19,9 @@ data class FriendRequestUser(
     @SerialName("email")
     val email: String? = null,
 
+    @SerialName("avatar_url")
+    val avatarUrl: String? = null,
+
     @SerialName("sender_id")
     val senderId: String,
 
@@ -31,6 +34,7 @@ data class FriendRequestUser(
         profile = Profile(
             firstName = firstName,
             lastName = lastName,
+            avatarUrl = avatarUrl,
             createdAt = kotlinx.datetime.Clock.System.now(),
             updatedAt = kotlinx.datetime.Clock.System.now()
         )
