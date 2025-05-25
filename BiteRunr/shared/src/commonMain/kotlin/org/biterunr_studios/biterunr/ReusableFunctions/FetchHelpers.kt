@@ -1,5 +1,7 @@
 package org.biterunr_studios.biterunr.ReusableFunctions
 
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
 import org.biterunr_studios.biterunr.Models.Location
 import io.ktor.http.*
 import io.ktor.util.reflect.instanceOf
@@ -11,6 +13,7 @@ import org.biterunr_studios.biterunr.DTO.FriendRequestResponse
 import org.biterunr_studios.biterunr.DTO.FriendRequestUser
 import org.biterunr_studios.biterunr.DTO.FriendUser
 import org.biterunr_studios.biterunr.DTO.OrderDTO
+import org.biterunr_studios.biterunr.DTO.ReceiptDetails
 import org.biterunr_studios.biterunr.DTO.SentFriendRequest
 import org.biterunr_studios.biterunr.Models.FetchResponse
 import org.biterunr_studios.biterunr.Models.Friend
@@ -136,6 +139,21 @@ suspend fun createOrder(baseUrl: String, order: OrderDTO): FetchResponse<Order> 
     return result
 }
 
-//suspend fun checkOrder(baseUrl: String, userId: String) {
-//    var url = "$baseUrl/order/"
-//}
+suspend fun scanReceipt(
+    baseUrl: String,
+    imageData: ByteArray,
+): FetchResponse<ReceiptDetails> {
+    val url = "$baseUrl/scan-receipt"
+
+    return fetchMultipart<ReceiptDetails>(
+        url = url,
+        fileData = imageData,
+        fileName = "receipt.jpg",
+        fileFieldName = "file",
+        fileContentType = "image/jpeg",
+        additionalFields = mapOf(
+            "description" to "Receipt upload",
+            "date" to "2025-05-14"
+        )
+    )
+}

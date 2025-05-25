@@ -49,12 +49,26 @@ struct HomeView: View {
 
                 FrequentlyOrderedItemsBox(items: frequentlyOrderedItems)
                 
-                let payments = [
-                    PastPayment(name: "Nick Smith", date: Date(timeIntervalSince1970: 1707705600), amount: 9.12),
-                    PastPayment(name: "Dylan Wright", date: Date(timeIntervalSince1970: 1707024000), amount: 13.24)
-                ]
+//                let payments = [
+//                    PastPayment(name: "Nick Smith", date: Date(timeIntervalSince1970: 1707705600), amount: 9.12),
+//                    PastPayment(name: "Dylan Wright", date: Date(timeIntervalSince1970: 1707024000), amount: 13.24)
+//                ]
+//
+//                PastPaymentsBox(payments: payments)
+                
+                NavigationLink(destination: ScanReceipt()) {
+                    HStack {
+                        Image(systemName: "document.viewfinder")
+                        Text("Scan")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                }
+                .background(Color.orange)
+                .foregroundColor(.white)
+                .cornerRadius(12)
+                .contentShape(Rectangle())
 
-                PastPaymentsBox(payments: payments)
 
 
             }

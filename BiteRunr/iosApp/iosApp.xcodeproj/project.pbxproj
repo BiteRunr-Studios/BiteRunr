@@ -35,6 +35,7 @@
 		14156DD22DBB28B800F4E56B /* RequestsPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA22DBB28B800F4E56B /* RequestsPlaceholderView.swift */; };
 		14156EA22DBB360700F4E56B /* MapValidationErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156EA12DBB360200F4E56B /* MapValidationErrors.swift */; };
 		143C5F4A2DC2F49F008052A5 /* Supabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 143C5F492DC2F49B008052A5 /* Supabase.swift */; };
+		145963BE2DD41FAD00E4105F /* ScanReceipt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145963BD2DD41FAD00E4105F /* ScanReceipt.swift */; };
 		1472B7B82DC2F55400274F56 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 1472B7B72DC2F55400274F56 /* Auth */; };
 		1472B7BA2DC2F55400274F56 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = 1472B7B92DC2F55400274F56 /* Functions */; };
 		1472B7BC2DC2F55400274F56 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 1472B7BB2DC2F55400274F56 /* PostgREST */; };
@@ -79,6 +80,7 @@
 		14156DB82DBB28B800F4E56B /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		14156EA12DBB360200F4E56B /* MapValidationErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapValidationErrors.swift; sourceTree = "<group>"; };
 		143C5F492DC2F49B008052A5 /* Supabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Supabase.swift; sourceTree = "<group>"; };
+		145963BD2DD41FAD00E4105F /* ScanReceipt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanReceipt.swift; sourceTree = "<group>"; };
 		14BBB4852DBBBAA600A3C7E9 /* PollingHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PollingHelper.swift; sourceTree = "<group>"; };
 		14BBB4EE2DBC0E9800A3C7E9 /* SupabaseState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseState.swift; sourceTree = "<group>"; };
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
@@ -199,6 +201,7 @@
 				14156DB62DBB28B800F4E56B /* JoinGroupView.swift */,
 				14156DB72DBB28B800F4E56B /* MainLayout.swift */,
 				14156DB82DBB28B800F4E56B /* ProfileView.swift */,
+				145963BD2DD41FAD00E4105F /* ScanReceipt.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -424,6 +427,7 @@
 				14156DD02DBB28B800F4E56B /* SignUpOrSignInView.swift in Sources */,
 				14BBB4EF2DBC0EA000A3C7E9 /* SupabaseState.swift in Sources */,
 				143C5F4A2DC2F49F008052A5 /* Supabase.swift in Sources */,
+				145963BE2DD41FAD00E4105F /* ScanReceipt.swift in Sources */,
 				14156DD12DBB28B800F4E56B /* TopBarView.swift in Sources */,
 				14156DD22DBB28B800F4E56B /* RequestsPlaceholderView.swift in Sources */,
 				14156EA22DBB360700F4E56B /* MapValidationErrors.swift in Sources */,
