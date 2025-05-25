@@ -106,7 +106,7 @@ struct FriendsView: View {
                                     await loadFriends()
                                 }
                             },
-
+                            
                             onRequestRejected: { rejectedRequest in
                                 if let index = friendRequests.firstIndex(where: { $0.id == rejectedRequest.id }) {
                                     friendRequests.remove(at: index)
@@ -153,27 +153,27 @@ struct FriendsView: View {
 }
 
 extension FriendsView {
-        // fetch friend requests as users
-        private func loadFriendRequests() async {
-            isLoading = true
-            errorMessage = nil
-            
-            do {
-                guard let apiUrl = ProcessInfo.processInfo.environment["API_URL"] else {
-                    errorMessage = "API_URL not set"
-                    return
-                }
-                let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
-                let response = try await getFriendRequests(baseUrl: apiUrl, user_id: user_id)
-                if response.success {
-                    friendRequests = response.data as! [FriendRequestUser]
-                }
-            } catch {
-                errorMessage = "Failed to fetch friend requests: \(error.localizedDescription)"
+    // fetch friend requests as users
+    private func loadFriendRequests() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            guard let apiUrl = ProcessInfo.processInfo.environment["API_URL"] else {
+                errorMessage = "API_URL not set"
+                return
             }
-            
-            isLoading = false
+            let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
+            let response = try await getFriendRequests(baseUrl: apiUrl, user_id: user_id)
+            if response.success {
+                friendRequests = response.data as! [FriendRequestUser]
+            }
+        } catch {
+            errorMessage = "Failed to fetch friend requests: \(error.localizedDescription)"
         }
+        
+        isLoading = false
+    }
     
     // fetch friends
     private func loadFriends() async {

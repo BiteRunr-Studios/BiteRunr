@@ -50,8 +50,6 @@ struct FriendRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(user.firstName + " " + user.lastName)
                     .fontWeight(.medium)
-                Text(user.email ?? "")
-                    .font(.subheadline)
                 
             }
             

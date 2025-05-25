@@ -73,16 +73,16 @@ struct PlaceholderRequestRow: View {
                             .foregroundColor(.primary)
                     }
                     .confirmationDialog("Friend Options", isPresented: $showingOptions) {
-                        Button("Reject Request", role: .destructive) {
-                            Task {
-                                await deleteFriendRequest()
-                                print("Friend request rejected")
-                            }
-                        }
                         Button("Approve Request") {
                             Task {
                                 await acceptFriendRequest()
                                 print("Friend request accepted")
+                            }
+                        }
+                        Button("Reject Request", role: .destructive) {
+                            Task {
+                                await deleteFriendRequest()
+                                print("Friend request rejected")
                             }
                         }
                         Button("Cancel", role: .cancel) {}

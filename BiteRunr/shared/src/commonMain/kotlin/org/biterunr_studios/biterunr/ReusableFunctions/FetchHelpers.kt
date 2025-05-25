@@ -19,6 +19,8 @@ import org.biterunr_studios.biterunr.Models.FetchResponse
 import org.biterunr_studios.biterunr.Models.Friend
 import org.biterunr_studios.biterunr.Models.Order
 import org.biterunr_studios.biterunr.Models.OrderUser
+import org.biterunr_studios.biterunr.Models.UpdateProfile
+import org.biterunr_studios.biterunr.Models.UpdateUserProfileRequest
 import org.biterunr_studios.biterunr.Models.UserProfile
 
 suspend fun getLocations(baseUrl: String): FetchResponse<List<Location>> {
@@ -125,6 +127,31 @@ suspend fun createUserProfile(baseUrl: String, authUserId: String, firstName: St
     )
     val result = fetch<CreateUserSSOBody, UserProfile>(url = url, method = HttpMethod.Post, body = body)
     
+    return result
+}
+
+suspend fun updateUserProfile(
+    baseUrl: String,
+    userId: String,
+    firstName: String,
+    lastName: String,
+    accessToken: String,
+    refreshToken: String
+): FetchResponse<UserProfile> {
+    val url = "$baseUrl/users/$userId"
+    val body = UpdateUserProfileRequest(
+        profile = UpdateProfile(
+            firstName = firstName,
+            lastName = lastName
+        ),
+        accessToken = accessToken,
+        refreshToken = refreshToken
+    )
+    val result = fetch<UpdateUserProfileRequest, UserProfile>(
+        url = url,
+        method = HttpMethod.Patch,
+        body = body
+    )
     return result
 }
 
