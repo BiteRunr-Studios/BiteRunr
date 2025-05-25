@@ -3,6 +3,10 @@ import Foundation
 class Poller: ObservableObject {
     private var timer: Timer?
     
+    var isPolling: Bool {
+            timer != nil
+        }
+    
     func startPolling<T>(
         interval: TimeInterval,
         pollBlock: @escaping @Sendable () async throws -> T,

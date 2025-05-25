@@ -36,8 +36,8 @@ struct AddGroupView: View {
                 ScrollView {
                     VStack(alignment: .leading,spacing: 12) {
                         Text("Create Order")
+                            .font(.headline)
                             .foregroundStyle(.secondary)
-                            .font(.title2)
                         
                         // Order Name Field
                         VStack(alignment: .leading, spacing: 4) {
@@ -79,9 +79,8 @@ struct AddGroupView: View {
                             ? "Select Locations"
                             : "\(orderLocationDTOs.count) location(s) selected"
                             
-                            let locationColor: Color = orderUsersDTOs.isEmpty
-                            ? .secondary.opacity(0.5)
-                            : (colorScheme == .dark ? .white : .black)
+                            let locationColor: Color = .secondary.opacity(0.5)
+                            //                            : (colorScheme == .dark ? .white : .black)
                             
                             HStack(spacing: 12) {
                                 Text(locationText)
@@ -134,9 +133,7 @@ struct AddGroupView: View {
                             ? "Select Friends"
                             : "\(orderUsersDTOs.count) friend(s) selected"
                             
-                            let userColor: Color = orderUsersDTOs.isEmpty
-                            ? .secondary.opacity(0.5)
-                            : (colorScheme == .dark ? .white : .black)
+                            let userColor: Color = .secondary.opacity(0.5)
                             
                             HStack(spacing: 12) {
                                 Text(userText)
@@ -231,11 +228,10 @@ struct AddGroupView: View {
                                     orderUsersDTOs = []
                                     orderLocationDTOs = []
                                     comments = ""
-                                    newOrder = result.data!
-                                    navigate = true
+                                    
                                     onOrderCreated?(createdOrder)
+                                    
                                 }
-                                
                                 mapValidationErrors(result, handlers: [
                                     "name": { nameError = $0 },
                                     "order_locations": { orderLocationsError = $0 },
@@ -257,14 +253,32 @@ struct AddGroupView: View {
                             .contentShape(Rectangle())
                         }
                         .navigationDestination(isPresented: $navigate) {
-                            AwaitingOrders(order: $newOrder,  onDismiss: {
-                                onOrderCreated?(nil) // Pass nil to reset in MainLayout
-                            })
+                            AwaitingOrders(
+                                order: $newOrder,
+                                onDismiss: {
+                                    onOrderCreated?(nil) // Pass nil to reset in MainLayout
+                                }
+                            )
                         }
                     }
                     .padding()
                 }
             }
+            .onDisappear {
+                name = ""
+                comments = ""
+                nameError = nil
+                orderUsersError = nil
+                orderLocationsError = nil
+                commentsError = nil
+                orderLocationDTOs = []
+                orderUsersDTOs = []
+                showConfirmation = false
+                newOrder = nil
+                isPressed = false
+                navigate = false
+            }
+            
         }
     }
 }

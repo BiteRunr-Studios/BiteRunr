@@ -12,8 +12,8 @@ struct AwaitingOrders: View {
         VStack (alignment: .leading) {
             HStack {
                 Button("Back") {
-                    dismiss()
                     onDismiss?()
+                    dismiss()
                 }
             }
             .padding(.horizontal)
@@ -21,15 +21,19 @@ struct AwaitingOrders: View {
                 OrderStatusBoxView(
                     startDate: Date(),
                     orderGroupName: order?.name ?? "",
-                    orderGroupDescription: order?.comments ?? ""
+                    orderGroupDescription: order?.comments ?? "",
+                    orderGroupStatus: order?.status ?? .completed
                 )
+                .id("orderStatusBox-\(order?.id ?? "new")")
                 if orderUsers.isEmpty {
                     Text("No friends listed")
                         .foregroundColor(.secondary)
                         .padding()
+                        .id("noFriends-\(order?.id ?? "new")")
                 } else {
                     ForEach(orderUsers, id: \.id) { orderUser in
                         OrderUsersRow(orderUser: orderUser)
+                            .id("user-\(orderUser.id)")  // Force unique identity
                     }
                 }
             }

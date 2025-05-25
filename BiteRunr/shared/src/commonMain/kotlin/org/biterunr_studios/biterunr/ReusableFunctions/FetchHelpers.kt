@@ -21,7 +21,8 @@ import org.biterunr_studios.biterunr.Models.Order
 import org.biterunr_studios.biterunr.Models.OrderUser
 import org.biterunr_studios.biterunr.Models.UserProfile
 
-suspend fun getLocations(url: String): FetchResponse<List<Location>> {
+suspend fun getLocations(baseUrl: String): FetchResponse<List<Location>> {
+    val url = "$baseUrl/locations"
     val result = fetch<Unit, List<Location>>(url = url, method = HttpMethod.Get, body = null)
     return result
 }
@@ -134,6 +135,17 @@ suspend fun createOrder(baseUrl: String, order: OrderDTO): FetchResponse<Order> 
         url = url,
         method = HttpMethod.Post,
         body = order
+    )
+
+    return result
+}
+
+suspend fun checkUserInActiveOrder(baseUrl: String, userId: String): FetchResponse<Boolean> {
+    val url = "$baseUrl/users/$userId/active-orders"
+
+    val result = fetch<Unit, Boolean>(
+        url = url,
+        method = HttpMethod.Get,
     )
 
     return result

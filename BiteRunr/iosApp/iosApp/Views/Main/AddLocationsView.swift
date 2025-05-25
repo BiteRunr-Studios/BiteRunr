@@ -174,8 +174,7 @@ extension AddLocationsView {
                 errorMessage = "API_URL not set"
                 return
             }
-            let url = "\(apiUrl)/locations"
-            let response = try await getLocations(url: url)
+            let response = try await getLocations(baseUrl: apiUrl)
             if response.success {
                 locations = response.data as! [Location]
             }

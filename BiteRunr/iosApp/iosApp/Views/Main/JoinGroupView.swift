@@ -5,30 +5,34 @@ import Foundation
 struct JoinGroupView: View {
     @State var errorMessage: String?
     @State var orders: [Order] = []
+    @State var selectedOrder: Order?
     @EnvironmentObject var supabaseState: SupabaseState
-
+    var onOrderSelected: ((Order?) -> Void)? = nil
+    
     var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading) {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
                 Text("Select & Start Order Group")
                     .font(.headline)
                     .foregroundStyle(.secondary)
-            
+                    .padding(.horizontal)
+
                 ForEach(orders, id: \.id) { order in
-                    NavigationLink {
-                        AwaitingOrders(order: .constant(order))
-                    } label: {
+                    Button(action: {
+                        onOrderSelected?(order)
+                    }) {
                         OrderStatusBoxView(
                             startDate: order.createdAt.toDate(),
                             orderGroupName: order.name,
-                            orderGroupDescription: order.comments ?? ""
+                            orderGroupDescription: order.comments ?? "",
+                            orderGroupStatus: order.status
                         )
+                        .padding(.horizontal)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
-
             }
-            Spacer()
+            .padding(.vertical)
         }
         .task {
             await fetchOrders()
@@ -53,7 +57,7 @@ extension JoinGroupView {
             } else {
                 errorMessage = "Failed to decode orders."
             }
-
+            
         } catch {
             errorMessage = "Failed to fetch orders: \(error.localizedDescription)"
             print("Error fetching orders: \(error)")
@@ -67,9 +71,4 @@ extension Kotlinx_datetimeInstant {
         let nanoseconds = Double(self.nanosecondsOfSecond) / 1_000_000_000
         return Date(timeIntervalSince1970: seconds + nanoseconds)
     }
-}
-
-
-#Preview {
-    JoinGroupView()
 }
