@@ -192,6 +192,7 @@ extension SignInView {
         do {
             let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
             let fullName = user.userMetadata["full_name"]?.value as? String ?? ""
+            let avatar_url = user.userMetadata["avatar_url"]?.value as? String ?? ""
             let _ = try await createUserProfile(
                 baseUrl: apiUrl,
                 authUserId: user.id.uuidString,
@@ -209,7 +210,8 @@ extension SignInView {
                     } else {
                         return ""
                     }
-                }()
+                }(),
+                avatarUrl: avatar_url
             )
         } catch {
             print("\(error)")

@@ -118,12 +118,13 @@ suspend fun sendFriendRequest(
     return result
 }
 
-suspend fun createUserProfile(baseUrl: String, authUserId: String, firstName: String, lastName: String): FetchResponse<UserProfile> {
+suspend fun createUserProfile(baseUrl: String, authUserId: String, firstName: String, lastName: String, avatarUrl: String): FetchResponse<UserProfile> {
     val url = "$baseUrl/users/sso"
     val body = CreateUserSSOBody(
         id = authUserId,
         firstName = firstName,
         lastName = lastName,
+        avatar_url = avatarUrl,
     )
     val result = fetch<CreateUserSSOBody, UserProfile>(url = url, method = HttpMethod.Post, body = body)
     

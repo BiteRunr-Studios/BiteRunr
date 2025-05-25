@@ -12,5 +12,8 @@ data class CreateUserSSOBody(
     val firstName: String,
 
     @SerialName("last_name")
-    val lastName: String
+    val lastName: String,
+
+    @SerialName("avatar_url")
+    val avatar_url: String?
 )
