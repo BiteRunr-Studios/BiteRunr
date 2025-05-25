@@ -1,4 +1,4 @@
-import { sql, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import { pgTable, varchar, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -22,8 +22,7 @@ export const users = pgTable("user_profiles", {
         .references(() => authUsers.id, { onDelete: "cascade" }),
     first_name: varchar().notNull(),
     last_name: varchar().notNull(),
-    // email: varchar().notNull().unique(),
-    // clerk_id: varchar().notNull().unique(),
+    avatar_url: varchar(),
     created_at: timestamp().notNull().defaultNow(),
     updated_at: timestamp()
         .notNull()

@@ -1,17 +1,8 @@
-import {
-    pgTable,
-    timestamp,
-    uuid,
-    unique,
-    varchar,
-} from "drizzle-orm/pg-core";
+import { pgTable, timestamp, uuid, unique, varchar } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import {
-    orderItems,
-} from "./index";
+import { orderItems } from "./index";
 import { z } from "zod";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { selectOrderItemsSchema } from "./orderItems";
 
 export const items = pgTable(
     "items",
@@ -28,7 +19,7 @@ export const items = pgTable(
 ).enableRLS();
 
 export const itemsRelations = relations(items, ({ many }) => ({
-    orderItems: many(orderItems)
+    orderItems: many(orderItems),
 }));
 
 export const selectItemSchema = createSelectSchema(items);

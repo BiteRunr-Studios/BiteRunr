@@ -8,13 +8,10 @@ import {
     text,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { sql, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import { orderUsers, orderLocations, users } from "./index";
-import {
-    insertOrderLocationsSchema,
-    selectOrderLocationsSchema,
-} from "./orderLocations";
-import { insertOrderUsersSchema, selectOrderUsersSchema } from "./orderUsers";
+import { selectOrderLocationsSchema } from "./orderLocations";
+import { selectOrderUsersSchema } from "./orderUsers";
 import { z } from "zod";
 
 export const orderStatusEnum = pgEnum("order_status_enum", [

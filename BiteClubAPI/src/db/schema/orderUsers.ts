@@ -1,7 +1,14 @@
-import { pgTable, timestamp, unique, uuid, pgEnum } from "drizzle-orm/pg-core";
+import {
+    pgTable,
+    timestamp,
+    unique,
+    uuid,
+    pgEnum,
+    numeric,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { baseUserSchema, orders, users } from "./index";
-import { sql, relations } from "drizzle-orm";
+import { orders, users } from "./index";
+import { relations } from "drizzle-orm";
 import { z } from "zod";
 
 export const orderUsersStatusEnum = pgEnum("order_users_enum", [
@@ -20,6 +27,9 @@ export const orderUsers = pgTable(
             .notNull()
             .references(() => orders.id, { onDelete: "cascade" }),
         status: orderUsersStatusEnum().notNull().default("ordering"),
+        amount_owed: numeric("amount_owed", { precision: 12, scale: 2 })
+            .default("0.00")
+            .notNull(),
         created_at: timestamp().notNull().defaultNow(),
         updated_at: timestamp()
             .notNull()
@@ -47,6 +57,7 @@ export const insertOrderUsersSchema = createInsertSchema(orderUsers)
         id: true,
         created_at: true,
         updated_at: true,
+        amount_owed: true,
     })
     .extend({
         user_id: z.string().nonempty("User Id is required"),
