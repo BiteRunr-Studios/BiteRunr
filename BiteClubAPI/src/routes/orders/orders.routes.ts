@@ -177,6 +177,30 @@ export const listByUserId = createRoute({
     ),
   },
 });
+export const listCompletedByUserId = createRoute({
+  path: "/orders/user/{id}/completed",
+  method: "get",
+  tags,
+  security: [{ Bearer: [] }],
+  middleware: [authMiddleware] as const,
+  request: {
+    params: IdUUIDParamsSchema,
+  },
+  responses: {
+    [HttpStatusCodes.OK]: jsonContent(
+      z.array(selectOrdersSchema),
+      "User's list of completed orders"
+    ),
+    [HttpStatusCodes.NOT_FOUND]: jsonContent(
+      notFoundSchema,
+      "User's completed orders not found"
+    ),
+    [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+      createErrorSchema(IdUUIDParamsSchema),
+      "Invalid Id error"
+    ),
+  },
+});
 
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
@@ -184,3 +208,4 @@ export type GetOneRoute = typeof getOne;
 export type PatchRoute = typeof patch;
 export type RemoveRoute = typeof remove;
 export type ListByUserIdRoute = typeof listByUserId;
+export type ListCompletedByUserIdRoute = typeof listCompletedByUserId;
