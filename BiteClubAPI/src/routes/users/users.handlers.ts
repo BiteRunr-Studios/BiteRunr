@@ -341,7 +341,6 @@ export const getFriends: AppRouteHandler<GetFriendsRoute> = async (c) => {
 
     console.log("Found friendships:", JSON.stringify(userFriends, null, 2));
 
-    // Map to friends (user objects) without external Clerk API calls
     const friendsList = userFriends.map((friendship) => {
         return friendship.user_id === user.id
             ? friendship.friend

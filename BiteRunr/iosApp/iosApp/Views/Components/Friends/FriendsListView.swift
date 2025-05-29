@@ -6,24 +6,37 @@ struct FriendsListView: View {
     var onFriendDeleted: ((FriendUser) -> Void)?
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                if friends.isEmpty {
-                    EmptyStateView(
-                        icon: "person.2.slash",
-                        title: "No Friends Yet",
-                        message: "Add friends to see them here."
-                    )
-                } else {
-                    ForEach(friends, id: \.id) { friend in
-                        FriendRow(user: friend, onDelete: {
-                            onFriendDeleted?(friend)
-                        })
+        VStack(spacing: 0) {
+            if friends.isEmpty {
+                VStack(spacing: 16) {
+                    Text("🫂")
+                        .font(.system(size: 60))
+                        .padding(.top, 60)
+                    Text("No Friends Yet")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    Text("Tap the ➕ button above to add your first friend!")
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .transition(.opacity)
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 14) {
+                        ForEach(friends, id: \.id) { friend in
+                            FriendRow(user: friend, onDelete: {
+                                onFriendDeleted?(friend)
+                            })
+                            .padding(.horizontal, 24)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
                     }
+                    .padding(.top, 16)
                 }
             }
-            .padding(.top)
         }
+        .animation(.spring(), value: friends)
     }
 }
-

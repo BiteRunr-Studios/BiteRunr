@@ -11,7 +11,7 @@ struct MainLayout: View {
     @State private var onGoingActiveOrders: Bool = false
     @StateObject private var poller = Poller()
     @State private var wasPollingBeforeJoinGroup: Bool = false
-    
+
     var body: some View {
         ZStack(alignment: .top) {
             // Main content
@@ -23,7 +23,7 @@ struct MainLayout: View {
                             .tag(Tab.home)
                         AddGroupView(onOrderCreated: { newOrder in
                             order = newOrder
-                            withAnimation{
+                            withAnimation {
                                 showOrderDetails = true
                             }
                         })
@@ -47,77 +47,79 @@ struct MainLayout: View {
                 .sheet(isPresented: $showProfileSheet) {
                     ProfileView()
                 }
-                
+
+                if onGoingActiveOrders && !keyboard.isKeyboardVisible {
+                    HStack(spacing: 12) {
+                        Image(systemName: "circle.fill")
+                            .symbolEffect(.pulse, options: .speed(2).repeat(.continuous))
+                            .foregroundColor(.white)
+                            .font(.footnote)
+                        Text("You have ongoing orders. 🍔")
+                            .foregroundColor(.white)
+                            .fontWeight(.semibold)
+                            .font(.subheadline)
+                        Button {
+                            withAnimation {
+                                selectedTab = .joinGroup
+                            }
+                        } label: {
+                            Text("View")
+                                .underline()
+                                .foregroundColor(.white)
+                        }
+                        .fontWeight(.semibold)
+                        .font(.subheadline)
+                    }
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .fill(Color.orange)
+                            .shadow(color: Color.orange.opacity(0.25), radius: 18, x: 0, y: 6)
+                    )
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 32)
+                    .padding(.bottom, 80)
+                    .transition(.opacity)
+                    .animation(.easeInOut(duration: 0.3), value: onGoingActiveOrders)
+                }
+
+
                 // Bottom tab bar
                 if !keyboard.isKeyboardVisible {
-                    VStack(spacing: 0) {
-                        Divider()
-                        // Floating notification banner that doesn't affect layout
-                        ZStack {
-                            if onGoingActiveOrders {
-                                HStack {
-                                    Image(systemName: "circle.fill")
-                                        .symbolEffect(.pulse, options: .speed(2).repeat(.continuous))
-                                        .foregroundColor(.white)
-                                        .font(.footnote)
-                                    Text("You have ongoing orders.")
-                                        .foregroundColor(.white)
-                                        .fontWeight(.semibold)
-                                        .font(.subheadline)
-                                    Button {
-                                        selectedTab = .joinGroup
-                                    } label: {
-                                        Text("View")
-                                            .underline()
-                                            .foregroundColor(Color.white)
-                                    }
-                                    .fontWeight(.semibold)
-                                    .font(.subheadline)
+                    HStack {
+                        ForEach(Tab.allCases, id: \.self) { tab in
+                            Spacer()
+                            Button(action: {
+                                withAnimation {
+                                    selectedTab = tab
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 4)
-                                .background(Color.orange)
-                                .zIndex(1)
-                                .fixedSize(horizontal: false, vertical: true)
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .clipped()
-                        .transition(.slideUpFromBottom)
-                        .animation(.easeInOut(duration: 0.2), value: onGoingActiveOrders)
-                        HStack {
-                            ForEach(Tab.allCases, id: \.self) { tab in
-                                Spacer()
-                                Button(action: {
-                                    withAnimation {
-                                        selectedTab = tab
-                                    }
-                                }) {
-                                    VStack(spacing: 2) {
-                                        Image(systemName: selectedTab == tab ? tab.filledIcon : tab.icon)
-                                            .font(.system(size: 21))
-                                            .foregroundColor(selectedTab == tab ? .orange : .gray)
-                                        Text(tab.name)
-                                            .font(.caption2)
-                                            .foregroundColor(selectedTab == tab ? .orange : .gray)
-                                    }
+                            }) {
+                                VStack(spacing: 2) {
+                                    Image(systemName: selectedTab == tab ? tab.filledIcon : tab.icon)
+                                        .font(.system(size: 21))
+                                        .foregroundColor(selectedTab == tab ? .orange : .gray)
+                                    Text(tab.name)
+                                        .font(.caption2)
+                                        .foregroundColor(selectedTab == tab ? .orange : .gray)
                                 }
-                                Spacer()
                             }
+                            Spacer()
                         }
-                        .padding(.bottom, 5)
-                        .padding(.top, 8)
-                        .background(Color(.systemBackground))
-                        .overlay(
-                            Rectangle()
-                                .fill(Color.gray)
-                                .frame(height: 1 / UIScreen.main.scale)
-                                .frame(maxHeight: .infinity, alignment: .top),
-                            alignment: .top
-                        )
                     }
+                    .padding(.bottom, 5)
+                    .padding(.top, 8)
+                    .background(Color(.systemBackground))
+                    .overlay(
+                        Rectangle()
+                            .fill(Color.gray)
+                            .frame(height: 1 / UIScreen.main.scale)
+                            .frame(maxHeight: .infinity, alignment: .top),
+                        alignment: .top
+                    )
                 }
             }
+
             // Order details overlay
             if showOrderDetails, let currentOrder = order {
                 AwaitingOrders(
@@ -155,19 +157,17 @@ struct MainLayout: View {
         .environment(keyboard)
         .ignoresSafeArea(.keyboard, edges: .bottom)
     }
-    
+
     private func startPolling() {
         Task {
             guard let apiUrl = ProcessInfo.processInfo.environment["API_URL"] else {
                 print("API_URL not set")
                 return
             }
-            
             guard let userId = supabase.auth.currentUser?.id.uuidString else {
                 print("userId not set")
                 return
             }
-            
             poller.startPolling(
                 interval: 5,
                 pollBlock: {
@@ -176,7 +176,6 @@ struct MainLayout: View {
                 onResult: { response in
                     if response.success {
                         onGoingActiveOrders = response.data as! Bool
-                        //                        print("Polling result: \(onGoingActiveOrders)")
                     }
                 },
                 onError: { error in
@@ -185,25 +184,21 @@ struct MainLayout: View {
             )
         }
     }
-    
+
     private func stopPolling() {
         Task {
             onGoingActiveOrders = false
             poller.stopPolling()
         }
     }
-    
+
     private func handleTabChange(oldTab: Tab, newTab: Tab) {
         if newTab == .joinGroup {
-            // Going to joinGroup view - stop polling and remember previous state
             wasPollingBeforeJoinGroup = poller.isPolling
             if poller.isPolling {
-                //                print("Stopping polling because entering joinGroup tab")
                 stopPolling()
             }
         } else if oldTab == .joinGroup && wasPollingBeforeJoinGroup {
-            // Coming back from joinGroup view - resume polling if it was active before
-            //            print("Resuming polling after leaving joinGroup tab")
             startPolling()
         }
     }
@@ -220,7 +215,7 @@ extension AnyTransition {
 
 enum Tab: Int, CaseIterable, Hashable {
     case home, addGroup, joinGroup, friends
-    
+
     var icon: String {
         switch self {
         case .home: return "house"
@@ -229,7 +224,7 @@ enum Tab: Int, CaseIterable, Hashable {
         case .friends: return "person.2"
         }
     }
-    
+
     var name: String {
         switch self {
         case .home: return "Home"
@@ -238,7 +233,7 @@ enum Tab: Int, CaseIterable, Hashable {
         case .friends: return "Friends"
         }
     }
-    
+
     var filledIcon: String {
         switch self {
         case .home: return "house.fill"

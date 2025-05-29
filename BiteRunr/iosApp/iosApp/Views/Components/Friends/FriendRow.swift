@@ -11,46 +11,34 @@ struct FriendRow: View {
     var onDelete: (() -> Void)?
     
     var body: some View {
-        HStack(spacing: 12) {
-            // Profile image
-            //            if let imageUrlString = user.imageUrl, let imageUrl = URL(string: imageUrlString) {
-            //                AsyncImage(url: imageUrl) { phase in
-            //                    switch phase {
-            //                    case .empty:
-            //                        ProgressView()
-            //                            .frame(width: 50, height: 50)
-            //                    case .success(let image):
-            //                        image
-            //                            .resizable()
-            //                            .aspectRatio(contentMode: .fill)
-            //                            .frame(width: 50, height: 50)
-            //                            .clipShape(Circle())
-            //                    case .failure:
-            //                        Image(systemName: "person.circle.fill")
-            //                            .resizable()
-            //                            .aspectRatio(contentMode: .fill)
-            //                            .frame(width: 50, height: 50)
-            //                            .foregroundColor(.gray)
-            //                    @unknown default:
-            //                        Image(systemName: "person.circle.fill")
-            //                            .resizable()
-            //                            .aspectRatio(contentMode: .fill)
-            //                            .frame(width: 50, height: 50)
-            //                            .foregroundColor(.gray)
-            //                    }
-            //                }
-            //            } else {
-            Image(systemName: "person.circle.fill")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 50, height: 50)
-                .foregroundColor(.gray)
-            //            }
+        HStack(spacing: 16) {
+            // Profile image or initials
+            if let imageUrlString = user.avatarUrl, let imageUrl = URL(string: imageUrlString) {
+                AsyncImage(url: imageUrl) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                            .frame(width: 48, height: 48)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 48, height: 48)
+                            .clipShape(Circle())
+                    case .failure:
+                        InitialsCircle(firstName: user.firstName, lastName: user.lastName)
+                    @unknown default:
+                        InitialsCircle(firstName: user.firstName, lastName: user.lastName)
+                    }
+                }
+            } else {
+                InitialsCircle(firstName: user.firstName, lastName: user.lastName)
+            }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(user.firstName + " " + user.lastName)
+                    .font(.headline)
                     .fontWeight(.medium)
-                
             }
             
             Spacer()
@@ -59,7 +47,6 @@ struct FriendRow: View {
                 ProgressView()
                     .padding(8)
             } else {
-                // Options button
                 Button {
                     showingOptions = true
                 } label: {
@@ -73,13 +60,16 @@ struct FriendRow: View {
                             await deleteFriend()
                         }
                     }
-                    
                     Button("Cancel", role: .cancel) {}
                 }
             }
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+                .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
+        )
         .contentShape(Rectangle())
         .alert("Error", isPresented: .init(get: { deleteError != nil }, set: { if !$0 { deleteError = nil } })) {
             Button("OK") { deleteError = nil }
@@ -90,13 +80,10 @@ struct FriendRow: View {
         }
     }
     
-}
-
-extension FriendRow {
     private func deleteFriend() async {
         isDeleting = true
         deleteError = nil
-
+        
         do {
             let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
             let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
@@ -109,7 +96,7 @@ extension FriendRow {
                 deleteError = "Failed to delete friend: \(error.localizedDescription)"
             }
         }
-
+        
         DispatchQueue.main.async {
             isDeleting = false
         }

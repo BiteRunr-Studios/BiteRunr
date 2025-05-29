@@ -171,3 +171,41 @@ export const listByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
   return c.json(orders, HttpStatusCodes.OK);
 };
 
+export const listCompletedByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
+  const { id } = c.req.valid("param");
+
+  const orderUserEntries = await db.query.orderUsers.findMany({
+    where(fields, operators) {
+      return operators.eq(fields.user_id, id);
+    },
+    columns: { order_id: true },
+  });
+  const orderIds = orderUserEntries.map(entry => entry.order_id);
+
+  const orders = await db.query.orders.findMany({
+    where(fields, operators) {
+      return operators.and(
+        operators.or(
+          operators.eq(fields.creator_id, id),
+          operators.inArray(fields.id, orderIds)
+        ),
+        operators.eq(fields.status, "completed")
+      );
+    },
+    orderBy: (fields, operators) => [
+      operators.desc(fields.created_at),
+    ],
+  });
+
+  if (!orders) {
+    return c.json(
+      {
+        message: HttpStatusPhrases.NOT_FOUND,
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  return c.json(orders, HttpStatusCodes.OK);
+};
+

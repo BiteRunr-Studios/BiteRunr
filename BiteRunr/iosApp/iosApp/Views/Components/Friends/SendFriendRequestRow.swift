@@ -8,50 +8,79 @@ struct SendFriendRequestRow: View {
     let onAdd: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "person.circle.fill")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 40, height: 40)
-                .foregroundColor(.gray)
+        HStack(spacing: 16) {
+            if let imageUrlString = friend.avatarUrl, let imageUrl = URL(string: imageUrlString) {
+                AsyncImage(url: imageUrl) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                            .frame(width: 48, height: 48)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 48, height: 48)
+                            .clipShape(Circle())
+                    case .failure:
+                        InitialsCircle(firstName: friend.firstName, lastName: friend.lastName)
+                    @unknown default:
+                        InitialsCircle(firstName: friend.firstName, lastName: friend.lastName)
+                    }
+                }
+            } else {
+                InitialsCircle(firstName: friend.firstName, lastName: friend.lastName)
+            }
 
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(friend.firstName + " " + friend.lastName)
-                    .foregroundStyle(.primary)
-                Text(friend.email ?? "No Email Provided...")
-                    .foregroundStyle(.secondary)
+                    .font(.headline)
+                    .fontWeight(.medium)
+//                Text(friend.email ?? "No Email Provided…")
+//                    .font(.subheadline)
+//                    .foregroundColor(.secondary)
             }
             Spacer()
 
+            // Action button
             Button(action: onAdd) {
-                if isFriend {
-                    Text("Friends")
-                        .fontWeight(.medium)
-                        .frame(width: 100, height: 32)
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(6)
-                } else if isRequested {
-                    Text("Requested")
-                        .fontWeight(.medium)
-                        .frame(width: 100, height: 32)
-                        .background(Color.orange)
-                        .foregroundColor(.white)
-                        .cornerRadius(6)
-                } else {
-                    Text("Add")
-                        .fontWeight(.medium)
-                        .frame(width: 100, height: 32)
-                        .background(Color.gray.opacity(0.3))
-                        .foregroundColor(.primary)
-                        .cornerRadius(6)
+                HStack {
+                    if isFriend {
+                        Image(systemName: "checkmark.circle.fill")
+                        Text("Friends")
+                    } else if isRequested {
+                        Image(systemName: "hourglass")
+                        Text("Requested")
+                    } else {
+                        Image(systemName: "person.badge.plus")
+                        Text("Add")
+                    }
                 }
+                .fontWeight(.medium)
+                .frame(minWidth: 90, minHeight: 32)
+                .padding(.horizontal, 10)
+                .background(
+                    Capsule()
+                        .fill(
+                            isFriend ? Color.green :
+                            isRequested ? Color.orange :
+                            Color.accentColor.opacity(0.15)
+                        )
+                )
+                .foregroundColor(
+                    isFriend || isRequested ? .white : .accentColor
+                )
             }
             .buttonStyle(.plain)
-            .padding(.horizontal)
-            .animation(.spring(duration: 0.2), value: isRequested)
             .disabled(isFriend || isRequested)
+            .animation(.spring(duration: 0.2), value: isRequested)
         }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+                .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
+        )
+        .padding(.horizontal, 8)
         .padding(.vertical, 4)
     }
 }

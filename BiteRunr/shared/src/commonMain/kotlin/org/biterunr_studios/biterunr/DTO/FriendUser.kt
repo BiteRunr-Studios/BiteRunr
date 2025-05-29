@@ -20,6 +20,9 @@ data class FriendUser(
     @SerialName("email")
     val email: String? = null,
 
+    @SerialName("avatar_url")
+    val avatarUrl: String? = null,
+
     @SerialName("created_at")
     val createdAt: Instant,
 
@@ -33,6 +36,7 @@ data class FriendUser(
         profile = Profile(
             firstName = firstName,
             lastName = lastName,
+            avatarUrl = avatarUrl,
             createdAt = kotlinx.datetime.Clock.System.now(),
             updatedAt = kotlinx.datetime.Clock.System.now()
         )

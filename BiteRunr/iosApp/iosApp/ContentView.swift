@@ -22,29 +22,38 @@ struct BlurModifier: ViewModifier {
 
 struct ContentView: View {
     @EnvironmentObject var supabaseState: SupabaseState
-    
+
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
-                Color(UIColor(red: 1.0, green: 0.533, blue: 0.0, alpha: 1.0))
-                    .ignoresSafeArea(edges: .top)
-                    .frame(height: geometry.safeAreaInsets.top)
-                ZStack {
-                    if supabaseState.isAuthenticated {
-                        MainLayout()
-                            .transition(.blurReplace)
-                            .zIndex(1)
-                    } else {
-                        SignUpOrSignInView()
-                            .transition(.blurReplace)
-                            .zIndex(1)
+                if supabaseState.isCheckingAuth {
+                    Color(.systemBackground)
+                        .ignoresSafeArea()
+                    ProgressView()
+                        .zIndex(2)
+                } else {
+                    Color(UIColor(red: 1.0, green: 0.533, blue: 0.0, alpha: 1.0))
+                        .ignoresSafeArea(edges: .top)
+                        .frame(height: geometry.safeAreaInsets.top)
+                    ZStack {
+                        if supabaseState.isAuthenticated {
+                            MainLayout()
+                                .transition(.blurReplace)
+                                .zIndex(1)
+                        } else {
+                            SignUpOrSignInView()
+                                .transition(.blurReplace)
+                                .zIndex(1)
+                        }
                     }
+                    .animation(.easeInOut(duration: 0.5), value: supabaseState.isAuthenticated)
                 }
-                .animation(.easeInOut(duration: 0.5), value: supabaseState.isAuthenticated)
             }
         }
     }
 }
+
+
 
 #Preview {
     ContentView()
