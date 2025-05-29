@@ -33,7 +33,7 @@ export const scanReceipt: AppRouteHandler<CreateRoute> = async (c) => {
                 content: [
                     {
                         type: "text",
-                        text: "Analyze the following image and return a JSON array of the items ordered, with their unit price and quantity. Also add subtotal, tax and total at the end. Format like the following: {'items': [{ 'name': string, 'unit_price': number, 'quantity': number }], 'subtotal': number, 'tax': number, 'total': number }",
+                        text: "Analyze the following image and return a JSON array of the items ordered, with their unit price and quantity. Also add subtotal, tax and total at the end. The quantity will often come before the item name, if no quantity is given assume 1. Format like the following: {'items': [{ 'name': string, 'unit_price': number, 'quantity': number }], 'subtotal': number, 'tax': number, 'total': number }",
                     },
                     {
                         type: "image_url",
