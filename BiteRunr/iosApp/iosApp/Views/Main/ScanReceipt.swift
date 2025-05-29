@@ -2,6 +2,8 @@ import SwiftUI
 import Shared
 import UIKit
 import PhotosUI
+import AVFoundation
+import AVKit
 
 struct ScanReceipt: View {
     @Environment(\.presentationMode) var presentationMode
@@ -16,135 +18,125 @@ struct ScanReceipt: View {
     @State private var imagePickerSourceType: UIImagePickerController.SourceType = .camera
     @State private var selectedUIImage: UIImage?
     @State private var isShowingImageSourceActionSheet = false
+    @State private var allowEditing: Bool = true
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    Text("Scan Receipt")
-                        .font(.largeTitle)
-                        .bold()
-                        .padding(.top)
-                    
-                    if isLoading {
-                        VStack(spacing: 16) {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                                .padding()
-                            Text("Analyzing receipt...")
-                                .foregroundColor(.secondary)
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 200)
-                    } else if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
-                        VStack(spacing: 12) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(maxWidth: .infinity, maxHeight: 400)
-                                .cornerRadius(12)
-                            
-                            if let receiptDetails = receiptDetails {
-                                receiptDetailView(details: receiptDetails)
-                            } else {
-                                Button(action: {
-                                    isShowingImageSourceActionSheet = true
-                                }) {
-                                    Text("Choose different image")
-                                        .foregroundColor(.orange)
-                                }
-                                
-                                Button(action: {
-                                    Task {
-                                        await uploadImage(imageData: imageData)
-                                    }
-                                }) {
-                                    HStack {
-                                        Image(systemName: "doc.text.viewfinder")
-                                        Text("Analyze Receipt")
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 16)
-                                }
-                                .background(Color.orange)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                                .contentShape(Rectangle())
-                            }
-                        }
-                    } else {
-                        VStack(spacing: 20) {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                Text("Scan Receipt")
+                    .font(.largeTitle)
+                    .bold()
+                    .padding(.top)
+                
+                if isLoading {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .padding()
+                        Text("Analyzing receipt...")
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 200)
+                } else if let imageData = selectedImageData, let uiImage = UIImage(data: imageData) {
+                    VStack(spacing: 12) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity, maxHeight: 400)
+                            .cornerRadius(12)
+                        
+                        if let receiptDetails = receiptDetails {
+                            receiptDetailView(details: receiptDetails)
+                        } else {
                             Button(action: {
                                 isShowingImageSourceActionSheet = true
                             }) {
-                                VStack(spacing: 12) {
-                                    Image(systemName: "camera.viewfinder")
-                                        .font(.system(size: 70))
-                                        .foregroundColor(.orange)
-                                    
-                                    Text("Capture or select a receipt photo")
-                                        .font(.headline)
-                                }
-                                .frame(maxWidth: .infinity, minHeight: 200)
-                                .background(Color.orange.opacity(0.1))
-                                .cornerRadius(12)
-                            }
-                            .confirmationDialog("Choose Image Source", isPresented: $isShowingImageSourceActionSheet) {
-                                Button("Take Photo") {
-                                    imagePickerSourceType = .camera
-                                    isShowingImagePicker = true
-                                }
-                                Button("Photo Library") {
-                                    imagePickerSourceType = .photoLibrary
-                                    isShowingImagePicker = true
-                                }
-                                Button("Cancel", role: .cancel) {}
+                                Text("Choose different image")
+                                    .foregroundColor(.orange)
                             }
                             
-                            Text("Take a clear photo of your receipt to scan and extract item details.")
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                        .sheet(isPresented: $isShowingImagePicker) {
-                            ImagePickerView(selectedImage: $selectedUIImage, sourceType: imagePickerSourceType)
+                            Button(action: {
+                                Task {
+                                    await uploadImage(imageData: imageData)
+                                }
+                            }) {
+                                HStack {
+                                    Image(systemName: "doc.text.viewfinder")
+                                    Text("Analyze Receipt")
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                            }
+                            .background(Color.orange)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                            .contentShape(Rectangle())
                         }
                     }
-                    
-                    if let errorMessage = errorMessage {
-                        Text(errorMessage)
-                            .foregroundColor(.red)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding()
+                } else {
+                    VStack(spacing: 20) {
+                        Button(action: {
+                            isShowingImageSourceActionSheet = true
+                        }) {
+                            VStack(spacing: 12) {
+                                Image(systemName: "camera.viewfinder")
+                                    .font(.system(size: 70))
+                                    .foregroundColor(.orange)
+                                
+                                Text("Capture or select a receipt photo")
+                                    .font(.headline)
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 200)
+                            .background(Color.orange.opacity(0.1))
+                            .cornerRadius(12)
+                        }
+                        .confirmationDialog("Choose Image Source", isPresented: $isShowingImageSourceActionSheet) {
+                            Button("Take Photo") {
+                                imagePickerSourceType = .camera
+                                allowEditing = true
+                                isShowingImagePicker = true
+                            }
+                            Button("Photo Library") {
+                                imagePickerSourceType = .photoLibrary
+                                allowEditing = true
+                                isShowingImagePicker = true
+                            }
+                            Button("Cancel", role: .cancel) {}
+                        }
+                        
+                        Text("Take a clear photo of your receipt to scan and extract item details.")
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
                     }
-                    
-                    Spacer()
                 }
-                .padding()
-            }
-            .onChange(of: selectedItem) {
-                loadSelectedImage()
-            }
-            .onChange(of: selectedUIImage) { _, newImage in
-                if let image = newImage {
-                    if let imageData = image.jpegData(compressionQuality: 0.8) {
-                        selectedImageData = imageData
-                        receiptDetails = nil
-                        errorMessage = nil
-                    }
+                
+                if let errorMessage = errorMessage {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding()
                 }
+                
+                Spacer()
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        HStack {
-                            Image(systemName: "arrow.left")
-                            Text("Back")
-                        }
-                    }
+            .padding()
+        }
+        .onChange(of: selectedItem) {
+            loadSelectedImage()
+        }
+        .onChange(of: selectedUIImage) { _, newImage in
+            if let image = newImage {
+                if let imageData = image.jpegData(compressionQuality: 0.8) {
+                    selectedImageData = imageData
+                    receiptDetails = nil
+                    errorMessage = nil
                 }
             }
         }
+        .sheet(isPresented: $isShowingImagePicker) {
+            ImagePickerView(selectedImage: $selectedUIImage, sourceType: imagePickerSourceType, allowEditing: allowEditing)
+        }
+        .navigationTitle("Scan Receipt")
     }
     
     private func receiptDetailView(details: ReceiptDetails) -> some View {
@@ -326,39 +318,45 @@ extension Data {
     }
 }
 
+
 struct ImagePickerView: UIViewControllerRepresentable {
     @Binding var selectedImage: UIImage?
     @Environment(\.presentationMode) var presentationMode
     var sourceType: UIImagePickerController.SourceType
+    var allowEditing: Bool
     
-    func makeUIViewController(context: Context) -> UIImagePickerController {
+    func makeUIViewController(context: Context) -> UIViewController {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
         picker.sourceType = sourceType
-        picker.allowsEditing = true
+        
+        // Use built-in editing interface if enabled
+        picker.allowsEditing = allowEditing
+        
         return picker
     }
     
-    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
     
     class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-        let parent: ImagePickerView
+        var parent: ImagePickerView
         
         init(_ parent: ImagePickerView) {
             self.parent = parent
         }
         
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            if let image = info[.editedImage] as? UIImage {
+            if parent.allowEditing, let image = info[.editedImage] as? UIImage {
                 parent.selectedImage = image
             } else if let image = info[.originalImage] as? UIImage {
                 parent.selectedImage = image
             }
-            parent.presentationMode.wrappedValue.dismiss()
+            
+            picker.dismiss(animated: true)
         }
         
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {

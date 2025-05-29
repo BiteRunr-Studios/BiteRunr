@@ -62,6 +62,19 @@ struct HomeView: View {
                     
                     PastPaymentsBox(payments: payments)
                     
+                    NavigationLink(destination: ScanReceipt()) {
+                        HStack {
+                            Image(systemName: "document.viewfinder")
+                            Text("Scan")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                    }
+                    .background(Color.orange)
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
+                    .contentShape(Rectangle())
+                    
                     
                 }.padding()
             }
