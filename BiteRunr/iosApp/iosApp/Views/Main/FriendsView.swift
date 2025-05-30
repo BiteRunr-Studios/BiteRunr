@@ -23,7 +23,6 @@ struct FriendsView: View {
                     .padding(.horizontal)
                     .padding(.top, 8)
                     
-                    // Search bar
                     HStack(spacing: 12) {
                         Image(systemName: "magnifyingglass")
                             .foregroundStyle(Color.secondary)
@@ -40,6 +39,14 @@ struct FriendsView: View {
                                     .foregroundStyle(Color.secondary)
                             }
                         }
+                        
+                        Button(action: { showAddFriendSheet = true }) {
+                            Image(systemName: "person.badge.plus")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.accentColor)
+                                .padding(.leading, 2)
+                        }
+                        .accessibilityLabel("Add Friend")
                     }
                     .padding()
                     .background(Color(.systemGray6))
@@ -93,7 +100,6 @@ struct FriendsView: View {
                                     await loadFriends()
                                 }
                             },
-                            
                             onRequestRejected: { rejectedRequest in
                                 if let index = friendRequests.firstIndex(where: { $0.id == rejectedRequest.id }) {
                                     friendRequests.remove(at: index)
@@ -102,20 +108,8 @@ struct FriendsView: View {
                                     await loadFriends()
                                 }
                             }
-                            
                         )
                         .transition(.opacity)
-                    }
-                }
-                .navigationTitle("Friends")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            showAddFriendSheet = true
-                        } label: {
-                            Image(systemName: "person.badge.plus")
-                        }
                     }
                 }
                 .sheet(isPresented: $showAddFriendSheet) {
@@ -136,7 +130,6 @@ struct FriendsView: View {
             }
         }
     }
-    
 }
 
 extension FriendsView {
@@ -219,23 +212,23 @@ struct FriendsTabSelector: View {
     @Binding var selectedTab: Int
     let requestsCount: Int
     let horizontalPadding: CGFloat = 24
-
+    
     var body: some View {
         let width = UIScreen.main.bounds.width - (horizontalPadding * 2)
         let tabWidth = width / 2
-
+        
         ZStack(alignment: .leading) {
             Capsule()
-                .fill(Color.accentColor.opacity(0.15))
+                .fill(Color.orange.opacity(0.15))
                 .frame(width: tabWidth, height: 40)
                 .offset(x: selectedTab == 0 ? 0 : tabWidth)
                 .animation(.spring(response: 0.4, dampingFraction: 0.7), value: selectedTab)
-
+            
             HStack(spacing: 0) {
                 Button(action: { withAnimation { selectedTab = 0 } }) {
                     Text("Friends")
-                        .fontWeight(selectedTab == 0 ? .bold : .regular)
-                        .foregroundColor(selectedTab == 0 ? .accentColor : .primary)
+                        .fontWeight(selectedTab == 0 ? .semibold : .regular)
+                        .foregroundColor(selectedTab == 0 ? .orange : .primary)
                         .frame(width: tabWidth, height: 40)
                         .animation(nil, value: selectedTab)
                 }
@@ -250,8 +243,8 @@ struct FriendsTabSelector: View {
                                 .foregroundColor(.white)
                         }
                     }
-                    .fontWeight(selectedTab == 1 ? .bold : .regular)
-                    .foregroundColor(selectedTab == 1 ? .accentColor : .primary)
+                    .fontWeight(selectedTab == 1 ? .semibold : .regular)
+                    .foregroundColor(selectedTab == 1 ? .orange : .primary)
                     .frame(width: tabWidth, height: 40)
                     .animation(nil, value: selectedTab)
                 }
