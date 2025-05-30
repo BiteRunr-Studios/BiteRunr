@@ -294,63 +294,65 @@ export const createSSOUserProfile: AppRouteHandler<SSOCreateRoute> = async (
 
 export const getFriends: AppRouteHandler<GetFriendsRoute> = async (c) => {
     const { user_id } = c.req.valid("param");
-    console.log("Looking for user with id:", user_id);
-
-    // Find the user by id (user_id from user_profiles)
+  
     const user = await db.query.users.findFirst({
-        where(fields, operators) {
-            return operators.eq(fields.id, user_id);
-        },
+      where(fields, operators) {
+        return operators.eq(fields.id, user_id);
+      },
     });
-
-    console.log("Found user:", user);
-
+  
     if (!user) {
-        console.log(
-            "User not found in database. Available users:",
-            await db.query.users.findMany({
-                columns: {
-                    id: true,
-                    first_name: true,
-                    last_name: true,
-                },
-            })
-        );
-        return c.json(
-            {
-                message: HttpStatusPhrases.NOT_FOUND,
-                details: `No user found with id: ${user_id}`,
-            },
-            HttpStatusCodes.NOT_FOUND
-        );
+      return c.json(
+        {
+          message: HttpStatusPhrases.NOT_FOUND,
+          details: `No user found with id: ${user_id}`,
+        },
+        HttpStatusCodes.NOT_FOUND
+      );
     }
-
-    // Get all friends where the user is either the user_id or friend_id
+  
     const userFriends = await db.query.friends.findMany({
-        where(fields, operators) {
-            return operators.or(
-                operators.eq(fields.user_id, user.id),
-                operators.eq(fields.friend_id, user.id)
-            );
-        },
-        with: {
-            user: true,
-            friend: true,
-        },
+      where(fields, operators) {
+        return operators.or(
+          operators.eq(fields.user_id, user.id),
+          operators.eq(fields.friend_id, user.id)
+        );
+      },
+      with: {
+        user: true,
+        friend: true,
+      },
     });
-
-    console.log("Found friendships:", JSON.stringify(userFriends, null, 2));
-
-    const friendsList = userFriends.map((friendship) => {
-        return friendship.user_id === user.id
-            ? friendship.friend
-            : friendship.user;
+  
+    const friendsList = userFriends.map((friendship) =>
+      friendship.user_id === user.id ? friendship.friend : friendship.user
+    );
+  
+    const friendIds = friendsList.map((friend) => friend.id);
+  
+    const authUsersWithEmails = await db.query.authUsers.findMany({
+      where(fields, operators) {
+        return operators.inArray(fields.id, friendIds);
+      },
+      columns: {
+        id: true,
+        email: true,
+      },
     });
-
-    console.log("Final friends list:", JSON.stringify(friendsList, null, 2));
-
-    return c.json(friendsList, HttpStatusCodes.OK);
-};
+  
+    const emailMap = new Map(
+      authUsersWithEmails.map((authUser) => [authUser.id, authUser.email])
+    );
+  
+    // Merge email into friend profiles
+    const friendsWithEmails = friendsList.map((friend) => ({
+      ...friend,
+      email: emailMap.get(friend.id) || null,
+    }));
+  
+    return c.json(friendsWithEmails, HttpStatusCodes.OK);
+  };
+  
 
 export const getFriendRequests: AppRouteHandler<
     GetFriendRequestsRoute
