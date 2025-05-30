@@ -354,49 +354,67 @@ export const getFriends: AppRouteHandler<GetFriendsRoute> = async (c) => {
   };
   
 
-export const getFriendRequests: AppRouteHandler<
-    GetFriendRequestsRoute
-> = async (c) => {
+  export const getFriendRequests: AppRouteHandler<GetFriendRequestsRoute> = async (
+    c
+  ) => {
     const { user_id } = c.req.valid("param");
-
+  
     const user = await db.query.users.findFirst({
-        where(fields, operators) {
-            return operators.eq(fields.id, user_id);
-        },
+      where(fields, operators) {
+        return operators.eq(fields.id, user_id);
+      },
     });
-
+  
     if (!user) {
-        return c.json(
-            {
-                message: HttpStatusPhrases.NOT_FOUND,
-            },
-            HttpStatusCodes.NOT_FOUND
-        );
+      return c.json(
+        {
+          message: HttpStatusPhrases.NOT_FOUND,
+        },
+        HttpStatusCodes.NOT_FOUND
+      );
     }
-
+  
     const requests = await db.query.friendRequests.findMany({
-        where(fields, operators) {
-            return operators.and(
-                operators.eq(fields.receiver_id, user.id),
-                operators.eq(fields.status, "pending")
-            );
-        },
-        with: {
-            sender: true,
-        },
+      where(fields, operators) {
+        return operators.and(
+          operators.eq(fields.receiver_id, user.id),
+          operators.eq(fields.status, "pending")
+        );
+      },
+      with: {
+        sender: true,
+      },
     });
-
+  
+    const senderIds = requests.map((request) => request.sender_id);
+  
+    const authUsersWithEmails = await db.query.authUsers.findMany({
+      where(fields, operators) {
+        return operators.inArray(fields.id, senderIds);
+      },
+      columns: {
+        id: true,
+        email: true,
+      },
+    });
+  
+    const emailMap = new Map(
+      authUsersWithEmails.map((authUser) => [authUser.id, authUser.email])
+    );
+  
     const requesters = requests.map((request) => {
-        const sender = request.sender;
-        return {
-            ...sender,
-            sender_id: request.sender_id,
-            receiver_id: request.receiver_id,
-        };
+      const sender = request.sender;
+      return {
+        ...sender,
+        email: emailMap.get(sender.id) || null,
+        sender_id: request.sender_id,
+        receiver_id: request.receiver_id,
+      };
     });
-
+  
     return c.json(requesters, HttpStatusCodes.OK);
-};
+  };
+  
 
 export const isUserInActiveOrder: AppRouteHandler<UserHasActiveOrders> = async (
     c
