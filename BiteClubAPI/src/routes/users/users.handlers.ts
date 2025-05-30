@@ -463,16 +463,37 @@ export const isUserInActiveOrder: AppRouteHandler<UserHasActiveOrders> = async (
 };
 
 export const getAllUsersExceptAuthenticated: AppRouteHandler<
-    GetAllUsersExceptAuthenticatedRoute
+  GetAllUsersExceptAuthenticatedRoute
 > = async (c) => {
-    const { user_id } = c.req.valid("param");
+  const { user_id } = c.req.valid("param");
 
-    // Get all users except the specified user
-    const otherUsers = await db.query.users.findMany({
-        where(fields, operators) {
-            return operators.not(eq(fields.id, user_id));
-        },
-    });
+  const otherUsers = await db.query.users.findMany({
+    where(fields, operators) {
+      return operators.not(eq(fields.id, user_id));
+    },
+  });
 
-    return c.json(otherUsers, HttpStatusCodes.OK);
+  const userIds = otherUsers.map((user) => user.id);
+
+  const authUsersWithEmails = await db.query.authUsers.findMany({
+    where(fields, operators) {
+      return operators.inArray(fields.id, userIds);
+    },
+    columns: {
+      id: true,
+      email: true,
+    },
+  });
+
+  const emailMap = new Map(
+    authUsersWithEmails.map((authUser) => [authUser.id, authUser.email])
+  );
+
+  const usersWithEmails = otherUsers.map((user) => ({
+    ...user,
+    email: emailMap.get(user.id) || null,
+  }));
+
+  return c.json(usersWithEmails, HttpStatusCodes.OK);
 };
+
