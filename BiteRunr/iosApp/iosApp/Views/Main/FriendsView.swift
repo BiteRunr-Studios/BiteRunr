@@ -8,7 +8,8 @@ struct FriendsView: View {
     @State private var showAddFriendSheet = false
     @State private var friends: [FriendUser] = []
     @State private var friendRequests: [FriendRequestUser] = []
-    @State private var isLoading = false
+    @State private var isLoadingFriends = false
+    @State private var isLoadingRequests = false
     @State private var errorMessage: String? = nil
     @EnvironmentObject var supabaseState: SupabaseState
     
@@ -56,7 +57,7 @@ struct FriendsView: View {
                     
                     if selectedTab == 0 {
                         // Friends tab
-                        if isLoading {
+                        if isLoadingFriends {
                             Spacer()
                             ProgressView()
                             Spacer()
@@ -128,6 +129,13 @@ struct FriendsView: View {
                 }
                 .animation(.bouncy, value: selectedTab)
             }
+            .refreshable {
+                if selectedTab == 0 {
+                    await loadFriends()
+                } else {
+                    await loadFriendRequests()
+                }
+            }
         }
     }
 }
@@ -135,9 +143,9 @@ struct FriendsView: View {
 extension FriendsView {
     // fetch friend requests as users
     private func loadFriendRequests() async {
-        isLoading = true
+        isLoadingRequests = true
         errorMessage = nil
-        
+
         do {
             guard let apiUrl = ProcessInfo.processInfo.environment["API_URL"] else {
                 errorMessage = "API_URL not set"
@@ -148,18 +156,20 @@ extension FriendsView {
             if response.success {
                 friendRequests = response.data as! [FriendRequestUser]
             }
+        } catch is CancellationError {
+            // Task was cancelled, no need to show error
         } catch {
             errorMessage = "Failed to fetch friend requests: \(error.localizedDescription)"
         }
-        
-        isLoading = false
+
+        isLoadingRequests = false
     }
     
     // fetch friends
     private func loadFriends() async {
-        isLoading = true
+        isLoadingFriends = true
         errorMessage = nil
-        
+
         do {
             guard let apiUrl = ProcessInfo.processInfo.environment["API_URL"] else {
                 errorMessage = "API_URL not set"
@@ -170,11 +180,13 @@ extension FriendsView {
             if response.success {
                 friends = response.data as! [FriendUser]
             }
+        } catch is CancellationError {
+            // Task was cancelled, no need to show error
         } catch {
             errorMessage = "Failed to fetch friends: \(error.localizedDescription)"
         }
-        
-        isLoading = false
+
+        isLoadingFriends = false
     }
     //
     // friends filtering

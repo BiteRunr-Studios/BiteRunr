@@ -35,9 +35,11 @@ struct SendFriendRequestRow: View {
                 Text(friend.firstName + " " + friend.lastName)
                     .font(.headline)
                     .fontWeight(.medium)
-//                Text(friend.email ?? "No Email Provided…")
-//                    .font(.subheadline)
-//                    .foregroundColor(.secondary)
+                Text(friend.email ?? "No email")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
             Spacer()
 

@@ -39,6 +39,11 @@ struct FriendRow: View {
                 Text(user.firstName + " " + user.lastName)
                     .font(.headline)
                     .fontWeight(.medium)
+                Text(user.email ?? "No email")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
             
             Spacer()
