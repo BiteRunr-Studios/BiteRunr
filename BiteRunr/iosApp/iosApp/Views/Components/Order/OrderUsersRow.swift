@@ -21,8 +21,16 @@ struct OrderUsersRow: View {
             }
             
             Spacer()
-            
+            if orderUser.status == "done" {
+                Image(systemName: "checkmark.circle.fill")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 35, height: 35)
+                    .foregroundColor(.green)
+                    .transition(.scale.combined(with: .opacity))
+            }
         }
         .padding()
+        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: orderUser.status)
     }
 }

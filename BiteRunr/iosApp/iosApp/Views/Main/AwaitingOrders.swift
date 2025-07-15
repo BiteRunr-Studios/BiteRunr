@@ -5,48 +5,63 @@ struct AwaitingOrders: View {
     @Binding var order: Order?
     @State private var orderUsers: [OrderUser] = []
     @State private var errorMessage: String?
+    @StateObject private var poller = Poller()
     var onDismiss: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        VStack (alignment: .leading) {
-            HStack {
-                Button("Back") {
-                    onDismiss?()
-                    dismiss()
-                }
-            }
-            .padding(.horizontal)
-            VStack {
-                OrderStatusBoxView(
-                    startDate: Date(),
-                    orderGroupName: order?.name ?? "",
-                    orderGroupDescription: order?.comments ?? "",
-                    orderGroupStatus: order?.status ?? .completed
-                )
-                .id("orderStatusBox-\(order?.id ?? "new")")
-                if orderUsers.isEmpty {
-                    Text("No friends listed")
-                        .foregroundColor(.secondary)
-                        .padding()
-                        .id("noFriends-\(order?.id ?? "new")")
-                } else {
-                    ForEach(orderUsers, id: \.id) { orderUser in
-                        OrderUsersRow(orderUser: orderUser)
-                            .id("user-\(orderUser.id)")  // Force unique identity
+        ZStack {
+            VStack (alignment: .leading) {
+                HStack {
+                    Button("Back") {
+                        onDismiss?()
+                        dismiss()
                     }
                 }
+                .padding(.horizontal)
+                VStack {
+                    OrderStatusBoxView(
+                        startDate: Date(),
+                        orderGroupName: order?.name ?? "",
+                        orderGroupDescription: order?.comments ?? "",
+                        orderGroupStatus: order?.status ?? .completed
+                    )
+                    .id("orderStatusBox-\(order?.id ?? "new")")
+                    if orderUsers.isEmpty {
+                        Text("No friends listed")
+                            .foregroundColor(.secondary)
+                            .padding()
+                            .id("noFriends-\(order?.id ?? "new")")
+                    } else {
+                        ForEach(orderUsers, id: \.id) { orderUser in
+                            OrderUsersRow(orderUser: orderUser)
+                                .id("user-\(orderUser.id)")  // Force unique identity
+                        }
+                    }
+                }
+                .padding()
+                
+                Spacer()
             }
-            .padding()
+            .navigationBarBackButtonHidden(true)
+            .onAppear() {
+                startPolling()
+            }
+            .onDisappear() {
+                stopPolling()
+            }
             
-            Spacer()
-        }
-        .navigationBarBackButtonHidden(true)
-        .onAppear {
-            Task {
-                await fetchOrderUsers()
+            VStack {
+                Spacer()
+                VStack(spacing: 12) {
+                    // button 1
+                    
+                    // button 2
+                }
             }
         }
+        
+        
     }
     
 }
@@ -74,6 +89,29 @@ extension AwaitingOrders {
         } catch {
             errorMessage = "Failed to fetch order users: \(error.localizedDescription)"
             print("Error fetching users: \(error)")
+        }
+    }
+    
+    private func startPolling() {
+        Task {
+            poller.startPolling(
+                interval: 2.5,
+                pollBlock: {
+                    await fetchOrderUsers()
+                },
+                onResult: { response in
+                    print("Polling occured: \(response)")
+                },
+                onError: { error in
+                    print("Polling error: \(error)")
+                }
+            )
+        }
+    }
+    
+    private func stopPolling() {
+        Task {
+            poller.stopPolling()
         }
     }
 }
