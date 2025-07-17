@@ -32,6 +32,10 @@ export const create: AppRouteHandler<CreateRoute> = async (c) => {
 
   const { order_users, order_locations, ...newOrder } = newCompleteOrder;
 
+    // 1. Add creator to order_users
+  const creatorUserId = newOrder.creator_id!;
+  order_users.push({ user_id: creatorUserId });
+
   let newOrder_parsed = insertOrdersSchema.parse(newOrder);
 
   const [insertedOrder] = await db
