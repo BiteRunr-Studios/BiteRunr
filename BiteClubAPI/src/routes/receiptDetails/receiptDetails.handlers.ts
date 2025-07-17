@@ -10,7 +10,7 @@ export const scanReceipt: AppRouteHandler<CreateRoute> = async (c) => {
 
     if (!file || typeof file === "string") {
         return c.json(
-            { message: "No file uploaded or file is not vali d." },
+            { message: "No file uploaded or file is not valid." },
             HttpStatusCodes.BAD_REQUEST
         );
     }

@@ -25,8 +25,8 @@ export default function configureOpenAPI(app: AppOpenAPI) {
             layout: "classic",
             theme: "alternate",
             defaultHttpClient: {
-                targetKey: "swift",
-                clientKey: "nsurlsession",
+                targetKey: "kotlin",
+                clientKey: "okhttp",
             },
         })
     );
