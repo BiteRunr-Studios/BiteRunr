@@ -65,13 +65,13 @@ importers:
         version: 0.30.6
       tsup:
         specifier: ^8.4.0
-        version: 8.4.0(tsx@4.19.3)(typescript@5.8.3)(yaml@2.7.1)
+        version: 8.4.0(tsx@4.19.3)(typescript@5.9.0-beta)(yaml@2.7.1)
       tsx:
         specifier: ^4.19.3
         version: 4.19.3
       typescript:
-        specifier: ^5.8.3
-        version: 5.8.3
+        specifier: 5.9.0-beta
+        version: 5.9.0-beta
 
 packages:
 
@@ -1470,8 +1470,8 @@ packages:
     resolution: {integrity: sha512-uW9qzd66uyHYxwyVBYiwS4Oi0qZyUqwjU+Oevr6ZogYiXt99EOYtwvzMSLw1c3lYo2HzJsep/NB23iEVEgjG/w==}
     engines: {node: '>=16'}
 
-  typescript@5.8.3:
-    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
+  typescript@5.9.0-beta:
+    resolution: {integrity: sha512-p91qoTdwWKj9YEBYavmGiBn0DF4OBElzw4pW4oPbK4HeCfr/SDz9+yviVWshZXGvGvFCJ3AVQ+J7F1UZXc23QQ==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -2619,7 +2619,7 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tsup@8.4.0(tsx@4.19.3)(typescript@5.8.3)(yaml@2.7.1):
+  tsup@8.4.0(tsx@4.19.3)(typescript@5.9.0-beta)(yaml@2.7.1):
     dependencies:
       bundle-require: 5.1.0(esbuild@0.25.2)
       cac: 6.7.14
@@ -2638,7 +2638,7 @@ snapshots:
       tinyglobby: 0.2.13
       tree-kill: 1.2.2
     optionalDependencies:
-      typescript: 5.8.3
+      typescript: 5.9.0-beta
     transitivePeerDependencies:
       - jiti
       - supports-color
@@ -2654,7 +2654,7 @@ snapshots:
 
   type-fest@4.39.1: {}
 
-  typescript@5.8.3: {}
+  typescript@5.9.0-beta: {}
 
   undici-types@5.26.5: {}
 
