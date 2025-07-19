@@ -9,6 +9,7 @@ const router = createRouter()
     .openapi(routes.patch, handlers.patch)
     .openapi(routes.remove, handlers.remove)
     .openapi(routes.listByUserId, handlers.listByUserId)
-    .openapi(routes.listCompletedByUserId, handlers.listCompletedByUserId);
+    .openapi(routes.listCompletedByUserId, handlers.listCompletedByUserId)
+    .openapi(routes.orderItemsCount, handlers.orderItemsCount);
 
 export default router;

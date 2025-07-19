@@ -1,16 +1,19 @@
 import db from "@/db/index";
 import {
-  insertOrdersDTOSchema,
-  insertOrdersSchema,
-  orders,
+    insertOrdersDTOSchema,
+    insertOrdersSchema,
+    orders,
 } from "@/db/schema/orders";
+import { type orderItems } from "@/db/schema/index";
 import type {
-  CreateRoute,
-  GetOneRoute,
-  ListByUserIdRoute,
-  ListRoute,
-  PatchRoute,
-  RemoveRoute,
+    CreateRoute,
+    GetOneRoute,
+    ListByUserIdRoute,
+    ListRoute,
+    PatchRoute,
+    RemoveRoute,
+    ListCompletedByUserIdRoute,
+    OrderItemsCountRoute,
 } from "./orders.routes";
 import type { AppRouteHandler } from "@/lib/types";
 import * as HttpStatusCodes from "stoker/http-status-codes";
@@ -22,194 +25,228 @@ import { insertOrderUsersSchema } from "@/db/schema/orderUsers";
 import { z } from "zod";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
-  const orders = await db.query.orders.findMany();
+    const orders = await db.query.orders.findMany();
 
-  return c.json(orders);
+    return c.json(orders);
 };
 
 export const create: AppRouteHandler<CreateRoute> = async (c) => {
-  const newCompleteOrder = c.req.valid("json");
+    const newCompleteOrder = c.req.valid("json");
 
-  const { order_users, order_locations, ...newOrder } = newCompleteOrder;
+    const { order_users, order_locations, ...newOrder } = newCompleteOrder;
 
     // 1. Add creator to order_users
-  const creatorUserId = newOrder.creator_id!;
-  order_users.push({ user_id: creatorUserId });
+    const creatorUserId = newOrder.creator_id!;
+    order_users.push({ user_id: creatorUserId });
 
-  let newOrder_parsed = insertOrdersSchema.parse(newOrder);
+    let newOrder_parsed = insertOrdersSchema.parse(newOrder);
 
-  const [insertedOrder] = await db
-    .insert(orders)
-    .values(newOrder_parsed)
-    .returning();
+    const [insertedOrder] = await db
+        .insert(orders)
+        .values(newOrder_parsed)
+        .returning();
 
-  // Populate order_users and order_locations with order_id
-  order_users.forEach((ou) => {
-    ou.order_id = insertedOrder.id;
-  });
-  order_locations.forEach((ol) => {
-    ol.order_id = insertedOrder.id;
-  });
+    // Populate order_users and order_locations with order_id
+    order_users.forEach((ou) => {
+        ou.order_id = insertedOrder.id;
+    });
+    order_locations.forEach((ol) => {
+        ol.order_id = insertedOrder.id;
+    });
 
-  let order_locations_parsed = z
-    .array(insertOrderLocationsSchema)
-    .parse(order_locations);
+    let order_locations_parsed = z
+        .array(insertOrderLocationsSchema)
+        .parse(order_locations);
 
-  let order_users_parsed = z.array(insertOrderUsersSchema).parse(order_users);
+    let order_users_parsed = z.array(insertOrderUsersSchema).parse(order_users);
 
-  const insertedOrderLocations = await db
-    .insert(orderLocations)
-    .values(order_locations_parsed)
-    .returning();
+    const insertedOrderLocations = await db
+        .insert(orderLocations)
+        .values(order_locations_parsed)
+        .returning();
 
-  const insertedOrderUsers = await db
-    .insert(orderUsers)
-    .values(order_users_parsed)
-    .returning();
+    const insertedOrderUsers = await db
+        .insert(orderUsers)
+        .values(order_users_parsed)
+        .returning();
 
-  if (insertedOrderLocations.length == 0 || insertedOrderUsers.length == 0) {
-    return c.json(
-      {
-        message: "Order locations and/or order users could not be added",
-      },
-      HttpStatusCodes.BAD_REQUEST
-    );
-  }
+    if (insertedOrderLocations.length == 0 || insertedOrderUsers.length == 0) {
+        return c.json(
+            {
+                message:
+                    "Order locations and/or order users could not be added",
+            },
+            HttpStatusCodes.BAD_REQUEST
+        );
+    }
 
-  return c.json(insertedOrder, HttpStatusCodes.OK);
+    return c.json(insertedOrder, HttpStatusCodes.OK);
 };
 
 export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
-  const { id } = c.req.valid("param");
-  const order = await db.query.orders.findFirst({
-    where(fields, operators) {
-      return operators.eq(fields.id, id);
-    },
-  });
+    const { id } = c.req.valid("param");
+    const order = await db.query.orders.findFirst({
+        where(fields, operators) {
+            return operators.eq(fields.id, id);
+        },
+    });
 
-  if (!order) {
-    return c.json(
-      {
-        message: HttpStatusPhrases.NOT_FOUND,
-      },
-      HttpStatusCodes.NOT_FOUND
-    );
-  }
+    if (!order) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
 
-  return c.json(order, HttpStatusCodes.OK);
+    return c.json(order, HttpStatusCodes.OK);
 };
 
 export const patch: AppRouteHandler<PatchRoute> = async (c) => {
-  const { id } = c.req.valid("param");
-  const updates = c.req.valid("json");
+    const { id } = c.req.valid("param");
+    const updates = c.req.valid("json");
 
-  const [updatedOrder] = await db
-    .update(orders)
-    .set(updates)
-    .where(eq(orders.id, id))
-    .returning();
+    const [updatedOrder] = await db
+        .update(orders)
+        .set(updates)
+        .where(eq(orders.id, id))
+        .returning();
 
-  if (!updatedOrder) {
-    return c.json(
-      {
-        message: HttpStatusPhrases.NOT_FOUND,
-      },
-      HttpStatusCodes.NOT_FOUND
-    );
-  }
+    if (!updatedOrder) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
 
-  return c.json(updatedOrder, HttpStatusCodes.OK);
+    return c.json(updatedOrder, HttpStatusCodes.OK);
 };
 
 export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
-  const { id } = c.req.valid("param");
-  const [deletedOrder] = await db
-    .delete(orders)
-    .where(eq(orders.id, id))
-    .returning();
+    const { id } = c.req.valid("param");
+    const [deletedOrder] = await db
+        .delete(orders)
+        .where(eq(orders.id, id))
+        .returning();
 
-  if (!deletedOrder) {
-    return c.json(
-      {
-        message: HttpStatusPhrases.NOT_FOUND,
-      },
-      HttpStatusCodes.NOT_FOUND
-    );
-  }
+    if (!deletedOrder) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
 
-  return c.json(deletedOrder, HttpStatusCodes.OK);
+    return c.json(deletedOrder, HttpStatusCodes.OK);
 };
 
 export const listByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
-  const { id } = c.req.valid("param");
+    const { id } = c.req.valid("param");
 
-  const orderUserEntries = await db.query.orderUsers.findMany({
-    where(fields, operators) {
-      return operators.eq(fields.user_id, id);
-    },
-    columns: { order_id: true },
-  });
-  const orderIds = orderUserEntries.map(entry => entry.order_id);
+    const orderUserEntries = await db.query.orderUsers.findMany({
+        where(fields, operators) {
+            return operators.eq(fields.user_id, id);
+        },
+        columns: { order_id: true },
+    });
+    const orderIds = orderUserEntries.map((entry) => entry.order_id);
 
-  const orders = await db.query.orders.findMany({
-    where(fields, operators) {
-      return operators.or(
-        operators.eq(fields.creator_id, id),
-        operators.inArray(fields.id, orderIds)
-      );
-    },
-    orderBy: (fields, operators) => [
-      operators.desc(fields.created_at),
-    ],
-  });
+    const orders = await db.query.orders.findMany({
+        where(fields, operators) {
+            return operators.or(
+                operators.eq(fields.creator_id, id),
+                operators.inArray(fields.id, orderIds)
+            );
+        },
+        orderBy: (fields, operators) => [operators.desc(fields.created_at)],
+    });
 
-  if (!orders) {
-    return c.json(
-      {
-        message: HttpStatusPhrases.NOT_FOUND,
-      },
-      HttpStatusCodes.NOT_FOUND
-    );
-  }
+    if (!orders) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
 
-  return c.json(orders, HttpStatusCodes.OK);
+    return c.json(orders, HttpStatusCodes.OK);
 };
 
-export const listCompletedByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
-  const { id } = c.req.valid("param");
+export const listCompletedByUserId: AppRouteHandler<
+    ListCompletedByUserIdRoute
+> = async (c) => {
+    const { id } = c.req.valid("param");
 
-  const orderUserEntries = await db.query.orderUsers.findMany({
-    where(fields, operators) {
-      return operators.eq(fields.user_id, id);
-    },
-    columns: { order_id: true },
-  });
-  const orderIds = orderUserEntries.map(entry => entry.order_id);
+    const orderUserEntries = await db.query.orderUsers.findMany({
+        where(fields, operators) {
+            return operators.eq(fields.user_id, id);
+        },
+        columns: { order_id: true },
+    });
+    const orderIds = orderUserEntries.map((entry) => entry.order_id);
 
-  const orders = await db.query.orders.findMany({
-    where(fields, operators) {
-      return operators.and(
-        operators.or(
-          operators.eq(fields.creator_id, id),
-          operators.inArray(fields.id, orderIds)
-        ),
-        operators.eq(fields.status, "completed")
-      );
-    },
-    orderBy: (fields, operators) => [
-      operators.desc(fields.created_at),
-    ],
-  });
+    const orders = await db.query.orders.findMany({
+        where(fields, operators) {
+            return operators.and(
+                operators.or(
+                    operators.eq(fields.creator_id, id),
+                    operators.inArray(fields.id, orderIds)
+                ),
+                operators.eq(fields.status, "completed")
+            );
+        },
+        orderBy: (fields, operators) => [operators.desc(fields.created_at)],
+    });
 
-  if (!orders) {
-    return c.json(
-      {
-        message: HttpStatusPhrases.NOT_FOUND,
-      },
-      HttpStatusCodes.NOT_FOUND
-    );
-  }
+    if (!orders) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
 
-  return c.json(orders, HttpStatusCodes.OK);
+    return c.json(orders, HttpStatusCodes.OK);
 };
 
+export const orderItemsCount: AppRouteHandler<OrderItemsCountRoute> = async (
+    c
+) => {
+    const { id } = c.req.valid("param");
+    const order_locations = await db.query.orderLocations.findMany({
+        where(fields, operators) {
+            return operators.eq(fields.order_id, id);
+        },
+    });
+
+    if (!order_locations) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    let order_items: (typeof orderItems.$inferSelect)[] = [];
+
+    for (const order_location of order_locations) {
+        const order_location_items = await db.query.orderItems.findMany({
+            where(fields, operators) {
+                return operators.eq(
+                    fields.order_location_id,
+                    order_location.location_id
+                );
+            },
+        });
+        order_items.push(...order_location_items);
+    }
+
+    return c.json({ count: order_items.length }, HttpStatusCodes.OK);
+};
