@@ -17,12 +17,13 @@ import type {
     OrderItemsCountRoute,
     AllOrderLocationsRoute,
     LocationItemsRoute,
+    ChangeOrderUserStatusRoute,
 } from "./orders.routes";
 import { sql } from "drizzle-orm";
 import type { AppRouteHandler } from "@/lib/types";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { orderLocations, orderUsers } from "@/db/schema";
 import { insertOrderLocationsSchema } from "@/db/schema/orderLocations";
 import { insertOrderUsersSchema } from "@/db/schema/orderUsers";
@@ -322,4 +323,33 @@ export const locationItems: AppRouteHandler<LocationItemsRoute> = async (c) => {
     });
 
     return c.json(items_results, HttpStatusCodes.OK);
+};
+
+export const changeOrderUserStatus: AppRouteHandler<
+    ChangeOrderUserStatusRoute
+> = async (c) => {
+    const { order_id, user_id } = c.req.valid("param");
+    const { status } = c.req.valid("json");
+
+    const [updatedOrder] = await db
+        .update(orderUsers)
+        .set({ status })
+        .where(
+            and(
+                eq(orderUsers.order_id, order_id),
+                eq(orderUsers.user_id, user_id)
+            )
+        )
+        .returning();
+
+    if (!updatedOrder) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    return c.json(updatedOrder.status, HttpStatusCodes.OK);
 };

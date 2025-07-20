@@ -325,6 +325,43 @@ export const locationItems = createRoute({
     },
 });
 
+export const changeOrderUserStatus = createRoute({
+    path: "/orders/:order_id/users/:user_id/change-status",
+    method: "patch",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            order_id: z.string().uuid().nonempty("Order id is required"),
+            user_id: z.string().uuid().nonempty("User id is required"),
+        }),
+        body: jsonContentRequired(
+            z.object({
+                status: z.enum(["ordering", "done"]),
+            }),
+            "Update user ordering status"
+        ),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.enum(["ordering", "done"]),
+            "Update an order"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "Order not found"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+            [
+                createErrorSchema(patchOrdersSchema),
+                createErrorSchema(IdUUIDParamsSchema),
+            ],
+            "Validation error(s)"
+        ),
+    },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
@@ -335,3 +372,4 @@ export type ListCompletedByUserIdRoute = typeof listCompletedByUserId;
 export type OrderItemsCountRoute = typeof orderItemsCount;
 export type AllOrderLocationsRoute = typeof allOrderLocations;
 export type LocationItemsRoute = typeof locationItems;
+export type ChangeOrderUserStatusRoute = typeof changeOrderUserStatus;
