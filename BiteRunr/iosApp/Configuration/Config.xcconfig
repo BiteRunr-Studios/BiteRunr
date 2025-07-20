@@ -1,3 +1,5 @@
 TEAM_ID=
 BUNDLE_ID=org.biterunr_studios.biterunr.BiteRunr
 APP_NAME=BiteRunr
+API_URL=https:/$()/biterunrapi-4bmpv.kinsta.app
+API_URL_LOCAL=http:/$()/localhost:3000
