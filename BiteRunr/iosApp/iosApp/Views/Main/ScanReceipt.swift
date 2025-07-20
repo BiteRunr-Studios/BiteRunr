@@ -249,7 +249,7 @@ extension ScanReceipt {
             return
         }
         
-        guard let apiUrl = ProcessInfo.processInfo.environment["API_URL"] else {
+        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
             errorMessage = "API_URL not set"
             return
         }

@@ -141,7 +141,7 @@ extension SendFriendRequestView {
         errorMessage = nil
         
         do {
-            guard let apiUrl = ProcessInfo.processInfo.environment["API_URL"] else {
+            guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
                 errorMessage = "API_URL not set"
                 return
             }
@@ -157,7 +157,7 @@ extension SendFriendRequestView {
     
     private func fetchFriends() async {
         do {
-            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let apiUrl = Bundle.main.infoDictionary?["API_URL"] as! String
             let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
             let response = try await getFriends(baseUrl: apiUrl, user_id: user_id)
             DispatchQueue.main.async {
@@ -173,7 +173,7 @@ extension SendFriendRequestView {
 
 private func fetchCurrentUser() async {
     do {
-        let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+        let apiUrl = Bundle.main.infoDictionary?["API_URL"] as! String
         let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
         let response = try await getUserProfile(baseUrl: apiUrl, user_id: user_id)
         currentUser = response.data
@@ -185,7 +185,7 @@ private func fetchCurrentUser() async {
 private func sendFriendRequest(to friend: FriendUser) async {
         guard let currentUser = currentUser else { return }
     do {
-        let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+        let apiUrl = Bundle.main.infoDictionary?["API_URL"] as! String
         _ = try await Shared.sendFriendRequest(
             baseUrl: apiUrl,
             senderId: currentUser.id,
@@ -205,7 +205,7 @@ private func sendFriendRequest(to friend: FriendUser) async {
 
 private func fetchSentFriendRequests() async {
     do {
-        let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+        let apiUrl = Bundle.main.infoDictionary?["API_URL"] as! String
         let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
         let sentRequests = try await getSentFriendRequests(baseUrl: apiUrl, user_id: user_id)
         let sentFriendRequests = sentRequests.data as! [SentFriendRequest]

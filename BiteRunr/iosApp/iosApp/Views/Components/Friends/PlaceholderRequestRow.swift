@@ -100,7 +100,7 @@ extension PlaceholderRequestRow {
         isDeleting = true
         errorMessage = nil
         do {
-            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let apiUrl = Bundle.main.infoDictionary?["API_URL"] as! String
             try await Shared.deleteFriendRequest(
                 baseUrl: apiUrl,
                 sender_id: senderId,
@@ -121,7 +121,7 @@ extension PlaceholderRequestRow {
         isDeleting = true
         errorMessage = nil
         do {
-            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let apiUrl = Bundle.main.infoDictionary?["API_URL"] as! String
             try await Shared.acceptFriendRequest(
                 baseUrl: apiUrl,
                 user_id: senderId,

@@ -6,11 +6,28 @@ struct OrderUsersRow: View {
     
     var body: some View {
         HStack {
-            Image(systemName: "person.crop.circle")
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 35, height: 35)
-                .foregroundColor(.gray)
+            if let imageUrlString = orderUser.user.avatarUrl, let imageUrl = URL(string: imageUrlString) {
+                AsyncImage(url: imageUrl) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                            .frame(width: 48, height: 48)
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 48, height: 48)
+                            .clipShape(Circle())
+                    case .failure:
+                        InitialsCircle(firstName: orderUser.user.firstName, lastName: orderUser.user.lastName)
+                    @unknown default:
+                        InitialsCircle(firstName: orderUser.user.firstName, lastName: orderUser.user.lastName)
+                    }
+                }
+            } else {
+                InitialsCircle(firstName: orderUser.user.firstName, lastName: orderUser.user.lastName)
+            }
+            
             VStack(alignment: .leading) {
                 Text(orderUser.user.firstName + " " + orderUser.user.lastName)
                     .font(.headline)
@@ -30,7 +47,7 @@ struct OrderUsersRow: View {
                     .transition(.scale.combined(with: .opacity))
             }
         }
-        .padding()
+//        .padding(.vertical)
         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: orderUser.status)
     }
 }

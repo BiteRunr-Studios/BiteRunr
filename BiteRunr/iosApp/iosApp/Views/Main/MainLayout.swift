@@ -137,6 +137,7 @@ struct MainLayout: View {
                         }
                     }
                 )
+                .id(currentOrder.id) // Add this line
                 .background(Color(.systemBackground))
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing),
@@ -160,7 +161,7 @@ struct MainLayout: View {
 
     private func startPolling() {
         Task {
-            guard let apiUrl = ProcessInfo.processInfo.environment["API_URL"] else {
+            guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
                 print("API_URL not set")
                 return
             }

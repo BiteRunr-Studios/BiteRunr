@@ -208,7 +208,8 @@ struct AddGroupView: View {
                             }
                             Task {
                                 guard let creatorId = supabase.auth.currentUser?.id.uuidString else { return }
-                                let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+                                
+                                let apiUrl = Bundle.main.infoDictionary?["API_URL"] as! String
                                 let order = OrderDTO(
                                     id: nil,
                                     name: name,
@@ -232,6 +233,7 @@ struct AddGroupView: View {
                                     onOrderCreated?(createdOrder)
                                     
                                 }
+                                
                                 mapValidationErrors(result, handlers: [
                                     "name": { nameError = $0 },
                                     "order_locations": { orderLocationsError = $0 },

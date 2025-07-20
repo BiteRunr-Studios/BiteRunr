@@ -90,7 +90,7 @@ struct FriendRow: View {
         deleteError = nil
         
         do {
-            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let apiUrl = Bundle.main.infoDictionary?["API_URL"] as! String
             let user_id = supabase.auth.currentUser?.id.uuidString ?? ""
             try await Shared.deleteFriend(baseUrl: apiUrl, user_id: user_id)
             DispatchQueue.main.async {

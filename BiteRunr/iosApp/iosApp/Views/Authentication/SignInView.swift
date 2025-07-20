@@ -190,7 +190,7 @@ extension SignInView {
             return
         }
         do {
-            let apiUrl = ProcessInfo.processInfo.environment["API_URL"]!
+            let apiUrl = Bundle.main.infoDictionary?["API_URL"] as! String
             let fullName = user.userMetadata["full_name"]?.value as? String ?? ""
             let avatar_url = user.userMetadata["avatar_url"]?.value as? String ?? ""
             let _ = try await createUserProfile(

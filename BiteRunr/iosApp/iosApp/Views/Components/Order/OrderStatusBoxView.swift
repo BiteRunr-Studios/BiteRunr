@@ -46,8 +46,6 @@ struct OrderStatusBoxView: View {
                         }
                     }
                 )
-                
-                //                Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
             }
             Text(orderGroupName)
                 .font(.title2)
