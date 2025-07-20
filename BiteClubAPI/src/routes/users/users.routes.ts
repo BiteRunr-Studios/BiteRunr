@@ -44,8 +44,8 @@ export const create = createRoute({
     path: "/users",
     method: "post",
     tags,
-    // security: [{ Bearer: [] }],
-    // middleware: [authMiddleware] as const,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
     request: {
         body: jsonContentRequired(insertAuthUserSchema, "Create a user"),
     },
@@ -63,7 +63,7 @@ export const create = createRoute({
 });
 
 export const getOne = createRoute({
-    path: "/users/{id}",
+    path: "/users/:id",
     method: "get",
     tags,
     security: [{ Bearer: [] }],
@@ -85,7 +85,7 @@ export const getOne = createRoute({
 });
 
 export const patch = createRoute({
-    path: "/users/{id}",
+    path: "/users/:id",
     method: "patch",
     tags,
     security: [{ Bearer: [] }],
@@ -122,7 +122,7 @@ export const patch = createRoute({
 });
 
 export const remove = createRoute({
-    path: "/users/{id}",
+    path: "/users/:id",
     method: "delete",
     tags,
     security: [{ Bearer: [] }],
@@ -144,7 +144,7 @@ export const remove = createRoute({
 });
 
 export const resetPassword = createRoute({
-    path: "reset-password/user/{id}",
+    path: "reset-password/user/:id",
     method: "patch",
     tags,
     security: [{ Bearer: [] }],
@@ -249,7 +249,7 @@ export const getFriends = createRoute({
     middleware: [authMiddleware] as const,
     request: {
         params: z.object({
-            user_id: z.string(),
+            user_id: z.string().uuid().nonempty("User id is required"),
         }),
     },
     responses: {
@@ -297,7 +297,7 @@ export const getFriendRequests = createRoute({
     middleware: [authMiddleware] as const,
     request: {
         params: z.object({
-            user_id: z.string(),
+            user_id: z.string().uuid().nonempty("User id is required"),
         }),
     },
     responses: {
@@ -344,14 +344,14 @@ export const getFriendRequests = createRoute({
 // });
 
 export const getAllUsersExceptAuthenticated = createRoute({
-    path: "/users/all-except/{user_id}",
+    path: "/users/all-except/:user_id",
     method: "get",
     tags,
     security: [{ Bearer: [] }],
     middleware: [authMiddleware] as const,
     request: {
         params: z.object({
-            user_id: z.string(),
+            user_id: z.string().uuid().nonempty("User id is required"),
         }),
     },
     responses: {
@@ -363,7 +363,7 @@ export const getAllUsersExceptAuthenticated = createRoute({
 });
 
 export const userHasActiveOrders = createRoute({
-    path: "users/{id}/active-orders",
+    path: "users/:id/active-orders",
     method: "get",
     tags,
     security: [{ Bearer: [] }],

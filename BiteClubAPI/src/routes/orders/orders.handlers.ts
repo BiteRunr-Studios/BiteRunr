@@ -5,6 +5,7 @@ import {
     orders,
 } from "@/db/schema/orders";
 import { type orderItems } from "@/db/schema/index";
+import { orderLocationsWithLocationNameSchema } from "@/db/schema/orderLocations";
 import type {
     CreateRoute,
     GetOneRoute,
@@ -14,6 +15,7 @@ import type {
     RemoveRoute,
     ListCompletedByUserIdRoute,
     OrderItemsCountRoute,
+    AllOrderLocationsRoute,
 } from "./orders.routes";
 import type { AppRouteHandler } from "@/lib/types";
 import * as HttpStatusCodes from "stoker/http-status-codes";
@@ -145,11 +147,11 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
 };
 
 export const listByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
-    const { id } = c.req.valid("param");
+    const { user_id } = c.req.valid("param");
 
     const orderUserEntries = await db.query.orderUsers.findMany({
         where(fields, operators) {
-            return operators.eq(fields.user_id, id);
+            return operators.eq(fields.user_id, user_id);
         },
         columns: { order_id: true },
     });
@@ -158,7 +160,7 @@ export const listByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
     const orders = await db.query.orders.findMany({
         where(fields, operators) {
             return operators.or(
-                operators.eq(fields.creator_id, id),
+                operators.eq(fields.creator_id, user_id),
                 operators.inArray(fields.id, orderIds)
             );
         },
@@ -180,11 +182,11 @@ export const listByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
 export const listCompletedByUserId: AppRouteHandler<
     ListCompletedByUserIdRoute
 > = async (c) => {
-    const { id } = c.req.valid("param");
+    const { user_id } = c.req.valid("param");
 
     const orderUserEntries = await db.query.orderUsers.findMany({
         where(fields, operators) {
-            return operators.eq(fields.user_id, id);
+            return operators.eq(fields.user_id, user_id);
         },
         columns: { order_id: true },
     });
@@ -194,7 +196,7 @@ export const listCompletedByUserId: AppRouteHandler<
         where(fields, operators) {
             return operators.and(
                 operators.or(
-                    operators.eq(fields.creator_id, id),
+                    operators.eq(fields.creator_id, user_id),
                     operators.inArray(fields.id, orderIds)
                 ),
                 operators.eq(fields.status, "completed")
@@ -218,10 +220,10 @@ export const listCompletedByUserId: AppRouteHandler<
 export const orderItemsCount: AppRouteHandler<OrderItemsCountRoute> = async (
     c
 ) => {
-    const { id } = c.req.valid("param");
+    const { order_id } = c.req.valid("param");
     const order_locations = await db.query.orderLocations.findMany({
         where(fields, operators) {
-            return operators.eq(fields.order_id, id);
+            return operators.eq(fields.order_id, order_id);
         },
     });
 
@@ -249,4 +251,58 @@ export const orderItemsCount: AppRouteHandler<OrderItemsCountRoute> = async (
     }
 
     return c.json({ count: order_items.length }, HttpStatusCodes.OK);
+};
+
+export const allOrderLocations: AppRouteHandler<
+    AllOrderLocationsRoute
+> = async (c) => {
+    const { order_id } = c.req.valid("param");
+
+    const order_locations = await db.query.orderLocations.findMany({
+        where(fields, operators) {
+            return operators.eq(fields.order_id, order_id);
+        },
+    });
+
+    const locations = await db.query.locations.findMany({
+        where(fields, operators) {
+            return operators.inArray(
+                fields.id,
+                order_locations.map((ol) => ol.location_id)
+            );
+        },
+    });
+
+    // Custom object to return with only order_location_id and location name
+    const order_locations_with_location_name = order_locations.map((ol) => {
+        const location = locations.find((l) => l.id === ol.location_id);
+        return { order_location_id: ol.id, location_name: location?.name };
+    });
+
+    if (!locations) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    if (!order_locations) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    const order_locations_with_location_name_parsed = z
+        .array(orderLocationsWithLocationNameSchema)
+        .parse(order_locations_with_location_name);
+
+    return c.json(
+        order_locations_with_location_name_parsed,
+        HttpStatusCodes.OK
+    );
 };

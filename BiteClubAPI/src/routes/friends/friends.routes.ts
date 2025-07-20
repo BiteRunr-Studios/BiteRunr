@@ -53,7 +53,7 @@ export const create = createRoute({
 });
 
 export const getOne = createRoute({
-    path: "/friends/{id}",
+    path: "/friends/:id",
     method: "get",
     tags,
     security: [{ Bearer: [] }],
@@ -75,7 +75,7 @@ export const getOne = createRoute({
 });
 
 export const patch = createRoute({
-    path: "/friends/{id}",
+    path: "/friends/:id",
     method: "patch",
     tags,
     security: [{ Bearer: [] }],
@@ -104,14 +104,14 @@ export const patch = createRoute({
 });
 
 export const remove = createRoute({
-    path: "/friends/{friend_id}",
+    path: "/friends/:friend_id",
     method: "delete",
     tags,
     security: [{ Bearer: [] }],
     middleware: [authMiddleware] as const,
     request: {
         params: z.object({
-            friend_id: z.string().uuid(),
+            friend_id: z.string().uuid().nonempty("Friend id is required"),
         }),
     },
     responses: {
@@ -124,9 +124,14 @@ export const remove = createRoute({
             "Friend not found"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-            createErrorSchema(z.object({
-                friend_id: z.string().uuid(),
-            })),
+            createErrorSchema(
+                z.object({
+                    friend_id: z
+                        .string()
+                        .uuid()
+                        .nonempty("Friend id is required"),
+                })
+            ),
             "Invalid friend_id error"
         ),
     },

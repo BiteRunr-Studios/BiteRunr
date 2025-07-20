@@ -53,4 +53,22 @@ export const insertOrderLocationsSchema = createInsertSchema(orderLocations)
     });
 export const patchOrderLocationsSchema = insertOrderLocationsSchema.partial();
 
+export const orderLocationsWithLocationNameSchema = createSelectSchema(
+    orderLocations
+)
+    .omit({
+        id: true,
+        created_at: true,
+        updated_at: true,
+        order_id: true,
+        location_id: true,
+    })
+    .extend({
+        order_location_id: z
+            .string()
+            .uuid()
+            .nonempty("Order location Id is required"),
+        location_name: z.string().nonempty("Location name is required"),
+    });
+
 export default orderLocations;

@@ -56,7 +56,7 @@ export const create = createRoute({
 });
 
 export const getOne = createRoute({
-    path: "/friend-requests/{id}",
+    path: "/friend-requests/:id",
     method: "get",
     tags,
     security: [{ Bearer: [] }],
@@ -81,7 +81,7 @@ export const getOne = createRoute({
 });
 
 export const patch = createRoute({
-    path: "/friend-requests/{id}",
+    path: "/friend-requests/:id",
     method: "patch",
     tags,
     security: [{ Bearer: [] }],
@@ -120,8 +120,8 @@ export const remove = createRoute({
     middleware: [authMiddleware] as const,
     request: {
         query: z.object({
-            receiver_id: z.string().uuid(),
-            sender_id: z.string().uuid(),
+            receiver_id: z.string().uuid().nonempty("Receiver id is required"),
+            sender_id: z.string().uuid().nonempty("Sender id is required"),
         }),
     },
     responses: {
@@ -134,10 +134,12 @@ export const remove = createRoute({
             "Friend request not found"
         ),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-            createErrorSchema(z.object({
-                receiver_id: z.string().uuid(),
-                sender_id: z.string().uuid(),
-            })),
+            createErrorSchema(
+                z.object({
+                    receiver_id: z.string().uuid(),
+                    sender_id: z.string().uuid(),
+                })
+            ),
             "Invalid IDs error"
         ),
     },
@@ -151,25 +153,27 @@ export const getSentFriendRequests = createRoute({
     middleware: [authMiddleware] as const,
     request: {
         query: z.object({
-            userId: z.string().uuid(),
+            userId: z.string().uuid().nonempty("User id is required"),
             status: z.enum(["pending", "accepted", "rejected"]).optional(),
         }),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            z.array(z.object({
-                id: z.string().uuid(),
-                created_at: z.string(),
-                updated_at: z.string(),
-                sender_id: z.string().uuid(),
-                receiver_id: z.string().uuid(),
-                status: z.enum(["pending", "accepted", "rejected"]),
-                receiver: z.object({
+            z.array(
+                z.object({
                     id: z.string().uuid(),
-                    first_name: z.string(),
-                    last_name: z.string(),
-                }),
-            })),
+                    created_at: z.string(),
+                    updated_at: z.string(),
+                    sender_id: z.string().uuid(),
+                    receiver_id: z.string().uuid(),
+                    status: z.enum(["pending", "accepted", "rejected"]),
+                    receiver: z.object({
+                        id: z.string().uuid(),
+                        first_name: z.string(),
+                        last_name: z.string(),
+                    }),
+                })
+            ),
             "List of sent friend requests"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(

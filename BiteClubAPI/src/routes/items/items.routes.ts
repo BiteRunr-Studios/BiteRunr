@@ -41,10 +41,7 @@ export const create = createRoute({
         body: jsonContentRequired(insertItemSchema, "Create an item"),
     },
     responses: {
-        [HttpStatusCodes.OK]: jsonContent(
-            selectItemSchema,
-            "Create an item"
-        ),
+        [HttpStatusCodes.OK]: jsonContent(selectItemSchema, "Create an item"),
         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
             createErrorSchema(insertItemSchema),
             "Validation error(s)"
@@ -53,7 +50,7 @@ export const create = createRoute({
 });
 
 export const getOne = createRoute({
-    path: "/items/{id}",
+    path: "/items/:id",
     method: "get",
     tags,
     security: [{ Bearer: [] }],
@@ -62,10 +59,7 @@ export const getOne = createRoute({
         params: IdUUIDParamsSchema,
     },
     responses: {
-        [HttpStatusCodes.OK]: jsonContent(
-            selectItemSchema,
-            "Item by Id"
-        ),
+        [HttpStatusCodes.OK]: jsonContent(selectItemSchema, "Item by Id"),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
             "Item not found"
@@ -78,7 +72,7 @@ export const getOne = createRoute({
 });
 
 export const patch = createRoute({
-    path: "/items/{id}",
+    path: "/items/:id",
     method: "patch",
     tags,
     security: [{ Bearer: [] }],
@@ -88,10 +82,7 @@ export const patch = createRoute({
         body: jsonContentRequired(patchItemSchema, "Update an Item"),
     },
     responses: {
-        [HttpStatusCodes.OK]: jsonContent(
-            selectItemSchema,
-            "Update an Item"
-        ),
+        [HttpStatusCodes.OK]: jsonContent(selectItemSchema, "Update an Item"),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
             "Item not found"
@@ -107,7 +98,7 @@ export const patch = createRoute({
 });
 
 export const remove = createRoute({
-    path: "/items/{id}",
+    path: "/items/:id",
     method: "delete",
     tags,
     security: [{ Bearer: [] }],
@@ -116,10 +107,7 @@ export const remove = createRoute({
         params: IdUUIDParamsSchema,
     },
     responses: {
-        [HttpStatusCodes.OK]: jsonContent(
-            selectItemSchema,
-            "Deleted item"
-        ),
+        [HttpStatusCodes.OK]: jsonContent(selectItemSchema, "Deleted item"),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
             "Item not found"

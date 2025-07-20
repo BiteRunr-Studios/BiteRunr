@@ -53,7 +53,7 @@ export const create = createRoute({
 });
 
 export const getOne = createRoute({
-    path: "/locations/{id}",
+    path: "/locations/:id",
     method: "get",
     tags,
     security: [{ Bearer: [] }],
@@ -78,7 +78,7 @@ export const getOne = createRoute({
 });
 
 export const patch = createRoute({
-    path: "/locations/{id}",
+    path: "/locations/:id",
     method: "patch",
     tags,
     security: [{ Bearer: [] }],
@@ -107,7 +107,7 @@ export const patch = createRoute({
 });
 
 export const remove = createRoute({
-    path: "/locations/{id}",
+    path: "/locations/:id",
     method: "delete",
     tags,
     security: [{ Bearer: [] }],

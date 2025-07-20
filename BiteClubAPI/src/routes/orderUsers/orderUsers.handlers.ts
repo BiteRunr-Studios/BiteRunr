@@ -89,11 +89,11 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
 };
 
 export const getOrderUsers: AppRouteHandler<GetOrderUsersRoute> = async (c) => {
-    const { id } = c.req.valid("param");
+    const { order_id } = c.req.valid("param");
 
     const orderUsers = await db.query.orderUsers.findMany({
         where(fields, operators) {
-            return operators.eq(fields.order_id, id);
+            return operators.eq(fields.order_id, order_id);
         },
         with: {
             user: {

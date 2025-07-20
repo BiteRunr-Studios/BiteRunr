@@ -60,7 +60,7 @@ export const create = createRoute({
 });
 
 export const getOne = createRoute({
-    path: "/order-users/{id}",
+    path: "/order-users/:id",
     method: "get",
     tags,
     security: [{ Bearer: [] }],
@@ -85,7 +85,7 @@ export const getOne = createRoute({
 });
 
 export const patch = createRoute({
-    path: "/order-users/{id}",
+    path: "/order-users/:id",
     method: "patch",
     tags,
     security: [{ Bearer: [] }],
@@ -117,7 +117,7 @@ export const patch = createRoute({
 });
 
 export const remove = createRoute({
-    path: "/order-users/{id}",
+    path: "/order-users/:id",
     method: "delete",
     tags,
     security: [{ Bearer: [] }],
@@ -142,13 +142,15 @@ export const remove = createRoute({
 });
 
 export const getOrderUsers = createRoute({
-    path: "/orders/{id}/users",
+    path: "/orders/:order_id/users",
     method: "get",
     tags,
     security: [{ Bearer: [] }],
     middleware: [authMiddleware] as const,
     request: {
-        params: IdUUIDParamsSchema,
+        params: z.object({
+            order_id: z.string().uuid().nonempty("Order id is required"),
+        }),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(

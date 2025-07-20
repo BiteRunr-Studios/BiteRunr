@@ -12,6 +12,7 @@ import {
     patchOrdersSchema,
     selectOrdersSchema,
 } from "@/db/schema/orders";
+import { orderLocationsWithLocationNameSchema } from "@/db/schema/orderLocations";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
 import { authMiddleware } from "@/middlewares/clerk-auth";
@@ -61,7 +62,7 @@ export const create = createRoute({
 });
 
 export const getOne = createRoute({
-    path: "/orders/{id}",
+    path: "/orders/:id",
     method: "get",
     tags,
     security: [{ Bearer: [] }],
@@ -83,7 +84,7 @@ export const getOne = createRoute({
 });
 
 export const patch = createRoute({
-    path: "/orders/{id}",
+    path: "/orders/:id",
     method: "patch",
     tags,
     security: [{ Bearer: [] }],
@@ -112,7 +113,7 @@ export const patch = createRoute({
 });
 
 export const remove = createRoute({
-    path: "/orders/{id}",
+    path: "/orders/:id",
     method: "delete",
     tags,
     security: [{ Bearer: [] }],
@@ -144,10 +145,12 @@ export const isUserInActiveOrder = createRoute({
             z.object({
                 order_id: z
                     .string()
+                    .uuid()
                     .nonempty("Order id is required")
                     .pipe(z.string().uuid()),
                 user_id: z
                     .string()
+                    .uuid()
                     .nonempty("User id is required")
                     .pipe(z.string().uuid()),
             }),
@@ -184,13 +187,15 @@ export const isUserInActiveOrder = createRoute({
 });
 
 export const listByUserId = createRoute({
-    path: "/orders/user/{id}",
+    path: "/orders/user/:user_id",
     method: "get",
     tags,
     security: [{ Bearer: [] }],
     middleware: [authMiddleware] as const,
     request: {
-        params: IdUUIDParamsSchema,
+        params: z.object({
+            user_id: z.string().uuid().nonempty("User id is required"),
+        }),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
@@ -209,13 +214,15 @@ export const listByUserId = createRoute({
 });
 
 export const listCompletedByUserId = createRoute({
-    path: "/orders/user/{id}/completed",
+    path: "/orders/user/:user_id/completed",
     method: "get",
     tags,
     security: [{ Bearer: [] }],
     middleware: [authMiddleware] as const,
     request: {
-        params: IdUUIDParamsSchema,
+        params: z.object({
+            user_id: z.string().uuid().nonempty("User id is required"),
+        }),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
@@ -234,13 +241,15 @@ export const listCompletedByUserId = createRoute({
 });
 
 export const orderItemsCount = createRoute({
-    path: "/orders/{id}/items/count",
+    path: "/orders/:order_id/items/count",
     method: "get",
     tags,
     security: [{ Bearer: [] }],
     middleware: [authMiddleware] as const,
     request: {
-        params: IdUUIDParamsSchema,
+        params: z.object({
+            order_id: z.string().uuid().nonempty("Order id is required"),
+        }),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
@@ -258,6 +267,33 @@ export const orderItemsCount = createRoute({
     },
 });
 
+export const allOrderLocations = createRoute({
+    path: "/orders/:order_id/locations",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            order_id: z.string().uuid().nonempty("Order id is required"),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(orderLocationsWithLocationNameSchema),
+            "All locations in an order"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "Order not found"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(IdUUIDParamsSchema),
+            "Invalid Id error"
+        ),
+    },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
@@ -266,3 +302,4 @@ export type RemoveRoute = typeof remove;
 export type ListByUserIdRoute = typeof listByUserId;
 export type ListCompletedByUserIdRoute = typeof listCompletedByUserId;
 export type OrderItemsCountRoute = typeof orderItemsCount;
+export type AllOrderLocationsRoute = typeof allOrderLocations;

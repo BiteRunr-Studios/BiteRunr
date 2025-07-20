@@ -10,6 +10,7 @@ const router = createRouter()
     .openapi(routes.remove, handlers.remove)
     .openapi(routes.listByUserId, handlers.listByUserId)
     .openapi(routes.listCompletedByUserId, handlers.listCompletedByUserId)
-    .openapi(routes.orderItemsCount, handlers.orderItemsCount);
+    .openapi(routes.orderItemsCount, handlers.orderItemsCount)
+    .openapi(routes.allOrderLocations, handlers.allOrderLocations);
 
 export default router;
