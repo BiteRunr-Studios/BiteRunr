@@ -4,7 +4,7 @@ import {
     insertOrdersSchema,
     orders,
 } from "@/db/schema/orders";
-import { type orderItems } from "@/db/schema/index";
+import { type orderItems, items } from "@/db/schema/index";
 import { orderLocationsWithLocationNameSchema } from "@/db/schema/orderLocations";
 import type {
     CreateRoute,
@@ -16,7 +16,9 @@ import type {
     ListCompletedByUserIdRoute,
     OrderItemsCountRoute,
     AllOrderLocationsRoute,
+    LocationItemsRoute,
 } from "./orders.routes";
+import { sql } from "drizzle-orm";
 import type { AppRouteHandler } from "@/lib/types";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
@@ -305,4 +307,19 @@ export const allOrderLocations: AppRouteHandler<
         order_locations_with_location_name_parsed,
         HttpStatusCodes.OK
     );
+};
+
+export const locationItems: AppRouteHandler<LocationItemsRoute> = async (c) => {
+    const { location_id } = c.req.valid("param");
+    const { searchQuery } = c.req.valid("query");
+
+    const items_results = await db.query.items.findMany({
+        where: sql`
+            (${items.searchVector} @@ websearch_to_tsquery('english', ${searchQuery}))
+            OR (similarity(${items.name}, ${searchQuery}) > 0.3)
+        `,
+        orderBy: sql`GREATEST(similarity(${items.name}, ${searchQuery}), 0) DESC`,
+    });
+
+    return c.json(items_results, HttpStatusCodes.OK);
 };

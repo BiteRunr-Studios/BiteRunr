@@ -11,6 +11,7 @@ const router = createRouter()
     .openapi(routes.listByUserId, handlers.listByUserId)
     .openapi(routes.listCompletedByUserId, handlers.listCompletedByUserId)
     .openapi(routes.orderItemsCount, handlers.orderItemsCount)
-    .openapi(routes.allOrderLocations, handlers.allOrderLocations);
+    .openapi(routes.allOrderLocations, handlers.allOrderLocations)
+    .openapi(routes.locationItems, handlers.locationItems);
 
 export default router;

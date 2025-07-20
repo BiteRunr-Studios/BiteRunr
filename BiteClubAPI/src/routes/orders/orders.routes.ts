@@ -12,6 +12,7 @@ import {
     patchOrdersSchema,
     selectOrdersSchema,
 } from "@/db/schema/orders";
+import { selectItemSchema } from "@/db/schema/items";
 import { orderLocationsWithLocationNameSchema } from "@/db/schema/orderLocations";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
@@ -294,6 +295,36 @@ export const allOrderLocations = createRoute({
     },
 });
 
+export const locationItems = createRoute({
+    path: "/items/:location_id",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            location_id: z.string().uuid().nonempty("Location id is required"),
+        }),
+        query: z.object({
+            searchQuery: z.string().nonempty("Search query is required"),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(selectItemSchema),
+            "All items in the location"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "Location not found"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(IdUUIDParamsSchema),
+            "Invalid Id error"
+        ),
+    },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
@@ -303,3 +334,4 @@ export type ListByUserIdRoute = typeof listByUserId;
 export type ListCompletedByUserIdRoute = typeof listCompletedByUserId;
 export type OrderItemsCountRoute = typeof orderItemsCount;
 export type AllOrderLocationsRoute = typeof allOrderLocations;
+export type LocationItemsRoute = typeof locationItems;
