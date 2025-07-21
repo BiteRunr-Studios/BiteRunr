@@ -239,21 +239,21 @@ export const orderItemsCount: AppRouteHandler<OrderItemsCountRoute> = async (
         );
     }
 
-    let order_items: (typeof orderItems.$inferSelect)[] = [];
+    let orderItemsCount = 0;
 
     for (const order_location of order_locations) {
         const order_location_items = await db.query.orderItems.findMany({
             where(fields, operators) {
                 return operators.eq(
                     fields.order_location_id,
-                    order_location.location_id
+                    order_location.id
                 );
             },
         });
-        order_items.push(...order_location_items);
+        orderItemsCount += order_location_items.length;
     }
 
-    return c.json({ count: order_items.length }, HttpStatusCodes.OK);
+    return c.json({ count: orderItemsCount }, HttpStatusCodes.OK);
 };
 
 export const allOrderLocations: AppRouteHandler<
