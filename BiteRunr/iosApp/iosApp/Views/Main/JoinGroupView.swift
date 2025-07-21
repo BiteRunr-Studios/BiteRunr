@@ -19,7 +19,9 @@ struct JoinGroupView: View {
 
                 ForEach(orders, id: \.id) { order in
                     Button(action: {
-                        onOrderSelected?(order)
+                        if order.status == Status.active {
+                            onOrderSelected?(order)
+                        }
                     }) {
                         OrderStatusBoxView(
                             startDate: order.createdAt.toDate(),

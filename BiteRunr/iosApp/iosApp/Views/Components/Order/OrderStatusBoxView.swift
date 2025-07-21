@@ -50,7 +50,7 @@ struct OrderStatusBoxView: View {
             Text(orderGroupName)
                 .font(.title2)
                 .fontWeight(.semibold)
-                .foregroundStyle(.primary)
+                .foregroundColor(.secondary)
             Text(orderGroupDescription)
                 .font(.body)
                 .foregroundStyle(.secondary)

@@ -13,11 +13,14 @@ import org.biterunr_studios.biterunr.DTO.FriendRequestResponse
 import org.biterunr_studios.biterunr.DTO.FriendRequestUser
 import org.biterunr_studios.biterunr.DTO.FriendUser
 import org.biterunr_studios.biterunr.DTO.OrderDTO
+import org.biterunr_studios.biterunr.DTO.UpdateOrderDTO
+import org.biterunr_studios.biterunr.DTO.OrderItemCountDTO
 import org.biterunr_studios.biterunr.DTO.ReceiptDetails
 import org.biterunr_studios.biterunr.DTO.SentFriendRequest
 import org.biterunr_studios.biterunr.Models.FetchResponse
 import org.biterunr_studios.biterunr.Models.Friend
 import org.biterunr_studios.biterunr.Models.Order
+import org.biterunr_studios.biterunr.Models.OrderItem
 import org.biterunr_studios.biterunr.Models.OrderUser
 import org.biterunr_studios.biterunr.Models.UpdateProfile
 import org.biterunr_studios.biterunr.Models.UpdateUserProfileRequest
@@ -72,6 +75,12 @@ suspend fun getOrderUsers(baseUrl: String, orderId: String): FetchResponse<List<
     val url = "$baseUrl/orders/$orderId/users"
     val result =
         fetch<Unit, List<OrderUser>>(url = url, method = HttpMethod.Get, body = null)
+    return result
+}
+
+suspend fun getOrderItems(baseUrl: String, orderId: String): FetchResponse<List<OrderItem>> {
+    val url = "$baseUrl/orders/$orderId/items"
+    val result = fetch<Unit, List<OrderItem>>(url = url, method = HttpMethod.Get, body = null)
     return result
 }
 
@@ -168,6 +177,18 @@ suspend fun createOrder(baseUrl: String, order: OrderDTO): FetchResponse<Order> 
     return result
 }
 
+suspend fun updateOrder(baseUrl: String, orderId: String, order: UpdateOrderDTO): FetchResponse<Order> {
+    val url = "$baseUrl/orders/$orderId"
+
+    val result = fetch<UpdateOrderDTO, Order>(
+        url = url,
+        method = HttpMethod.Patch,
+        body = order
+    )
+
+    return result
+}
+
 suspend fun checkUserInActiveOrder(baseUrl: String, userId: String): FetchResponse<Boolean> {
     val url = "$baseUrl/users/$userId/active-orders"
 
@@ -196,4 +217,15 @@ suspend fun scanReceipt(
             "date" to "2025-05-14"
         )
     )
+}
+
+suspend fun getOrderItemCount(baseUrl: String, orderId: String): FetchResponse<OrderItemCountDTO> {
+    var url = "$baseUrl/orders/$orderId/items/count";
+
+    val result = fetch<Unit, OrderItemCountDTO>(
+        url = url,
+        method = HttpMethod.Get,
+    )
+
+    return result;
 }

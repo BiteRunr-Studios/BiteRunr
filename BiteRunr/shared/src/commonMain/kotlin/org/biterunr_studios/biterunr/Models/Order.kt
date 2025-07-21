@@ -45,6 +45,9 @@ data class Order(
     @SerialName("updated_at")
     val updatedAt: Instant,
 
+    @SerialName("order_items")
+    val orderItems: List<OrderItem>? = null,
+
     @SerialName("order_users")
     val orderUsers: List<OrderUser>? = null,
 
