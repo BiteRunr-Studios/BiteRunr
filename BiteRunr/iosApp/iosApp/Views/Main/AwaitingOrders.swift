@@ -4,8 +4,11 @@ import Supabase
 
 struct AwaitingOrders: View {
     @Binding var order: Order?
-    @State private var orderUsers: [OrderUser] = []
-    @State private var orderItemsCount: OrderItemCountDTO = OrderItemCountDTO(count: 0)
+    
+    @State private var orderUsers: [AwaitingOrderUserDTO] = []
+    
+    @State private var awaitingOrder: AwaitingOrdersDTO?
+    
     @State private var errorMessage: String?
     @StateObject private var poller = Poller()
     @State private var showCancelAlert = false
@@ -66,9 +69,9 @@ struct AwaitingOrders: View {
                             .padding()
                             .id("noFriends-\(order?.id ?? "new")")
                     } else {
-                        ForEach(orderUsers, id: \.id) { orderUser in
+                        ForEach(orderUsers, id: \.Id) { orderUser in
                             OrderUsersRow(orderUser: orderUser)
-                                .id("user-\(orderUser.id)")  // Force unique identity
+                                .id("user-\(orderUser.Id)")  // Force unique identity
                         }
                     }
                 }.padding()
@@ -80,10 +83,10 @@ struct AwaitingOrders: View {
                     .edgesIgnoringSafeArea(.horizontal)
                 
                 VStack {
-                    Text("\(orderItemsCount.count) \(orderItemsCount.count == 1 ? "item" : "items") added")
+                    Text("\(awaitingOrder?.count ?? 0) \(awaitingOrder?.count == 1 ? "item" : "items") added")
                         .foregroundColor(.secondary)
                         .fontWeight(Font.Weight.medium)
-                        .animation(.easeInOut(duration: 0.3), value: orderItemsCount.count)
+                        .animation(.easeInOut(duration: 0.3), value: awaitingOrder?.count)
                     VStack(spacing: 12) {
                         // button 1
                         Button(action: {
@@ -182,7 +185,7 @@ struct AwaitingOrders: View {
 
 extension AwaitingOrders {
     
-    private func fetchOrderUsers() async {
+    private func fetchData() async {
         guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
             errorMessage = "API_URL not set"
             return
@@ -194,37 +197,14 @@ extension AwaitingOrders {
         
         errorMessage = nil
         do {
-            let response = try await getOrderUsers(baseUrl: apiUrl, orderId: orderId)
-            if var users = response.data as? [OrderUser] {
-                users.removeAll { $0.userId == supabase.auth.currentUser?.id.uuidString.lowercased() }
-                orderUsers = users
+            let response = try await getAwaitingOrdersData(baseUrl: apiUrl, orderId: orderId)
+            if var data = response.data as? AwaitingOrdersDTO {
+                awaitingOrder = data
+                var mutableOrderUsers: [AwaitingOrderUserDTO] = awaitingOrder!.orderUsers
+                mutableOrderUsers.removeAll { $0.userId == supabase.auth.currentUser?.id.uuidString.lowercased() }
+                orderUsers = mutableOrderUsers
             } else {
                 errorMessage = "Failed to decode users."
-            }
-        } catch {
-            errorMessage = "Failed to fetch order users: \(error.localizedDescription)"
-            print("Error fetching users: \(error)")
-        }
-    }
-    
-    private func fetchOrderItemsCount() async {
-        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
-            errorMessage = "API_URL not set"
-            return
-        };
-        guard let orderId = order?.id, !orderId.isEmpty else {
-            errorMessage = "Order ID is missing"
-            return
-        };
-        
-        errorMessage = nil
-        do {
-            let response = try await getOrderItemCount(baseUrl: apiUrl, orderId: orderId)
-            if let itemsCount = response.data {
-                print(itemsCount)
-                orderItemsCount = itemsCount
-            } else {
-                errorMessage = "Failed to decode orderItemsCount."
             }
         } catch {
             errorMessage = "Failed to fetch order users: \(error.localizedDescription)"
@@ -283,11 +263,25 @@ extension AwaitingOrders {
                 interval: 2.5,
                 pollBlock: {
                     // If cancelled, dismiss immediately
-                    await fetchOrderUsers()
-                    await fetchOrderItemsCount()
+                    await fetchData()
                     
                     await MainActor.run {
-                        if order?.status == .cancelled {
+                        if awaitingOrder?.order.status == .cancelled {
+                            guard let awaitingOrder = awaitingOrder else { return }
+                            order = Order(
+                                id: awaitingOrder.order.Id,
+                                name: awaitingOrder.order.name,
+                                creatorId: awaitingOrder.order.creatorId,
+                                comments: awaitingOrder.order.comments,
+                                status: awaitingOrder.order.status,
+                                paused: awaitingOrder.order.paused,
+                                createdAt: awaitingOrder.order.createdAt,
+                                updatedAt: awaitingOrder.order.updatedAt,
+                                orderItems: nil,
+                                orderUsers: nil,
+                                orderLocations: nil,
+                                creator: nil
+                            )
                             orderUsers = []
                             onDismiss?()
                             dismiss()

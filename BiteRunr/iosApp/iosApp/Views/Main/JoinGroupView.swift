@@ -6,6 +6,7 @@ struct JoinGroupView: View {
     @State var errorMessage: String?
     @State var orders: [Order] = []
     @Binding var selectedOrder: Order?
+    @StateObject private var poller = Poller()
     @EnvironmentObject var supabaseState: SupabaseState
     var onOrderSelected: ((Order?) -> Void)? = nil
     @State private var isNavigatingAway = false
@@ -37,12 +38,9 @@ struct JoinGroupView: View {
             }
             .padding(.vertical)
         }
-        .task {
-            await fetchOrders()
-        }
         .onAppear() {
             Task {
-                await fetchOrders()
+                startPolling()
             }
         }
         .onChange(of: selectedOrder) { _, newOrder in
@@ -76,6 +74,30 @@ extension JoinGroupView {
         } catch {
             errorMessage = "Failed to fetch orders: \(error.localizedDescription)"
             print("Error fetching orders: \(error)")
+        }
+    }
+    
+    private func startPolling() {
+        Task {
+            poller.startPolling(
+                interval: 2.5,
+                pollBlock: {
+                    // If cancelled, dismiss immediately
+                    await fetchOrders()
+                },
+                onResult: { response in
+                    print("Polling occured: \(response)")
+                },
+                onError: { error in
+                    print("Polling error: \(error)")
+                }
+            )
+        }
+    }
+    
+    private func stopPolling() {
+        Task {
+            poller.stopPolling()
         }
     }
 }

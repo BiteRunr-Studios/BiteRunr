@@ -46,6 +46,7 @@ struct OrderStatusBoxView: View {
                         }
                     }
                 )
+                .animation(.easeInOut(duration: 0.3), value: orderGroupStatus)
             }
             Text(orderGroupName)
                 .font(.title2)

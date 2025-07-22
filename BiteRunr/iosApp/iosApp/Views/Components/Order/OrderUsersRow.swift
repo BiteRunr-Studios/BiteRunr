@@ -2,7 +2,7 @@ import SwiftUI
 import Shared
 
 struct OrderUsersRow: View {
-    let orderUser: OrderUser
+    let orderUser: AwaitingOrderUserDTO
     
     var body: some View {
         HStack {

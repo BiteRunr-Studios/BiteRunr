@@ -1,27 +1,22 @@
 package org.biterunr_studios.biterunr.ReusableFunctions
 
-import io.ktor.client.request.forms.MultiPartFormDataContent
-import io.ktor.client.request.forms.formData
-import org.biterunr_studios.biterunr.Models.Location
-import io.ktor.http.*
-import io.ktor.util.reflect.instanceOf
+import io.ktor.http.HttpMethod
 import org.biterunr_studios.biterunr.DTO.AcceptFriendRequestBody
+import org.biterunr_studios.biterunr.DTO.AwaitingOrderRequest
+import org.biterunr_studios.biterunr.DTO.AwaitingOrdersDTO
 import org.biterunr_studios.biterunr.DTO.CreateFriendRequestBody
-import org.biterunr_studios.biterunr.DTO.CreateUserBody
 import org.biterunr_studios.biterunr.DTO.CreateUserSSOBody
 import org.biterunr_studios.biterunr.DTO.FriendRequestResponse
 import org.biterunr_studios.biterunr.DTO.FriendRequestUser
 import org.biterunr_studios.biterunr.DTO.FriendUser
 import org.biterunr_studios.biterunr.DTO.OrderDTO
-import org.biterunr_studios.biterunr.DTO.UpdateOrderDTO
-import org.biterunr_studios.biterunr.DTO.OrderItemCountDTO
 import org.biterunr_studios.biterunr.DTO.ReceiptDetails
 import org.biterunr_studios.biterunr.DTO.SentFriendRequest
+import org.biterunr_studios.biterunr.DTO.UpdateOrderDTO
 import org.biterunr_studios.biterunr.Models.FetchResponse
-import org.biterunr_studios.biterunr.Models.Friend
+import org.biterunr_studios.biterunr.Models.Location
 import org.biterunr_studios.biterunr.Models.Order
 import org.biterunr_studios.biterunr.Models.OrderItem
-import org.biterunr_studios.biterunr.Models.OrderUser
 import org.biterunr_studios.biterunr.Models.UpdateProfile
 import org.biterunr_studios.biterunr.Models.UpdateUserProfileRequest
 import org.biterunr_studios.biterunr.Models.UserProfile
@@ -71,12 +66,12 @@ suspend fun getOrders(baseUrl: String, userId: String): FetchResponse<List<Order
     return result
 }
 
-suspend fun getOrderUsers(baseUrl: String, orderId: String): FetchResponse<List<OrderUser>> {
-    val url = "$baseUrl/orders/$orderId/users"
-    val result =
-        fetch<Unit, List<OrderUser>>(url = url, method = HttpMethod.Get, body = null)
-    return result
-}
+//suspend fun getOrderUsers(baseUrl: String, orderId: String): FetchResponse<List<OrderUser>> {
+//    val url = "$baseUrl/orders/$orderId/users"
+//    val result =
+//        fetch<Unit, List<OrderUser>>(url = url, method = HttpMethod.Get, body = null)
+//    return result
+//}
 
 suspend fun getOrderItems(baseUrl: String, orderId: String): FetchResponse<List<OrderItem>> {
     val url = "$baseUrl/orders/$orderId/items"
@@ -219,13 +214,25 @@ suspend fun scanReceipt(
     )
 }
 
-suspend fun getOrderItemCount(baseUrl: String, orderId: String): FetchResponse<OrderItemCountDTO> {
-    var url = "$baseUrl/orders/$orderId/items/count";
+//suspend fun getOrderItemCount(baseUrl: String, orderId: String): FetchResponse<OrderItemCountDTO> {
+//    var url = "$baseUrl/orders/$orderId/items/count";
+//
+//    val result = fetch<Unit, OrderItemCountDTO>(
+//        url = url,
+//        method = HttpMethod.Get,
+//    )
+//
+//    return result;
+//}
 
-    val result = fetch<Unit, OrderItemCountDTO>(
+suspend fun getAwaitingOrdersData(baseUrl: String, orderId: String): FetchResponse<AwaitingOrdersDTO> {
+    var url = "$baseUrl/orders/awaiting_order"
+
+    val result = fetch<AwaitingOrderRequest, AwaitingOrdersDTO>(
         url = url,
-        method = HttpMethod.Get,
+        method = HttpMethod.Post,
+        body = AwaitingOrderRequest(orderId)
     )
 
-    return result;
+    return result
 }
