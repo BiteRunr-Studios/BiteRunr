@@ -8,9 +8,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-import users from "./users";
-import items from "./items";
-import orderLocations from "./orderLocations";
+import { orderUsers, items, orderLocations } from "./index";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
 
@@ -21,9 +19,9 @@ export const orderItems = pgTable(
         order_location_id: uuid()
             .notNull()
             .references(() => orderLocations.id, { onDelete: "cascade" }),
-        user_id: uuid()
+        order_user_id: uuid()
             .notNull()
-            .references(() => users.id, { onDelete: "cascade" }),
+            .references(() => orderUsers.id, { onDelete: "cascade" }),
         item_id: uuid()
             .notNull()
             .references(() => items.id, { onDelete: "cascade" }),
@@ -35,7 +33,7 @@ export const orderItems = pgTable(
             .defaultNow()
             .$onUpdateFn(() => new Date()),
     },
-    (t) => [unique().on(t.user_id, t.item_id)]
+    (t) => [unique().on(t.order_user_id, t.item_id)]
 ).enableRLS();
 
 export const orderItemsRelations = relations(orderItems, ({ one }) => ({
@@ -43,9 +41,9 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
         fields: [orderItems.order_location_id],
         references: [orderLocations.id],
     }),
-    user: one(users, {
-        fields: [orderItems.user_id],
-        references: [users.id],
+    user: one(orderUsers, {
+        fields: [orderItems.order_user_id],
+        references: [orderUsers.id],
     }),
     item: one(items, {
         fields: [orderItems.item_id],
@@ -62,7 +60,7 @@ export const insertOrderItemsSchema = createInsertSchema(orderItems)
     })
     .extend({
         order_location_id: z.string().nonempty("Order Location Id is required"),
-        user_id: z.string().nonempty("User Id is required"),
+        order_user_id: z.string().nonempty("Order User Id is required"),
         item_id: z.string().nonempty("Item Id is required"),
         quantity: z.number().min(1, "Quantity must be 1 or more"),
     });

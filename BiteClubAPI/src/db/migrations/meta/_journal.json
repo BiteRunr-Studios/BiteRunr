@@ -57,6 +57,13 @@
       "when": 1752978796851,
       "tag": "0007_unknown_master_mold",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1753150823590,
+      "tag": "0008_polite_talos",
+      "breakpoints": true
     }
   ]
 }
