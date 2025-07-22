@@ -12,7 +12,8 @@ import {
     patchOrdersSchema,
     selectOrdersSchema,
 } from "@/db/schema/orders";
-import { selectItemSchema } from "@/db/schema/items";
+import { selectOrderUsersWithUserSchema } from "@/db/schema/users";
+import { selectItemSchema, insertItemSchema } from "@/db/schema/items";
 import { orderLocationsWithLocationNameSchema } from "@/db/schema/orderLocations";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
@@ -362,6 +363,87 @@ export const changeOrderUserStatus = createRoute({
     },
 });
 
+export const awaitingOrder = createRoute({
+    path: "/orders/awaiting_order",
+    method: "post",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        body: jsonContentRequired(
+            z.object({
+                order_id: z.string().uuid().nonempty("Order id is required"),
+            }),
+            "Get awaiting order page data"
+        ),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.object({
+                count: z.number(),
+                order_users: z.array(selectOrderUsersWithUserSchema),
+                order: selectOrdersSchema,
+            }),
+            "All items in the location"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Not found"),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(IdUUIDParamsSchema),
+            "Invalid Id error"
+        ),
+    },
+});
+
+// export const addNewItemAndLinkToOrderUser = createRoute({
+//     path: "/orders/:order_id/locations/:location_id/items",
+//     method: "post",
+//     tags,
+//     security: [{ Bearer: [] }],
+//     middleware: [authMiddleware] as const,
+//     request: {
+//         params: z.object({
+//             order_id: z.string().uuid().nonempty("Order id is required"),
+//             location_id: z.string().uuid().nonempty("Location id is required"),
+//         }),
+//         body: jsonContentRequired(
+//             insertItemSchema,
+//             "Create an item and add to order user"
+//         ),
+//     },
+//     responses: {
+//         [HttpStatusCodes.OK]: jsonContent(selectItemSchema, "Created an item"),
+//         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+//             createErrorSchema(insertItemSchema),
+//             "Validation error(s)"
+//         ),
+//     },
+// });
+
+// export const addItemAndLinkToOrderUser = createRoute({
+//     path: "/orders/:order_id/locations/:location_id/items",
+//     method: "post",
+//     tags,
+//     security: [{ Bearer: [] }],
+//     middleware: [authMiddleware] as const,
+//     request: {
+//         params: z.object({
+//             order_id: z.string().uuid().nonempty("Order id is required"),
+//             location_id: z.string().uuid().nonempty("Location id is required"),
+//         }),
+//         body: jsonContentRequired(insertItemSchema, "Add item to order user"),
+//     },
+//     responses: {
+//         [HttpStatusCodes.OK]: jsonContent(
+//             selectItemSchema,
+//             "Added item to order user"
+//         ),
+//         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+//             createErrorSchema(insertItemSchema),
+//             "Validation error(s)"
+//         ),
+//     },
+// });
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
@@ -373,3 +455,4 @@ export type OrderItemsCountRoute = typeof orderItemsCount;
 export type AllOrderLocationsRoute = typeof allOrderLocations;
 export type LocationItemsRoute = typeof locationItems;
 export type ChangeOrderUserStatusRoute = typeof changeOrderUserStatus;
+export type AwaitingOrderRoute = typeof awaitingOrder;

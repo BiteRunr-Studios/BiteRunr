@@ -18,6 +18,7 @@ import type {
     AllOrderLocationsRoute,
     LocationItemsRoute,
     ChangeOrderUserStatusRoute,
+    AwaitingOrderRoute,
 } from "./orders.routes";
 import { sql } from "drizzle-orm";
 import type { AppRouteHandler } from "@/lib/types";
@@ -352,4 +353,82 @@ export const changeOrderUserStatus: AppRouteHandler<
     }
 
     return c.json(updatedOrder.status, HttpStatusCodes.OK);
+};
+
+export const awaitingOrder: AppRouteHandler<AwaitingOrderRoute> = async (c) => {
+    const { order_id } = c.req.valid("json");
+
+    // order items count
+    const order_locations = await db.query.orderLocations.findMany({
+        where(fields, operators) {
+            return operators.eq(fields.order_id, order_id);
+        },
+    });
+
+    if (!order_locations) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    let orderItemsCount = 0;
+
+    for (const order_location of order_locations) {
+        const order_location_items = await db.query.orderItems.findMany({
+            where(fields, operators) {
+                return operators.eq(
+                    fields.order_location_id,
+                    order_location.id
+                );
+            },
+        });
+        orderItemsCount += order_location_items.length;
+    }
+
+    // get order users
+    const orderUsers = await db.query.orderUsers.findMany({
+        where(fields, operators) {
+            return operators.eq(fields.order_id, order_id);
+        },
+        with: {
+            user: {
+                columns: {
+                    id: false,
+                },
+            },
+        },
+    });
+
+    if (!orderUsers) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    // get order
+    const order = await db.query.orders.findFirst({
+        where(fields, operators) {
+            return operators.eq(fields.id, order_id);
+        },
+    });
+
+    if (!order) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    return c.json(
+        { count: orderItemsCount, order_users: orderUsers, order: order },
+        HttpStatusCodes.OK
+    );
 };

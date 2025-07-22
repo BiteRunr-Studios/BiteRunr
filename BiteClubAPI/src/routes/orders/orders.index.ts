@@ -13,6 +13,7 @@ const router = createRouter()
     .openapi(routes.orderItemsCount, handlers.orderItemsCount)
     .openapi(routes.allOrderLocations, handlers.allOrderLocations)
     .openapi(routes.locationItems, handlers.locationItems)
-    .openapi(routes.changeOrderUserStatus, handlers.changeOrderUserStatus);
+    .openapi(routes.changeOrderUserStatus, handlers.changeOrderUserStatus)
+    .openapi(routes.awaitingOrder, handlers.awaitingOrder);
 
 export default router;
