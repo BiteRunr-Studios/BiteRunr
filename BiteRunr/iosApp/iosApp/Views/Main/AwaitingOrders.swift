@@ -238,18 +238,17 @@ extension AwaitingOrders {
             return
         }
         
-        guard let order = order,
-              !order.id.isEmpty else {  // Remove `let orderId =` since id is not optional
+        guard let checkOrder = order else {  // Remove `let orderId =` since id is not optional
             errorMessage = "Order ID is missing"
             return
         }
         
         do {
             // Since these are non-optional, just use them directly
-            let orderName = order.name
-            let creatorId = order.creatorId
-            let comments = order.comments
-            let orderId = order.id
+            let orderName = checkOrder.name
+            let creatorId = checkOrder.creatorId
+            let comments = checkOrder.comments
+            let orderId = checkOrder.id
             
             let cancelledStatus: Status = .cancelled
             
@@ -264,9 +263,7 @@ extension AwaitingOrders {
             let response = try await updateOrder(baseUrl: apiUrl, orderId: orderId, order: orderToUpdate)
             
             if let updatedOrder = response.data {
-                await MainActor.run {
-                    self.order = updatedOrder
-                }
+                order = updatedOrder
             } else {
                 await MainActor.run {
                     errorMessage = "Failed to decode order."
@@ -285,18 +282,29 @@ extension AwaitingOrders {
             poller.startPolling(
                 interval: 2.5,
                 pollBlock: {
+                    // If cancelled, dismiss immediately
                     await fetchOrderUsers()
                     await fetchOrderItemsCount()
-                    // buttonState transitions:
-                    // - .disabled: when no orderUser has status "done"
-                    // - .enabled: at least one orderUser has status "done" (but not all)
-                    // - .readyToRun: all orderUsers have status "done"
-                    if orderUsers.allSatisfy({ $0.status == "done" }) && !orderUsers.isEmpty {
-                        buttonState = .readyToRun
-                    } else if orderUsers.contains(where: { $0.status == "done" }) {
-                        buttonState = .enabled
-                    } else {
-                        buttonState = .disabled
+                    
+                    await MainActor.run {
+                        if order?.status == .cancelled {
+                            orderUsers = []
+                            onDismiss?()
+                            dismiss()
+                        }
+                        
+                        
+                        // buttonState transitions:
+                        // - .disabled: when no orderUser has status "done"
+                        // - .enabled: at least one orderUser has status "done" (but not all)
+                        // - .readyToRun: all orderUsers have status "done"
+                        if orderUsers.allSatisfy({ $0.status == "done" }) && !orderUsers.isEmpty {
+                            buttonState = .readyToRun
+                        } else if orderUsers.contains(where: { $0.status == "done" }) {
+                            buttonState = .enabled
+                        } else {
+                            buttonState = .disabled
+                        }
                     }
                 },
                 onResult: { response in

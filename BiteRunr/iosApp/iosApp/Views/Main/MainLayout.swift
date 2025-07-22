@@ -29,7 +29,7 @@ struct MainLayout: View {
                         })
                         .tag(Tab.addGroup)
                         JoinGroupView(
-                            selectedOrder: order,
+                            selectedOrder: $order,
                             onOrderSelected: { selectedOrder in
                                 if let selectedOrder = selectedOrder {
                                     order = selectedOrder

@@ -5,9 +5,10 @@ import Foundation
 struct JoinGroupView: View {
     @State var errorMessage: String?
     @State var orders: [Order] = []
-    @State var selectedOrder: Order?
+    @Binding var selectedOrder: Order?
     @EnvironmentObject var supabaseState: SupabaseState
     var onOrderSelected: ((Order?) -> Void)? = nil
+    @State private var isNavigatingAway = false
     
     var body: some View {
         ScrollView {
@@ -16,7 +17,7 @@ struct JoinGroupView: View {
                     .font(.headline)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
-
+                
                 ForEach(orders, id: \.id) { order in
                     Button(action: {
                         if order.status == Status.active {
@@ -38,6 +39,18 @@ struct JoinGroupView: View {
         }
         .task {
             await fetchOrders()
+        }
+        .onAppear() {
+            Task {
+                await fetchOrders()
+            }
+        }
+        .onChange(of: selectedOrder) { _, newOrder in
+            if newOrder != nil {
+                Task {
+                    await fetchOrders()
+                }
+            }
         }
     }
 }
