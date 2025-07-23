@@ -14,7 +14,14 @@ import {
 } from "@/db/schema/orders";
 import { selectOrderUsersWithUserSchema } from "@/db/schema/users";
 import { selectItemSchema, insertItemSchema } from "@/db/schema/items";
-import { orderLocationsWithLocationNameSchema } from "@/db/schema/orderLocations";
+import {
+    orderLocationsWithLocationNameSchema,
+    selectOrderLocationsSchema,
+} from "@/db/schema/orderLocations";
+import {
+    selectOrderItemsSchema,
+    insertOrderItemsSchema,
+} from "@/db/schema/orderItems";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
 import { authMiddleware } from "@/middlewares/clerk-auth";
@@ -363,6 +370,69 @@ export const changeOrderUserStatus = createRoute({
     },
 });
 
+export const addNewItemAndLinkToOrderUser = createRoute({
+    path: "/orders/:order_id/locations/:order_location_id/items",
+    method: "post",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            order_id: z.string().uuid().nonempty("Order id is required"),
+            order_location_id: z
+                .string()
+                .uuid()
+                .nonempty("Order location id is required"),
+        }),
+        body: jsonContentRequired(
+            z.object({
+                order_user_id: z
+                    .string()
+                    .uuid()
+                    .nonempty("Order user id is required"),
+                new_item: insertItemSchema,
+                quantity: z.number().min(1).max(100),
+                comments: z.string(),
+            }),
+            "Create an item and add to order user"
+        ),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            selectOrderItemsSchema,
+            "Created an item and linked to order user"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(insertItemSchema),
+            "Validation error(s)"
+        ),
+    },
+});
+
+export const addItemAndLinkToOrderUser = createRoute({
+    path: "/orders/add_items_to_order_user",
+    method: "post",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        body: jsonContentRequired(
+            insertOrderItemsSchema,
+            "Add order item to order user"
+        ),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            selectOrderItemsSchema,
+            "Added item to order user"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(insertItemSchema),
+            "Validation error(s)"
+        ),
+    },
+});
+
 export const awaitingOrder = createRoute({
     path: "/orders/awaiting_order",
     method: "post",
@@ -383,6 +453,7 @@ export const awaitingOrder = createRoute({
                 count: z.number(),
                 order_users: z.array(selectOrderUsersWithUserSchema),
                 order: selectOrdersSchema,
+                order_locations: z.array(selectOrderLocationsSchema),
             }),
             "All items in the location"
         ),
@@ -393,56 +464,6 @@ export const awaitingOrder = createRoute({
         ),
     },
 });
-
-// export const addNewItemAndLinkToOrderUser = createRoute({
-//     path: "/orders/:order_id/locations/:location_id/items",
-//     method: "post",
-//     tags,
-//     security: [{ Bearer: [] }],
-//     middleware: [authMiddleware] as const,
-//     request: {
-//         params: z.object({
-//             order_id: z.string().uuid().nonempty("Order id is required"),
-//             location_id: z.string().uuid().nonempty("Location id is required"),
-//         }),
-//         body: jsonContentRequired(
-//             insertItemSchema,
-//             "Create an item and add to order user"
-//         ),
-//     },
-//     responses: {
-//         [HttpStatusCodes.OK]: jsonContent(selectItemSchema, "Created an item"),
-//         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-//             createErrorSchema(insertItemSchema),
-//             "Validation error(s)"
-//         ),
-//     },
-// });
-
-// export const addItemAndLinkToOrderUser = createRoute({
-//     path: "/orders/:order_id/locations/:location_id/items",
-//     method: "post",
-//     tags,
-//     security: [{ Bearer: [] }],
-//     middleware: [authMiddleware] as const,
-//     request: {
-//         params: z.object({
-//             order_id: z.string().uuid().nonempty("Order id is required"),
-//             location_id: z.string().uuid().nonempty("Location id is required"),
-//         }),
-//         body: jsonContentRequired(insertItemSchema, "Add item to order user"),
-//     },
-//     responses: {
-//         [HttpStatusCodes.OK]: jsonContent(
-//             selectItemSchema,
-//             "Added item to order user"
-//         ),
-//         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-//             createErrorSchema(insertItemSchema),
-//             "Validation error(s)"
-//         ),
-//     },
-// });
 
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
@@ -455,4 +476,7 @@ export type OrderItemsCountRoute = typeof orderItemsCount;
 export type AllOrderLocationsRoute = typeof allOrderLocations;
 export type LocationItemsRoute = typeof locationItems;
 export type ChangeOrderUserStatusRoute = typeof changeOrderUserStatus;
+export type AddNewItemAndLinkToOrderUserRoute =
+    typeof addNewItemAndLinkToOrderUser;
+export type AddItemAndLinkToOrderUserRoute = typeof addItemAndLinkToOrderUser;
 export type AwaitingOrderRoute = typeof awaitingOrder;

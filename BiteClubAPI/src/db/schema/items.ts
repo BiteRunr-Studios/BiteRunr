@@ -61,6 +61,7 @@ export const insertItemSchema = createInsertSchema(items)
         id: true,
         created_at: true,
         updated_at: true,
+        searchVector: true,
     });
 export const patchItemSchema = insertItemSchema.partial();
 

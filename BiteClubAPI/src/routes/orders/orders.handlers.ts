@@ -4,7 +4,6 @@ import {
     insertOrdersSchema,
     orders,
 } from "@/db/schema/orders";
-import { type orderItems, items } from "@/db/schema/index";
 import { orderLocationsWithLocationNameSchema } from "@/db/schema/orderLocations";
 import type {
     CreateRoute,
@@ -18,6 +17,8 @@ import type {
     AllOrderLocationsRoute,
     LocationItemsRoute,
     ChangeOrderUserStatusRoute,
+    AddNewItemAndLinkToOrderUserRoute,
+    AddItemAndLinkToOrderUserRoute,
     AwaitingOrderRoute,
 } from "./orders.routes";
 import { sql } from "drizzle-orm";
@@ -25,10 +26,12 @@ import type { AppRouteHandler } from "@/lib/types";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { eq, and } from "drizzle-orm";
-import { orderLocations, orderUsers } from "@/db/schema";
+import { orderLocations, orderUsers, items } from "@/db/schema";
+import { orderItems } from "@/db/schema/orderItems";
 import { insertOrderLocationsSchema } from "@/db/schema/orderLocations";
 import { insertOrderUsersSchema } from "@/db/schema/orderUsers";
 import { z } from "zod";
+import { omit } from "@/lib/reusable-functions";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const orders = await db.query.orders.findMany();
@@ -355,6 +358,41 @@ export const changeOrderUserStatus: AppRouteHandler<
     return c.json(updatedOrder.status, HttpStatusCodes.OK);
 };
 
+export const addNewItemAndLinkToOrderUser: AppRouteHandler<
+    AddNewItemAndLinkToOrderUserRoute
+> = async (c) => {
+    const { order_id, order_location_id } = c.req.valid("param");
+    const { order_user_id, new_item, quantity, comments } = c.req.valid("json");
+
+    const [insertedItem] = await db.insert(items).values(new_item).returning();
+
+    const [insertedOrderItem] = await db
+        .insert(orderItems)
+        .values({
+            order_location_id,
+            order_user_id,
+            item_id: insertedItem.id,
+            comments,
+            quantity,
+        })
+        .returning();
+
+    return c.json(insertedOrderItem, HttpStatusCodes.OK);
+};
+
+export const addItemAndLinkToOrderUser: AppRouteHandler<
+    AddItemAndLinkToOrderUserRoute
+> = async (c) => {
+    const newOrderItem = c.req.valid("json");
+
+    const [insertedOrderItem] = await db
+        .insert(orderItems)
+        .values(newOrderItem)
+        .returning();
+
+    return c.json(insertedOrderItem, HttpStatusCodes.OK);
+};
+
 export const awaitingOrder: AppRouteHandler<AwaitingOrderRoute> = async (c) => {
     const { order_id } = c.req.valid("json");
 
@@ -416,6 +454,9 @@ export const awaitingOrder: AppRouteHandler<AwaitingOrderRoute> = async (c) => {
         where(fields, operators) {
             return operators.eq(fields.id, order_id);
         },
+        with: {
+            orderLocations: true,
+        },
     });
 
     if (!order) {
@@ -427,8 +468,16 @@ export const awaitingOrder: AppRouteHandler<AwaitingOrderRoute> = async (c) => {
         );
     }
 
+    const orderLocations = order.orderLocations;
+    const orderWithoutLocations = omit(order, "orderLocations");
+
     return c.json(
-        { count: orderItemsCount, order_users: orderUsers, order: order },
+        {
+            count: orderItemsCount,
+            order_users: orderUsers,
+            order: orderWithoutLocations,
+            order_locations: orderLocations,
+        },
         HttpStatusCodes.OK
     );
 };

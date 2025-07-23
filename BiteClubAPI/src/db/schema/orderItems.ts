@@ -7,7 +7,6 @@ import {
     integer,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-
 import { orderUsers, items, orderLocations } from "./index";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
