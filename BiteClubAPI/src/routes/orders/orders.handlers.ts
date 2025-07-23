@@ -20,6 +20,7 @@ import type {
     AddNewItemAndLinkToOrderUserRoute,
     AddItemAndLinkToOrderUserRoute,
     AwaitingOrderRoute,
+    UserOrderItemsFromLocationRoute,
 } from "./orders.routes";
 import { sql } from "drizzle-orm";
 import type { AppRouteHandler } from "@/lib/types";
@@ -480,4 +481,38 @@ export const awaitingOrder: AppRouteHandler<AwaitingOrderRoute> = async (c) => {
         },
         HttpStatusCodes.OK
     );
+};
+
+export const userOrderItemsFromLocation: AppRouteHandler<
+    UserOrderItemsFromLocationRoute
+> = async (c) => {
+    const { order_location_id, order_user_id } = c.req.valid("param");
+
+    const orderItems = await db.query.orderItems.findMany({
+        where(fields, operators) {
+            return operators.and(
+                operators.eq(fields.order_location_id, order_location_id),
+                operators.eq(fields.order_user_id, order_user_id)
+            );
+        },
+        orderBy: (fields, operators) => [operators.desc(fields.created_at)],
+        with: {
+            item: {
+                columns: {
+                    searchVector: false,
+                },
+            },
+        },
+    });
+
+    if (!orderItems) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    return c.json(orderItems, HttpStatusCodes.OK);
 };

@@ -47,7 +47,9 @@ export const itemsRelations = relations(items, ({ one, many }) => ({
     }),
 }));
 
-export const selectItemSchema = createSelectSchema(items);
+export const selectItemSchema = createSelectSchema(items).omit({
+    searchVector: true,
+});
 
 // .extend({
 //  order_items: selectOrderItemsSchema.optional(),

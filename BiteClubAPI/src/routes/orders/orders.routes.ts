@@ -465,6 +465,37 @@ export const awaitingOrder = createRoute({
     },
 });
 
+export const userOrderItemsFromLocation = createRoute({
+    path: "/orders/locations/:order_location_id/users/:order_user_id/items",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            order_location_id: z
+                .string()
+                .uuid()
+                .nonempty("Order location id is required"),
+            order_user_id: z
+                .string()
+                .uuid()
+                .nonempty("Order user id is required"),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(selectOrderItemsSchema),
+            "All items from a user in a location"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(notFoundSchema, "Not found"),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(IdUUIDParamsSchema),
+            "Invalid Id error"
+        ),
+    },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
@@ -480,3 +511,4 @@ export type AddNewItemAndLinkToOrderUserRoute =
     typeof addNewItemAndLinkToOrderUser;
 export type AddItemAndLinkToOrderUserRoute = typeof addItemAndLinkToOrderUser;
 export type AwaitingOrderRoute = typeof awaitingOrder;
+export type UserOrderItemsFromLocationRoute = typeof userOrderItemsFromLocation;
