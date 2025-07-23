@@ -53,6 +53,7 @@
 		D9B63CC82DE4F3E500E4805E /* InitialsCircle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B63CC72DE4F3E500E4805E /* InitialsCircle.swift */; };
 		D9F217CC2DC80EA600AB6BD6 /* OrderStatusBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F217CB2DC80EA600AB6BD6 /* OrderStatusBoxView.swift */; };
 		D9F217D42DC81D7500AB6BD6 /* OrderUsersRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F217D32DC81D7500AB6BD6 /* OrderUsersRow.swift */; };
+		EE6FABEE2E309A610060CD42 /* OrderUsersRowSkeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE6FABED2E309A610060CD42 /* OrderUsersRowSkeleton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -97,6 +98,7 @@
 		D9B63CC72DE4F3E500E4805E /* InitialsCircle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialsCircle.swift; sourceTree = "<group>"; };
 		D9F217CB2DC80EA600AB6BD6 /* OrderStatusBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderStatusBoxView.swift; sourceTree = "<group>"; };
 		D9F217D32DC81D7500AB6BD6 /* OrderUsersRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderUsersRow.swift; sourceTree = "<group>"; };
+		EE6FABED2E309A610060CD42 /* OrderUsersRowSkeleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderUsersRowSkeleton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -171,6 +173,7 @@
 				14156DAB2DBB28B800F4E56B /* LocationSelectRow.swift */,
 				D9F217CB2DC80EA600AB6BD6 /* OrderStatusBoxView.swift */,
 				D9F217D32DC81D7500AB6BD6 /* OrderUsersRow.swift */,
+				EE6FABED2E309A610060CD42 /* OrderUsersRowSkeleton.swift */,
 			);
 			path = Order;
 			sourceTree = "<group>";
@@ -432,6 +435,7 @@
 				14156DC12DBB28B800F4E56B /* ProfileView.swift in Sources */,
 				14156DC22DBB28B800F4E56B /* PlaceholderRequestRow.swift in Sources */,
 				14156DC32DBB28B800F4E56B /* FriendsListView.swift in Sources */,
+				EE6FABEE2E309A610060CD42 /* OrderUsersRowSkeleton.swift in Sources */,
 				14156DC42DBB28B800F4E56B /* AddLocationsView.swift in Sources */,
 				14156DC52DBB28B800F4E56B /* HomeView.swift in Sources */,
 				146CEA852E28A0E300C30C06 /* ScanReceipt.swift in Sources */,
