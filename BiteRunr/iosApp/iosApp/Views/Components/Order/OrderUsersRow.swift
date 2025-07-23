@@ -47,7 +47,6 @@ struct OrderUsersRow: View {
                     .transition(.scale.combined(with: .opacity))
             }
         }
-//        .padding(.vertical)
         .animation(.spring(response: 0.4, dampingFraction: 0.7), value: orderUser.status)
     }
 }
