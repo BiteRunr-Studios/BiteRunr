@@ -21,6 +21,8 @@ import type {
     AddItemAndLinkToOrderUserRoute,
     AwaitingOrderRoute,
     UserOrderItemsFromLocationRoute,
+    EditOrderItemsRoute,
+    RemoveOrderItemRoute,
 } from "./orders.routes";
 import { sql } from "drizzle-orm";
 import type { AppRouteHandler } from "@/lib/types";
@@ -515,4 +517,50 @@ export const userOrderItemsFromLocation: AppRouteHandler<
     }
 
     return c.json(orderItems, HttpStatusCodes.OK);
+};
+
+export const editOrderItems: AppRouteHandler<EditOrderItemsRoute> = async (
+    c
+) => {
+    const { order_item_id } = c.req.valid("param");
+    const updated_order_item = c.req.valid("json");
+
+    const [updatedOrderItem] = await db
+        .update(orderItems)
+        .set(updated_order_item)
+        .where(eq(orderItems.id, order_item_id))
+        .returning();
+
+    if (!updatedOrderItem) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    return c.json(updatedOrderItem, HttpStatusCodes.OK);
+};
+
+export const removeOrderItem: AppRouteHandler<RemoveOrderItemRoute> = async (
+    c
+) => {
+    const { order_item_id } = c.req.valid("param");
+
+    const [deletedOrderItem] = await db
+        .delete(orderItems)
+        .where(eq(orderItems.id, order_item_id))
+        .returning();
+
+    if (!deletedOrderItem) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    return c.json(deletedOrderItem, HttpStatusCodes.OK);
 };

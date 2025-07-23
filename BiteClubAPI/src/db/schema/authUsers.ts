@@ -55,12 +55,10 @@ export const patchAuthUserSchema = insertAuthUserSchema
 export const resetUserAuthPasswordSchema = insertAuthUserSchema
     .omit({
         email: true,
+        profile: true,
     })
     .extend({
         old_password: z.string().nonempty("Old password is required"),
-    })
-    .omit({
-        profile: true,
     });
 
 export const sessionSchema = z.object({

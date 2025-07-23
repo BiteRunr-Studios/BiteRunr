@@ -21,6 +21,7 @@ import {
 import {
     selectOrderItemsSchema,
     insertOrderItemsSchema,
+    patchOrderItemsSchema,
 } from "@/db/schema/orderItems";
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
@@ -496,6 +497,73 @@ export const userOrderItemsFromLocation = createRoute({
     },
 });
 
+export const editOrderItems = createRoute({
+    path: "/orders/order-items/:order_item_id",
+    method: "patch",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            order_item_id: z
+                .string()
+                .uuid()
+                .nonempty("Order item id is required"),
+        }),
+        body: jsonContentRequired(
+            patchOrderItemsSchema,
+            "Update user ordering status"
+        ),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            selectOrderItemsSchema,
+            "Updated an order item"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "Order item not found"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+            [
+                createErrorSchema(patchOrderItemsSchema),
+                createErrorSchema(IdUUIDParamsSchema),
+            ],
+            "Validation error(s)"
+        ),
+    },
+});
+
+export const removeOrderItem = createRoute({
+    path: "/orders/order-items/:order_item_id",
+    method: "delete",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            order_item_id: z
+                .string()
+                .uuid()
+                .nonempty("Order item id is required"),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            selectOrderItemsSchema,
+            "Deleted order item"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            " Order item not found"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(IdUUIDParamsSchema),
+            "Invalid Id error"
+        ),
+    },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
@@ -512,3 +580,5 @@ export type AddNewItemAndLinkToOrderUserRoute =
 export type AddItemAndLinkToOrderUserRoute = typeof addItemAndLinkToOrderUser;
 export type AwaitingOrderRoute = typeof awaitingOrder;
 export type UserOrderItemsFromLocationRoute = typeof userOrderItemsFromLocation;
+export type EditOrderItemsRoute = typeof editOrderItems;
+export type RemoveOrderItemRoute = typeof removeOrderItem;
