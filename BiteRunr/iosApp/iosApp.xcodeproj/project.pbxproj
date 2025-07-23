@@ -35,7 +35,10 @@
 		14156DD22DBB28B800F4E56B /* RequestsPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156DA22DBB28B800F4E56B /* RequestsPlaceholderView.swift */; };
 		14156EA22DBB360700F4E56B /* MapValidationErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14156EA12DBB360200F4E56B /* MapValidationErrors.swift */; };
 		143C5F4A2DC2F49F008052A5 /* Supabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 143C5F492DC2F49B008052A5 /* Supabase.swift */; };
-		145963BE2DD41FAD00E4105F /* ScanReceipt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145963BD2DD41FAD00E4105F /* ScanReceipt.swift */; };
+		146CEA852E28A0E300C30C06 /* ScanReceipt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 146CEA842E28A0DC00C30C06 /* ScanReceipt.swift */; };
+		146CEA8D2E28B31C00C30C06 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 146CEA8C2E28B31900C30C06 /* ImagePicker.swift */; };
+		146CEA912E29DB3D00C30C06 /* CropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = 146CEA902E29DB3D00C30C06 /* CropViewController */; };
+		146CEA932E29DB3D00C30C06 /* TOCropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = 146CEA922E29DB3D00C30C06 /* TOCropViewController */; };
 		1472B7B82DC2F55400274F56 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 1472B7B72DC2F55400274F56 /* Auth */; };
 		1472B7BA2DC2F55400274F56 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = 1472B7B92DC2F55400274F56 /* Functions */; };
 		1472B7BC2DC2F55400274F56 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 1472B7BB2DC2F55400274F56 /* PostgREST */; };
@@ -81,7 +84,8 @@
 		14156DB82DBB28B800F4E56B /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		14156EA12DBB360200F4E56B /* MapValidationErrors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapValidationErrors.swift; sourceTree = "<group>"; };
 		143C5F492DC2F49B008052A5 /* Supabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Supabase.swift; sourceTree = "<group>"; };
-		145963BD2DD41FAD00E4105F /* ScanReceipt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanReceipt.swift; sourceTree = "<group>"; };
+		146CEA842E28A0DC00C30C06 /* ScanReceipt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanReceipt.swift; sourceTree = "<group>"; };
+		146CEA8C2E28B31900C30C06 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		14BBB4852DBBBAA600A3C7E9 /* PollingHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PollingHelper.swift; sourceTree = "<group>"; };
 		14BBB4EE2DBC0E9800A3C7E9 /* SupabaseState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseState.swift; sourceTree = "<group>"; };
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
@@ -106,10 +110,12 @@
 			files = (
 				1472B7BC2DC2F55400274F56 /* PostgREST in Frameworks */,
 				1472B7BA2DC2F55400274F56 /* Functions in Frameworks */,
+				146CEA932E29DB3D00C30C06 /* TOCropViewController in Frameworks */,
 				1472B7C22DC2F55400274F56 /* Supabase in Frameworks */,
 				1472B7B82DC2F55400274F56 /* Auth in Frameworks */,
 				1472B7C02DC2F55400274F56 /* Storage in Frameworks */,
 				1472B7BE2DC2F55400274F56 /* Realtime in Frameworks */,
+				146CEA912E29DB3D00C30C06 /* CropViewController in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -172,6 +178,7 @@
 		14156DAD2DBB28B800F4E56B /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				146CEA8E2E29D7F800C30C06 /* Receipt */,
 				D9F217B62DC7B94000AB6BD6 /* Home */,
 				14156DA52DBB28B800F4E56B /* Friends */,
 				14156DA92DBB28B800F4E56B /* Navigation */,
@@ -204,7 +211,6 @@
 				14156DB62DBB28B800F4E56B /* JoinGroupView.swift */,
 				14156DB72DBB28B800F4E56B /* MainLayout.swift */,
 				14156DB82DBB28B800F4E56B /* ProfileView.swift */,
-				145963BD2DD41FAD00E4105F /* ScanReceipt.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -226,6 +232,15 @@
 				14156EA12DBB360200F4E56B /* MapValidationErrors.swift */,
 			);
 			path = ReusableFunctions;
+			sourceTree = "<group>";
+		};
+		146CEA8E2E29D7F800C30C06 /* Receipt */ = {
+			isa = PBXGroup;
+			children = (
+				146CEA842E28A0DC00C30C06 /* ScanReceipt.swift */,
+				146CEA8C2E28B31900C30C06 /* ImagePicker.swift */,
+			);
+			path = Receipt;
 			sourceTree = "<group>";
 		};
 		42799AB246E5F90AF97AA0EF /* Frameworks */ = {
@@ -303,6 +318,8 @@
 				1472B7BD2DC2F55400274F56 /* Realtime */,
 				1472B7BF2DC2F55400274F56 /* Storage */,
 				1472B7C12DC2F55400274F56 /* Supabase */,
+				146CEA902E29DB3D00C30C06 /* CropViewController */,
+				146CEA922E29DB3D00C30C06 /* TOCropViewController */,
 			);
 			productName = iosApp;
 			productReference = 7555FF7B242A565900829871 /* BiteRunr.app */;
@@ -335,6 +352,7 @@
 			mainGroup = 7555FF72242A565900829871;
 			packageReferences = (
 				143C5F482DC2D024008052A5 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				146CEA8F2E29DB3D00C30C06 /* XCRemoteSwiftPackageReference "TOCropViewController" */,
 			);
 			productRefGroup = 7555FF7C242A565900829871 /* Products */;
 			projectDirPath = "";
@@ -416,6 +434,7 @@
 				14156DC32DBB28B800F4E56B /* FriendsListView.swift in Sources */,
 				14156DC42DBB28B800F4E56B /* AddLocationsView.swift in Sources */,
 				14156DC52DBB28B800F4E56B /* HomeView.swift in Sources */,
+				146CEA852E28A0E300C30C06 /* ScanReceipt.swift in Sources */,
 				14156DC62DBB28B800F4E56B /* MainLayout.swift in Sources */,
 				14156DC72DBB28B800F4E56B /* AwaitingOrders.swift in Sources */,
 				14156DC82DBB28B800F4E56B /* JoinGroupView.swift in Sources */,
@@ -432,9 +451,9 @@
 				14BBB4EF2DBC0EA000A3C7E9 /* SupabaseState.swift in Sources */,
 				143C5F4A2DC2F49F008052A5 /* Supabase.swift in Sources */,
 				D9B63CC82DE4F3E500E4805E /* InitialsCircle.swift in Sources */,
-				145963BE2DD41FAD00E4105F /* ScanReceipt.swift in Sources */,
 				14156DD12DBB28B800F4E56B /* TopBarView.swift in Sources */,
 				14156DD22DBB28B800F4E56B /* RequestsPlaceholderView.swift in Sources */,
+				146CEA8D2E28B31C00C30C06 /* ImagePicker.swift in Sources */,
 				14156EA22DBB360700F4E56B /* MapValidationErrors.swift in Sources */,
 				7555FF83242A565900829871 /* ContentView.swift in Sources */,
 			);
@@ -651,9 +670,27 @@
 				minimumVersion = 2.5.1;
 			};
 		};
+		146CEA8F2E29DB3D00C30C06 /* XCRemoteSwiftPackageReference "TOCropViewController" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/TimOliver/TOCropViewController.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.7.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		146CEA902E29DB3D00C30C06 /* CropViewController */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 146CEA8F2E29DB3D00C30C06 /* XCRemoteSwiftPackageReference "TOCropViewController" */;
+			productName = CropViewController;
+		};
+		146CEA922E29DB3D00C30C06 /* TOCropViewController */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 146CEA8F2E29DB3D00C30C06 /* XCRemoteSwiftPackageReference "TOCropViewController" */;
+			productName = TOCropViewController;
+		};
 		1472B7B72DC2F55400274F56 /* Auth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 143C5F482DC2D024008052A5 /* XCRemoteSwiftPackageReference "supabase-swift" */;

@@ -54,7 +54,7 @@ struct MainLayout: View {
                             .symbolEffect(.pulse, options: .speed(2).repeat(.continuous))
                             .foregroundColor(.white)
                             .font(.footnote)
-                        Text("You have ongoing orders. 🍔")
+                        Text("You have active orders. 🍔")
                             .foregroundColor(.white)
                             .fontWeight(.semibold)
                             .font(.subheadline)
