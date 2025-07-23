@@ -6,6 +6,7 @@ struct AwaitingOrders: View {
     @Binding var order: Order?
     
     @State private var orderUsers: [AwaitingOrderUserDTO] = []
+    @State private var isLoading = true
     
     @State private var awaitingOrder: AwaitingOrdersDTO?
     
@@ -28,9 +29,10 @@ struct AwaitingOrders: View {
             VStack (alignment: .leading) {
                 HStack() {
                     Button(action: {
-                        orderUsers = []
+                        isLoading = true
                         onDismiss?()
                         dismiss()
+                        orderUsers = []
                     }) {
                         HStack(alignment: .center) {
                             Image(systemName: "arrow.backward")
@@ -49,6 +51,8 @@ struct AwaitingOrders: View {
                             showCancelAlert = true
                         }) {
                             Text("Cancel Order")
+                                .font(.headline)
+                                .fontWeight(Font.Weight.regular)
                                 .foregroundStyle(.red)
                         }
                     }
@@ -60,23 +64,36 @@ struct AwaitingOrders: View {
                         startDate: Date(),
                         orderGroupName: order?.name ?? "",
                         orderGroupDescription: order?.comments ?? "",
-                        orderGroupStatus: order?.status ?? .completed
+                        orderGroupStatus: order!.status
                     )
                     .id("orderStatusBox-\(order?.id ?? "new")")
-                    if orderUsers.isEmpty {
-                        Text("No friends listed")
-                            .foregroundColor(.secondary)
-                            .padding()
-                            .id("noFriends-\(order?.id ?? "new")")
-                    } else {
-                        ForEach(orderUsers, id: \.Id) { orderUser in
-                            OrderUsersRow(orderUser: orderUser)
-                                .id("user-\(orderUser.Id)")  // Force unique identity
+                    .padding(.horizontal)
+                    ScrollView {
+                        if isLoading {
+                            // Show skeleton loading state
+                            ForEach(0..<3, id: \.self) { index in
+                                OrderUsersRowSkeleton()
+                                    .padding(.bottom, 22)
+                                    .padding(.horizontal)
+                            }
+                        } else if orderUsers.isEmpty {
+                            Text("No friends listed")
+                                .foregroundColor(.secondary)
+                                .padding()
+                                .id("noFriends-\(order?.id ?? "new")")
+                        } else {
+                            ForEach(orderUsers, id: \.Id) { orderUser in
+                                OrderUsersRow(orderUser: orderUser)
+                                    .id("user-\(orderUser.Id)")
+                                    .padding(.bottom, 22)
+                                    .padding(.horizontal)
+                                    .transition(.opacity)
+                            }
                         }
                     }
-                }.padding()
+                }
+                .padding(.top)
                 
-                Spacer()
                 Rectangle()
                     .fill(Color.gray)
                     .frame(height: 1 / UIScreen.main.scale)
@@ -158,10 +175,11 @@ struct AwaitingOrders: View {
             startPolling()
         }
         .onDisappear() {
+            isLoading = true
             stopPolling()
         }
         .alert("Cancel Order", isPresented: $showCancelAlert) {
-            Button("No", role: .cancel) { }
+            Button("No, Do Not Cancel Order", role: .cancel) { }
             Button("Yes, Cancel Order", role: .destructive) {
                 Task {
                     await cancelOrder()
@@ -169,7 +187,6 @@ struct AwaitingOrders: View {
                         orderUsers = []
                         onDismiss?()
                         dismiss()
-                        print("Order cancelled")
                     }
                 }
             }
@@ -198,16 +215,29 @@ extension AwaitingOrders {
         errorMessage = nil
         do {
             let response = try await getAwaitingOrdersData(baseUrl: apiUrl, orderId: orderId)
-            if var data = response.data as? AwaitingOrdersDTO {
+            if let data = response.data {
                 awaitingOrder = data
                 var mutableOrderUsers: [AwaitingOrderUserDTO] = awaitingOrder!.orderUsers
                 mutableOrderUsers.removeAll { $0.userId == supabase.auth.currentUser?.id.uuidString.lowercased() }
                 orderUsers = mutableOrderUsers
+                await MainActor.run {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        orderUsers = mutableOrderUsers
+                        isLoading = false
+                    }
+                }
+                
             } else {
-                errorMessage = "Failed to decode users."
+                await MainActor.run {
+                    errorMessage = "Failed to decode users."
+                    isLoading = false
+                }
             }
         } catch {
-            errorMessage = "Failed to fetch order users: \(error.localizedDescription)"
+            await MainActor.run {
+                errorMessage = "Failed to fetch order users: \(error.localizedDescription)"
+                isLoading = false
+            }
             print("Error fetching users: \(error)")
         }
     }
@@ -266,7 +296,7 @@ extension AwaitingOrders {
                     await fetchData()
                     
                     await MainActor.run {
-                        if awaitingOrder?.order.status == .cancelled {
+                        if awaitingOrder?.order.status != .active {
                             guard let awaitingOrder = awaitingOrder else { return }
                             order = Order(
                                 id: awaitingOrder.order.Id,
