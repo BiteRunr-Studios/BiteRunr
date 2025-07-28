@@ -215,7 +215,7 @@ extension AwaitingOrders {
         errorMessage = nil
         do {
             let response = try await getAwaitingOrdersData(baseUrl: apiUrl, orderId: orderId)
-            if let data = response.data {
+            if var data = response.data {
                 awaitingOrder = data
                 var mutableOrderUsers: [AwaitingOrderUserDTO] = awaitingOrder!.orderUsers
                 mutableOrderUsers.removeAll { $0.userId == supabase.auth.currentUser?.id.uuidString.lowercased() }
