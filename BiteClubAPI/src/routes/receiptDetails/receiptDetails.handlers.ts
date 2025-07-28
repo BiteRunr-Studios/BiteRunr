@@ -1,8 +1,10 @@
 import type { CreateRoute } from "./receiptDetails.routes";
 import type { AppRouteHandler } from "@/lib/types";
+import { zodResponseFormat } from "openai/helpers/zod";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import OpenAI from "openai";
 import { receiptDetails } from "@/db/schema/receiptDetails";
+import { ScanReceiptResponse } from "@/lib/types";
 
 export const scanReceipt: AppRouteHandler<CreateRoute> = async (c) => {
     const reqData = c.req.valid("form");
@@ -33,7 +35,7 @@ export const scanReceipt: AppRouteHandler<CreateRoute> = async (c) => {
                 content: [
                     {
                         type: "text",
-                        text: "Analyze the following image and return a JSON array of the items ordered, with their unit price and quantity. Also add subtotal, tax and total at the end. The quantity will often come before the item name, if no quantity is given assume 1. If quantity is more than 1 the unit price may also be given. Format like the following: {'items': [{ 'name': string, 'unit_price': number, 'quantity': number }], 'subtotal': number, 'tax': number, 'total': number }",
+                        text: "Analyze the following image and return a JSON array of the items ordered, with their unit price and quantity. Also add subtotal, tax and total at the end. The quantity will often come before the item name, if no quantity is given assume 1. If quantity is more than 1 the unit price may also be given.",
                     },
                     {
                         type: "image_url",
@@ -44,7 +46,10 @@ export const scanReceipt: AppRouteHandler<CreateRoute> = async (c) => {
                 ],
             },
         ],
-        response_format: { type: "json_object" },
+        response_format: zodResponseFormat(
+            ScanReceiptResponse,
+            "scanReceiptResponse"
+        ),
     });
 
     const res = receiptDetails.parse(
