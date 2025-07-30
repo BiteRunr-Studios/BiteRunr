@@ -286,7 +286,7 @@ export const allOrderLocations: AppRouteHandler<
     // Custom object to return with only order_location_id and location name
     const order_locations_with_location_name = order_locations.map((ol) => {
         const location = locations.find((l) => l.id === ol.location_id);
-        return { order_location_id: ol.id, location_name: location?.name };
+        return { location_id: ol.location_id, order_location_id: ol.id, location_name: location?.name };
     });
 
     if (!locations) {

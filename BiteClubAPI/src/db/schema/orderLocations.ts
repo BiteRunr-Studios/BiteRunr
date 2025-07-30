@@ -61,7 +61,6 @@ export const orderLocationsWithLocationNameSchema = createSelectSchema(
         created_at: true,
         updated_at: true,
         order_id: true,
-        location_id: true,
     })
     .extend({
         order_location_id: z
