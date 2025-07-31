@@ -3,10 +3,8 @@ package org.biterunr_studios.biterunr.DTO
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
-import org.biterunr_studios.biterunr.Models.Order
 import org.biterunr_studios.biterunr.Models.Profile
 import org.biterunr_studios.biterunr.Models.Status
-import org.biterunr_studios.biterunr.Models.UserProfile
 
 @Serializable
 data class AwaitingOrdersDTO(
@@ -17,13 +15,16 @@ data class AwaitingOrdersDTO(
     val orderUsers: List<AwaitingOrderUserDTO>,
 
     @SerialName("order")
-    val order: AwaitingOrderDTO
+    val order: AwaitingOrderDTO,
+
+    @SerialName("order_locations")
+    val orderLocations: List<AwaitingOrderLocationDTO>
 )
 
 @Serializable
 data class AwaitingOrderUserDTO(
     @SerialName("id")
-    val Id: String,
+    val id: String,
 
     @SerialName("user_id")
     val userId: String,
@@ -50,7 +51,7 @@ data class AwaitingOrderUserDTO(
 @Serializable
 data class AwaitingOrderDTO(
     @SerialName("id")
-    val Id: String,
+    val id: String,
 
     @SerialName("name")
     val name: String,
@@ -66,6 +67,24 @@ data class AwaitingOrderDTO(
 
     @SerialName("paused")
     val paused: Boolean,
+
+    @SerialName("created_at")
+    val createdAt: Instant,
+
+    @SerialName("updated_at")
+    val updatedAt: Instant,
+)
+
+@Serializable
+data class AwaitingOrderLocationDTO(
+    @SerialName("id")
+    val id: String,
+
+    @SerialName("order_id")
+    val orderId: String,
+
+    @SerialName("location_id")
+    val locationId: String,
 
     @SerialName("created_at")
     val createdAt: Instant,

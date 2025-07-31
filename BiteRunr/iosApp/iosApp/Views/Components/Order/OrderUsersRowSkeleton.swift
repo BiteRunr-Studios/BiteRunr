@@ -1,5 +1,5 @@
 import Foundation
-import SwiftUICore
+import SwiftUI
 
 struct OrderUsersRowSkeleton: View {
     @State private var isAnimating = false

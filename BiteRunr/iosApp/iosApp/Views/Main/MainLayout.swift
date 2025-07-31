@@ -11,7 +11,7 @@ struct MainLayout: View {
     @State private var onGoingActiveOrders: Bool = false
     @StateObject private var poller = Poller()
     @State private var wasPollingBeforeJoinGroup: Bool = false
-
+    
     var body: some View {
         ZStack(alignment: .top) {
             // Main content
@@ -47,44 +47,44 @@ struct MainLayout: View {
                 .sheet(isPresented: $showProfileSheet) {
                     ProfileView()
                 }
-
-                if onGoingActiveOrders && !keyboard.isKeyboardVisible {
-                    HStack(spacing: 12) {
-                        Image(systemName: "circle.fill")
-                            .symbolEffect(.pulse, options: .speed(2).repeat(.continuous))
-                            .foregroundColor(.white)
-                            .font(.footnote)
-                        Text("You have active orders. 🍔")
-                            .foregroundColor(.white)
-                            .fontWeight(.semibold)
-                            .font(.subheadline)
-                        Button {
-                            withAnimation {
-                                selectedTab = .joinGroup
-                            }
-                        } label: {
-                            Text("View")
-                                .underline()
-                                .foregroundColor(.white)
-                        }
-                        .fontWeight(.semibold)
-                        .font(.subheadline)
-                    }
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 20)
-                    .background(
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .fill(Color.orange)
-                            .shadow(color: Color.orange.opacity(0.25), radius: 18, x: 0, y: 6)
-                    )
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 32)
-                    .padding(.bottom, 80)
-                    .transition(.opacity)
-                    .animation(.easeInOut(duration: 0.3), value: onGoingActiveOrders)
-                }
-
-
+                
+                //                if onGoingActiveOrders && !keyboard.isKeyboardVisible {
+                //                    HStack(spacing: 12) {
+                //                        Image(systemName: "circle.fill")
+                //                            .symbolEffect(.pulse, options: .speed(2).repeat(.continuous))
+                //                            .foregroundColor(.white)
+                //                            .font(.footnote)
+                //                        Text("You have active orders. 🍔")
+                //                            .foregroundColor(.white)
+                //                            .fontWeight(.semibold)
+                //                            .font(.subheadline)
+                //                        Button {
+                //                            withAnimation {
+                //                                selectedTab = .joinGroup
+                //                            }
+                //                        } label: {
+                //                            Text("View")
+                //                                .underline()
+                //                                .foregroundColor(.white)
+                //                        }
+                //                        .fontWeight(.semibold)
+                //                        .font(.subheadline)
+                //                    }
+                //                    .padding(.vertical, 12)
+                //                    .padding(.horizontal, 20)
+                //                    .background(
+                //                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                //                            .fill(Color.orange)
+                //                            .shadow(color: Color.orange.opacity(0.25), radius: 18, x: 0, y: 6)
+                //                    )
+                //                    .frame(maxWidth: .infinity)
+                //                    .padding(.horizontal, 32)
+                //                    .padding(.bottom, 80)
+                //                    .transition(.opacity)
+                //                    .animation(.easeInOut(duration: 0.3), value: onGoingActiveOrders)
+                //                }
+                
+                
                 // Bottom tab bar
                 if !keyboard.isKeyboardVisible {
                     HStack {
@@ -95,14 +95,33 @@ struct MainLayout: View {
                                     selectedTab = tab
                                 }
                             }) {
-                                VStack(spacing: 2) {
-                                    Image(systemName: selectedTab == tab ? tab.filledIcon : tab.icon)
-                                        .font(.system(size: 21))
-                                        .foregroundColor(selectedTab == tab ? .orange : .gray)
-                                    Text(tab.name)
-                                        .font(.caption2)
-                                        .foregroundColor(selectedTab == tab ? .orange : .gray)
+                                ZStack {
+                                    VStack(spacing: 2) {
+                                        Image(systemName: selectedTab == tab ? tab.filledIcon : tab.icon)
+                                            .font(.system(size: 21))
+                                            .foregroundColor(selectedTab == tab ? .orange : .gray)
+                                        Text(tab.name)
+                                            .font(.caption2)
+                                            .foregroundColor(selectedTab == tab ? .orange : .gray)
+                                    }
+                                    
+                                    
+                                    // Pulsing dot for joinGroup tab when there are active orders
+                                    if tab == .joinGroup && onGoingActiveOrders {
+//                                        VStack {
+//                                            HStack {
+//                                                Spacer()
+                                                Circle()
+                                                    .fill(Color.orange)
+                                                    .frame(width: 8, height: 8)
+                                                    .offset(x: 9, y: -13) // Adjust position as needed
+                                                    .transition(.opacity)
+//                                            }
+//                                            Spacer()
+//                                        }
+                                    }
                                 }
+                                .animation(.easeInOut(duration: 0.3), value: onGoingActiveOrders)
                             }
                             Spacer()
                         }
@@ -119,7 +138,7 @@ struct MainLayout: View {
                     )
                 }
             }
-
+            
             // Order details overlay
             if showOrderDetails, let currentOrder = order {
                 AwaitingOrders(
@@ -158,7 +177,7 @@ struct MainLayout: View {
         .environment(keyboard)
         .ignoresSafeArea(.keyboard, edges: .bottom)
     }
-
+    
     private func startPolling() {
         Task {
             guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
@@ -185,14 +204,14 @@ struct MainLayout: View {
             )
         }
     }
-
+    
     private func stopPolling() {
         Task {
             onGoingActiveOrders = false
             poller.stopPolling()
         }
     }
-
+    
     private func handleTabChange(oldTab: Tab, newTab: Tab) {
         if newTab == .joinGroup {
             wasPollingBeforeJoinGroup = poller.isPolling
@@ -216,7 +235,7 @@ extension AnyTransition {
 
 enum Tab: Int, CaseIterable, Hashable {
     case home, addGroup, joinGroup, friends
-
+    
     var icon: String {
         switch self {
         case .home: return "house"
@@ -225,7 +244,7 @@ enum Tab: Int, CaseIterable, Hashable {
         case .friends: return "person.2"
         }
     }
-
+    
     var name: String {
         switch self {
         case .home: return "Home"
@@ -234,7 +253,7 @@ enum Tab: Int, CaseIterable, Hashable {
         case .friends: return "Friends"
         }
     }
-
+    
     var filledIcon: String {
         switch self {
         case .home: return "house.fill"

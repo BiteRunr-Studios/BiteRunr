@@ -11,6 +11,10 @@ import org.biterunr_studios.biterunr.DTO.FriendRequestUser
 import org.biterunr_studios.biterunr.DTO.FriendUser
 import org.biterunr_studios.biterunr.DTO.OrderDTO
 import org.biterunr_studios.biterunr.DTO.ReceiptDetails
+import org.biterunr_studios.biterunr.DTO.SelectItemsItemDTO
+import org.biterunr_studios.biterunr.DTO.SelectItemsOrderLocationDTO
+import org.biterunr_studios.biterunr.DTO.SelectItemsOrderLocationRequest
+import org.biterunr_studios.biterunr.DTO.SelectItemsOrderUserLocationItemDTO
 import org.biterunr_studios.biterunr.DTO.SentFriendRequest
 import org.biterunr_studios.biterunr.DTO.UpdateOrderDTO
 import org.biterunr_studios.biterunr.Models.FetchResponse
@@ -232,6 +236,40 @@ suspend fun getAwaitingOrdersData(baseUrl: String, orderId: String): FetchRespon
         url = url,
         method = HttpMethod.Post,
         body = AwaitingOrderRequest(orderId)
+    )
+
+    return result
+}
+
+suspend fun getOrderLocationsForItemSelection(baseUrl: String, orderId: String): FetchResponse<List<SelectItemsOrderLocationDTO>> {
+    var url = "$baseUrl/orders/$orderId/locations"
+
+    val result = fetch<SelectItemsOrderLocationRequest, List<SelectItemsOrderLocationDTO>>(
+        url = url,
+        method = HttpMethod.Get,
+        body = SelectItemsOrderLocationRequest(orderId)
+    )
+
+    return result
+}
+
+suspend fun getOrderUserLocationItems(baseUrl: String, orderUserId: String, orderLocationId: String): FetchResponse<List<SelectItemsOrderUserLocationItemDTO>> {
+    var url = "$baseUrl/orders/locations/$orderLocationId/users/$orderUserId/items"
+
+    val result = fetch<Unit, List<SelectItemsOrderUserLocationItemDTO>>(
+        url = url,
+        method = HttpMethod.Get
+    )
+
+    return result
+}
+
+suspend fun getLocationItems(baseUrl: String, locationId: String, searchQuery: String): FetchResponse<List<SelectItemsItemDTO>> {
+    var url = "$baseUrl/items/$locationId?searchQuery=$searchQuery"
+
+    val result = fetch<Unit, List<SelectItemsItemDTO>>(
+        url=url,
+        method = HttpMethod.Get
     )
 
     return result

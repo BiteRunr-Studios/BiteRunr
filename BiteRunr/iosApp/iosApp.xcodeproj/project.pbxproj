@@ -54,6 +54,10 @@
 		D9F217CC2DC80EA600AB6BD6 /* OrderStatusBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F217CB2DC80EA600AB6BD6 /* OrderStatusBoxView.swift */; };
 		D9F217D42DC81D7500AB6BD6 /* OrderUsersRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F217D32DC81D7500AB6BD6 /* OrderUsersRow.swift */; };
 		EE6FABEE2E309A610060CD42 /* OrderUsersRowSkeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE6FABED2E309A610060CD42 /* OrderUsersRowSkeleton.swift */; };
+		EEE8BD172E31930F00A455C0 /* SelectItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE8BD162E31930F00A455C0 /* SelectItems.swift */; };
+		EEE8BD1F2E381EA100A455C0 /* OrderItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE8BD1E2E381E9600A455C0 /* OrderItemRow.swift */; };
+		EEE8BD212E385AF300A455C0 /* CustomSwipeAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE8BD202E385AE600A455C0 /* CustomSwipeAction.swift */; };
+		EEE8BD232E396F9900A455C0 /* PanGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE8BD222E396F9900A455C0 /* PanGesture.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -99,6 +103,10 @@
 		D9F217CB2DC80EA600AB6BD6 /* OrderStatusBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderStatusBoxView.swift; sourceTree = "<group>"; };
 		D9F217D32DC81D7500AB6BD6 /* OrderUsersRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderUsersRow.swift; sourceTree = "<group>"; };
 		EE6FABED2E309A610060CD42 /* OrderUsersRowSkeleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderUsersRowSkeleton.swift; sourceTree = "<group>"; };
+		EEE8BD162E31930F00A455C0 /* SelectItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectItems.swift; sourceTree = "<group>"; };
+		EEE8BD1E2E381E9600A455C0 /* OrderItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderItemRow.swift; sourceTree = "<group>"; };
+		EEE8BD202E385AE600A455C0 /* CustomSwipeAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSwipeAction.swift; sourceTree = "<group>"; };
+		EEE8BD222E396F9900A455C0 /* PanGesture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanGesture.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -169,6 +177,7 @@
 		14156DAC2DBB28B800F4E56B /* Order */ = {
 			isa = PBXGroup;
 			children = (
+				EEE8BD1E2E381E9600A455C0 /* OrderItemRow.swift */,
 				14156DAA2DBB28B800F4E56B /* FriendSelectRow.swift */,
 				14156DAB2DBB28B800F4E56B /* LocationSelectRow.swift */,
 				D9F217CB2DC80EA600AB6BD6 /* OrderStatusBoxView.swift */,
@@ -193,11 +202,13 @@
 		14156DAF2DBB28B800F4E56B /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				EEE8BD202E385AE600A455C0 /* CustomSwipeAction.swift */,
 				143C5F492DC2F49B008052A5 /* Supabase.swift */,
 				14BBB4EE2DBC0E9800A3C7E9 /* SupabaseState.swift */,
 				14BBB4852DBBBAA600A3C7E9 /* PollingHelper.swift */,
 				14156DAE2DBB28B800F4E56B /* DisableBackSwipeView.swift */,
 				D9B63CC72DE4F3E500E4805E /* InitialsCircle.swift */,
+				EEE8BD222E396F9900A455C0 /* PanGesture.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -214,6 +225,7 @@
 				14156DB62DBB28B800F4E56B /* JoinGroupView.swift */,
 				14156DB72DBB28B800F4E56B /* MainLayout.swift */,
 				14156DB82DBB28B800F4E56B /* ProfileView.swift */,
+				EEE8BD162E31930F00A455C0 /* SelectItems.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -425,6 +437,7 @@
 			files = (
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
 				14156DBB2DBB28B800F4E56B /* SignUpView.swift in Sources */,
+				EEE8BD212E385AF300A455C0 /* CustomSwipeAction.swift in Sources */,
 				14156DBC2DBB28B800F4E56B /* EmptyStateView.swift in Sources */,
 				14BBB4862DBBBAAA00A3C7E9 /* PollingHelper.swift in Sources */,
 				14156DBD2DBB28B800F4E56B /* TabButton.swift in Sources */,
@@ -446,13 +459,16 @@
 				14156DC92DBB28B800F4E56B /* SignInView.swift in Sources */,
 				14156DCA2DBB28B800F4E56B /* LocationSelectRow.swift in Sources */,
 				D938D34C2DC5898F009CAE40 /* SendFriendRequestRow.swift in Sources */,
+				EEE8BD1F2E381EA100A455C0 /* OrderItemRow.swift in Sources */,
 				14156DCB2DBB28B800F4E56B /* AddFriendsView.swift in Sources */,
 				14156DCC2DBB28B800F4E56B /* DisableBackSwipeView.swift in Sources */,
 				14156DCD2DBB28B800F4E56B /* AddGroupView.swift in Sources */,
 				14156DCE2DBB28B800F4E56B /* FriendSelectRow.swift in Sources */,
 				14156DCF2DBB28B800F4E56B /* KeyboardResponder.swift in Sources */,
+				EEE8BD232E396F9900A455C0 /* PanGesture.swift in Sources */,
 				14156DD02DBB28B800F4E56B /* SignUpOrSignInView.swift in Sources */,
 				14BBB4EF2DBC0EA000A3C7E9 /* SupabaseState.swift in Sources */,
+				EEE8BD172E31930F00A455C0 /* SelectItems.swift in Sources */,
 				143C5F4A2DC2F49F008052A5 /* Supabase.swift in Sources */,
 				D9B63CC82DE4F3E500E4805E /* InitialsCircle.swift in Sources */,
 				14156DD12DBB28B800F4E56B /* TopBarView.swift in Sources */,

@@ -6,7 +6,9 @@ struct AwaitingOrders: View {
     @Binding var order: Order?
     
     @State private var orderUsers: [AwaitingOrderUserDTO] = []
+    @State private var orderLocations: [AwaitingOrderLocationDTO] = []
     @State private var isLoading = true
+    @State private var showSelectItems = false
     
     @State private var awaitingOrder: AwaitingOrdersDTO?
     
@@ -82,12 +84,14 @@ struct AwaitingOrders: View {
                                 .padding()
                                 .id("noFriends-\(order?.id ?? "new")")
                         } else {
-                            ForEach(orderUsers, id: \.Id) { orderUser in
-                                OrderUsersRow(orderUser: orderUser)
-                                    .id("user-\(orderUser.Id)")
-                                    .padding(.bottom, 22)
-                                    .padding(.horizontal)
-                                    .transition(.opacity)
+                            ForEach(orderUsers, id: \.id) { orderUser in
+                                if orderUser.userId != currentUserId {
+                                    OrderUsersRow(orderUser: orderUser)
+                                        .id("user-\(orderUser.id)")
+                                        .padding(.bottom, 22)
+                                        .padding(.horizontal)
+                                        .transition(.opacity)
+                                }
                             }
                         }
                     }
@@ -107,10 +111,8 @@ struct AwaitingOrders: View {
                     VStack(spacing: 12) {
                         // button 1
                         Button(action: {
-                            withAnimation(.easeIn(duration: 0.1)) {
-                            }
-                            Task {
-                                print("selecting items")
+                            withAnimation {
+                                showSelectItems = true
                             }
                         }) {
                             HStack {
@@ -133,7 +135,7 @@ struct AwaitingOrders: View {
                     // - readyToRun: orange background with white text, no border, enabled interaction
                     if isCreator {
                         Button(action: {
-                            withAnimation(.easeIn(duration: 0.1)) {
+                            withAnimation {
                                 // Your button action here
                             }
                             Task {
@@ -169,6 +171,28 @@ struct AwaitingOrders: View {
             }
             
             Spacer()
+            
+            // Replace the overlay section with this:
+            if showSelectItems {
+                if let orderData = awaitingOrder?.order {
+                    SelectItems(
+                        order: orderData,
+                        orderUsers: orderUsers,
+                        onDismiss: {
+                            withAnimation {
+                                showSelectItems = false
+                            }
+                        }
+                    )
+                    .background(Color(.systemBackground))
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing),
+                        removal: .move(edge: .trailing)
+                    ))
+                    .zIndex(1)
+                }
+            }
+
         }
         .navigationBarBackButtonHidden(true)
         .onAppear() {
@@ -177,6 +201,13 @@ struct AwaitingOrders: View {
         .onDisappear() {
             isLoading = true
             stopPolling()
+        }
+        .onChange(of: showSelectItems) { oldValue, newValue in
+            if newValue {
+                stopPolling()
+            } else {
+                startPolling()
+            }
         }
         .alert("Cancel Order", isPresented: $showCancelAlert) {
             Button("No, Do Not Cancel Order", role: .cancel) { }
@@ -215,11 +246,11 @@ extension AwaitingOrders {
         errorMessage = nil
         do {
             let response = try await getAwaitingOrdersData(baseUrl: apiUrl, orderId: orderId)
-            if var data = response.data {
+            if let data = response.data {
                 awaitingOrder = data
-                var mutableOrderUsers: [AwaitingOrderUserDTO] = awaitingOrder!.orderUsers
-                mutableOrderUsers.removeAll { $0.userId == supabase.auth.currentUser?.id.uuidString.lowercased() }
+                let mutableOrderUsers: [AwaitingOrderUserDTO] = awaitingOrder!.orderUsers
                 orderUsers = mutableOrderUsers
+                orderLocations = awaitingOrder!.orderLocations
                 await MainActor.run {
                     withAnimation(.easeInOut(duration: 0.3)) {
                         orderUsers = mutableOrderUsers
@@ -299,7 +330,7 @@ extension AwaitingOrders {
                         if awaitingOrder?.order.status != .active {
                             guard let awaitingOrder = awaitingOrder else { return }
                             order = Order(
-                                id: awaitingOrder.order.Id,
+                                id: awaitingOrder.order.id,
                                 name: awaitingOrder.order.name,
                                 creatorId: awaitingOrder.order.creatorId,
                                 comments: awaitingOrder.order.comments,
@@ -332,10 +363,10 @@ extension AwaitingOrders {
                     }
                 },
                 onResult: { response in
-                    print("Polling occured: \(response)")
+                    print("AwaitingOrdersView Polling occured: \(response)")
                 },
                 onError: { error in
-                    print("Polling error: \(error)")
+                    print("AwaitingOrders Polling error: \(error)")
                 }
             )
         }

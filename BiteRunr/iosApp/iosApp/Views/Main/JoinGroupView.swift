@@ -58,12 +58,14 @@ struct JoinGroupView: View {
         .onChange(of: selectedOrder) { _, newOrder in
             if newOrder != nil {
                 // User is entering AwaitingOrders view
+                stopPolling()
                 wasInAwaitingOrders = true
                 Task {
                     await fetchOrders()
                 }
             } else {
                 // User returned from AwaitingOrders view, reset the flag after a brief delay
+                startPolling()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     wasInAwaitingOrders = false
                 }
@@ -137,10 +139,10 @@ extension JoinGroupView {
                     await fetchOrders()
                 },
                 onResult: { response in
-                    print("Polling occured: \(response)")
+                    print("JoinGroupView Polling occured: \(response)")
                 },
                 onError: { error in
-                    print("Polling error: \(error)")
+                    print("JoinGroupView Polling error: \(error)")
                 }
             )
         }
