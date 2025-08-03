@@ -323,8 +323,11 @@ export const locationItems: AppRouteHandler<LocationItemsRoute> = async (c) => {
 
     const items_results = await db.query.items.findMany({
         where: sql`
-            (${items.searchVector} @@ websearch_to_tsquery('english', ${searchQuery}))
-            OR (similarity(${items.name}, ${searchQuery}) > 0.3)
+            ${items.location_id} = ${location_id}
+            AND (
+                (${items.searchVector} @@ websearch_to_tsquery('english', ${searchQuery}))
+                OR (similarity(${items.name}, ${searchQuery}) > 0.3)
+            )
         `,
         orderBy: sql`GREATEST(similarity(${items.name}, ${searchQuery}), 0) DESC`,
     });
