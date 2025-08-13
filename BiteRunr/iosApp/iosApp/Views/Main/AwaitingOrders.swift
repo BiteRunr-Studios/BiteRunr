@@ -9,6 +9,7 @@ struct AwaitingOrders: View {
     @State private var orderLocations: [AwaitingOrderLocationDTO] = []
     @State private var isLoading = true
     @State private var showSelectItems = false
+    @State private var showPickupItems = false
     
     @State private var awaitingOrder: AwaitingOrdersDTO?
     
@@ -136,7 +137,7 @@ struct AwaitingOrders: View {
                     if isCreator {
                         Button(action: {
                             withAnimation {
-                                // Your button action here
+                                showPickupItems = true
                             }
                             Task {
                             }
@@ -192,6 +193,24 @@ struct AwaitingOrders: View {
                     .zIndex(1)
                 }
             }
+            
+            if showPickupItems {
+                PickupItemsView(
+                    onDismiss: {
+                        withAnimation {
+                            showPickupItems = false
+                        }
+                    }
+                )
+                .background(Color(.systemBackground))
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing),
+                    removal: .move(edge: .trailing)
+                ))
+                .zIndex(1)
+            }
+            
+            
 
         }
         .navigationBarBackButtonHidden(true)
