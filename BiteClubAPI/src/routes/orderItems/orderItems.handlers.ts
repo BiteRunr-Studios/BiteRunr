@@ -6,6 +6,7 @@ import type {
     ListRoute,
     PatchRoute,
     RemoveRoute,
+    GetByOrderLocationIdRoute,
 } from "./orderItems.routes";
 import type { AppRouteHandler } from "@/lib/types";
 import { selectOrderItemsSchema } from "@/db/schema/orderItems";
@@ -85,4 +86,43 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
     }
 
     return c.json(deletedItem, HttpStatusCodes.OK);
+};
+
+export const getByOrderLocationId: AppRouteHandler<
+    GetByOrderLocationIdRoute
+> = async (c) => {
+    const { id } = c.req.valid("param");
+
+    const items = await db.query.orderItems.findMany({
+        where(fields, operators) {
+            return operators.eq(fields.order_location_id, id);
+        },
+        with: {
+            item: {
+                columns: {
+                    id: false,
+                    searchVector: false,
+                    updated_at: false,
+                    created_at: false,
+                    location_id: false,
+                },
+            },
+        },
+    });
+
+    const transformedItems = items.map(({ item, ...rest }) => ({
+        ...rest,
+        item_name: item.name,
+    }));
+
+    if (!items) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    return c.json(transformedItems, HttpStatusCodes.OK);
 };
