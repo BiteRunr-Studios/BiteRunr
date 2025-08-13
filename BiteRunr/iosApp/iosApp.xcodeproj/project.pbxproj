@@ -54,10 +54,12 @@
 		D9F217CC2DC80EA600AB6BD6 /* OrderStatusBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F217CB2DC80EA600AB6BD6 /* OrderStatusBoxView.swift */; };
 		D9F217D42DC81D7500AB6BD6 /* OrderUsersRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F217D32DC81D7500AB6BD6 /* OrderUsersRow.swift */; };
 		EE6FABEE2E309A610060CD42 /* OrderUsersRowSkeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE6FABED2E309A610060CD42 /* OrderUsersRowSkeleton.swift */; };
+		EE8DD9592E40138600B423BE /* AddItemSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8DD9582E40138600B423BE /* AddItemSheet.swift */; };
 		EEE8BD172E31930F00A455C0 /* SelectItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE8BD162E31930F00A455C0 /* SelectItems.swift */; };
 		EEE8BD1F2E381EA100A455C0 /* OrderItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE8BD1E2E381E9600A455C0 /* OrderItemRow.swift */; };
 		EEE8BD212E385AF300A455C0 /* CustomSwipeAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE8BD202E385AE600A455C0 /* CustomSwipeAction.swift */; };
 		EEE8BD232E396F9900A455C0 /* PanGesture.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE8BD222E396F9900A455C0 /* PanGesture.swift */; };
+		EEFAED792E4C33F700165717 /* PickupItemsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFAED782E4C33D600165717 /* PickupItemsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -103,10 +105,12 @@
 		D9F217CB2DC80EA600AB6BD6 /* OrderStatusBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderStatusBoxView.swift; sourceTree = "<group>"; };
 		D9F217D32DC81D7500AB6BD6 /* OrderUsersRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderUsersRow.swift; sourceTree = "<group>"; };
 		EE6FABED2E309A610060CD42 /* OrderUsersRowSkeleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderUsersRowSkeleton.swift; sourceTree = "<group>"; };
+		EE8DD9582E40138600B423BE /* AddItemSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddItemSheet.swift; sourceTree = "<group>"; };
 		EEE8BD162E31930F00A455C0 /* SelectItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectItems.swift; sourceTree = "<group>"; };
 		EEE8BD1E2E381E9600A455C0 /* OrderItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderItemRow.swift; sourceTree = "<group>"; };
 		EEE8BD202E385AE600A455C0 /* CustomSwipeAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSwipeAction.swift; sourceTree = "<group>"; };
 		EEE8BD222E396F9900A455C0 /* PanGesture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanGesture.swift; sourceTree = "<group>"; };
+		EEFAED782E4C33D600165717 /* PickupItemsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickupItemsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -216,6 +220,7 @@
 		14156DB92DBB28B800F4E56B /* Main */ = {
 			isa = PBXGroup;
 			children = (
+				EEFAED782E4C33D600165717 /* PickupItemsView.swift */,
 				14156DB02DBB28B800F4E56B /* AddFriendsView.swift */,
 				14156DB12DBB28B800F4E56B /* AddGroupView.swift */,
 				14156DB22DBB28B800F4E56B /* AddLocationsView.swift */,
@@ -226,6 +231,7 @@
 				14156DB72DBB28B800F4E56B /* MainLayout.swift */,
 				14156DB82DBB28B800F4E56B /* ProfileView.swift */,
 				EEE8BD162E31930F00A455C0 /* SelectItems.swift */,
+				EE8DD9582E40138600B423BE /* AddItemSheet.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -437,6 +443,7 @@
 			files = (
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
 				14156DBB2DBB28B800F4E56B /* SignUpView.swift in Sources */,
+				EE8DD9592E40138600B423BE /* AddItemSheet.swift in Sources */,
 				EEE8BD212E385AF300A455C0 /* CustomSwipeAction.swift in Sources */,
 				14156DBC2DBB28B800F4E56B /* EmptyStateView.swift in Sources */,
 				14BBB4862DBBBAAA00A3C7E9 /* PollingHelper.swift in Sources */,
@@ -446,6 +453,7 @@
 				D9F217CC2DC80EA600AB6BD6 /* OrderStatusBoxView.swift in Sources */,
 				14156DC02DBB28B800F4E56B /* FriendsView.swift in Sources */,
 				14156DC12DBB28B800F4E56B /* ProfileView.swift in Sources */,
+				EEFAED792E4C33F700165717 /* PickupItemsView.swift in Sources */,
 				14156DC22DBB28B800F4E56B /* PlaceholderRequestRow.swift in Sources */,
 				14156DC32DBB28B800F4E56B /* FriendsListView.swift in Sources */,
 				EE6FABEE2E309A610060CD42 /* OrderUsersRowSkeleton.swift in Sources */,

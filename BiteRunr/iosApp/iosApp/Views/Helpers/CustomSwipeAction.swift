@@ -186,7 +186,3 @@ fileprivate struct CustomSwipeActionModifier: ViewModifier {
         return totalActionSize + spacing + config.leadingPadding + config.traillingPadding
     }
 }
-
-#Preview {
-    ContentView()
-}

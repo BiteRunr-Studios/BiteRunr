@@ -284,7 +284,3 @@ struct AddGroupView: View {
         }
     }
 }
-
-#Preview {
-    AddGroupView()
-}

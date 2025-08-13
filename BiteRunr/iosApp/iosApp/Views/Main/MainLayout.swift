@@ -263,7 +263,3 @@ enum Tab: Int, CaseIterable, Hashable {
         }
     }
 }
-
-#Preview {
-    MainLayout()
-}

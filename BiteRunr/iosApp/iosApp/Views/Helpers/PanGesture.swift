@@ -3,6 +3,7 @@ import SwiftUI
 struct PanGestureValue {
     var translation: CGSize = .zero
     var velocity: CGSize = .zero
+    var state: UIGestureRecognizer.State = .possible
 }
 
 @available(iOS 18, *)
@@ -18,47 +19,49 @@ struct PanGesture: UIGestureRecognizerRepresentable {
     func makeUIGestureRecognizer(context: Context) -> UIPanGestureRecognizer {
         let gesture = UIPanGestureRecognizer()
         gesture.delegate = context.coordinator
+        // Add these properties to improve gesture recognition
+        gesture.maximumNumberOfTouches = 1
+        gesture.minimumNumberOfTouches = 1
         return gesture
     }
     
-//    func updateUIGestureRecognizer(_ recognizer: UIPanGestureRecognizer, context: Context) {
-//        <#code#>
-//    }
+    func updateUIGestureRecognizer(_ recognizer: UIPanGestureRecognizer, context: Context) {
+        // Keep this minimal to avoid interference
+    }
     
     func handleUIGestureRecognizerAction(_ recognizer: UIPanGestureRecognizer, context: Context) {
         let state = recognizer.state
-        let transition = recognizer.translation(in: recognizer.view).toSize
+        let translation = recognizer.translation(in: recognizer.view).toSize
         let velocity = recognizer.velocity(in: recognizer.view).toSize
         
-        let gestureValue = PanGestureValue(translation: transition, velocity: velocity)
+        let gestureValue = PanGestureValue(
+            translation: translation,
+            velocity: velocity,
+            state: state
+        )
         
         switch state {
         case .began:
             onBegan()
         case .changed:
             onChange(gestureValue)
-        case .ended, .cancelled:
+        case .ended, .cancelled, .failed:
             onEnded(gestureValue)
-        default: break
+        default:
+            break
         }
     }
     
     class Coordinator: NSObject, UIGestureRecognizerDelegate {
-        // Limiting Gesture Activation for only Horizontal Swipe and not Verital Swipe
-        // Thus this will make both gesture and scrollview interactable
         func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-            if let panGesture = gestureRecognizer as? UIPanGestureRecognizer {
-                let velocity = panGesture.velocity(in: panGesture.view)
-                
-                // Horizontal Swipe
-                if abs(velocity.x) > abs(velocity.y) {
-                    return true
-                } else {
-                    return false
-                }
+            guard let panGesture = gestureRecognizer as? UIPanGestureRecognizer else {
+                return false
             }
             
-            return false
+            let velocity = panGesture.velocity(in: panGesture.view)
+            
+            // Simple horizontal swipe detection - more permissive
+            return abs(velocity.x) > abs(velocity.y)
         }
     }
 }

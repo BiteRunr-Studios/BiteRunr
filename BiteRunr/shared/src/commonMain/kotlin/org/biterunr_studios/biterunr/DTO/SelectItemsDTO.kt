@@ -44,10 +44,10 @@ data class SelectItemsOrderUserLocationItemDTO(
     val quantity: Int,
 
     @SerialName("created_at")
-    val createdAt: Instant,
+    val createdAt: Instant?,
 
     @SerialName("updated_at")
-    val updatedAt: Instant,
+    val updatedAt: Instant?,
 
     @SerialName("item")
     val item: SelectItemsItemDTO
@@ -65,8 +65,50 @@ data class SelectItemsItemDTO (
     val locationId: String,
 
     @SerialName("created_at")
-    val createdAt: Instant,
+    val createdAt: Instant?,
 
     @SerialName("updated_at")
-    val updatedAt: Instant,
+    val updatedAt: Instant?,
+)
+
+@Serializable
+data class SelectItemsAddExistingItemDTO (
+    @SerialName("order_location_id")
+    val orderLocationId: String,
+
+    @SerialName("order_user_id")
+    val orderUserId: String,
+
+    @SerialName("item_id")
+    val itemId: String,
+
+    @SerialName("comments")
+    val comments: String? = null,
+
+    @SerialName("quantity")
+    val quantity: Int,
+)
+
+@Serializable
+data class SelectItemsAddNewItemDTO (
+    @SerialName("order_user_id")
+    val orderUserId: String,
+
+    @SerialName("new_item")
+    val newItem: SelectItemsNewItemDTO,
+
+    @SerialName("quantity")
+    val quantity: Int,
+
+    @SerialName("comments")
+    val comments: String? = null,
+)
+
+@Serializable
+data class SelectItemsNewItemDTO (
+    @SerialName("name")
+    val name: String,
+
+    @SerialName("location_id")
+    val locationId: String,
 )
