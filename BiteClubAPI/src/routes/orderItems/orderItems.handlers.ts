@@ -88,6 +88,13 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
     return c.json(deletedItem, HttpStatusCodes.OK);
 };
 
+type GroupedItem = {
+    item_id: string;
+    item_name: string;
+    total_quantity: number;
+    requests: { comment: string | null; quantity: number }[];
+};
+
 export const getByOrderLocationId: AppRouteHandler<
     GetByOrderLocationIdRoute
 > = async (c) => {
@@ -115,7 +122,31 @@ export const getByOrderLocationId: AppRouteHandler<
         item_name: item.name,
     }));
 
-    if (!items) {
+    // group by item id with new custom field where all custom requests(comments) are listed with the quantity
+    const groupedMap = new Map<string, GroupedItem>();
+
+    for (const item of transformedItems) {
+        if (!groupedMap.has(item.item_id)) {
+            groupedMap.set(item.item_id, {
+                item_id: item.item_id,
+                item_name: item.item_name,
+                total_quantity: 0,
+                requests: [],
+            });
+        }
+
+        const group = groupedMap.get(item.item_id)!;
+        group.total_quantity += item.quantity;
+        // Only add to requests if comments is not null
+        if (item.comments) {
+            group.requests.push({
+                comment: item.comments,
+                quantity: item.quantity,
+            });
+        }
+    }
+
+    if (!Array.from(groupedMap.values())) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -124,5 +155,5 @@ export const getByOrderLocationId: AppRouteHandler<
         );
     }
 
-    return c.json(transformedItems, HttpStatusCodes.OK);
+    return c.json(Array.from(groupedMap.values()), HttpStatusCodes.OK);
 };
