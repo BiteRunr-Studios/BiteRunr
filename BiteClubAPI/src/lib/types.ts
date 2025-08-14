@@ -28,3 +28,22 @@ export const ScanReceiptResponse = z.object({
     tax: z.number().min(0),
     total: z.number().min(0),
 });
+
+export type GroupedItem = {
+    item_id: string;
+    item_name: string;
+    total_quantity: number;
+    requests: { comment: string | null; quantity: number }[];
+};
+
+export const GroupedItemSchema = z.object({
+    item_id: z.string().uuid().nonempty("Item id is required"),
+    item_name: z.string().nonempty("Item name is required"),
+    total_quantity: z.number().min(0),
+    requests: z.array(
+        z.object({
+            comment: z.string().nonempty("Comment is required"),
+            quantity: z.number().min(1),
+        })
+    ),
+});
