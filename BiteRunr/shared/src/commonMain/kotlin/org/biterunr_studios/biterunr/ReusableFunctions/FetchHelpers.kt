@@ -10,6 +10,7 @@ import org.biterunr_studios.biterunr.DTO.FriendRequestResponse
 import org.biterunr_studios.biterunr.DTO.FriendRequestUser
 import org.biterunr_studios.biterunr.DTO.FriendUser
 import org.biterunr_studios.biterunr.DTO.OrderDTO
+import org.biterunr_studios.biterunr.DTO.PickupItemDTO
 import org.biterunr_studios.biterunr.DTO.ReceiptDetails
 import org.biterunr_studios.biterunr.DTO.SelectItemsItemDTO
 import org.biterunr_studios.biterunr.DTO.SelectItemsOrderLocationDTO
@@ -272,5 +273,11 @@ suspend fun getLocationItems(baseUrl: String, locationId: String, searchQuery: S
         method = HttpMethod.Get
     )
 
+    return result
+}
+
+suspend fun getOrderItemsFromOrderLocation(baseUrl: String, order_location_id: String): FetchResponse<List<PickupItemDTO>> {
+    val url = "$baseUrl/order-items/order-location/$order_location_id"
+    val result = fetch<Unit, List<PickupItemDTO>>(url = url, method = HttpMethod.Get, body = null)
     return result
 }
