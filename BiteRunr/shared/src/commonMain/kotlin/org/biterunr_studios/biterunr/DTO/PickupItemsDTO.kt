@@ -18,7 +18,7 @@ data class OrderRequest(
 @Serializable
 data class PickupItemDTO(
     @SerialName("id")
-    val id: String,
+    val id: String? = null,
 
     @SerialName("item_id")
     val itemId: String,

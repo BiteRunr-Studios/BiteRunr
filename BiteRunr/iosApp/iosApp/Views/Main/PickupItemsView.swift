@@ -104,8 +104,7 @@ struct OrderSummary: View {
                 existing.customizations.append(contentsOf: item.requests)
                 result[item.itemName] = existing
             } else {
-                result[item.itemName] = (item.totalQuantity, item.requests)
-            }
+                result[item.itemName] = (Int(item.totalQuantity), item.requests)            }
         }
         return result
     }
@@ -116,7 +115,7 @@ struct OrderSummary: View {
     
     var totalCustomizations: Int {
         groupedItems.values.reduce(0) { sum, group in
-            sum + group.customizations.reduce(0) { $0 + $1.quantity }
+            sum + group.customizations.reduce(0) { $0 + Int($1.quantity) }
         }
     }
     
@@ -134,49 +133,62 @@ struct OrderSummary: View {
                     .font(.headline)
                     .padding(.bottom, 4)
                 
-                ForEach(groupedItems.keys.sorted(), id: \.self) { itemName in
-                    let group = groupedItems[itemName]!
-                    let customizationTotal = group.customizations.reduce(0) { $0 + $1.quantity }
-                    let regularQuantity = group.quantity - customizationTotal
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        // Item Header
-                        HStack {
-                            Text(itemName)
-                                .font(.system(size: 16, weight: .semibold))
-                            Spacer()
-                            BadgeView(text: "\(group.quantity)x", color: .cyan.opacity(0.15), textColor: .cyan)
-                        }
-                        .padding()
-                        .background(.thinMaterial)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                ForEach(Array(groupedItems.keys).sorted(), id: \.self) { itemName in
+                    if let group = groupedItems[itemName] {
+                        let customizationTotal = group.customizations.reduce(0) { $0 + Int($1.quantity) }
+                        let regularQuantity = group.quantity - customizationTotal
                         
-                        // Regular Items
-                        if regularQuantity > 0 {
+                        VStack(alignment: .leading, spacing: 8) {
+                            // Item Header
                             HStack {
-                                Text("Regular")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                Text(itemName)
+                                    .font(.system(size: 16, weight: .semibold))
                                 Spacer()
-                                BadgeView(text: "\(regularQuantity)x", color: .gray.opacity(0.15), textColor: .gray)
+                                BadgeView(
+                                    text: "\(group.quantity)x",
+                                    color: .cyan.opacity(0.15),
+                                    textColor: .cyan
+                                )
                             }
-                            .padding(8)
-                            .background(Color(.systemGray6))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                        }
-                        
-                        // Customizations
-                        ForEach(group.customizations) { customization in
-                            HStack {
-                                Text(customization.comment)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                BadgeView(text: "\(customization.quantity)x", color: .purple.opacity(0.15), textColor: .purple)
+                            .padding()
+                            .background(.thinMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            
+                            // Regular Items
+                            if regularQuantity > 0 {
+                                HStack {
+                                    Text("Regular")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                    BadgeView(
+                                        text: "\(regularQuantity)x",
+                                        color: .gray.opacity(0.15),
+                                        textColor: .gray
+                                    )
+                                }
+                                .padding(8)
+                                .background(Color(.systemGray6))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
                             }
-                            .padding(8)
-                            .background(Color(.systemGray6))
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            
+                            // Customizations (using index as ID)
+                            ForEach(Array(group.customizations.enumerated()), id: \.offset) { _, customization in
+                                HStack {
+                                    Text(customization.comment)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                    BadgeView(
+                                        text: "\(Int(customization.quantity))x",
+                                        color: .purple.opacity(0.15),
+                                        textColor: .purple
+                                    )
+                                }
+                                .padding(8)
+                                .background(Color(.systemGray6))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
                         }
                     }
                 }
@@ -189,7 +201,7 @@ struct OrderSummary: View {
 }
 
 struct OrderItemCard: View {
-    let item: OrderItem
+    let item: PickupItemDTO
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -205,8 +217,9 @@ struct OrderItemCard: View {
                     Text("Your Customizations")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                    ForEach(item.requests) { request in
-                        Text("\(request.quantity > 1 ? "\(request.quantity)x " : "")\(request.comment)")
+                    
+                    ForEach(Array(item.requests.enumerated()), id: \.offset) { _, request in
+                        Text("\(Int(request.quantity) > 1 ? "\(Int(request.quantity))x " : "")\(request.comment)")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
