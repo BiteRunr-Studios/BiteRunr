@@ -8,11 +8,13 @@ import type {
     RemoveRoute,
     GetByOrderLocationIdRoute,
 } from "./orderItems.routes";
-import type { AppRouteHandler } from "@/lib/types";
+import type { AppRouteHandler, GroupedItem } from "@/lib/types";
+import { GroupedItemSchema } from "@/lib/types";
 import { selectOrderItemsSchema } from "@/db/schema/orderItems";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
     const items = await db.query.orderItems.findMany();
@@ -88,13 +90,6 @@ export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
     return c.json(deletedItem, HttpStatusCodes.OK);
 };
 
-type GroupedItem = {
-    item_id: string;
-    item_name: string;
-    total_quantity: number;
-    requests: { comment: string | null; quantity: number }[];
-};
-
 export const getByOrderLocationId: AppRouteHandler<
     GetByOrderLocationIdRoute
 > = async (c) => {
@@ -122,7 +117,6 @@ export const getByOrderLocationId: AppRouteHandler<
         item_name: item.name,
     }));
 
-    // group by item id with new custom field where all custom requests(comments) are listed with the quantity
     const groupedMap = new Map<string, GroupedItem>();
 
     for (const item of transformedItems) {
@@ -155,5 +149,9 @@ export const getByOrderLocationId: AppRouteHandler<
         );
     }
 
-    return c.json(Array.from(groupedMap.values()), HttpStatusCodes.OK);
+    const parsedItems = z
+        .array(GroupedItemSchema)
+        .parse(Array.from(groupedMap.values()));
+
+    return c.json(parsedItems, HttpStatusCodes.OK);
 };

@@ -14,6 +14,7 @@ import {
 import { createErrorSchema, IdUUIDParamsSchema } from "stoker/openapi/schemas";
 import { notFoundSchema } from "@/lib/constants";
 import { authMiddleware } from "@/middlewares/clerk-auth";
+import { GroupedItemSchema } from "@/lib/types";
 
 const tags = ["Order Items"];
 
@@ -150,7 +151,7 @@ export const getByOrderLocationId = createRoute({
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            z.array(selectOrderItemsSchema),
+            z.array(GroupedItemSchema),
             "Order items by order location id"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
