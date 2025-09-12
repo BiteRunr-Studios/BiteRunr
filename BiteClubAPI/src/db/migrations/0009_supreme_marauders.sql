@@ -1,0 +1,2 @@
+ALTER TABLE "order_items" DROP CONSTRAINT "order_items_order_user_id_item_id_unique";--> statement-breakpoint
+ALTER TABLE "order_items" ADD CONSTRAINT "order_items_order_user_id_item_id_comments_unique" UNIQUE("order_user_id","item_id","comments");
