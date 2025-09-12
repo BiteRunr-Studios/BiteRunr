@@ -16,7 +16,6 @@ data class SelectItemsOrderLocationDTO(
     val locationName: String,
 )
 
-
 @Serializable
 data class SelectItemsOrderLocationRequest(
     @SerialName("order_id")

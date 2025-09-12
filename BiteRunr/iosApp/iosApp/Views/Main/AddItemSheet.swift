@@ -4,11 +4,30 @@ import Shared
 import Supabase
 
 struct AddItemSheet: View {
-    @Binding var orderLocation: SelectItemsOrderLocationDTO?
-    @Binding var orderItem: SelectItemsItemDTO?
+    @State var orderLocation: SelectItemsOrderLocationDTO?
+    @State var orderItem: SelectItemsItemDTO?
     @State var quantity: Int
-    @State var comments: String = ""
+    
+    @State var comments: String? = nil
+    
+    private var commentsBinding: Binding<String> {
+        Binding<String>(
+            get: { comments ?? "" },
+            set: { comments = $0.isEmpty ? nil : $0 }
+        )
+    }
+    
     @State var orderUserId: String
+    @State var actionType: String
+    @State var orderId: String
+    @State var orderLocationId: String
+    @State var itemId: String
+    @State var isExistingItem: Bool = false
+    
+    @State private var ItemNameError: String?
+    
+    @Environment(\.dismiss) private var dismiss
+
     
     
     var body: some View {
@@ -47,9 +66,7 @@ struct AddItemSheet: View {
             
             VStack {
                 HStack(spacing: 12) {
-                    TextField("Comments", text: $comments, axis: .vertical)
-                        .onChange(of: comments) {
-                        }
+                    TextField("Comments", text: commentsBinding, axis: .vertical)
                     Image(systemName: "bubble.fill")
                         .frame(width: 24, height: 24)
                         .foregroundStyle(Color.secondary.opacity(0.3))
@@ -66,15 +83,25 @@ struct AddItemSheet: View {
             
             Button(action: {
                 withAnimation(.easeIn(duration: 0.1)) {
-                    //                    isPressed = true
+                   
                 }
                 Task {
+                    dismiss()
                     
+                    if isExistingItem {
+                        await addExistingItem()
+                    } else {
+                        await addNewItem()
+                    }
                 }
             }) {
                 HStack {
-                    Image(systemName: "plus.circle")
-                    Text("Select Item")
+                    if actionType == "Create" {
+                        Image(systemName: "plus.circle")
+                    } else {
+                        Image(systemName: "square.and.pencil")
+                    }
+                    Text(actionType == "Create" ? "Add" : "Edit")
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
@@ -84,32 +111,61 @@ struct AddItemSheet: View {
                 .contentShape(Rectangle())
             }
             
-            Button(action: {
-                withAnimation(.easeIn(duration: 0.1)) {
-                    //                    isPressed = true
-                }
-                Task {
-                    
-                }
-            }) {
-                HStack {
-                    Image(systemName: "xmark.circle")
-                    Text("Cancel")
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .foregroundColor(.orange)
-                .cornerRadius(12)
-                .contentShape(Rectangle())
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.orange, lineWidth: 1)
-                )
-            }
-            
             
         }
         .padding()
         Spacer()
+    }
+}
+
+extension AddItemSheet {
+    private func addNewItem() async {
+        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
+        // Build object to send in repo function
+        let item = SelectItemsAddNewItemDTO(
+            orderUserId: orderUserId,
+            newItem: SelectItemsNewItemDTO(
+                name: orderItem!.name,
+                locationId: orderLocation!.locationId
+            ),
+            quantity: Int32(quantity),
+            comments: comments
+        )
+        
+        do {
+            let result = try await addNewItemToLocation(baseUrl: apiUrl, order_id: orderId, order_location_id: orderLocationId, newItem: item)
+            
+            if result.success {
+                return
+            }
+            
+            // Handle Form Validation Errors
+            mapValidationErrors(result, handlers: [
+                "new_item.name": { ItemNameError = $0 },
+            ])
+        } catch {
+            print("An error occured when adding new item")
+        }
+    }
+    
+    private func addExistingItem() async {
+        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
+        
+        let existingItem = SelectItemsAddExistingItemDTO(
+            orderLocationId: orderLocationId,
+            orderUserId: orderUserId,
+            itemId: itemId,
+            comments: comments,
+            quantity: Int32(quantity)
+        )
+        
+        do {
+            let result = try await addItemsToOrderUser(baseUrl: apiUrl, existingItemReference: existingItem)
+             if result.success {
+               return
+             }
+        } catch {
+            print("An error occured when adding existing item")
+        }
     }
 }

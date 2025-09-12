@@ -127,6 +127,7 @@ struct AwaitingOrders: View {
                             .cornerRadius(12)
                             .contentShape(Rectangle())
                         }
+                        .disabled(isLoading)
                     }
                     
                     // button 2
@@ -165,7 +166,7 @@ struct AwaitingOrders: View {
                             .scaleEffect()
                             .contentShape(Rectangle())
                         }
-                        .disabled(buttonState == .disabled)
+                        .disabled(isLoading)
                         .animation(.easeInOut(duration: 0.3), value: buttonState)
                     }
                 }.padding(.horizontal)

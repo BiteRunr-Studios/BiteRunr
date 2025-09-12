@@ -12,6 +12,8 @@ import org.biterunr_studios.biterunr.DTO.FriendUser
 import org.biterunr_studios.biterunr.DTO.OrderDTO
 import org.biterunr_studios.biterunr.DTO.PickupItemDTO
 import org.biterunr_studios.biterunr.DTO.ReceiptDetails
+import org.biterunr_studios.biterunr.DTO.SelectItemsAddExistingItemDTO
+import org.biterunr_studios.biterunr.DTO.SelectItemsAddNewItemDTO
 import org.biterunr_studios.biterunr.DTO.SelectItemsItemDTO
 import org.biterunr_studios.biterunr.DTO.SelectItemsOrderLocationDTO
 import org.biterunr_studios.biterunr.DTO.SelectItemsOrderLocationRequest
@@ -279,5 +281,19 @@ suspend fun getLocationItems(baseUrl: String, locationId: String, searchQuery: S
 suspend fun getOrderItemsFromOrderLocation(baseUrl: String, order_location_id: String): FetchResponse<List<PickupItemDTO>> {
     val url = "$baseUrl/order-items/order-location/$order_location_id"
     val result = fetch<Unit, List<PickupItemDTO>>(url = url, method = HttpMethod.Get, body = null)
+    return result
+}
+
+suspend fun addNewItemToLocation(baseUrl: String, order_id: String, order_location_id: String, newItem: SelectItemsAddNewItemDTO): FetchResponse<SelectItemsAddExistingItemDTO> {
+    val url = "$baseUrl/orders/$order_id/locations/$order_location_id/items";
+
+    val result = fetch<SelectItemsAddNewItemDTO, SelectItemsAddExistingItemDTO>(url=url, method = HttpMethod.Post, body = newItem)
+    return result
+}
+
+suspend fun addItemsToOrderUser(baseUrl: String, existingItemReference: SelectItemsAddExistingItemDTO): FetchResponse<SelectItemsAddExistingItemDTO> {
+    val url = "$baseUrl/orders/add_items_to_order_user";
+
+    val result = fetch<SelectItemsAddExistingItemDTO, SelectItemsAddExistingItemDTO>(url=url, method = HttpMethod.Post, body = existingItemReference)
     return result
 }

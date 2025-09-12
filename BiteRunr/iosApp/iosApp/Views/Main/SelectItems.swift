@@ -9,6 +9,14 @@ struct SelectItems: View {
     @State private var selectedLocationOrderUserItems: [SelectItemsOrderUserLocationItemDTO] = []
     @State private var selectedLocationSearchQueryItems: [SelectItemsItemDTO] = []
     @State private var editingItem: (item: SelectItemsItemDTO, quantity: Int, comments: String?)? = nil
+    @State private var isExistingItem: Bool = false
+    
+    enum ActionType: String {
+        case create = "Create"
+        case edit = "Edit"
+    }
+
+    @State private var currentActionType: ActionType = .create
     
     @State private var searchValue: String = ""
     @State private var errorMessage: String?
@@ -16,7 +24,7 @@ struct SelectItems: View {
     @State private var searchTask: Task<Void, Never>? = nil
     @State private var showAddItemSheet = false
     
-    // SOLUTION 1: Break down the complex computed property
+    
     private var currentUserId: String? {
         supabase.auth.currentUser?.id.uuidString.lowercased()
     }
@@ -73,10 +81,16 @@ struct SelectItems: View {
             if let currentOrderUserId = currentOrderUserId,
                let editingItem = editingItem {
                 AddItemSheet(
-                    orderLocation: $selectedLocation,
-                    orderItem: .constant(editingItem.item),
+                    orderLocation: selectedLocation,
+                    orderItem: editingItem.item,
                     quantity: editingItem.quantity,
-                    orderUserId: currentOrderUserId
+                    comments: editingItem.comments,
+                    orderUserId: currentOrderUserId,
+                    actionType: currentActionType.rawValue,
+                    orderId: order.id,
+                    orderLocationId: selectedLocation!.orderLocationId,
+                    itemId: editingItem.item.id,
+                    isExistingItem: isExistingItem
                 )
                 .presentationDetents([.medium])
             }
@@ -86,7 +100,9 @@ struct SelectItems: View {
     // MARK: - Action Handlers
     private func handleEditAction(for orderUserItem: SelectItemsOrderUserLocationItemDTO) {
         // Set the editing item with both the item and its current quantity
-        editingItem = (item: orderUserItem.item, quantity: Int(orderUserItem.quantity), comments: orderUserItem.comments)
+        editingItem = (item: orderUserItem.item, quantity: Int(orderUserItem.quantity), comments: orderUserItem.comments) as? (item: SelectItemsItemDTO, quantity: Int, comments: String)
+        currentActionType = ActionType.edit
+        isExistingItem = true
         showAddItemSheet = true
     }
     
@@ -240,8 +256,7 @@ struct SelectItems: View {
     private var searchResultsView: some View {
         ForEach(selectedLocationSearchQueryItems, id: \.id) { searchItem in
             Button(action: {
-                editingItem = (item: searchItem, quantity: 1, comments: nil)
-                showAddItemSheet = true
+                createNewItem(searchQueryItem: searchItem)
             }) {
                 if let selectedLocation = selectedLocation {
                     OrderItemRow(selectedLocation: selectedLocation, item: nil, searchItem: searchItem)
@@ -282,9 +297,8 @@ struct SelectItems: View {
             .edgesIgnoringSafeArea(.horizontal)
         VStack {
             HStack {
-                Text("2 items selected")
-                    .foregroundColor(.secondary)
-                    .fontWeight(.medium)
+                Color.clear
+                    .frame(height: 10)
             }
             VStack(spacing: 12) {
                 Button(action: {
@@ -359,7 +373,7 @@ struct SelectItems: View {
         .transition(.opacity)
         
         Button(action: {
-            createNewItem()
+            createNewItem(searchQueryItem: nil)
         }) {
             HStack {
                 Image(systemName: "plus.circle")
@@ -558,19 +572,22 @@ extension SelectItems {
         isLoading = false
     }
     
-    private func createNewItem() {
+    private func createNewItem(searchQueryItem: SelectItemsItemDTO?) {
         guard let selectedLocation = selectedLocation else { return }
         
         // Create a new item with proper timestamp handling
         let newItem = SelectItemsItemDTO(
             id: UUID().uuidString,
-            name: searchValue,
+            name: searchQueryItem != nil ? searchQueryItem!.name : searchValue,
             locationId: selectedLocation.locationId,
             createdAt: nil,
             updatedAt: nil
         )
         
+        isExistingItem = searchQueryItem != nil
+        
         editingItem = (item: newItem, quantity: 1, comments: nil)
+        currentActionType = .create
         showAddItemSheet = true
     }
 }
