@@ -32,7 +32,7 @@ export const orderItems = pgTable(
             .defaultNow()
             .$onUpdateFn(() => new Date()),
     },
-    (t) => [unique().on(t.order_user_id, t.item_id)]
+    (t) => [unique().on(t.order_user_id, t.item_id, t.comments)]
 ).enableRLS();
 
 export const orderItemsRelations = relations(orderItems, ({ one }) => ({
