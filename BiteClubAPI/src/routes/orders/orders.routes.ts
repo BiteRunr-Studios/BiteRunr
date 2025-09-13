@@ -393,7 +393,7 @@ export const addNewItemAndLinkToOrderUser = createRoute({
                     .nonempty("Order user id is required"),
                 new_item: insertItemSchema,
                 quantity: z.number().min(1).max(100),
-                comments: z.string(),
+                comments: z.string().nullable(),
             }),
             "Create an item and add to order user"
         ),
