@@ -8,14 +8,7 @@ struct AddItemSheet: View {
     @State var orderItem: SelectItemsItemDTO?
     @State var quantity: Int
     
-    @State var comments: String? = nil
-    
-    private var commentsBinding: Binding<String> {
-        Binding<String>(
-            get: { comments ?? "" },
-            set: { comments = $0.isEmpty ? nil : $0 }
-        )
-    }
+    @State var comments: String = ""
     
     @State var orderUserId: String
     @State var actionType: String
@@ -27,7 +20,7 @@ struct AddItemSheet: View {
     @State private var ItemNameError: String?
     
     @Environment(\.dismiss) private var dismiss
-
+    
     
     
     var body: some View {
@@ -66,7 +59,7 @@ struct AddItemSheet: View {
             
             VStack {
                 HStack(spacing: 12) {
-                    TextField("Comments", text: commentsBinding, axis: .vertical)
+                    TextField("Comments", text: $comments, axis: .vertical)
                     Image(systemName: "bubble.fill")
                         .frame(width: 24, height: 24)
                         .foregroundStyle(Color.secondary.opacity(0.3))
@@ -83,7 +76,7 @@ struct AddItemSheet: View {
             
             Button(action: {
                 withAnimation(.easeIn(duration: 0.1)) {
-                   
+                    
                 }
                 Task {
                     dismiss()
@@ -121,6 +114,8 @@ struct AddItemSheet: View {
 extension AddItemSheet {
     private func addNewItem() async {
         guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
+        print("Added new item")
+        print(itemId)
         // Build object to send in repo function
         let item = SelectItemsAddNewItemDTO(
             orderUserId: orderUserId,
@@ -129,9 +124,10 @@ extension AddItemSheet {
                 locationId: orderLocation!.locationId
             ),
             quantity: Int32(quantity),
-            comments: comments
+            comments:  comments.isEmpty ? nil : comments,
         )
         
+        print(item)
         do {
             let result = try await addNewItemToLocation(baseUrl: apiUrl, order_id: orderId, order_location_id: orderLocationId, newItem: item)
             
@@ -143,6 +139,7 @@ extension AddItemSheet {
             mapValidationErrors(result, handlers: [
                 "new_item.name": { ItemNameError = $0 },
             ])
+            print(result.error!)
         } catch {
             print("An error occured when adding new item")
         }
@@ -150,20 +147,23 @@ extension AddItemSheet {
     
     private func addExistingItem() async {
         guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
-        
+        print("Added reference to existing item")
+        print(itemId)
         let existingItem = SelectItemsAddExistingItemDTO(
             orderLocationId: orderLocationId,
             orderUserId: orderUserId,
             itemId: itemId,
-            comments: comments,
+            comments: comments.isEmpty ? nil : comments,
             quantity: Int32(quantity)
         )
         
         do {
             let result = try await addItemsToOrderUser(baseUrl: apiUrl, existingItemReference: existingItem)
-             if result.success {
-               return
-             }
+            if result.success {
+                return
+            }
+            
+            print("Failed to add exisitng item to user's order")
         } catch {
             print("An error occured when adding existing item")
         }

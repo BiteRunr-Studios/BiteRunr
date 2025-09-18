@@ -577,7 +577,7 @@ extension SelectItems {
         
         // Create a new item with proper timestamp handling
         let newItem = SelectItemsItemDTO(
-            id: UUID().uuidString,
+            id: searchQueryItem != nil ? searchQueryItem!.id : UUID().uuidString,
             name: searchQueryItem != nil ? searchQueryItem!.name : searchValue,
             locationId: selectedLocation.locationId,
             createdAt: nil,
