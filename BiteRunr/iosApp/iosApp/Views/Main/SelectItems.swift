@@ -84,7 +84,7 @@ struct SelectItems: View {
                     orderLocation: selectedLocation,
                     orderItem: editingItem.item,
                     quantity: editingItem.quantity,
-                    comments: editingItem.comments,
+                    comments: editingItem.comments ?? "",
                     orderUserId: currentOrderUserId,
                     actionType: currentActionType.rawValue,
                     orderId: order.id,
@@ -586,7 +586,7 @@ extension SelectItems {
         
         isExistingItem = searchQueryItem != nil
         
-        editingItem = (item: newItem, quantity: 1, comments: nil)
+        editingItem = (item: newItem, quantity: 1, comments: "")
         currentActionType = .create
         showAddItemSheet = true
     }

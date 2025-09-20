@@ -4,26 +4,28 @@ import Shared
 import Supabase
 
 struct AddItemSheet: View {
-    @State var orderLocation: SelectItemsOrderLocationDTO?
-    @State var orderItem: SelectItemsItemDTO?
+    let orderLocation: SelectItemsOrderLocationDTO?
+    let orderItem: SelectItemsItemDTO?
+    
     @State var quantity: Int
+    @State var comments: String
     
-    @State var comments: String = ""
+    @State var comment: String = "Test String"
     
-    @State var orderUserId: String
-    @State var actionType: String
-    @State var orderId: String
-    @State var orderLocationId: String
-    @State var itemId: String
+    let orderUserId: String
+    let actionType: String
+    let orderId: String
+    let orderLocationId: String
+    let itemId: String
+    
     @State var isExistingItem: Bool = false
     
     @State private var ItemNameError: String?
     
     @Environment(\.dismiss) private var dismiss
     
-    
-    
     var body: some View {
+
         VStack(alignment: .leading) {
             Capsule()
                 .fill(Color.secondary.opacity(0.5))
@@ -59,7 +61,7 @@ struct AddItemSheet: View {
             
             VStack {
                 HStack(spacing: 12) {
-                    TextField("Comments", text: $comments, axis: .vertical)
+                    TextField("Comments", text: $comment, axis: .vertical)
                     Image(systemName: "bubble.fill")
                         .frame(width: 24, height: 24)
                         .foregroundStyle(Color.secondary.opacity(0.3))
