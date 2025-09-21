@@ -100,14 +100,28 @@ struct SelectItems: View {
     // MARK: - Action Handlers
     private func handleEditAction(for orderUserItem: SelectItemsOrderUserLocationItemDTO) {
         // Set the editing item with both the item and its current quantity
-        editingItem = (item: orderUserItem.item, quantity: Int(orderUserItem.quantity), comments: orderUserItem.comments) as? (item: SelectItemsItemDTO, quantity: Int, comments: String)
+        editingItem = (item: orderUserItem.item, quantity: Int(orderUserItem.quantity), comments: orderUserItem.comments) as? (item: SelectItemsItemDTO, quantity: Int, comments: String?)
         currentActionType = ActionType.edit
         isExistingItem = true
         showAddItemSheet = true
     }
     
-    private func handleDeleteAction(for orderUserItem: SelectItemsOrderUserLocationItemDTO) {
-        // TODO: Implement delete functionality
+    private func handleDeleteAction(for orderUserItem: SelectItemsOrderUserLocationItemDTO) async {
+        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
+            errorMessage = "API_URL not set"
+            isLoading = false
+            return
+        }
+        
+        do {
+            let response = try await deleteItemReferenceToUserOrder(baseUrl: apiUrl, orderItemId: orderUserItem.id)
+        
+            if response.success {
+                selectedLocationOrderUserItems.removeAll { $0.id == orderUserItem.id }
+            }
+        } catch {
+           print("")
+        }
     }
     
     // MARK: - Helper Views
@@ -280,7 +294,9 @@ struct SelectItems: View {
                         }
                         Action(symbolImage: "trash", tint: .white, background: .red) { resetPosition in
                             resetPosition.toggle()
-                            handleDeleteAction(for: orderUserItem)
+                            Task {
+                                await handleDeleteAction(for: orderUserItem)
+                            }
                         }
                     }
                     .animation(.easeInOut(duration: 0.2), value: orderUserItem)

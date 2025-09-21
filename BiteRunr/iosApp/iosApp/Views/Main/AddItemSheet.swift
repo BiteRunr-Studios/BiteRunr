@@ -10,8 +10,6 @@ struct AddItemSheet: View {
     @State var quantity: Int
     @State var comments: String
     
-    @State var comment: String = "Test String"
-    
     let orderUserId: String
     let actionType: String
     let orderId: String
@@ -61,7 +59,7 @@ struct AddItemSheet: View {
             
             VStack {
                 HStack(spacing: 12) {
-                    TextField("Comments", text: $comment, axis: .vertical)
+                    TextField("Comments", text: $comments, axis: .vertical)
                     Image(systemName: "bubble.fill")
                         .frame(width: 24, height: 24)
                         .foregroundStyle(Color.secondary.opacity(0.3))

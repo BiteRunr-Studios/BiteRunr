@@ -297,3 +297,10 @@ suspend fun addItemsToOrderUser(baseUrl: String, existingItemReference: SelectIt
     val result = fetch<SelectItemsAddExistingItemDTO, SelectItemsAddExistingItemDTO>(url=url, method = HttpMethod.Post, body = existingItemReference)
     return result
 }
+
+suspend fun deleteItemReferenceToUserOrder(baseUrl: String, orderItemId: String): FetchResponse<SelectItemsAddExistingItemDTO> {
+    var url = "$baseUrl/orders/order-items/$orderItemId"
+
+    val result = fetch<Unit, SelectItemsAddExistingItemDTO>(url=url, method = HttpMethod.Delete, body = null)
+    return result
+}
