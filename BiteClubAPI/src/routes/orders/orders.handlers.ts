@@ -23,6 +23,7 @@ import type {
   UserOrderItemsFromLocationRoute,
   EditOrderItemsRoute,
   RemoveOrderItemRoute,
+  GetUserOrderDetailsRoute,
 } from "./orders.routes";
 import { isNull, sql } from "drizzle-orm";
 import type { AppRouteHandler } from "@/lib/types";
@@ -35,6 +36,29 @@ import { insertOrderLocationsSchema } from "@/db/schema/orderLocations";
 import { insertOrderUsersSchema } from "@/db/schema/orderUsers";
 import { z } from "zod";
 import { omit } from "@/lib/reusable-functions";
+
+// Helper function to format timestamp to readable format
+const formatTimestamp = (timestamp: Date): string => {
+  const date = new Date(timestamp);
+  
+  const months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+  
+  const month = months[date.getMonth()];
+  const day = date.getDate();
+  const year = date.getFullYear();
+  
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+  
+  return `${month} ${day}, ${year} · ${hours}:${minutesStr} ${ampm}`;
+};
 
 export const list: AppRouteHandler<ListRoute> = async (c) => {
   const orders = await db.query.orders.findMany();
@@ -615,4 +639,90 @@ export const removeOrderItem: AppRouteHandler<RemoveOrderItemRoute> = async (
   }
 
   return c.json(deletedOrderItem, HttpStatusCodes.OK);
+};
+
+export const getUserOrderDetails: AppRouteHandler<GetUserOrderDetailsRoute> = async (
+  c
+) => {
+  const { user_id } = c.req.valid("param");
+
+  // Get all orders for the user (as creator or participant)
+  const orderUserEntries = await db.query.orderUsers.findMany({
+    where(fields, operators) {
+      return operators.eq(fields.user_id, user_id);
+    },
+    columns: { order_id: true },
+  });
+  const orderIds = orderUserEntries.map((entry) => entry.order_id);
+
+  const orders = await db.query.orders.findMany({
+    where(fields, operators) {
+      return operators.and(
+        operators.eq(fields.status, "completed"),
+        operators.or(
+          operators.eq(fields.creator_id, user_id),
+          operators.inArray(fields.id, orderIds)
+        )
+      );
+    },
+    orderBy: (fields, operators) => [operators.desc(fields.created_at)],
+  });
+
+  if (!orders || orders.length === 0) {
+    return c.json(
+      {
+        message: HttpStatusPhrases.NOT_FOUND,
+      },
+      HttpStatusCodes.NOT_FOUND
+    );
+  }
+
+  // Process each order to get details
+  const ordersWithDetails = await Promise.all(
+    orders.map(async (order) => {
+      // Get order users with user information
+      const orderUsers = await db.query.orderUsers.findMany({
+        where(fields, operators) {
+          return operators.eq(fields.order_id, order.id);
+        },
+        with: {
+          user: {
+            columns: {
+              id: false,
+            },
+          },
+        },
+      });
+
+      // Calculate total item count across all locations
+      const orderLocations = await db.query.orderLocations.findMany({
+        where(fields, operators) {
+          return operators.eq(fields.order_id, order.id);
+        },
+      });
+
+      let itemsCount = 0;
+      for (const orderLocation of orderLocations) {
+        const locationItems = await db.query.orderItems.findMany({
+          where(fields, operators) {
+            return operators.eq(fields.order_location_id, orderLocation.id);
+          },
+        });
+        itemsCount += locationItems.length;
+      }
+
+      return {
+        order: {
+          ...order,
+          created_at: formatTimestamp(order.created_at),
+          updated_at: formatTimestamp(order.updated_at),
+        },
+        order_users: orderUsers,
+        items_count: itemsCount,
+        people_count: orderUsers.length,
+      };
+    })
+  );
+
+  return c.json(ordersWithDetails, HttpStatusCodes.OK);
 };

@@ -28,6 +28,7 @@ const router = createRouter()
         handlers.userOrderItemsFromLocation
     )
     .openapi(routes.editOrderItems, handlers.editOrderItems)
-    .openapi(routes.removeOrderItem, handlers.removeOrderItem);
+    .openapi(routes.removeOrderItem, handlers.removeOrderItem)
+    .openapi(routes.getUserOrderDetails, handlers.getUserOrderDetails);
 
 export default router;

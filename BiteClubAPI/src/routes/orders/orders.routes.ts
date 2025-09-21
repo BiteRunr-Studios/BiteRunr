@@ -564,6 +564,43 @@ export const removeOrderItem = createRoute({
     },
 });
 
+export const getUserOrderDetails = createRoute({
+    path: "/orders/user/:user_id/details",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            user_id: z.string().uuid().nonempty("User id is required"),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(
+                z.object({
+                    order: selectOrdersSchema.extend({
+                        created_at: z.string(),
+                        updated_at: z.string(),
+                    }),
+                    order_users: z.array(selectOrderUsersWithUserSchema),
+                    items_count: z.number(),
+                    people_count: z.number(),
+                })
+            ),
+            "User's orders with details, users and item counts"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User orders not found"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(IdUUIDParamsSchema),
+            "Invalid Id error"
+        ),
+    },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
@@ -582,3 +619,4 @@ export type AwaitingOrderRoute = typeof awaitingOrder;
 export type UserOrderItemsFromLocationRoute = typeof userOrderItemsFromLocation;
 export type EditOrderItemsRoute = typeof editOrderItems;
 export type RemoveOrderItemRoute = typeof removeOrderItem;
+export type GetUserOrderDetailsRoute = typeof getUserOrderDetails;

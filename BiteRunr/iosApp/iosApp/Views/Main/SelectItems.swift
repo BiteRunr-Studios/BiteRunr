@@ -84,7 +84,7 @@ struct SelectItems: View {
                     orderLocation: selectedLocation,
                     orderItem: editingItem.item,
                     quantity: editingItem.quantity,
-                    comments: editingItem.comments,
+                    comments: editingItem.comments ?? "",
                     orderUserId: currentOrderUserId,
                     actionType: currentActionType.rawValue,
                     orderId: order.id,

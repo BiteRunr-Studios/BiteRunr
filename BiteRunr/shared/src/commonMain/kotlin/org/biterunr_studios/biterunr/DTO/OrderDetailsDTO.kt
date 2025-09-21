@@ -31,9 +31,9 @@ data class OrderData(
     @SerialName("paused")
     val paused: Boolean,
     @SerialName("created_at")
-    val createdAt: Instant, // Assuming this will be in ISO 8601 format from the API
+    val createdAt: Instant,
     @SerialName("updated_at")
-    val updatedAt: Instant // Assuming this will be in ISO 8601 format from the API
+    val updatedAt: Instant
 )
 
 @Serializable
@@ -47,7 +47,7 @@ data class OrderUserData(
     @SerialName("status")
     val status: String,
     @SerialName("amount_owed")
-    val amountOwed: String, // Or Double/BigDecimal if numeric processing is needed
+    val amountOwed: String,
     @SerialName("created_at")
     val createdAt: Instant,
     @SerialName("updated_at")
