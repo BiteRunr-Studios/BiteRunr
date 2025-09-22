@@ -664,8 +664,7 @@ export const getUserOrderDetails: AppRouteHandler<GetUserOrderDetailsRoute> = as
         )
       );
     },
-    orderBy: (fields, operators) => [operators.desc(fields.created_at)],
-    limit: 3,
+    orderBy: (fields, operators) => [operators.desc(fields.created_at)]
   });
 
   if (!orders || orders.length === 0) {

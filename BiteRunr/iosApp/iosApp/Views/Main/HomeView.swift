@@ -14,368 +14,14 @@ struct PastOrderGroup: Identifiable, Hashable {
     let avatarInitials: [String]
 }
 
-struct Shimmer: ViewModifier {
-    @State private var phase: CGFloat = -1
-    let isActive: Bool
-
-    func body(content: Content) -> some View {
-        content
-            .overlay(
-                Group {
-                    if isActive {
-                        GeometryReader { geo in
-                            let gradient = LinearGradient(
-                                colors: [
-                                    Color.white.opacity(0.0),
-                                    Color.white.opacity(0.35),
-                                    Color.white.opacity(0.0)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                            Rectangle()
-                                .fill(gradient)
-                                .rotationEffect(.degrees(20))
-                                .offset(x: geo.size.width * phase)
-                                .frame(width: geo.size.width * 1.5)
-                        }
-                        .clipped()
-                        .allowsHitTesting(false)
-                    }
-                }
-            )
-            .onAppear {
-                if isActive {
-                    withAnimation(.linear(duration: 1.2).repeatForever(autoreverses: false)) {
-                        phase = 1.5
-                    }
-                }
-            }
-            .onChange(of: isActive) { active in
-                if active {
-                    withAnimation(.linear(duration: 1.2).repeatForever(autoreverses: false)) {
-                        phase = 1.5
-                    }
-                } else {
-                    withAnimation(.none) { phase = -1 }
-                }
-            }
-    }
-}
-
-extension View {
-    func shimmer(active: Bool) -> some View { modifier(Shimmer(isActive: active)) }
-}
-
-struct SkeletonView: View {
-    let cornerRadius: CGFloat
-    let active: Bool
-    var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(Color.secondary.opacity(0.18))
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .stroke(Color(.separator).opacity(0.12), lineWidth: 1)
-            )
-            .shimmer(active: active)
-    }
-}
-
-struct PastOrderGroupCardSkeleton: View {
-    var active: Bool = true
-
-    var body: some View {
-        VStack(spacing: 12) {
-            header
-            Divider().opacity(0.12)
-            statsRow
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.background.opacity(0.6))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(.separator.opacity(0.15), lineWidth: 1)
-                )
-                .shadow(color: .black.opacity(0.08), radius: 16, x: 0, y: 8)
-        )
-        .accessibilityHidden(true)
-    }
-
-    private var header: some View {
-        HStack(spacing: 12) {
-            SkeletonView(cornerRadius: 18, active: active)
-                .frame(width: 36, height: 36)
-                .clipShape(Circle())
-            VStack(alignment: .leading, spacing: 6) {
-                SkeletonView(cornerRadius: 8, active: active)
-                    .frame(width: 140, height: 16)
-                SkeletonView(cornerRadius: 8, active: active)
-                    .frame(width: 100, height: 12)
-            }
-            Spacer()
-            SkeletonView(cornerRadius: 12, active: active)
-                .frame(width: 24, height: 24)
-                .clipShape(Circle())
-        }
-    }
-
-    private var statsRow: some View {
-        HStack(alignment: .center) {
-            HStack(spacing: 8) {
-                SkeletonView(cornerRadius: 8, active: active)
-                    .frame(width: 28, height: 28)
-                VStack(alignment: .leading, spacing: 4) {
-                    SkeletonView(cornerRadius: 6, active: active)
-                        .frame(width: 32, height: 14)
-                    SkeletonView(cornerRadius: 6, active: active)
-                        .frame(width: 40, height: 10)
-                }
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color(.systemFill).opacity(0.12)))
-
-            Spacer(minLength: 12)
-
-            HStack(spacing: 8) {
-                SkeletonView(cornerRadius: 8, active: active)
-                    .frame(width: 28, height: 28)
-                VStack(alignment: .leading, spacing: 4) {
-                    SkeletonView(cornerRadius: 6, active: active)
-                        .frame(width: 28, height: 14)
-                    SkeletonView(cornerRadius: 6, active: active)
-                        .frame(width: 42, height: 10)
-                }
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color(.systemFill).opacity(0.12)))
-
-            Spacer(minLength: 12)
-
-            HStack(spacing: -10) {
-                ForEach(0..<4, id: \.self) { _ in
-                    SkeletonView(cornerRadius: 14, active: active)
-                        .frame(width: 28, height: 28)
-                        .clipShape(Circle())
-                        .overlay(Circle().stroke(.background, lineWidth: 2))
-                }
-            }
-            .padding(.leading, 2)
-        }
-    }
-}
-
-// MARK: - Card
-
-struct PastOrderGroupCard: View {
-    let title: String
-    let timestamp: String
-    let itemCount: Int
-    let extraCount: Int
-    let color: Color
-    let avatarCount: Int
-    let avatarURLs: [String]
-    let avatarInitials: [String]
-
-    var body: some View {
-        VStack(spacing: 12) {
-            header
-            Divider().opacity(0.15)
-            statsRow
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.background.opacity(0.6))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .strokeBorder(.separator.opacity(0.15), lineWidth: 1)
-                )
-                .shadow(color: .black.opacity(0.08), radius: 16, x: 0, y: 8)
-        )
-        .transition(.opacity.combined(with: .scale(scale: 0.995)))
-        .accessibilityElement(children: .contain)
-    }
-
-    private var header: some View {
-        HStack(alignment: .center, spacing: 12) {
-            ZStack {
-                Circle().fill(color.opacity(0.15))
-                Image(systemName: "shippingbox.fill")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(color)
-            }
-            .frame(width: 36, height: 36)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .lineLimit(1)
-                Text(timestamp)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-            Spacer()
-            ZStack {
-                Circle()
-                    .fill(Color.secondary.opacity(0.12))
-                    .overlay(Circle().stroke(.separator.opacity(0.15), lineWidth: 1))
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.secondary)
-            }
-            .frame(width: 24, height: 24)
-            .accessibilityHidden(true)
-        }
-    }
-
-    private var statsRow: some View {
-        HStack(alignment: .center) {
-            metricPill(label: "Items", value: "\(itemCount)", icon: "cart.fill", color: color)
-            Spacer(minLength: 12)
-            metricPill(label: "People", value: "\(extraCount)", icon: "person.fill", color: .primary)
-            Spacer(minLength: 12)
-            avatarsStack()
-        }
-    }
-
-    private func metricPill(label: String, value: String, icon: String, color: Color) -> some View {
-        HStack(spacing: 8) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill((color == .secondary ? Color.secondary.opacity(0.12) : color.opacity(0.12)))
-                Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(color == .secondary ? .secondary : color)
-            }
-            .frame(width: 28, height: 28)
-
-            VStack(alignment: .leading, spacing: 0) {
-                Text(value)
-                    .font(.system(.title3, design: .rounded).weight(.semibold))
-                Text(label)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.thinMaterial))
-        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(.separator.opacity(0.15), lineWidth: 1))
-    }
-
-    private func avatarsStack() -> some View {
-        let maxVisible = 4
-        let urls = Array(avatarURLs.prefix(maxVisible))
-        let inits = Array(avatarInitials.prefix(maxVisible))
-        let remaining = max(0, avatarCount - maxVisible)
-
-        return HStack(spacing: -10) {
-            ForEach(0..<max(urls.count, inits.count), id: \.self) { idx in
-                let url = urls[safe: idx] ?? ""
-                let initials = inits[safe: idx] ?? "?"
-
-                ZStack {
-                    Circle()
-                        .fill(Color.orange.opacity(0.25))
-                        .overlay(
-                            Text(initials.isEmpty ? "?" : initials)
-                                .font(.caption2.weight(.bold))
-                                .foregroundColor(.orange)
-                        )
-
-                    if let u = URL(string: url), !url.isEmpty {
-                        AsyncImage(url: u) { phase in
-                            switch phase {
-                            case .empty:
-                                Color.clear
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                                    .transition(.opacity.animation(.easeInOut(duration: 0.2)))
-                            case .failure:
-                                Color.clear
-                            @unknown default:
-                                Color.clear
-                            }
-                        }
-                    }
-                }
-                .frame(width: 28, height: 28)
-                .clipShape(Circle())
-                .overlay(Circle().stroke(.background, lineWidth: 2))
-                .zIndex(Double(10 - idx))
-            }
-
-            if remaining > 0 {
-                Circle()
-                    .fill(.quaternary)
-                    .overlay(
-                        Text("+\(remaining)")
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(.primary)
-                    )
-                    .frame(width: 28, height: 28)
-                    .overlay(Circle().stroke(.background, lineWidth: 2))
-                    .zIndex(0)
-            }
-        }
-        .padding(.leading, 2)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("\(avatarCount) participants"))
-    }
-}
-
-private extension Array {
-    subscript(safe idx: Int) -> Element? {
-        indices.contains(idx) ? self[idx] : nil
-    }
-}
-
-// MARK: - Pager
-
-struct PastOrderGroupsPagerView: View {
-    let orders: [PastOrderGroup]
-    @State private var selection: Int = 0
-
-    var body: some View {
-        TabView(selection: $selection) {
-            ForEach(Array(orders.enumerated()), id: \.offset) { index, order in
-                PastOrderGroupCard(
-                    title: order.title,
-                    timestamp: order.timestamp,
-                    itemCount: order.itemCount,
-                    extraCount: order.extraCount,
-                    color: order.color,
-                    avatarCount: order.avatarCount,
-                    avatarURLs: order.avatarURLs,
-                    avatarInitials: order.avatarInitials
-                )
-                .padding(.horizontal, 16)
-                .tag(index)
-            }
-        }
-        .tabViewStyle(.page(indexDisplayMode: .automatic))
-        .indexViewStyle(.page(backgroundDisplayMode: .interactive))
-        .frame(maxWidth: .infinity)
-        .frame(height: 250)
-    }
-}
-
-// MARK: - HomeView
-
 struct HomeView: View {
     @EnvironmentObject var supabaseState: SupabaseState
+
     @State private var orders: [PastOrderGroup] = []
     @State private var isLoadingOrders = false
     @State private var errorMessage: String? = nil
     @State private var hasLoadedOnce = false
+    @State private var showPastOrdersSheet = false
 
     private var shouldShowSkeleton: Bool {
         (!hasLoadedOnce && (isLoadingOrders || (orders.isEmpty && errorMessage == nil)))
@@ -389,8 +35,10 @@ struct HomeView: View {
                         Text("Past Order Groups")
                             .font(.headline)
                             .foregroundStyle(.secondary)
+
                         Spacer()
-                        Button(action: { Task { await loadOrders() } }) {
+
+                        Button(action: { showPastOrdersSheet = true }) {
                             Text("See all")
                                 .foregroundColor(.orange)
                                 .font(.subheadline)
@@ -415,7 +63,7 @@ struct HomeView: View {
                         }
 
                         if !shouldShowSkeleton && errorMessage == nil {
-                            PastOrderGroupsPagerView(orders: orders)
+                            PastOrdersPagerView(orders: orders.map(toPagerUI))
                                 .padding(.bottom, 4)
                                 .transition(.asymmetric(
                                     insertion: .opacity.combined(with: .scale(scale: 0.98))
@@ -440,9 +88,22 @@ struct HomeView: View {
                     .contentShape(Rectangle())
                 }
                 .padding()
-               
             }
             .refreshable { await loadOrders() }
+        }
+        .sheet(isPresented: $showPastOrdersSheet) {
+            PastOrdersSheet(
+                orders: orders.map {
+                    PastOrderRowModel(
+                        id: $0.id.uuidString,
+                        title: $0.title,
+                        timestamp: $0.timestamp,
+                        itemCount: $0.itemCount,
+                        peopleCount: $0.extraCount,
+                        accentColor: $0.color,
+                    )
+                }
+            )
         }
         .onAppear { Task { await loadOrders() } }
         .animation(.bouncy, value: orders.count)
@@ -452,6 +113,19 @@ struct HomeView: View {
         )) { msg in
             Alert(title: Text("Error"), message: Text(msg.value), dismissButton: .default(Text("OK")))
         }
+    }
+
+    private func toPagerUI(_ g: PastOrderGroup) -> PastOrderGroupUI {
+        PastOrderGroupUI(
+            title: g.title,
+            timestamp: g.timestamp,
+            itemCount: g.itemCount,
+            peopleCount: g.extraCount,
+            color: g.color,
+            avatarCount: g.avatarCount,
+            avatarURLs: g.avatarURLs,
+            avatarInitials: g.avatarInitials
+        )
     }
 }
 
@@ -491,9 +165,7 @@ extension HomeView {
                     return
                 }
                 let mapped = dtoArray.map(mapToPastOrderGroup)
-
                 try? await Task.sleep(nanoseconds: 120_000_000)
-
                 await MainActor.run {
                     withAnimation(.easeInOut(duration: 0.25)) {
                         self.orders = mapped
