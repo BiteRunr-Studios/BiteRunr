@@ -31,9 +31,9 @@ data class OrderData(
     @SerialName("paused")
     val paused: Boolean,
     @SerialName("created_at")
-    val createdAt: Instant,
+    val createdAt: String,
     @SerialName("updated_at")
-    val updatedAt: Instant
+    val updatedAt: String
 )
 
 @Serializable
@@ -49,9 +49,9 @@ data class OrderUserData(
     @SerialName("amount_owed")
     val amountOwed: String,
     @SerialName("created_at")
-    val createdAt: Instant,
+    val createdAt: String,
     @SerialName("updated_at")
-    val updatedAt: Instant,
+    val updatedAt: String,
     @SerialName("user")
     val user: UserData
 )
@@ -65,7 +65,7 @@ data class UserData(
     @SerialName("avatar_url")
     val avatarUrl: String?,
     @SerialName("created_at")
-    val createdAt: Instant,
+    val createdAt: String,
     @SerialName("updated_at")
-    val updatedAt: Instant
+    val updatedAt: String
 )

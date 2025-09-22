@@ -10,6 +10,7 @@ import org.biterunr_studios.biterunr.DTO.FriendRequestResponse
 import org.biterunr_studios.biterunr.DTO.FriendRequestUser
 import org.biterunr_studios.biterunr.DTO.FriendUser
 import org.biterunr_studios.biterunr.DTO.OrderDTO
+import org.biterunr_studios.biterunr.DTO.OrderDetailsResponse
 import org.biterunr_studios.biterunr.DTO.PickupItemDTO
 import org.biterunr_studios.biterunr.DTO.ReceiptDetails
 import org.biterunr_studios.biterunr.DTO.SelectItemsAddExistingItemDTO
@@ -295,5 +296,12 @@ suspend fun addItemsToOrderUser(baseUrl: String, existingItemReference: SelectIt
     val url = "$baseUrl/orders/add_items_to_order_user";
 
     val result = fetch<SelectItemsAddExistingItemDTO, SelectItemsAddExistingItemDTO>(url=url, method = HttpMethod.Post, body = existingItemReference)
+    return result
+}
+
+suspend fun getUserOrderDetails(baseUrl: String, userId: String): FetchResponse<List<OrderDetailsResponse>> {
+    val url = "$baseUrl/orders/user/$userId/details"
+
+    val result = fetch<Unit, List<OrderDetailsResponse>>(url = url, method = HttpMethod.Get, body = null)
     return result
 }

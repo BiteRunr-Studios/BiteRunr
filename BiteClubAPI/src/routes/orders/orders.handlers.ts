@@ -646,7 +646,6 @@ export const getUserOrderDetails: AppRouteHandler<GetUserOrderDetailsRoute> = as
 ) => {
   const { user_id } = c.req.valid("param");
 
-  // Get all orders for the user (as creator or participant)
   const orderUserEntries = await db.query.orderUsers.findMany({
     where(fields, operators) {
       return operators.eq(fields.user_id, user_id);
@@ -666,6 +665,7 @@ export const getUserOrderDetails: AppRouteHandler<GetUserOrderDetailsRoute> = as
       );
     },
     orderBy: (fields, operators) => [operators.desc(fields.created_at)],
+    limit: 3,
   });
 
   if (!orders || orders.length === 0) {
@@ -677,10 +677,8 @@ export const getUserOrderDetails: AppRouteHandler<GetUserOrderDetailsRoute> = as
     );
   }
 
-  // Process each order to get details
   const ordersWithDetails = await Promise.all(
     orders.map(async (order) => {
-      // Get order users with user information
       const orderUsers = await db.query.orderUsers.findMany({
         where(fields, operators) {
           return operators.eq(fields.order_id, order.id);
@@ -694,7 +692,6 @@ export const getUserOrderDetails: AppRouteHandler<GetUserOrderDetailsRoute> = as
         },
       });
 
-      // Calculate total item count across all locations
       const orderLocations = await db.query.orderLocations.findMany({
         where(fields, operators) {
           return operators.eq(fields.order_id, order.id);
