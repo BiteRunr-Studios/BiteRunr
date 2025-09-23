@@ -111,3 +111,12 @@ data class SelectItemsNewItemDTO (
     @SerialName("location_id")
     val locationId: String,
 )
+
+@Serializable
+data class SelectItemsEditItemDTO (
+    @SerialName("comments")
+    val comments: String?,
+
+    @SerialName("quantity")
+    val quantity: Int
+)
