@@ -2,6 +2,8 @@ import SwiftUI
 import Shared
 
 struct PickupItemsView: View {
+    var orderId: String
+    
     var onDismiss: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
 
@@ -44,7 +46,7 @@ extension PickupItemsView {
 //                errorMessage = "API_URL not set"
                 return
             }
-            let response = try await getOrderItemsFromOrderLocation(baseUrl: apiUrl, order_location_id: "8fb4588b-1de1-46d5-95ab-04e0ebb9bf41")
+            let response = try await getOrderItemsFromOrderLocation(baseUrl: apiUrl, order_location_id: orderId)
             if response.success {
                 sampleData = response.data as! [PickupItemDTO]
             }

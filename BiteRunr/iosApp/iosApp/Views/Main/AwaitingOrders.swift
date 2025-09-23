@@ -197,6 +197,7 @@ struct AwaitingOrders: View {
             
             if showPickupItems {
                 PickupItemsView(
+                    orderId: order!.id,
                     onDismiss: {
                         withAnimation {
                             showPickupItems = false
