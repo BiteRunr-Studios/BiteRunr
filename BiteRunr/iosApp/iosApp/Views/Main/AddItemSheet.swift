@@ -107,6 +107,7 @@ struct AddItemSheet: View {
             
         }
         .padding()
+        .dismissKeyboardOnTap()
         Spacer()
     }
 }

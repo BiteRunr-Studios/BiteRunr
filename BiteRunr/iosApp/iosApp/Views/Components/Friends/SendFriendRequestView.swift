@@ -129,6 +129,7 @@ struct SendFriendRequestView: View {
                 }
             }
         }
+        .dismissKeyboardOnTap()
     }
     
 }

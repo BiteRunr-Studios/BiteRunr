@@ -166,6 +166,7 @@ struct ProfileView: View {
             .navigationTitle("Account")
             .navigationBarTitleDisplayMode(.inline)
         }
+        .dismissKeyboardOnTap()
     }
 }
 
