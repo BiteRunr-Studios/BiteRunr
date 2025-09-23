@@ -24,6 +24,7 @@ import type {
   EditOrderItemsRoute,
   RemoveOrderItemRoute,
   GetUserOrderDetailsRoute,
+  UserRecentItemsRoute,
 } from "./orders.routes";
 import { isNull, sql } from "drizzle-orm";
 import type { AppRouteHandler } from "@/lib/types";
@@ -721,4 +722,61 @@ export const getUserOrderDetails: AppRouteHandler<GetUserOrderDetailsRoute> = as
   );
 
   return c.json(ordersWithDetails, HttpStatusCodes.OK);
+};
+
+export const userRecentItems: AppRouteHandler<UserRecentItemsRoute> = async (c) => {
+  const { user_id } = c.req.valid("param");
+
+  const userOrderUsers = await db.query.orderUsers.findMany({
+    where(fields, operators) {
+      return operators.eq(fields.user_id, user_id);
+    },
+    columns: { id: true },
+  });
+
+  if (userOrderUsers.length === 0) {
+    return c.json([], HttpStatusCodes.OK);
+  }
+
+  const orderUserIds = userOrderUsers.map((ou) => ou.id);
+
+  const userOrderItems = await db.query.orderItems.findMany({
+    where(fields, operators) {
+      return operators.inArray(fields.order_user_id, orderUserIds);
+    },
+    orderBy: (fields, operators) => [operators.desc(fields.created_at)],
+    with: {
+      item: {
+        columns: {
+          searchVector: false,
+        },
+        with: {
+          location: {
+            columns: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const seenItemIds = new Set<string>();
+  const recentUniqueItems: typeof userOrderItems = [] as any;
+
+  for (const oi of userOrderItems) {
+    if (!seenItemIds.has(oi.item_id)) {
+      seenItemIds.add(oi.item_id);
+      recentUniqueItems.push(oi);
+    }
+    if (recentUniqueItems.length === 3) break;
+  }
+
+  const itemsWithRestaurant = recentUniqueItems.map((oi) => ({
+    ...oi.item,
+    created_at: formatTimestamp(oi.created_at),
+    updated_at: formatTimestamp(oi.updated_at),
+    restaurant_name: oi.item.location?.name || null,
+  }));
+  return c.json(itemsWithRestaurant, HttpStatusCodes.OK);
 };

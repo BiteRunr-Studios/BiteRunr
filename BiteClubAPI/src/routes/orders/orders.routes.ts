@@ -601,6 +601,33 @@ export const getUserOrderDetails = createRoute({
     },
 });
 
+export const userRecentItems = createRoute({
+    path: "/orders/user/:user_id/recent-items",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            user_id: z.string().uuid().nonempty("User id is required"),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(
+                selectItemSchema.extend({
+                    restaurant_name: z.string().nullable(),
+                })
+            ),
+            "Top 3 most recent unique items ordered by the user with restaurant names"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
+            createErrorSchema(IdUUIDParamsSchema),
+            "Invalid Id error"
+        ),
+    },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
@@ -620,3 +647,4 @@ export type UserOrderItemsFromLocationRoute = typeof userOrderItemsFromLocation;
 export type EditOrderItemsRoute = typeof editOrderItems;
 export type RemoveOrderItemRoute = typeof removeOrderItem;
 export type GetUserOrderDetailsRoute = typeof getUserOrderDetails;
+export type UserRecentItemsRoute = typeof userRecentItems;

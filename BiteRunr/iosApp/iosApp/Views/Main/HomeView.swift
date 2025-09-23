@@ -1,3 +1,5 @@
+// HomeView.swift
+
 import SwiftUI
 import Shared
 import Supabase
@@ -14,6 +16,15 @@ struct PastOrderGroup: Identifiable, Hashable {
     let avatarInitials: [String]
 }
 
+struct FrequentlyOrderedItem: Identifiable, Hashable {
+    let id: String
+    let name: String
+    let restaurantName: String
+    let createdAt: String
+}
+
+// MARK: - HomeView
+
 struct HomeView: View {
     @EnvironmentObject var supabaseState: SupabaseState
 
@@ -23,6 +34,10 @@ struct HomeView: View {
     @State private var hasLoadedOnce = false
     @State private var showPastOrdersSheet = false
 
+    // Recent items
+    @State private var recentItems: [FrequentlyOrderedItem] = []
+    @State private var isLoadingRecentItems = false
+
     private var shouldShowSkeleton: Bool {
         (!hasLoadedOnce && (isLoadingOrders || (orders.isEmpty && errorMessage == nil)))
     }
@@ -31,6 +46,7 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    // Header
                     HStack {
                         Text("Past Order Groups")
                             .font(.headline)
@@ -46,12 +62,12 @@ struct HomeView: View {
                         .buttonStyle(.plain)
                     }
 
+                    // Pager
                     ZStack {
                         if shouldShowSkeleton {
                             TabView {
                                 ForEach(0..<3) { _ in
                                     PastOrderGroupCardSkeleton(active: shouldShowSkeleton)
-                                        .padding(.horizontal, 16)
                                         .redacted(reason: .placeholder)
                                 }
                             }
@@ -74,22 +90,28 @@ struct HomeView: View {
                         }
                     }
 
-                    NavigationLink(destination: ScanReceipt()) {
-                        HStack {
-                            Image(systemName: "document.viewfinder")
-                            Text("Scan")
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
+                    // Frequently Ordered Items
+                    if isLoadingRecentItems {
+                        FrequentlyOrderedItemsSkeleton()
+                    } else {
+                        FrequentlyOrderedItemsBox(items: recentItems)
                     }
-                    .background(Color.orange)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                    .contentShape(Rectangle())
+
+//                    NavigationLink(destination: ScanReceipt()) {
+//                        HStack {
+//                            Image(systemName: "document.viewfinder")
+//                            Text("Scan")
+//                        }
+//                        .frame(maxWidth: .infinity)
+//                        .padding(.vertical, 16)
+//                    }
+//                    .background(Color.orange)
+//                    .foregroundColor(.white)
+//                    .cornerRadius(12)
+//                    .contentShape(Rectangle())
                 }
                 .padding()
             }
-            .refreshable { await loadOrders() }
         }
         .sheet(isPresented: $showPastOrdersSheet) {
             PastOrdersSheet(
@@ -101,11 +123,18 @@ struct HomeView: View {
                         itemCount: $0.itemCount,
                         peopleCount: $0.extraCount,
                         accentColor: $0.color,
+                        avatarURLs: $0.avatarURLs,
+                        avatarInitials: $0.avatarInitials
                     )
                 }
             )
         }
-        .onAppear { Task { await loadOrders() } }
+        .onAppear {
+            Task {
+                await loadOrders()
+                await loadRecentItems()
+            }
+        }
         .animation(.bouncy, value: orders.count)
         .alert(item: Binding(
             get: { errorMessage.map { IdentifiableString(value: $0) } },
@@ -150,9 +179,7 @@ extension HomeView {
             }
 
             let userId =
-                supabase.auth.currentUser?.id.uuidString ??
-                supabase.auth.currentUser?.id.uuidString ??
-                ""
+                supabase.auth.currentUser?.id.uuidString ?? ""
             if userId.isEmpty {
                 errorMessage = "User not signed in"
                 return
@@ -180,6 +207,43 @@ extension HomeView {
         }
     }
 
+    private func loadRecentItems() async {
+        isLoadingRecentItems = true
+        defer { isLoadingRecentItems = false }
+
+        do {
+            guard let apiUrl = Bundle.main.infoDictionary?["API_URL_LOCAL"] as? String else {
+                errorMessage = "API_URL not set"
+                return
+            }
+            let userId =
+                supabase.auth.currentUser?.id.uuidString ?? ""
+            if userId.isEmpty {
+                errorMessage = "User not signed in"
+                return
+            }
+
+            let response = try await getUserFoodItems(baseUrl: apiUrl, userId: userId)
+
+            if response.success {
+                guard let dtoArray = response.data as? [FoodItemDTO] else {
+                    errorMessage = "Invalid recent items payload"
+                    return
+                }
+                let mapped = dtoArray.map(mapToFrequentlyOrderedItem)
+                await MainActor.run {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        self.recentItems = Array(mapped.prefix(3))
+                    }
+                }
+            } else {
+              
+            }
+        } catch {
+            errorMessage = "Failed to fetch recent items: \(error.localizedDescription)"
+        }
+    }
+
     private func mapToPastOrderGroup(_ dto: OrderDetailsResponse) -> PastOrderGroup {
         let users = dto.orderUsers.map { $0.user }
         let urls: [String] = users.map { $0.avatarUrl ?? "" }
@@ -201,6 +265,15 @@ extension HomeView {
             avatarCount: Int(dto.orderUsers.count),
             avatarURLs: urls,
             avatarInitials: initials
+        )
+    }
+
+    private func mapToFrequentlyOrderedItem(_ dto: FoodItemDTO) -> FrequentlyOrderedItem {
+        FrequentlyOrderedItem(
+            id: dto.id,
+            name: dto.name,
+            restaurantName: dto.restaurantName,
+            createdAt: dto.createdAt
         )
     }
 

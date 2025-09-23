@@ -6,6 +6,7 @@ import org.biterunr_studios.biterunr.DTO.AwaitingOrderRequest
 import org.biterunr_studios.biterunr.DTO.AwaitingOrdersDTO
 import org.biterunr_studios.biterunr.DTO.CreateFriendRequestBody
 import org.biterunr_studios.biterunr.DTO.CreateUserSSOBody
+import org.biterunr_studios.biterunr.DTO.FoodItemDTO
 import org.biterunr_studios.biterunr.DTO.FriendRequestResponse
 import org.biterunr_studios.biterunr.DTO.FriendRequestUser
 import org.biterunr_studios.biterunr.DTO.FriendUser
@@ -303,5 +304,12 @@ suspend fun getUserOrderDetails(baseUrl: String, userId: String): FetchResponse<
     val url = "$baseUrl/orders/user/$userId/details"
 
     val result = fetch<Unit, List<OrderDetailsResponse>>(url = url, method = HttpMethod.Get, body = null)
+    return result
+}
+
+suspend fun getUserFoodItems(baseUrl: String, userId: String): FetchResponse<List<FoodItemDTO>> {
+    val url = "$baseUrl/orders/user/$userId/recent-items"
+
+    val result = fetch<Unit, List<FoodItemDTO>>(url = url, method = HttpMethod.Get, body = null)
     return result
 }
