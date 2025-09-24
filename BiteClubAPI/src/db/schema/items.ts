@@ -34,7 +34,7 @@ export const items = pgTable(
             .$onUpdateFn(() => new Date()),
     },
     (t) => [
-        unique().on(t.name),
+        unique().on(t.name, t.location_id),
         index("items_search_vector_idx").on(t.searchVector),
     ]
 ).enableRLS();
