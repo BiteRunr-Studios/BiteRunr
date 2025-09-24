@@ -71,6 +71,13 @@
       "when": 1757642193010,
       "tag": "0009_supreme_marauders",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1758679170059,
+      "tag": "0010_lowly_captain_marvel",
+      "breakpoints": true
     }
   ]
 }
