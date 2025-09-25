@@ -62,7 +62,8 @@ export const insertOrderItemsSchema = createInsertSchema(orderItems)
         order_user_id: z.string().nonempty("Order User Id is required"),
         item_id: z.string().nonempty("Item Id is required"),
         quantity: z.number().min(1, "Quantity must be 1 or more"),
-    });
+    })
+    .partial({ comments: true });
 
 export const patchOrderItemsSchema = insertOrderItemsSchema
     .omit({
