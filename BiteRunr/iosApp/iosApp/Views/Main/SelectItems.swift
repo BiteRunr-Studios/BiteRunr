@@ -98,7 +98,7 @@ struct SelectItems: View {
         }
     }
     
-    // MARK: - Action Handlers
+    // MARK: - Handle Edit Action
     private func handleEditAction(for orderUserItem: SelectItemsOrderUserLocationItemDTO) {
         // Set the editing item with both the item and its current quantity
         editingItem = (item: orderUserItem.item, orderItemId: orderUserItem.id, quantity: Int(orderUserItem.quantity), comments: orderUserItem.comments) as? (item: SelectItemsItemDTO, orderItemId: String, quantity: Int, comments: String?)
@@ -107,6 +107,7 @@ struct SelectItems: View {
         showAddItemSheet = true
     }
     
+    // MARK: - Handle Delete Action
     private func handleDeleteAction(for orderUserItem: SelectItemsOrderUserLocationItemDTO) async {
         guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
             errorMessage = "API_URL not set"
@@ -125,7 +126,7 @@ struct SelectItems: View {
         }
     }
     
-    // MARK: - Helper Views
+    // MARK: - Back Button View
     @ViewBuilder
     private var backButtonView: some View {
         HStack {
@@ -149,6 +150,7 @@ struct SelectItems: View {
         .padding(.top)
     }
     
+    // MARK: - Title View
     @ViewBuilder
     private var titleView: some View {
         VStack(alignment: .leading) {
@@ -166,6 +168,7 @@ struct SelectItems: View {
         .padding(.top)
     }
     
+    // MARK: - Location Pills View
     @ViewBuilder
     private var locationPillsView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -198,6 +201,7 @@ struct SelectItems: View {
         .frame(height: 60)
     }
     
+    // MARK: - Searchbar View
     @ViewBuilder
     private var searchbarView: some View {
         HStack {
@@ -229,6 +233,7 @@ struct SelectItems: View {
         .padding(.horizontal)
     }
     
+    // MARK: - ContentScrollView
     @ViewBuilder
     private var contentScrollView: some View {
         ScrollView(.vertical) {
@@ -258,6 +263,7 @@ struct SelectItems: View {
         }
     }
     
+    // MARK: - Loading View
     @ViewBuilder
     private var loadingView: some View {
         ForEach(0..<3, id: \.self) { _ in
@@ -267,6 +273,7 @@ struct SelectItems: View {
         }
     }
     
+    // MARK: - Search Results View
     @ViewBuilder
     private var searchResultsView: some View {
         ForEach(selectedLocationSearchQueryItems, id: \.id) { searchItem in
@@ -282,6 +289,7 @@ struct SelectItems: View {
         }
     }
     
+    // MARK: - User Items View
     @ViewBuilder
     private var userItemsView: some View {
         ForEach(selectedLocationOrderUserItems, id: \.id) { orderUserItem in
@@ -306,6 +314,7 @@ struct SelectItems: View {
         }
     }
     
+    // MARK: - Bottom Section View
     @ViewBuilder
     private var bottomSectionView: some View {
         Rectangle()
@@ -337,6 +346,7 @@ struct SelectItems: View {
         .padding(.horizontal)
     }
     
+    // MARK: - Empty State View
     @ViewBuilder
     private var emptyStateView: some View {
         VStack(alignment: .center, spacing: 10) {
@@ -365,6 +375,7 @@ struct SelectItems: View {
         .transition(.opacity)
     }
     
+    // MARK: - No Result View
     @ViewBuilder
     private var noResultsView: some View {
         VStack(alignment: .center, spacing: 10) {
@@ -409,6 +420,7 @@ struct SelectItems: View {
         }
     }
     
+    // MARK: - Item Row Background View
     @ViewBuilder
     private var itemRowBackground: some View {
         RoundedRectangle(cornerRadius: 12)
@@ -595,7 +607,7 @@ extension SelectItems {
         // Create a new item with proper timestamp handling
         let newItem = SelectItemsItemDTO(
             id: searchQueryItem != nil ? searchQueryItem!.id : UUID().uuidString,
-            name: searchQueryItem != nil ? searchQueryItem!.name : searchValue,
+            name: searchQueryItem != nil ? searchQueryItem!.name : searchValue.trimmingCharacters(in: .whitespaces),
             locationId: selectedLocation.locationId,
             createdAt: nil,
             updatedAt: nil

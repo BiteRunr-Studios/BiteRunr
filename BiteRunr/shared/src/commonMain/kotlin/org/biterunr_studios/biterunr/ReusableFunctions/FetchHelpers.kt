@@ -279,14 +279,14 @@ suspend fun getLocationItems(baseUrl: String, locationId: String, searchQuery: S
     return result
 }
 
-suspend fun getOrderItemsFromOrderLocation(baseUrl: String, order_location_id: String): FetchResponse<List<PickupItemDTO>> {
-    val url = "$baseUrl/order-items/order-location/$order_location_id"
+suspend fun getOrderItemsFromOrderLocation(baseUrl: String, orderLocationId: String): FetchResponse<List<PickupItemDTO>> {
+    val url = "$baseUrl/order-items/order-location/$orderLocationId"
     val result = fetch<Unit, List<PickupItemDTO>>(url = url, method = HttpMethod.Get, body = null)
     return result
 }
 
-suspend fun addNewItemToLocation(baseUrl: String, order_id: String, order_location_id: String, newItem: SelectItemsAddNewItemDTO): FetchResponse<SelectItemsAddExistingItemDTO> {
-    val url = "$baseUrl/orders/$order_id/locations/$order_location_id/items";
+suspend fun addNewItemToLocation(baseUrl: String, orderId: String, orderLocationId: String, newItem: SelectItemsAddNewItemDTO): FetchResponse<SelectItemsAddExistingItemDTO> {
+    val url = "$baseUrl/orders/$orderId/locations/$orderLocationId/items";
 
     val result = fetch<SelectItemsAddNewItemDTO, SelectItemsAddExistingItemDTO>(url=url, method = HttpMethod.Post, body = newItem)
     return result
