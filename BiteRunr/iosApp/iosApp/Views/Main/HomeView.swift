@@ -173,7 +173,7 @@ extension HomeView {
         }
 
         do {
-            guard let apiUrl = Bundle.main.infoDictionary?["API_URL_LOCAL"] as? String else {
+            guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
                 errorMessage = "API_URL not set"
                 return
             }
@@ -212,7 +212,7 @@ extension HomeView {
         defer { isLoadingRecentItems = false }
 
         do {
-            guard let apiUrl = Bundle.main.infoDictionary?["API_URL_LOCAL"] as? String else {
+            guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
                 errorMessage = "API_URL not set"
                 return
             }
