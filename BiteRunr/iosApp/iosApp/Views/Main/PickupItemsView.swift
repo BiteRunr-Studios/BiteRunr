@@ -44,7 +44,7 @@ extension PickupItemsView {
 //                errorMessage = "API_URL not set"
                 return
             }
-            let response = try await getOrderItemsFromOrderLocation(baseUrl: apiUrl, order_location_id: "8fb4588b-1de1-46d5-95ab-04e0ebb9bf41")
+            let response = try await getOrderItemsFromOrderLocation(baseUrl: apiUrl, orderLocationId: "8fb4588b-1de1-46d5-95ab-04e0ebb9bf41")
             if response.success {
                 sampleData = response.data as! [PickupItemDTO]
             }

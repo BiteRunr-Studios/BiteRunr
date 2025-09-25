@@ -8,7 +8,7 @@ struct SelectItems: View {
     @State private var selectedLocation: SelectItemsOrderLocationDTO? = nil
     @State private var selectedLocationOrderUserItems: [SelectItemsOrderUserLocationItemDTO] = []
     @State private var selectedLocationSearchQueryItems: [SelectItemsItemDTO] = []
-    @State private var editingItem: (item: SelectItemsItemDTO, quantity: Int, comments: String?)? = nil
+    @State private var editingItem: (item: SelectItemsItemDTO, orderItemId: String, quantity: Int, comments: String?)? = nil
     @State private var isExistingItem: Bool = false
     
     enum ActionType: String {
@@ -85,6 +85,7 @@ struct SelectItems: View {
                     orderItem: editingItem.item,
                     quantity: editingItem.quantity,
                     comments: editingItem.comments ?? "",
+                    orderItemId: editingItem.orderItemId,
                     orderUserId: currentOrderUserId,
                     actionType: currentActionType.rawValue,
                     orderId: order.id,
@@ -97,20 +98,35 @@ struct SelectItems: View {
         }
     }
     
-    // MARK: - Action Handlers
+    // MARK: - Handle Edit Action
     private func handleEditAction(for orderUserItem: SelectItemsOrderUserLocationItemDTO) {
         // Set the editing item with both the item and its current quantity
-        editingItem = (item: orderUserItem.item, quantity: Int(orderUserItem.quantity), comments: orderUserItem.comments) as? (item: SelectItemsItemDTO, quantity: Int, comments: String)
+        editingItem = (item: orderUserItem.item, orderItemId: orderUserItem.id, quantity: Int(orderUserItem.quantity), comments: orderUserItem.comments) as? (item: SelectItemsItemDTO, orderItemId: String, quantity: Int, comments: String?)
         currentActionType = ActionType.edit
         isExistingItem = true
         showAddItemSheet = true
     }
     
-    private func handleDeleteAction(for orderUserItem: SelectItemsOrderUserLocationItemDTO) {
-        // TODO: Implement delete functionality
+    // MARK: - Handle Delete Action
+    private func handleDeleteAction(for orderUserItem: SelectItemsOrderUserLocationItemDTO) async {
+        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
+            errorMessage = "API_URL not set"
+            isLoading = false
+            return
+        }
+        
+        do {
+            let response = try await deleteItemReferenceToUserOrder(baseUrl: apiUrl, orderItemId: orderUserItem.id)
+        
+            if response.success {
+                selectedLocationOrderUserItems.removeAll { $0.id == orderUserItem.id }
+            }
+        } catch {
+           print("")
+        }
     }
     
-    // MARK: - Helper Views
+    // MARK: - Back Button View
     @ViewBuilder
     private var backButtonView: some View {
         HStack {
@@ -134,6 +150,7 @@ struct SelectItems: View {
         .padding(.top)
     }
     
+    // MARK: - Title View
     @ViewBuilder
     private var titleView: some View {
         VStack(alignment: .leading) {
@@ -151,6 +168,7 @@ struct SelectItems: View {
         .padding(.top)
     }
     
+    // MARK: - Location Pills View
     @ViewBuilder
     private var locationPillsView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -183,6 +201,7 @@ struct SelectItems: View {
         .frame(height: 60)
     }
     
+    // MARK: - Searchbar View
     @ViewBuilder
     private var searchbarView: some View {
         HStack {
@@ -214,6 +233,7 @@ struct SelectItems: View {
         .padding(.horizontal)
     }
     
+    // MARK: - ContentScrollView
     @ViewBuilder
     private var contentScrollView: some View {
         ScrollView(.vertical) {
@@ -243,6 +263,7 @@ struct SelectItems: View {
         }
     }
     
+    // MARK: - Loading View
     @ViewBuilder
     private var loadingView: some View {
         ForEach(0..<3, id: \.self) { _ in
@@ -252,6 +273,7 @@ struct SelectItems: View {
         }
     }
     
+    // MARK: - Search Results View
     @ViewBuilder
     private var searchResultsView: some View {
         ForEach(selectedLocationSearchQueryItems, id: \.id) { searchItem in
@@ -267,6 +289,7 @@ struct SelectItems: View {
         }
     }
     
+    // MARK: - User Items View
     @ViewBuilder
     private var userItemsView: some View {
         ForEach(selectedLocationOrderUserItems, id: \.id) { orderUserItem in
@@ -280,7 +303,9 @@ struct SelectItems: View {
                         }
                         Action(symbolImage: "trash", tint: .white, background: .red) { resetPosition in
                             resetPosition.toggle()
-                            handleDeleteAction(for: orderUserItem)
+                            Task {
+                                await handleDeleteAction(for: orderUserItem)
+                            }
                         }
                     }
                     .animation(.easeInOut(duration: 0.2), value: orderUserItem)
@@ -289,6 +314,7 @@ struct SelectItems: View {
         }
     }
     
+    // MARK: - Bottom Section View
     @ViewBuilder
     private var bottomSectionView: some View {
         Rectangle()
@@ -320,6 +346,7 @@ struct SelectItems: View {
         .padding(.horizontal)
     }
     
+    // MARK: - Empty State View
     @ViewBuilder
     private var emptyStateView: some View {
         VStack(alignment: .center, spacing: 10) {
@@ -348,6 +375,7 @@ struct SelectItems: View {
         .transition(.opacity)
     }
     
+    // MARK: - No Result View
     @ViewBuilder
     private var noResultsView: some View {
         VStack(alignment: .center, spacing: 10) {
@@ -392,6 +420,7 @@ struct SelectItems: View {
         }
     }
     
+    // MARK: - Item Row Background View
     @ViewBuilder
     private var itemRowBackground: some View {
         RoundedRectangle(cornerRadius: 12)
@@ -578,7 +607,7 @@ extension SelectItems {
         // Create a new item with proper timestamp handling
         let newItem = SelectItemsItemDTO(
             id: searchQueryItem != nil ? searchQueryItem!.id : UUID().uuidString,
-            name: searchQueryItem != nil ? searchQueryItem!.name : searchValue,
+            name: searchQueryItem != nil ? searchQueryItem!.name : searchValue.trimmingCharacters(in: .whitespaces),
             locationId: selectedLocation.locationId,
             createdAt: nil,
             updatedAt: nil
@@ -586,7 +615,7 @@ extension SelectItems {
         
         isExistingItem = searchQueryItem != nil
         
-        editingItem = (item: newItem, quantity: 1, comments: nil)
+        editingItem = (item: newItem, orderItemId: UUID().uuidString, quantity: 1, comments: "")
         currentActionType = .create
         showAddItemSheet = true
     }

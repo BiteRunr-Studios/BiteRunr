@@ -149,6 +149,7 @@ struct AddFriendsView: View {
                 }
             }
         }
+        .dismissKeyboardOnTap()
         .ignoresSafeArea(.container, edges: .bottom)
     }
 }

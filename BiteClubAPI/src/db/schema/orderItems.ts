@@ -62,11 +62,18 @@ export const insertOrderItemsSchema = createInsertSchema(orderItems)
         order_user_id: z.string().nonempty("Order User Id is required"),
         item_id: z.string().nonempty("Item Id is required"),
         quantity: z.number().min(1, "Quantity must be 1 or more"),
-    });
-export const patchOrderItemsSchema = insertOrderItemsSchema.partial().omit({
-    order_location_id: true,
-    order_user_id: true,
-    item_id: true,
-});
+    })
+    .partial({ comments: true });
+
+export const patchOrderItemsSchema = insertOrderItemsSchema
+    .omit({
+        order_location_id: true,
+        order_user_id: true,
+        item_id: true,
+    })
+    .extend({
+        quantity: z.number().min(1, "Quantity must be 1 or more"),
+    })
+    .partial({ comments: true }); // Only comments is optional
 
 export default orderItems;

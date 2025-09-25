@@ -4,26 +4,25 @@ import Shared
 import Supabase
 
 struct AddItemSheet: View {
-    @State var orderLocation: SelectItemsOrderLocationDTO?
-    @State var orderItem: SelectItemsItemDTO?
+    let orderLocation: SelectItemsOrderLocationDTO?
+    let orderItem: SelectItemsItemDTO?
+    
     @State var quantity: Int
+    @State var comments: String
     
-    @State var comments: String = ""
+    let orderItemId: String
+    let orderUserId: String
+    let actionType: String
+    let orderId: String
+    let orderLocationId: String
+    let itemId: String
     
-    @State var orderUserId: String
-    @State var actionType: String
-    @State var orderId: String
-    @State var orderLocationId: String
-    @State var itemId: String
     @State var isExistingItem: Bool = false
-    
-    @State private var ItemNameError: String?
     
     @Environment(\.dismiss) private var dismiss
     
-    
-    
     var body: some View {
+
         VStack(alignment: .leading) {
             Capsule()
                 .fill(Color.secondary.opacity(0.5))
@@ -79,13 +78,17 @@ struct AddItemSheet: View {
                     
                 }
                 Task {
-                    dismiss()
-                    
-                    if isExistingItem {
-                        await addExistingItem()
-                    } else {
-                        await addNewItem()
+                    if actionType == "Create" {
+                        if isExistingItem {
+                            await addExistingItem()
+                        } else {
+                            await addNewItem()
+                        }
+                    } else if actionType == "Edit" {
+                        await editExistingItem()
                     }
+                    
+                    dismiss()
                 }
             }) {
                 HStack {
@@ -107,15 +110,16 @@ struct AddItemSheet: View {
             
         }
         .padding()
+        .dismissKeyboardOnTap()
         Spacer()
     }
 }
 
 extension AddItemSheet {
     private func addNewItem() async {
+        print("Adding new item")
         guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
-        print("Added new item")
-        print(itemId)
+
         // Build object to send in repo function
         let item = SelectItemsAddNewItemDTO(
             orderUserId: orderUserId,
@@ -127,18 +131,16 @@ extension AddItemSheet {
             comments:  comments.isEmpty ? nil : comments,
         )
         
+        print("Order Id: \(orderId)")
+        print("Order Location Id: \(orderLocationId)")
         print(item)
         do {
-            let result = try await addNewItemToLocation(baseUrl: apiUrl, order_id: orderId, order_location_id: orderLocationId, newItem: item)
+            let result = try await addNewItemToLocation(baseUrl: apiUrl, orderId: orderId, orderLocationId: orderLocationId, newItem: item)
             
             if result.success {
                 return
             }
-            
-            // Handle Form Validation Errors
-            mapValidationErrors(result, handlers: [
-                "new_item.name": { ItemNameError = $0 },
-            ])
+                       
             print(result.error!)
         } catch {
             print("An error occured when adding new item")
@@ -147,8 +149,7 @@ extension AddItemSheet {
     
     private func addExistingItem() async {
         guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
-        print("Added reference to existing item")
-        print(itemId)
+
         let existingItem = SelectItemsAddExistingItemDTO(
             orderLocationId: orderLocationId,
             orderUserId: orderUserId,
@@ -166,6 +167,28 @@ extension AddItemSheet {
             print("Failed to add exisitng item to user's order")
         } catch {
             print("An error occured when adding existing item")
+        }
+    }
+    
+    private func editExistingItem() async {
+        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
+        
+        let editedItem = SelectItemsEditItemDTO(
+            comments: comments.isEmpty ? nil : comments,
+            quantity: Int32(quantity)
+        )
+        
+        print(orderItem!.id)
+        
+        do {
+            let result = try await editItemReferenceToUserOrder(baseUrl: apiUrl, orderItemId: orderItemId, editedItem: editedItem)
+            
+            if result.success {
+                return
+            }
+            print("Failed to edit exisitng item to user's order")
+        } catch {
+            print("An error occured when editing existing item")
         }
     }
 }
