@@ -6,7 +6,6 @@
         "dev": "tsx watch src/index.ts",
         "build": "tsup src/index.ts --format esm --outDir dist --dts",
         "start": "node dist/index.js",
-        "db:push": "pnpm drizzle-kit push",
         "db:generate": "pnpm drizzle-kit generate",
         "db:migrate": "pnpm drizzle-kit migrate",
         "db:pull": "pnpm drizzle-kit pull"

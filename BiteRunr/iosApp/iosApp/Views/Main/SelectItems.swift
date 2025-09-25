@@ -8,7 +8,7 @@ struct SelectItems: View {
     @State private var selectedLocation: SelectItemsOrderLocationDTO? = nil
     @State private var selectedLocationOrderUserItems: [SelectItemsOrderUserLocationItemDTO] = []
     @State private var selectedLocationSearchQueryItems: [SelectItemsItemDTO] = []
-    @State private var editingItem: (item: SelectItemsItemDTO, quantity: Int, comments: String?)? = nil
+    @State private var editingItem: (item: SelectItemsItemDTO, orderItemId: String, quantity: Int, comments: String?)? = nil
     @State private var isExistingItem: Bool = false
     
     enum ActionType: String {
@@ -85,6 +85,7 @@ struct SelectItems: View {
                     orderItem: editingItem.item,
                     quantity: editingItem.quantity,
                     comments: editingItem.comments ?? "",
+                    orderItemId: editingItem.orderItemId,
                     orderUserId: currentOrderUserId,
                     actionType: currentActionType.rawValue,
                     orderId: order.id,
@@ -100,14 +101,28 @@ struct SelectItems: View {
     // MARK: - Action Handlers
     private func handleEditAction(for orderUserItem: SelectItemsOrderUserLocationItemDTO) {
         // Set the editing item with both the item and its current quantity
-        editingItem = (item: orderUserItem.item, quantity: Int(orderUserItem.quantity), comments: orderUserItem.comments) as? (item: SelectItemsItemDTO, quantity: Int, comments: String)
+        editingItem = (item: orderUserItem.item, orderItemId: orderUserItem.id, quantity: Int(orderUserItem.quantity), comments: orderUserItem.comments) as? (item: SelectItemsItemDTO, orderItemId: String, quantity: Int, comments: String?)
         currentActionType = ActionType.edit
         isExistingItem = true
         showAddItemSheet = true
     }
     
-    private func handleDeleteAction(for orderUserItem: SelectItemsOrderUserLocationItemDTO) {
-        // TODO: Implement delete functionality
+    private func handleDeleteAction(for orderUserItem: SelectItemsOrderUserLocationItemDTO) async {
+        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
+            errorMessage = "API_URL not set"
+            isLoading = false
+            return
+        }
+        
+        do {
+            let response = try await deleteItemReferenceToUserOrder(baseUrl: apiUrl, orderItemId: orderUserItem.id)
+        
+            if response.success {
+                selectedLocationOrderUserItems.removeAll { $0.id == orderUserItem.id }
+            }
+        } catch {
+           print("")
+        }
     }
     
     // MARK: - Helper Views
@@ -280,7 +295,9 @@ struct SelectItems: View {
                         }
                         Action(symbolImage: "trash", tint: .white, background: .red) { resetPosition in
                             resetPosition.toggle()
-                            handleDeleteAction(for: orderUserItem)
+                            Task {
+                                await handleDeleteAction(for: orderUserItem)
+                            }
                         }
                     }
                     .animation(.easeInOut(duration: 0.2), value: orderUserItem)
@@ -586,7 +603,7 @@ extension SelectItems {
         
         isExistingItem = searchQueryItem != nil
         
-        editingItem = (item: newItem, quantity: 1, comments: nil)
+        editingItem = (item: newItem, orderItemId: UUID().uuidString, quantity: 1, comments: "")
         currentActionType = .create
         showAddItemSheet = true
     }

@@ -24,11 +24,10 @@ import type {
   EditOrderItemsRoute,
   RemoveOrderItemRoute,
 } from "./orders.routes";
-import { isNull, sql } from "drizzle-orm";
 import type { AppRouteHandler } from "@/lib/types";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import * as HttpStatusPhrases from "stoker/http-status-phrases";
-import { eq, and } from "drizzle-orm";
+import { sql, eq, and, isNull, ne } from "drizzle-orm";
 import { orderLocations, orderUsers, items } from "@/db/schema";
 import { orderItems } from "@/db/schema/orderItems";
 import { insertOrderLocationsSchema } from "@/db/schema/orderLocations";
@@ -390,9 +389,8 @@ export const addItemAndLinkToOrderUser: AppRouteHandler<
   const quantityToAdd = newOrderItem.quantity;
   const comments = newOrderItem.comments ?? null;
 
-  const normalizedComment = comments === null
-  ? null
-  : comments.toLowerCase().replace(/\s+/g, "");
+  const normalizedComment =
+    comments === null ? null : comments.toLowerCase().replace(/\s+/g, "");
 
   let existingOrderItemQuery;
 
@@ -419,8 +417,9 @@ export const addItemAndLinkToOrderUser: AppRouteHandler<
           eq(orderItems.item_id, itemId),
           eq(orderItems.order_user_id, orderUserId),
           eq(
-            sql`LOWER(REPLACE(${orderItems.comments}, ' ', ''))`, 
-            normalizedComment)
+            sql`LOWER(REPLACE(${orderItems.comments}, ' ', ''))`,
+            normalizedComment
+          )
         )
       )
       .limit(1);
@@ -576,7 +575,74 @@ export const editOrderItems: AppRouteHandler<EditOrderItemsRoute> = async (
 ) => {
   const { order_item_id } = c.req.valid("param");
   const updated_order_item = c.req.valid("json");
+  const comments = updated_order_item.comments ?? null;
 
+  // Normalize comments for comparison
+  const normalizedComments =
+    comments === null ? null : comments.toLowerCase().replace(/\s+/g, "");
+
+  const [existingOrderItem] = await db
+    .select()
+    .from(orderItems)
+    .where(
+      eq(orderItems.id, order_item_id)
+    )
+    .limit(1);
+
+
+  let matchingOrderItemQuery;
+
+  if (normalizedComments === null) {
+    matchingOrderItemQuery = await db
+      .select()
+      .from(orderItems)
+      .where(
+        and(
+          eq(orderItems.item_id, existingOrderItem.item_id),
+          eq(orderItems.order_user_id, existingOrderItem.order_user_id),
+          isNull(orderItems.comments),
+          ne(orderItems.id, order_item_id) // Exclude the item being edited
+        )
+      )
+      .limit(1);
+  } else {
+    matchingOrderItemQuery = await db
+      .select()
+      .from(orderItems)
+      .where(
+        and(
+          eq(orderItems.item_id, existingOrderItem.item_id),
+          eq(orderItems.order_user_id, existingOrderItem.order_user_id),
+          eq(sql`LOWER(REPLACE(${orderItems.comments}, ' ', ''))`, normalizedComments),
+          ne(orderItems.id, order_item_id) // Exclude the item being edited
+        )
+      )
+      .limit(1);
+  }
+
+  const matchingOrderItem = matchingOrderItemQuery[0];
+
+  
+  if (matchingOrderItem) {
+    // Merge quantities
+    const mergedQuantity = matchingOrderItem.quantity + updated_order_item.quantity;
+
+    // Update the matching item with the merged quantity
+    const [updatedMatchingOrderItem] = await db
+      .update(orderItems)
+      .set({ quantity: mergedQuantity })
+      .where(eq(orderItems.id, matchingOrderItem.id))
+      .returning();
+
+    // Delete the item being edited
+    await db
+      .delete(orderItems)
+      .where(eq(orderItems.id, order_item_id));
+
+    return c.json(updatedMatchingOrderItem, HttpStatusCodes.OK);
+  }
+
+  // No match found, update as usual
   const [updatedOrderItem] = await db
     .update(orderItems)
     .set(updated_order_item)
