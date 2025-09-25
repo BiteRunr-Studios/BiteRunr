@@ -1,5 +1,8 @@
 name: Auto Merge main into api-changes on PR merge
 
+permissions:
+    contents: write
+
 on:
     pull_request:
         types: [closed]
@@ -17,16 +20,13 @@ jobs:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   fetch-depth: 0
 
-            - name: Set up Git
-              run: |
-                  git config user.name "github-actions[bot]"
-                  git config user.email "github-actions[bot]@users.noreply.github.com"
-
             - name: Fetch all branches
               run: git fetch --all
 
+            - name: Checkout api-changes branch
+              run: git checkout api-changes
+
             - name: Merge main into api-changes
               run: |
-                  git checkout api-changes
-                  git merge main
+                  git merge origin/main
                   git push origin api-changes
