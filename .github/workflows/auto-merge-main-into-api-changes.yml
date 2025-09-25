@@ -26,6 +26,11 @@ jobs:
             - name: Checkout api-changes branch
               run: git checkout api-changes
 
+            - name: Set up Git user
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
             - name: Merge main into api-changes
               run: |
                   git merge origin/main
