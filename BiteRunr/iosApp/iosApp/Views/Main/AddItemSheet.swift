@@ -116,6 +116,7 @@ struct AddItemSheet: View {
 
 extension AddItemSheet {
     private func addNewItem() async {
+        print("Adding new item")
         guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
 
         // Build object to send in repo function
@@ -129,9 +130,11 @@ extension AddItemSheet {
             comments:  comments.isEmpty ? nil : comments,
         )
         
+        print("Order Id: \(orderId)")
+        print("Order Location Id: \(orderLocationId)")
         print(item)
         do {
-            let result = try await addNewItemToLocation(baseUrl: apiUrl, order_id: orderId, order_location_id: orderLocationId, newItem: item)
+            let result = try await addNewItemToLocation(baseUrl: apiUrl, orderId: orderId, orderLocationId: orderLocationId, newItem: item)
             
             if result.success {
                 return
