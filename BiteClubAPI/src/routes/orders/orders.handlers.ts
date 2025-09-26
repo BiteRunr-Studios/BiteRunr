@@ -408,6 +408,8 @@ export const addNewItemAndLinkToOrderUser: AppRouteHandler<
     const { order_id, order_location_id } = c.req.valid("param");
     const { order_user_id, new_item, quantity, comments } = c.req.valid("json");
 
+    console.log("Raw request body", c.req.json());
+
     const [insertedItem] = await db.insert(items).values(new_item).returning();
 
     const [insertedOrderItem] = await db
