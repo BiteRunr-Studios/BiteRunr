@@ -112,8 +112,22 @@ struct AwaitingOrders: View {
                     VStack(spacing: 12) {
                         // button 1
                         Button(action: {
-                            withAnimation {
-                                showSelectItems = true
+                            Task {
+                                withAnimation {
+                                    showSelectItems = true
+                                }
+                                guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
+                                
+                                let newStatus = SelectItemsOrderStatus(
+                                    status: "ordering"
+                                )
+                                
+                                do {
+                                    try await setOrderUserStatus(baseUrl: apiUrl, orderId: order!.id, userId: currentUserId!, status: newStatus)
+                                }
+                                catch {
+                                    print("An error occured while setting user's order status")
+                                }
                             }
                         }) {
                             HStack {
@@ -137,10 +151,22 @@ struct AwaitingOrders: View {
                     // - readyToRun: orange background with white text, no border, enabled interaction
                     if isCreator {
                         Button(action: {
-                            withAnimation {
-                                showPickupItems = true
-                            }
                             Task {
+                                withAnimation {
+                                    showPickupItems = true
+                                }
+                                guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
+                                
+                                let newStatus = SelectItemsOrderStatus(
+                                    status: "done"
+                                )
+                                
+                                do {
+                                    try await setOrderUserStatus(baseUrl: apiUrl, orderId: order!.id, userId: currentUserId!, status: newStatus)
+                                }
+                                catch {
+                                    print("An error occured while setting user's order status")
+                                }
                             }
                         }) {
                             HStack {

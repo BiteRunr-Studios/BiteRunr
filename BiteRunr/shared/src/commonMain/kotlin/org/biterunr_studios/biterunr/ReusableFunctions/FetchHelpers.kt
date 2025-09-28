@@ -18,6 +18,7 @@ import org.biterunr_studios.biterunr.DTO.SelectItemsEditItemDTO
 import org.biterunr_studios.biterunr.DTO.SelectItemsItemDTO
 import org.biterunr_studios.biterunr.DTO.SelectItemsOrderLocationDTO
 import org.biterunr_studios.biterunr.DTO.SelectItemsOrderLocationRequest
+import org.biterunr_studios.biterunr.DTO.SelectItemsOrderStatus
 import org.biterunr_studios.biterunr.DTO.SelectItemsOrderUserLocationItemDTO
 import org.biterunr_studios.biterunr.DTO.SentFriendRequest
 import org.biterunr_studios.biterunr.DTO.UpdateOrderDTO
@@ -311,4 +312,11 @@ suspend fun editItemReferenceToUserOrder(baseUrl: String, orderItemId: String, e
 
     val result = fetch<SelectItemsEditItemDTO, SelectItemsAddExistingItemDTO>(url=url, method = HttpMethod.Patch, body = editedItem)
     return result
+}
+
+suspend fun setOrderUserStatus(baseUrl: String, orderId: String, userId: String, status: SelectItemsOrderStatus): FetchResponse<String>  {
+    val url = "$baseUrl/orders/$orderId/users/$userId/change-status"
+
+    val result = fetch<SelectItemsOrderStatus, String>(url=url, method = HttpMethod.Patch, body = status)
+    return result;
 }

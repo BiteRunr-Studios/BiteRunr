@@ -132,6 +132,9 @@ struct SelectItems: View {
         HStack {
             // Back button
             Button(action: {
+                Task {
+                    await setStatus(status: Status.done)
+                }
                 isLoading = true
                 onDismiss?()
                 dismiss()
@@ -328,7 +331,12 @@ struct SelectItems: View {
             }
             VStack(spacing: 12) {
                 Button(action: {
-                    // TODO: Implement done ordering functionality
+                    Task {
+                        await setStatus(status: Status.done)
+                    }
+                    isLoading = true
+                    onDismiss?()
+                    dismiss()
                 }) {
                     HStack {
                         Image(systemName: "checkmark")
@@ -618,5 +626,32 @@ extension SelectItems {
         editingItem = (item: newItem, orderItemId: UUID().uuidString, quantity: 1, comments: "")
         currentActionType = .create
         showAddItemSheet = true
+    }
+    
+    private enum Status: String {
+        case ordering = "ordering"
+        case done = "done"
+    }
+    
+    private func setStatus(status: Status) async {
+        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
+        
+        let newStatus = SelectItemsOrderStatus(
+            status: status.rawValue
+        )
+        
+        do {
+            let response = try await setOrderUserStatus(baseUrl: apiUrl, orderId: order.id, userId: currentUserId!, status: newStatus)
+            
+            if response.success {
+                print("Successfully set user's order status to \(status.rawValue)")
+                return
+            }
+            print("Failed to set user's order status to \(status.rawValue)")
+            print(response.error!)
+        }
+        catch {
+            print("An error occured while setting user's order status")
+        }
     }
 }

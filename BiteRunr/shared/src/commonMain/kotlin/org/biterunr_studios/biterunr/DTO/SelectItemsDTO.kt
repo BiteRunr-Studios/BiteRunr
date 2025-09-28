@@ -120,3 +120,9 @@ data class SelectItemsEditItemDTO (
     @SerialName("quantity")
     val quantity: Int
 )
+
+@Serializable
+data class SelectItemsOrderStatus (
+    @SerialName("status")
+    val status: String
+)
