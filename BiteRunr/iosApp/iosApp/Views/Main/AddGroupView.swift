@@ -214,7 +214,7 @@ struct AddGroupView: View {
                                     id: nil,
                                     name: name,
                                     creatorId: creatorId,
-                                    comments: comments,
+                                    comments: comments.isEmpty ? nil : comments,
                                     status: .active,
                                     paused: false,
                                     createdAt: nil,

@@ -91,6 +91,9 @@ struct SelectItems: View {
                     orderId: order.id,
                     orderLocationId: selectedLocation!.orderLocationId,
                     itemId: editingItem.item.id,
+                    onSuccess: {
+                        handleItemActionSuccess()
+                    },
                     isExistingItem: isExistingItem
                 )
                 .presentationDetents([.medium])
@@ -652,6 +655,22 @@ extension SelectItems {
         }
         catch {
             print("An error occured while setting user's order status")
+        }
+    }
+    
+    private func handleItemActionSuccess() {
+        Task {
+            // Clear search and show success message
+            await MainActor.run {
+                searchValue = ""
+                selectedLocationSearchQueryItems = []
+            }
+            
+            // Refresh the items list to show the new/updated item
+            await fetchOrderUserLocationItems()
+            
+            // Hide success message after 2 seconds
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
         }
     }
 }

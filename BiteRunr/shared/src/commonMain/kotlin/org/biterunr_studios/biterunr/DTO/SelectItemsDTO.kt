@@ -82,7 +82,7 @@ data class SelectItemsAddExistingItemDTO (
     val itemId: String,
 
     @SerialName("comments")
-    val comments: String? = null,
+    val comments: String?,
 
     @SerialName("quantity")
     val quantity: Int,
@@ -100,7 +100,7 @@ data class SelectItemsAddNewItemDTO (
     val quantity: Int,
 
     @SerialName("comments")
-    val comments: String? = null,
+    val comments: String?,
 )
 
 @Serializable

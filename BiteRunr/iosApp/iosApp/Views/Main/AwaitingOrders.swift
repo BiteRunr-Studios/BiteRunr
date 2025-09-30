@@ -123,7 +123,7 @@ struct AwaitingOrders: View {
                                 )
                                 
                                 do {
-                                    try await setOrderUserStatus(baseUrl: apiUrl, orderId: order!.id, userId: currentUserId!, status: newStatus)
+                                    let _ = try await setOrderUserStatus(baseUrl: apiUrl, orderId: order!.id, userId: currentUserId!, status: newStatus)
                                 }
                                 catch {
                                     print("An error occured while setting user's order status")
@@ -141,7 +141,7 @@ struct AwaitingOrders: View {
                             .cornerRadius(12)
                             .contentShape(Rectangle())
                         }
-                        .disabled(isLoading)
+                        .disabled(isLoading || showPickupItems)
                     }
                     
                     // button 2
@@ -162,7 +162,7 @@ struct AwaitingOrders: View {
                                 )
                                 
                                 do {
-                                    try await setOrderUserStatus(baseUrl: apiUrl, orderId: order!.id, userId: currentUserId!, status: newStatus)
+                                    let _ = try await setOrderUserStatus(baseUrl: apiUrl, orderId: order!.id, userId: currentUserId!, status: newStatus)
                                 }
                                 catch {
                                     print("An error occured while setting user's order status")
@@ -192,7 +192,7 @@ struct AwaitingOrders: View {
                             .scaleEffect()
                             .contentShape(Rectangle())
                         }
-                        .disabled(isLoading)
+                        .disabled(isLoading || showSelectItems)
                         .animation(.easeInOut(duration: 0.3), value: buttonState)
                     }
                 }.padding(.horizontal)

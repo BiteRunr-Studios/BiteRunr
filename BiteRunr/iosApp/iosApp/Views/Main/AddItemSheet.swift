@@ -5,7 +5,7 @@ import Supabase
 
 struct AddItemSheet: View {
     let orderLocation: SelectItemsOrderLocationDTO?
-    let orderItem: SelectItemsItemDTO?
+    let orderItem: SelectItemsItemDTO
     
     @State var quantity: Int
     @State var comments: String
@@ -16,6 +16,7 @@ struct AddItemSheet: View {
     let orderId: String
     let orderLocationId: String
     let itemId: String
+    let onSuccess: (() -> Void)?
     
     @State var isExistingItem: Bool = false
     
@@ -32,7 +33,7 @@ struct AddItemSheet: View {
             // Page title and subtitle container
             VStack(alignment: .leading) {
                 // Page title
-                Text(orderItem!.name)
+                Text(orderItem.name)
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundColor(.secondary)
@@ -74,21 +75,23 @@ struct AddItemSheet: View {
             }
             
             Button(action: {
-                withAnimation(.easeIn(duration: 0.1)) {
-                    
-                }
                 Task {
+                    var success = false
+                    
                     if actionType == "Create" {
                         if isExistingItem {
-                            await addExistingItem()
+                            success = await addExistingItem()
                         } else {
-                            await addNewItem()
+                            success = await addNewItem()
                         }
                     } else if actionType == "Edit" {
-                        await editExistingItem()
+                        success = await editExistingItem()
                     }
                     
-                    dismiss()
+                    if success {
+                        dismiss()
+                        onSuccess?()
+                    }
                 }
             }) {
                 HStack {
@@ -115,15 +118,15 @@ struct AddItemSheet: View {
 }
 
 extension AddItemSheet {
-    private func addNewItem() async {
+    private func addNewItem() async -> Bool {
         print("Adding new item")
-        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
+        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return false }
 
         // Build object to send in repo function
         let item = SelectItemsAddNewItemDTO(
             orderUserId: orderUserId,
             newItem: SelectItemsNewItemDTO(
-                name: orderItem!.name,
+                name: orderItem.name,
                 locationId: orderLocation!.locationId
             ),
             quantity: Int32(quantity),
@@ -136,18 +139,15 @@ extension AddItemSheet {
         do {
             let result = try await addNewItemToLocation(baseUrl: apiUrl, orderId: orderId, orderLocationId: orderLocationId, newItem: item)
             
-            if result.success {
-                return
-            }
-                       
-            print(result.error!)
+            return result.success
         } catch {
             print("An error occured when adding new item")
+            return false
         }
     }
     
-    private func addExistingItem() async {
-        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
+    private func addExistingItem() async -> Bool {
+        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return false}
 
         let existingItem = SelectItemsAddExistingItemDTO(
             orderLocationId: orderLocationId,
@@ -159,35 +159,33 @@ extension AddItemSheet {
         
         do {
             let result = try await addItemsToOrderUser(baseUrl: apiUrl, existingItemReference: existingItem)
-            if result.success {
-                return
-            }
-            
             print("Failed to add exisitng item to user's order")
+            return result.success
         } catch {
+            
             print("An error occured when adding existing item")
+            return false
         }
     }
     
-    private func editExistingItem() async {
-        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return }
+    private func editExistingItem() async -> Bool {
+        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else { return false}
         
         let editedItem = SelectItemsEditItemDTO(
             comments: comments.isEmpty ? nil : comments,
             quantity: Int32(quantity)
         )
         
-        print(orderItem!.id)
+        print(orderItem.id)
         
         do {
             let result = try await editItemReferenceToUserOrder(baseUrl: apiUrl, orderItemId: orderItemId, editedItem: editedItem)
             
-            if result.success {
-                return
-            }
             print("Failed to edit exisitng item to user's order")
+            return result.success
         } catch {
             print("An error occured when editing existing item")
+            return false
         }
     }
 }
