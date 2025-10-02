@@ -34,16 +34,16 @@ BiteRunr is an iOS app that streamlines group food ordering and payment splittin
 
 The app uses several interconnected data models:
 
-- **UserProfile**: Core user profile data and social connections.
-- **OrderDTO**: Group food orders with status, creator, and participants.
-- **OrderItem**: Individual food items linked to users and locations.
-- **Location**: Restaurant or venue details.
-- **OrderUserDTO**: Users participating in an order.
-- **OrderLocationDTO**: Locations associated with an order.
-- **FriendRequest**: Pending or resolved friend requests.
-- **Friendship**: Confirmed social connections between users.
-- **FriendRequestUser**: Lightweight user data for friend request context.
-- **ErrorResponse**: Structured backend error with validation details.
+-   **UserProfile**: Core user profile data and social connections.
+-   **OrderDTO**: Group food orders with status, creator, and participants.
+-   **OrderItem**: Individual food items linked to users and locations.
+-   **Location**: Restaurant or venue details.
+-   **OrderUserDTO**: Users participating in an order.
+-   **OrderLocationDTO**: Locations associated with an order.
+-   **FriendRequest**: Pending or resolved friend requests.
+-   **Friendship**: Confirmed social connections between users.
+-   **FriendRequestUser**: Lightweight user data for friend request context.
+-   **ErrorResponse**: Structured backend error with validation details.
 
 These models are designed to support serialization with ‎⁠kotlinx.serialization⁠, cross-platform compatibility, and integration with SwiftUI and Jetpack Compose.
 
@@ -70,6 +70,7 @@ These models are designed to support serialization with ‎⁠kotlinx.serializat
     pnpm drizzle-kit push
     ```
 5. Start the backend:
+
     ```
     pnpm dev
     ```
@@ -77,6 +78,7 @@ These models are designed to support serialization with ‎⁠kotlinx.serializat
 6. Open the Kotlin Multiplatform app in Android Studio and run it on a simulator or device
 
 ---
+
 Copyright (c) 2025 RunrStudios  
 All rights reserved.
 

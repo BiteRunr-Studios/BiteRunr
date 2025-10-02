@@ -149,6 +149,7 @@ struct AddLocationsView: View {
                 }
             }
         }
+        .dismissKeyboardOnTap()
         .ignoresSafeArea(.container, edges: .bottom)
     }
 }

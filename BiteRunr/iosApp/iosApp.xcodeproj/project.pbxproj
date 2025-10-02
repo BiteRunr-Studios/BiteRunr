@@ -50,6 +50,7 @@
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
 		7555FF83242A565900829871 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF82242A565900829871 /* ContentView.swift */; };
 		D938D34C2DC5898F009CAE40 /* SendFriendRequestRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D938D34B2DC5898F009CAE40 /* SendFriendRequestRow.swift */; };
+		D982FE2C2E80EEC70063D5B0 /* SingleOrderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D982FE2B2E80EEC70063D5B0 /* SingleOrderView.swift */; };
 		D9B63CC82DE4F3E500E4805E /* InitialsCircle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B63CC72DE4F3E500E4805E /* InitialsCircle.swift */; };
 		D9F217CC2DC80EA600AB6BD6 /* OrderStatusBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F217CB2DC80EA600AB6BD6 /* OrderStatusBoxView.swift */; };
 		D9F217D42DC81D7500AB6BD6 /* OrderUsersRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F217D32DC81D7500AB6BD6 /* OrderUsersRow.swift */; };
@@ -102,6 +103,7 @@
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AB3632DC29227652001CCB65 /* Config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		D938D34B2DC5898F009CAE40 /* SendFriendRequestRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendFriendRequestRow.swift; sourceTree = "<group>"; };
+		D982FE2B2E80EEC70063D5B0 /* SingleOrderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleOrderView.swift; sourceTree = "<group>"; };
 		D9B63CC72DE4F3E500E4805E /* InitialsCircle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialsCircle.swift; sourceTree = "<group>"; };
 		D9F217CB2DC80EA600AB6BD6 /* OrderStatusBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderStatusBoxView.swift; sourceTree = "<group>"; };
 		D9F217D32DC81D7500AB6BD6 /* OrderUsersRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderUsersRow.swift; sourceTree = "<group>"; };
@@ -190,6 +192,7 @@
 				D9F217CB2DC80EA600AB6BD6 /* OrderStatusBoxView.swift */,
 				D9F217D32DC81D7500AB6BD6 /* OrderUsersRow.swift */,
 				EE6FABED2E309A610060CD42 /* OrderUsersRowSkeleton.swift */,
+				D982FE2B2E80EEC70063D5B0 /* SingleOrderView.swift */,
 			);
 			path = Order;
 			sourceTree = "<group>";
@@ -469,6 +472,7 @@
 				D9F217D42DC81D7500AB6BD6 /* OrderUsersRow.swift in Sources */,
 				14156DC92DBB28B800F4E56B /* SignInView.swift in Sources */,
 				14156DCA2DBB28B800F4E56B /* LocationSelectRow.swift in Sources */,
+				D982FE2C2E80EEC70063D5B0 /* SingleOrderView.swift in Sources */,
 				D938D34C2DC5898F009CAE40 /* SendFriendRequestRow.swift in Sources */,
 				EEE8BD1F2E381EA100A455C0 /* OrderItemRow.swift in Sources */,
 				14156DCB2DBB28B800F4E56B /* AddFriendsView.swift in Sources */,
@@ -624,6 +628,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
+				DEVELOPMENT_TEAM = 6K8R8337BL;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -651,6 +656,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
+				DEVELOPMENT_TEAM = 6K8R8337BL;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
