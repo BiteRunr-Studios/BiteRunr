@@ -1,5 +1,6 @@
 import SwiftUI
 import Supabase
+import Lottie
 
 extension AnyTransition {
     static var blurReplace: AnyTransition {
@@ -22,15 +23,21 @@ struct BlurModifier: ViewModifier {
 
 struct ContentView: View {
     @EnvironmentObject var supabaseState: SupabaseState
-
+    @State private var showingSplash = true
+    @State private var startAnimation = false
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .top) {
-                if supabaseState.isCheckingAuth {
+                if showingSplash {
                     Color(.systemBackground)
                         .ignoresSafeArea()
-                    ProgressView()
-                        .zIndex(2)
+                    if startAnimation {
+                        LottieView(animation: .named("splash-screen.json"))
+                            .playing()
+                            .animationSpeed(1.5)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
                 } else {
                     Color(UIColor(red: 1.0, green: 0.533, blue: 0.0, alpha: 1.0))
                         .ignoresSafeArea(edges: .top)
@@ -48,6 +55,22 @@ struct ContentView: View {
                     }
                     .animation(.easeInOut(duration: 0.5), value: supabaseState.isAuthenticated)
                 }
+            }
+        }
+        .onChange(of: supabaseState.isCheckingAuth) { oldValue, isChecking in
+            if !isChecking && showingSplash {
+                Task {
+                    try? await Task.sleep(for: .seconds(1.5))
+                    withAnimation {
+                        showingSplash = false
+                    }
+                }
+            }
+        }
+        .onAppear() {
+            Task {
+                try? await Task.sleep(for: .seconds(0.3))
+                startAnimation = true
             }
         }
     }
