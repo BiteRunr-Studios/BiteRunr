@@ -57,6 +57,8 @@
 		EE6FABEE2E309A610060CD42 /* OrderUsersRowSkeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE6FABED2E309A610060CD42 /* OrderUsersRowSkeleton.swift */; };
 		EE7A20E32E4D569700A24895 /* selectedItemSkeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A20E22E4D568C00A24895 /* selectedItemSkeleton.swift */; };
 		EE8DD9592E40138600B423BE /* AddItemSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8DD9582E40138600B423BE /* AddItemSheet.swift */; };
+		EEC154552E8F69E000B10C8B /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = EEC154542E8F69E000B10C8B /* Lottie */; };
+		EEC154592E8F6B9200B10C8B /* splash-screen.json in Resources */ = {isa = PBXBuildFile; fileRef = EEC154582E8F6B9100B10C8B /* splash-screen.json */; };
 		EEE8BD172E31930F00A455C0 /* SelectItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE8BD162E31930F00A455C0 /* SelectItems.swift */; };
 		EEE8BD1F2E381EA100A455C0 /* OrderItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE8BD1E2E381E9600A455C0 /* OrderItemRow.swift */; };
 		EEE8BD212E385AF300A455C0 /* CustomSwipeAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE8BD202E385AE600A455C0 /* CustomSwipeAction.swift */; };
@@ -110,6 +112,7 @@
 		EE6FABED2E309A610060CD42 /* OrderUsersRowSkeleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderUsersRowSkeleton.swift; sourceTree = "<group>"; };
 		EE7A20E22E4D568C00A24895 /* selectedItemSkeleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = selectedItemSkeleton.swift; sourceTree = "<group>"; };
 		EE8DD9582E40138600B423BE /* AddItemSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddItemSheet.swift; sourceTree = "<group>"; };
+		EEC154582E8F6B9100B10C8B /* splash-screen.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "splash-screen.json"; sourceTree = "<group>"; };
 		EEE8BD162E31930F00A455C0 /* SelectItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectItems.swift; sourceTree = "<group>"; };
 		EEE8BD1E2E381E9600A455C0 /* OrderItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderItemRow.swift; sourceTree = "<group>"; };
 		EEE8BD202E385AE600A455C0 /* CustomSwipeAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSwipeAction.swift; sourceTree = "<group>"; };
@@ -128,6 +131,7 @@
 			files = (
 				1472B7BC2DC2F55400274F56 /* PostgREST in Frameworks */,
 				1472B7BA2DC2F55400274F56 /* Functions in Frameworks */,
+				EEC154552E8F69E000B10C8B /* Lottie in Frameworks */,
 				146CEA932E29DB3D00C30C06 /* TOCropViewController in Frameworks */,
 				1472B7C22DC2F55400274F56 /* Supabase in Frameworks */,
 				1472B7B82DC2F55400274F56 /* Auth in Frameworks */,
@@ -301,6 +305,7 @@
 				14156E9E2DBB35D200F4E56B /* ReusableFunctions */,
 				14156DBA2DBB28B800F4E56B /* Views */,
 				058557BA273AAA24004C7B11 /* Assets.xcassets */,
+				EEC154582E8F6B9100B10C8B /* splash-screen.json */,
 				7555FF82242A565900829871 /* ContentView.swift */,
 				7555FF8C242A565B00829871 /* Info.plist */,
 				2152FB032600AC8F00CF470E /* iOSApp.swift */,
@@ -347,6 +352,7 @@
 				1472B7C12DC2F55400274F56 /* Supabase */,
 				146CEA902E29DB3D00C30C06 /* CropViewController */,
 				146CEA922E29DB3D00C30C06 /* TOCropViewController */,
+				EEC154542E8F69E000B10C8B /* Lottie */,
 			);
 			productName = iosApp;
 			productReference = 7555FF7B242A565900829871 /* BiteRunr.app */;
@@ -380,6 +386,7 @@
 			packageReferences = (
 				143C5F482DC2D024008052A5 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 				146CEA8F2E29DB3D00C30C06 /* XCRemoteSwiftPackageReference "TOCropViewController" */,
+				EEC154532E8F69E000B10C8B /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			productRefGroup = 7555FF7C242A565900829871 /* Products */;
 			projectDirPath = "";
@@ -397,6 +404,7 @@
 			files = (
 				058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */,
 				058557BB273AAA24004C7B11 /* Assets.xcassets in Resources */,
+				EEC154592E8F6B9200B10C8B /* splash-screen.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -716,6 +724,14 @@
 				minimumVersion = 2.7.4;
 			};
 		};
+		EEC154532E8F69E000B10C8B /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -758,6 +774,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 143C5F482DC2D024008052A5 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		EEC154542E8F69E000B10C8B /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EEC154532E8F69E000B10C8B /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
