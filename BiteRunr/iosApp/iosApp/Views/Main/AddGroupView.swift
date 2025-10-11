@@ -80,7 +80,7 @@ struct AddGroupView: View {
                             : "\(orderLocationDTOs.count) location(s) selected"
                             
                             let locationColor: Color = .secondary.opacity(0.5)
-                            //                            : (colorScheme == .dark ? .white : .black)
+                            //  (colorScheme == .dark ? .white : .black)
                             
                             HStack(spacing: 12) {
                                 Text(locationText)
