@@ -52,6 +52,7 @@ const App: React.FC = () => {
     }, []);
 
     return <Layout />;
+    // return session ? <Layout /> : <LoginPage />;
 };
 
 export default App;
