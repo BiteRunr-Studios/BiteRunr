@@ -129,7 +129,7 @@ extension AddItemSheet {
         
         print(item)
         do {
-            let result = try await addNewItemToLocation(baseUrl: apiUrl, order_id: orderId, order_location_id: orderLocationId, newItem: item)
+            let result = try await addNewItemToLocation(baseUrl: apiUrl, orderId: orderId, orderLocationId: orderLocationId, newItem: item)
             
             if result.success {
                 return

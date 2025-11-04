@@ -84,7 +84,7 @@ struct SelectItems: View {
                     orderLocation: selectedLocation,
                     orderItem: editingItem.item,
                     quantity: editingItem.quantity,
-                    comments: editingItem.comments,
+                    comments: editingItem.comments ?? "",
                     orderUserId: currentOrderUserId,
                     actionType: currentActionType.rawValue,
                     orderId: order.id,
@@ -454,7 +454,6 @@ extension SelectItems {
             }
             return
         }
-        
         guard let selectedLocation = selectedLocation else {
             await MainActor.run {
                 errorMessage = "No location selected"

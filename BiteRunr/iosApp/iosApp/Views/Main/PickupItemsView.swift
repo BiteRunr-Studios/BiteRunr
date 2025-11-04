@@ -3,19 +3,39 @@ import Shared
 
 struct PickupItemsView: View {
     var orderId: String
+    @State private var orderLocations: [SelectItemsOrderLocationDTO] = []
+    @State private var selectedLocation: SelectItemsOrderLocationDTO? = nil
+    @State private var errorMessage: String?
+    @State private var isLoading: Bool = false
     
     var onDismiss: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
 
-    @State var sampleData: [PickupItemDTO] = []
+    @State var pickupItems: [PickupItemDTO] = []
     
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
-                    OrderSummary(orderData: sampleData)
+                if isLoading {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .padding()
+                        Text("Loading Item Summary")
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 200)
                 }
-                .padding()
+                else if errorMessage != nil {
+                    Text(errorMessage ?? "An unexpected error occurred.")
+                }
+                else {
+                    VStack(spacing: 0) {
+                        locationPillsView
+                        OrderSummary(orderData: pickupItems)
+                    }
+                    .padding()
+                }
             }
             .navigationTitle("Pickup Items")
             .navigationBarTitleDisplayMode(.inline)
@@ -33,26 +53,106 @@ struct PickupItemsView: View {
             }
         }.onAppear() {
             Task {
-                await getData()
+                await fetchOrderLocations()
             }
         }
+    }
+    
+    @ViewBuilder
+    private var locationPillsView: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                ForEach(orderLocations, id: \.orderLocationId) { orderLocation in
+                    Button(action: {
+                        Task {
+                            await selectLocation(orderLocation)
+                        }
+                    }) {
+                        Text("\(orderLocation.locationName)")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(selectedLocation?.orderLocationId == orderLocation.orderLocationId ? .white : .secondary)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .fill(selectedLocation?.orderLocationId == orderLocation.orderLocationId ? Color.orange : Color(UIColor.systemGray6))
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .disabled(isLoading)
+                }
+            }
+            .frame(maxHeight: .infinity, alignment: .top)
+            .padding(.horizontal)
+            .padding(.top, 1)
+        }
+        .frame(height: 60)
     }
 }
 
 extension PickupItemsView {
-    func getData() async {
+    private func fetchOrderLocations() async {
+        guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
+            await MainActor.run {
+                errorMessage = "API_URL not set"
+                isLoading = false
+            }
+            return
+        }
+        
+        do {
+            let response = try await getOrderLocationsForItemSelection(baseUrl: apiUrl, orderId: orderId)
+            
+            if let locations = response.data as? [SelectItemsOrderLocationDTO] {
+                await MainActor.run {
+                    orderLocations = locations
+                    selectedLocation = locations.first
+                    isLoading = false
+                }
+            } else {
+                await MainActor.run {
+                    errorMessage = "Failed to decode order locations."
+                    isLoading = false
+                }
+            }
+        } catch {
+            await MainActor.run {
+                errorMessage = "Failed to fetch order locations"
+                isLoading = false
+            }
+        }
+    }
+    
+    func getOrderItemsForOrderLocation() async {
         do {
             guard let apiUrl = Bundle.main.infoDictionary?["API_URL"] as? String else {
-//                errorMessage = "API_URL not set"
+                errorMessage = "API_URL not set"
                 return
             }
-            let response = try await getOrderItemsFromOrderLocation(baseUrl: apiUrl, order_location_id: orderId)
-            if response.success {
-                sampleData = response.data as! [PickupItemDTO]
+            
+            guard let orderLocationId = selectedLocation?.orderLocationId else {
+                errorMessage = "Order Location Id not available"
+                return
             }
-            // Task was cancelled, no need to show error
+            
+            print(orderLocationId)
+            
+            let response = try await getOrderItemsFromOrderLocation(baseUrl: apiUrl, orderLocationId: orderLocationId)
+            
+            if response.success {
+                pickupItems = response.data as! [PickupItemDTO]
+                isLoading = false
+            }
         } catch {
-//            errorMessage = "Failed to fetch friend requests: \(error.localizedDescription)"
+            errorMessage = "Failed to fetch friend requests: \(error.localizedDescription)"
+        }
+    }
+    
+    private func selectLocation(_ orderLocation: SelectItemsOrderLocationDTO) async {
+        await MainActor.run {
+            isLoading = true
+            selectedLocation = orderLocation
         }
     }
 }
