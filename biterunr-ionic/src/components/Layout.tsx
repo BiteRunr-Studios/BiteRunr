@@ -22,8 +22,6 @@ const Layout: React.FC = () => {
                 <IonContent className="ion-padding">Notifications</IonContent>
             </IonMenu>
 
-            <Header />
-
             <IonReactRouter>
                 <IonTabs>
                     <IonRouterOutlet id="main-content">

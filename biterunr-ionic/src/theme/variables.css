@@ -157,7 +157,7 @@ ion-menu {
         /* Recommended base surfaces and text for dark mode */
         --ion-background-color: #0b0b0c;
         --ion-toolbar-background: var(--ion-background-color);
-        --ion-item-background: #171719;
+        --ion-item-background: #0b0b0c;
         --ion-text-color: #e5e7eb;
         /* Keep stepped colors consistent if you rely on them */
         /* Example border using a mid step */
