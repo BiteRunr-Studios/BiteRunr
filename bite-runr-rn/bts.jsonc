@@ -4,7 +4,7 @@
 {
   "$schema": "https://r2.better-t-stack.dev/schema.json",
   "version": "3.2.19",
-  "createdAt": "2025-11-04T21:00:42.509Z",
+  "createdAt": "2025-11-05T02:20:48.354Z",
   "database": "none",
   "orm": "none",
   "backend": "none",
@@ -12,9 +12,7 @@
   "frontend": [
     "native-nativewind"
   ],
-  "addons": [
-    "turborepo"
-  ],
+  "addons": [],
   "examples": [],
   "auth": "none",
   "packageManager": "pnpm",

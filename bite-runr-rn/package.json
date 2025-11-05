@@ -7,15 +7,11 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "check-types": "turbo check-types",
-    "dev:native": "turbo -F native dev",
-    "dev:web": "turbo -F web dev"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "turbo": "^2.5.4"
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
+    "check-types": "pnpm -r check-types",
+    "dev:native": "pnpm --filter native dev",
+    "dev:web": "pnpm --filter web dev"
   },
   "packageManager": "pnpm@9.15.1"
 }

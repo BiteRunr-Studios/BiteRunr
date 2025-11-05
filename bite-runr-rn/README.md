@@ -9,7 +9,6 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 - **Expo** - Tools for React Native development
 - **TailwindCSS** - Utility-first CSS for rapid UI development
 - **shadcn/ui** - Reusable UI components
-- **Turborepo** - Optimized monorepo build system
 
 ## Getting Started
 
