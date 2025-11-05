@@ -11,11 +11,13 @@ import {
     DefaultTheme,
     type Theme,
 } from "@react-navigation/native";
-import "../global.css";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { supabase } from "@/lib/supabase";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
+
+// @ts-expect-error TS2882: not recognized
+import "../global.css";
 
 const LIGHT_THEME: Theme = { ...DefaultTheme, colors: NAV_THEME.light };
 const DARK_THEME: Theme = { ...DarkTheme, colors: NAV_THEME.dark };
@@ -23,7 +25,9 @@ const DARK_THEME: Theme = { ...DarkTheme, colors: NAV_THEME.dark };
 export default function RootLayout() {
     const { isDarkColorScheme } = useColorScheme();
     const [ready, setReady] = React.useState(false);
-    const [session, setSession] = React.useState<null | NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]>>(null);
+    const [session, setSession] = React.useState<null | NonNullable<
+        Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]
+    >>(null);
 
     // One-time non-auth setup
     React.useEffect(() => {
@@ -40,16 +44,24 @@ export default function RootLayout() {
 
         (async () => {
             const { data, error } = await supabase.auth.getSession();
-            console.log("getSession on boot:", { error, session: data?.session });
+            console.log("getSession on boot:", {
+                error,
+                session: data?.session,
+            });
             if (!mounted) return;
             setSession(data?.session ?? null);
             setReady(true);
         })();
 
-        const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
-            console.log("onAuthStateChange:", { event, session: newSession });
-            setSession(newSession ?? null);
-        });
+        const { data: sub } = supabase.auth.onAuthStateChange(
+            (event, newSession) => {
+                console.log("onAuthStateChange:", {
+                    event,
+                    session: newSession,
+                });
+                setSession(newSession ?? null);
+            }
+        );
 
         return () => {
             mounted = false;
@@ -70,7 +82,7 @@ export default function RootLayout() {
 
     if (!ready) {
         return (
-            <View className="flex-1 items-center justify-center">
+            <View className="items-center justify-center flex-1">
                 <ActivityIndicator />
             </View>
         );
