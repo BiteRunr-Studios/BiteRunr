@@ -1,67 +1,95 @@
 // app/_layout.tsx
-import React, { useRef } from "react";
-import { Platform } from "react-native";
+import React from "react";
+import { ActivityIndicator, Platform, View } from "react-native";
+import { Stack, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Stack } from "expo-router";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import {
+    ThemeProvider,
     DarkTheme,
     DefaultTheme,
     type Theme,
-    ThemeProvider,
 } from "@react-navigation/native";
 import "../global.css";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
+import { supabase } from "@/lib/supabase";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 
-const LIGHT_THEME: Theme = {
-    ...DefaultTheme,
-    colors: NAV_THEME.light,
-};
-const DARK_THEME: Theme = {
-    ...DarkTheme,
-    colors: NAV_THEME.dark,
-};
-
-export const unstable_settings = {
-    initialRouteName: "(tabs)",
-};
-
-const useIsomorphicLayoutEffect =
-    Platform.OS === "web" && typeof window === "undefined"
-        ? React.useEffect
-        : React.useLayoutEffect;
+const LIGHT_THEME: Theme = { ...DefaultTheme, colors: NAV_THEME.light };
+const DARK_THEME: Theme = { ...DarkTheme, colors: NAV_THEME.dark };
 
 export default function RootLayout() {
-    const hasMounted = useRef(false);
-    const { colorScheme, isDarkColorScheme } = useColorScheme();
-    const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
+    const { isDarkColorScheme } = useColorScheme();
+    const [ready, setReady] = React.useState(false);
+    const [session, setSession] = React.useState<null | NonNullable<Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]>>(null);
 
-    useIsomorphicLayoutEffect(() => {
-        if (hasMounted.current) return;
-
+    // One-time non-auth setup
+    React.useEffect(() => {
         if (Platform.OS === "web" && typeof document !== "undefined") {
             document.documentElement.classList.add("bg-background");
         }
+        setAndroidNavigationBar(isDarkColorScheme ? "dark" : "light");
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-        setAndroidNavigationBar(colorScheme);
-        setIsColorSchemeLoaded(true);
-        hasMounted.current = true;
-    }, [colorScheme]);
+    // Boot: fetch session and subscribe — no navigation in here
+    React.useEffect(() => {
+        let mounted = true;
 
-    if (!isColorSchemeLoaded) {
-        return null;
+        (async () => {
+            const { data, error } = await supabase.auth.getSession();
+            console.log("getSession on boot:", { error, session: data?.session });
+            if (!mounted) return;
+            setSession(data?.session ?? null);
+            setReady(true);
+        })();
+
+        const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
+            console.log("onAuthStateChange:", { event, session: newSession });
+            setSession(newSession ?? null);
+        });
+
+        return () => {
+            mounted = false;
+            sub.subscription?.unsubscribe();
+        };
+    }, []);
+
+    // React to session AFTER ready, to avoid boot loops
+    React.useEffect(() => {
+        if (!ready) return;
+
+        if (session) {
+            router.replace("/(tabs)");
+        } else {
+            router.replace("/(auth)/sign-in");
+        }
+    }, [ready, session]);
+
+    if (!ready) {
+        return (
+            <View className="flex-1 items-center justify-center">
+                <ActivityIndicator />
+            </View>
+        );
     }
 
     return (
         <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-            <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
-            <GestureHandlerRootView style={{ flex: 1 }}>
-                <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                </Stack>
-            </GestureHandlerRootView>
+            <SafeAreaProvider>
+                <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
+                <GestureHandlerRootView style={{ flex: 1 }}>
+                    <Stack screenOptions={{ headerShown: false }}>
+                        {session ? (
+                            <Stack.Screen name="(tabs)" />
+                        ) : (
+                            <Stack.Screen name="(auth)" />
+                        )}
+                    </Stack>
+                </GestureHandlerRootView>
+            </SafeAreaProvider>
         </ThemeProvider>
     );
 }

@@ -29,6 +29,7 @@
     },
     "plugins": [
       "expo-router",
+      ["expo-linking", { "scheme": "biterunr" }],
       [
         "expo-splash-screen",
         {
