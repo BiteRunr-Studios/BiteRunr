@@ -1,7 +1,7 @@
 // app/(auth)/sign-in.tsx
 import React, { useState, useEffect } from "react";
 import * as WebBrowser from "expo-web-browser";
-import * as QueryParams from "expo-auth-session/build/QueryParams";
+
 import * as Linking from "expo-linking";
 import {
     Alert,
@@ -17,7 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { TabBarIcon } from "@/components/tabbar-icon";
-import { redirectTo } from "@/app/(auth)/oauth";
+import {createSessionFromUrl, redirectTo} from "@/app/(auth)/oauth";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -53,15 +53,6 @@ export default function SignInScreen() {
         }
     }
 
-    async function createSessionFromUrl(url: string) {
-        const { params, errorCode } = QueryParams.getQueryParams(url);
-        if (errorCode) throw new Error(errorCode);
-        const { access_token, refresh_token } = params;
-        if (!access_token || !refresh_token) return;
-        const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-        if (error) throw error;
-    }
-
     async function onSignInWithGitHub() {
         try {
             setOauthLoading(true);
@@ -84,7 +75,7 @@ export default function SignInScreen() {
                 await createSessionFromUrl(res.url);
                 router.replace("/(tabs)");
             } else if (res.type === "cancel") {
-                // User cancelled auth
+                console.log("OAuth cancelled");
             }
         } catch (e: any) {
             Alert.alert("Error", e?.message ?? "Something went wrong.");

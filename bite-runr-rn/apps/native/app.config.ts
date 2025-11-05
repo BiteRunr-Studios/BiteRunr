@@ -6,10 +6,10 @@ const config: ExpoConfig = {
     slug: "biterunr",
     scheme: "biterunr",
     ios: {
-        bundleIdentifier: "com.RunrStudios.biterunr",
+        bundleIdentifier: "com.RunrStudios.BiteRunrRN",
     },
     android: {
-        package: "com.RunrStudios.biterunr",
+        package: "com.RunrStudios.BiteRunrRN",
         intentFilters: [
             {
                 action: "VIEW",
