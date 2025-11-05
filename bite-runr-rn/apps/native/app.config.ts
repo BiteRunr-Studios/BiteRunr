@@ -3,20 +3,23 @@ import { ExpoConfig } from "expo/config";
 
 const config: ExpoConfig = {
     name: "BiteRunr",
-    slug: "BiteRunr",
+    slug: "biterunr",
     scheme: "biterunr",
     ios: {
-        bundleIdentifier: "com.RunrStudios.BiteRunrKMP",
+        bundleIdentifier: "com.RunrStudios.biterunr",
     },
     android: {
-        package: "com.RunrStudios.BiteRunrKMP",
+        package: "com.RunrStudios.biterunr",
         intentFilters: [
             {
                 action: "VIEW",
-                data: [{ scheme: "biterunr", host: "auth", pathPrefix: "/callback" }],
+                data: [
+                    { scheme: "biterunr", host: "auth", pathPrefix: "/callback" }
+                ],
                 category: ["BROWSABLE", "DEFAULT"],
             },
         ],
     },
 };
+
 export default config;

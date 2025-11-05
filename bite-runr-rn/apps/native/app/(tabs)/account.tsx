@@ -81,6 +81,7 @@ export default function AccountTab() {
 
     async function onSignOut() {
         try {
+            supabase.auth.stopAutoRefresh();
             const { error } = await supabase.auth.signOut();
             if (error) {
                 Alert.alert("Sign out failed", error.message);
@@ -89,6 +90,7 @@ export default function AccountTab() {
             router.replace("/(auth)/sign-in");
         } catch (e: any) {
             Alert.alert("Error", e?.message ?? "Something went wrong.");
+        } finally {
         }
     }
 

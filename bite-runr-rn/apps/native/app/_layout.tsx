@@ -16,7 +16,6 @@ import { useColorScheme } from "@/lib/use-color-scheme";
 import { supabase } from "@/lib/supabase";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 
-// @ts-expect-error TS2882: not recognized
 import "../global.css";
 
 const LIGHT_THEME: Theme = { ...DefaultTheme, colors: NAV_THEME.light };
@@ -29,7 +28,6 @@ export default function RootLayout() {
         Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]
     >>(null);
 
-    // One-time non-auth setup
     React.useEffect(() => {
         if (Platform.OS === "web" && typeof document !== "undefined") {
             document.documentElement.classList.add("bg-background");
@@ -38,7 +36,6 @@ export default function RootLayout() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Boot: fetch session and subscribe — no navigation in here
     React.useEffect(() => {
         let mounted = true;
 
@@ -69,7 +66,6 @@ export default function RootLayout() {
         };
     }, []);
 
-    // React to session AFTER ready, to avoid boot loops
     React.useEffect(() => {
         if (!ready) return;
 
