@@ -87,7 +87,6 @@ export default function AccountTab() {
                 Alert.alert("Sign out failed", error.message);
                 return;
             }
-            router.replace("/(auth)/sign-in");
         } catch (e: any) {
             Alert.alert("Error", e?.message ?? "Something went wrong.");
         } finally {
