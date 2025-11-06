@@ -14,8 +14,8 @@ export function HeaderBar({
     logoSource,
 }: HeaderBarProps) {
     return (
-        <View className="border-b bg-background border-muted">
-            <View className="flex-row items-center justify-between px-4 py-4 min-h-20">
+        <View className="bg-background">
+            <View className="flex-row items-center justify-between px-4 py-2 min-h-20">
                 <Pressable
                     onPress={onLogoPress}
                     className="flex-row items-center">
