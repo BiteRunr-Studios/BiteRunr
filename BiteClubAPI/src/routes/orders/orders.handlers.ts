@@ -763,15 +763,6 @@ export const getUserOrderDetails: AppRouteHandler<
         orderBy: (fields, operators) => [operators.desc(fields.created_at)],
     });
 
-    if (!orders || orders.length === 0) {
-        return c.json(
-            {
-                message: HttpStatusPhrases.NOT_FOUND,
-            },
-            HttpStatusCodes.NOT_FOUND
-        );
-    }
-
     const ordersWithDetails = await Promise.all(
         orders.map(async (order) => {
             const orderUsers = await db.query.orderUsers.findMany({
