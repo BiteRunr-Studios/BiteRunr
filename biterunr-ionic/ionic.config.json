@@ -1,7 +1,0 @@
-{
-  "name": "biterunr",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "react-vite"
-}
