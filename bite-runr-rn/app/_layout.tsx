@@ -44,7 +44,6 @@ export default function RootLayout() {
             document.documentElement.classList.add("bg-background");
         }
         setAndroidNavigationBar(isDarkColorScheme ? "dark" : "light");
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     React.useEffect(() => {
