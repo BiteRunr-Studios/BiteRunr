@@ -1,8 +1,17 @@
 // app/(tabs)/account.tsx
 import React from "react";
-import { ScrollView, Text, View, Alert, Pressable, ActivityIndicator, Image } from "react-native";
+import {
+    ScrollView,
+    Text,
+    View,
+    Alert,
+    Pressable,
+    ActivityIndicator,
+    Image,
+} from "react-native";
 import { PageWithHeader } from "@/components/page-with-header";
 import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/api";
 import { router } from "expo-router";
 
 type ApiUserResponse = {
@@ -30,7 +39,8 @@ export default function AccountTab() {
                 setLoading(true);
                 setErrorMsg(null);
 
-                const { data: userData, error: userErr } = await supabase.auth.getUser();
+                const { data: userData, error: userErr } =
+                    await supabase.auth.getUser();
                 if (userErr) throw userErr;
                 const authUser = userData.user;
                 if (!authUser) {
@@ -40,20 +50,12 @@ export default function AccountTab() {
                     return;
                 }
 
-                const url = `https://biterunrapi-4bmpv.kinsta.app/users/${encodeURIComponent(authUser.id)}`;
-                const res = await fetch(url, {
-                    method: "GET",
-                    headers: {
-                        "Accept": "application/json",
-                    },
+                const url = `https://biterunrapi-4bmpv.kinsta.app/users/${encodeURIComponent(
+                    authUser.id
+                )}`;
+                const json = await apiFetch<ApiUserResponse>(url, {
+                    requireAuth: false,
                 });
-
-                if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(`API ${res.status}: ${text}`);
-                }
-
-                const json: ApiUserResponse = await res.json();
 
                 if (mounted) {
                     setUser(json);
@@ -93,32 +95,40 @@ export default function AccountTab() {
         }
     }
 
-    const fullName =
-        user?.profile
-            ? [user.profile.first_name, user.profile.last_name].filter(Boolean).join(" ")
-            : null;
+    const fullName = user?.profile
+        ? [user.profile.first_name, user.profile.last_name]
+              .filter(Boolean)
+              .join(" ")
+        : null;
 
     return (
         <PageWithHeader
             title="Account"
             logoSource={require("@/assets/images/app-logo.png")}
             onLogoPress={() => Alert.alert("Logo pressed")}
-            onBellPress={() => Alert.alert("Notifications")}
-        >
-            <ScrollView className="flex-1 p-6" keyboardShouldPersistTaps="handled">
+            onBellPress={() => Alert.alert("Notifications")}>
+            <ScrollView
+                className="flex-1 p-6"
+                keyboardShouldPersistTaps="handled">
                 <View className="py-2">
-                    <Text className="text-3xl font-bold text-foreground mb-2">Account</Text>
-                    <Text className="text-2xl text-muted-foreground mb-6">Discover your account</Text>
+                    <Text className="mb-2 text-3xl font-bold text-foreground">
+                        Account
+                    </Text>
+                    <Text className="mb-6 text-2xl text-muted-foreground">
+                        Discover your account
+                    </Text>
 
                     {loading && (
                         <View className="flex-row items-center">
                             <ActivityIndicator />
-                            <Text className="ml-2 text-muted-foreground">Loading profile…</Text>
+                            <Text className="ml-2 text-muted-foreground">
+                                Loading profile…
+                            </Text>
                         </View>
                     )}
 
                     {!loading && errorMsg && (
-                        <View className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 mb-4">
+                        <View className="p-3 mb-4 border rounded-lg bg-destructive/10 border-destructive/30">
                             <Text className="text-destructive">{errorMsg}</Text>
                         </View>
                     )}
@@ -128,14 +138,18 @@ export default function AccountTab() {
                             <View className="flex-row items-center mb-6">
                                 {user.profile?.avatar_url ? (
                                     <Image
-                                        source={{ uri: user.profile.avatar_url }}
+                                        source={{
+                                            uri: user.profile.avatar_url,
+                                        }}
                                         className="w-16 h-16 rounded-full"
                                         resizeMode="cover"
                                     />
                                 ) : (
-                                    <View className="w-16 h-16 rounded-full bg-muted items-center justify-center">
-                                        <Text className="text-muted-foreground font-semibold">
-                                            {(fullName || user.email || "U").slice(0, 2).toUpperCase()}
+                                    <View className="items-center justify-center w-16 h-16 rounded-full bg-muted">
+                                        <Text className="font-semibold text-muted-foreground">
+                                            {(fullName || user.email || "U")
+                                                .slice(0, 2)
+                                                .toUpperCase()}
                                         </Text>
                                     </View>
                                 )}
@@ -143,37 +157,51 @@ export default function AccountTab() {
                                     <Text className="text-lg font-semibold text-foreground">
                                         {fullName || "Unknown User"}
                                     </Text>
-                                    <Text className="text-muted-foreground">{user.email}</Text>
+                                    <Text className="text-muted-foreground">
+                                        {user.email}
+                                    </Text>
                                 </View>
                             </View>
 
                             {/* Details */}
-                            <View className="space-y-3 mb-6">
+                            <View className="mb-6 space-y-3">
                                 <View className="flex-row">
-                                    <Text className="w-32 text-muted-foreground">First name</Text>
+                                    <Text className="w-32 text-muted-foreground">
+                                        First name
+                                    </Text>
                                     <Text className="text-foreground">
                                         {user.profile?.first_name || "—"}
                                     </Text>
                                 </View>
                                 <View className="flex-row">
-                                    <Text className="w-32 text-muted-foreground">Last name</Text>
+                                    <Text className="w-32 text-muted-foreground">
+                                        Last name
+                                    </Text>
                                     <Text className="text-foreground">
                                         {user.profile?.last_name || "—"}
                                     </Text>
                                 </View>
                                 <View className="flex-row">
-                                    <Text className="w-32 text-muted-foreground">Created</Text>
+                                    <Text className="w-32 text-muted-foreground">
+                                        Created
+                                    </Text>
                                     <Text className="text-foreground">
                                         {user.profile?.created_at
-                                            ? new Date(user.profile.created_at).toLocaleString()
+                                            ? new Date(
+                                                  user.profile.created_at
+                                              ).toLocaleString()
                                             : "—"}
                                     </Text>
                                 </View>
                                 <View className="flex-row">
-                                    <Text className="w-32 text-muted-foreground">Updated</Text>
+                                    <Text className="w-32 text-muted-foreground">
+                                        Updated
+                                    </Text>
                                     <Text className="text-foreground">
                                         {user.profile?.updated_at
-                                            ? new Date(user.profile.updated_at).toLocaleString()
+                                            ? new Date(
+                                                  user.profile.updated_at
+                                              ).toLocaleString()
                                             : "—"}
                                     </Text>
                                 </View>
@@ -184,7 +212,8 @@ export default function AccountTab() {
                     {!loading && !errorMsg && !user && (
                         <View className="p-3 rounded-lg bg-muted">
                             <Text className="text-foreground">
-                                You’re not signed in. Please sign in to see your profile.
+                                You’re not signed in. Please sign in to see your
+                                profile.
                             </Text>
                         </View>
                     )}
@@ -193,9 +222,8 @@ export default function AccountTab() {
                     <View className="mt-2">
                         <Pressable
                             onPress={onSignOut}
-                            className="rounded-lg px-4 py-3 border border-destructive active:opacity-80"
-                        >
-                            <Text className="text-destructive font-semibold text-center">
+                            className="px-4 py-3 border rounded-lg border-destructive active:opacity-80">
+                            <Text className="font-semibold text-center text-destructive">
                                 Sign out
                             </Text>
                         </Pressable>

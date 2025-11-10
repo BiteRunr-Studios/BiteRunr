@@ -6,6 +6,7 @@ export const NAV_THEME = {
         notification: "hsl(0 84.2% 60.2%)",
         primary: "hsl(32 100% 50%)",
         text: "hsl(222.2 84% 4.9%)",
+        foreground: "hsl(222.2 84% 4.9%)",
     },
     dark: {
         background: "hsl(0 0% 0%)",
@@ -14,5 +15,6 @@ export const NAV_THEME = {
         notification: "hsl(0 72% 51%)",
         primary: "hsl(32 100% 50%)",
         text: "hsl(210 40% 98%)",
+        foreground: "hsl(210 40% 98%)",
     },
 };

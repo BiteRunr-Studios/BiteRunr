@@ -73,8 +73,8 @@ export default function HomeTab() {
                                         {order_users.map((ou) => (
                                             <View key={ou.id} className="py-1">
                                                 <Text className="text-foreground">
-                                                    {ou.user.first_name}{" "}
-                                                    {ou.user.last_name} —{" "}
+                                                    {ou.user?.first_name}{" "}
+                                                    {ou.user?.last_name} —{" "}
                                                     {ou.status}
                                                 </Text>
                                                 <Text className="text-muted-foreground">

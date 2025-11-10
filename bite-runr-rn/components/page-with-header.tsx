@@ -14,9 +14,7 @@ export function PageWithHeader({ logoSource, onLogoPress, onBellPress, children 
                     onBellPress={onBellPress}
                 />
             </SafeAreaView>
-            <SafeAreaView className="flex-1" edges={["bottom"]}>
-                <View className="flex-1">{children}</View>
-            </SafeAreaView>
+            <View className="flex-1">{children}</View>
         </View>
     );
 }
