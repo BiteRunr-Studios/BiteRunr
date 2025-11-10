@@ -37,10 +37,11 @@ export interface Order {
     paused: boolean;
     created_at: Date;
     updated_at: Date;
-    order_items: OrderItem[] | null;
-    order_users: OrderUser[] | null;
-    order_locations: OrderLocation[] | null;
+    orderItems: OrderItem[] | null;
+    orderUsers: OrderUser[] | null;
+    orderLocations: OrderLocation[] | null;
     creator: UserProfile | null;
+    items_count: number | null;
 }
 
 export interface OrderItem {
