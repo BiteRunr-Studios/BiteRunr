@@ -11,6 +11,7 @@ import {
     insertOrdersSchema,
     patchOrdersSchema,
     selectOrdersSchema,
+    selectOrdersWithItemsCountSchema,
 } from "@/db/schema/orders";
 import { selectOrderUsersWithUserSchema } from "@/db/schema/users";
 import { selectItemSchema, insertItemSchema } from "@/db/schema/items";
@@ -209,7 +210,7 @@ export const listByUserId = createRoute({
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            z.array(selectOrdersSchema),
+            z.array(selectOrdersWithItemsCountSchema),
             "User's list of orders"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(

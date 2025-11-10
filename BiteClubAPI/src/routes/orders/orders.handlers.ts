@@ -3,6 +3,7 @@ import {
     insertOrdersDTOSchema,
     insertOrdersSchema,
     orders,
+    selectOrdersWithItemsCountSchema,
 } from "@/db/schema/orders";
 import { orderLocationsWithLocationNameSchema } from "@/db/schema/orderLocations";
 import type {
@@ -36,6 +37,7 @@ import { insertOrderLocationsSchema } from "@/db/schema/orderLocations";
 import { insertOrderUsersSchema } from "@/db/schema/orderUsers";
 import { z } from "zod";
 import { omit } from "@/lib/reusable-functions";
+import test from "node:test";
 
 // Helper function to format timestamp to readable format
 const formatTimestamp = (timestamp: Date): string => {
@@ -209,18 +211,93 @@ export const listByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
             );
         },
         orderBy: (fields, operators) => [operators.desc(fields.created_at)],
+        with: {
+            orderUsers: {
+                columns: {
+                    user_id: true,
+                },
+                with: {
+                    user: {
+                        columns: {
+                            first_name: true,
+                            last_name: true,
+                            avatar_url: true,
+                        },
+                    },
+                },
+            },
+        },
     });
 
-    if (!orders) {
-        return c.json(
-            {
-                message: HttpStatusPhrases.NOT_FOUND,
-            },
-            HttpStatusCodes.NOT_FOUND
-        );
+    if (orders.length === 0) {
+        return c.json([], HttpStatusCodes.OK);
     }
 
-    return c.json(orders, HttpStatusCodes.OK);
+    // Query all order locations for these orders
+    const allOrderLocations = await db.query.orderLocations.findMany({
+        where(fields, operators) {
+            return operators.inArray(
+                fields.order_id,
+                orders.map((o) => o.id)
+            );
+        },
+        columns: {
+            id: true,
+            order_id: true,
+        },
+    });
+
+    const allOrderLocationIds = allOrderLocations.map((ol) => ol.id);
+
+    // Build map of order_id -> orderLocation IDs
+    const locationsByOrder: Record<string, string[]> = allOrderLocations.reduce(
+        (acc, location) => {
+            if (!acc[location.order_id]) {
+                acc[location.order_id] = [];
+            }
+            acc[location.order_id].push(location.id);
+            return acc;
+        },
+        {} as Record<string, string[]>
+    );
+
+    let orderItemsByLocation: Record<string, number> = {};
+
+    if (allOrderLocationIds.length > 0) {
+        const allOrderItems = await db.query.orderItems.findMany({
+            where(fields, operators) {
+                return operators.inArray(
+                    fields.order_location_id,
+                    allOrderLocationIds
+                );
+            },
+            columns: {
+                order_location_id: true,
+            },
+        });
+
+        orderItemsByLocation = allOrderItems.reduce((acc, item) => {
+            acc[item.order_location_id] =
+                (acc[item.order_location_id] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+    }
+
+    const orders_with_items: z.infer<
+        typeof selectOrdersWithItemsCountSchema
+    >[] = orders.map((order) => {
+        const orderLocationIds = locationsByOrder[order.id] || [];
+        const items_count = orderLocationIds.reduce((count, locationId) => {
+            return count + (orderItemsByLocation[locationId] || 0);
+        }, 0);
+
+        return {
+            ...order,
+            items_count,
+        };
+    });
+
+    return c.json(orders_with_items, HttpStatusCodes.OK);
 };
 
 export const listCompletedByUserId: AppRouteHandler<
