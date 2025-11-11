@@ -76,7 +76,7 @@ export default function GroupsTab() {
                             <View className="mt-6">
                                 <ActivityIndicator />
                                 <Text className="mt-2 text-muted-foreground">
-                                    Loading orders…
+                                    Loading orders...
                                 </Text>
                             </View>
                         )}

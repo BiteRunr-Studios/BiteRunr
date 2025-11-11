@@ -44,10 +44,7 @@ export function OrderCard(order: Order) {
             </Text>
             <View className="flex-row items-center">
                 {order
-                    .order_users!.slice(
-                        0,
-                        order.order_users!.length > 4 ? 3 : 4
-                    )
+                    .orderUsers!.slice(0, order.orderUsers!.length > 4 ? 3 : 4)
                     .map((order_user, idx) => (
                         <View
                             key={idx}
@@ -66,7 +63,7 @@ export function OrderCard(order: Order) {
                             />
                         </View>
                     ))}
-                {order.order_users!.length > 4 && (
+                {order.orderUsers!.length > 4 && (
                     <View
                         style={{
                             marginLeft: -18,
@@ -75,7 +72,7 @@ export function OrderCard(order: Order) {
                         }}
                         className="flex items-center justify-center border-2 rounded-full border-card bg-primary">
                         <Text className="text-xs font-semibold text-foreground">
-                            +{order.order_users!.length - 3}
+                            +{order.orderUsers!.length - 3}
                         </Text>
                     </View>
                 )}
