@@ -436,18 +436,15 @@ export const addItemAndLinkToOrderUser = createRoute({
 });
 
 export const awaitingOrder = createRoute({
-    path: "/orders/awaiting_order",
-    method: "post",
+    path: "/orders/awaiting_order/:order_id",
+    method: "get",
     tags,
     security: [{ Bearer: [] }],
     middleware: [authMiddleware] as const,
     request: {
-        body: jsonContentRequired(
-            z.object({
-                order_id: z.string().uuid().nonempty("Order id is required"),
-            }),
-            "Get awaiting order page data"
-        ),
+        params: z.object({
+            order_id: z.string().uuid().nonempty("Order id is required"),
+        }),
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(

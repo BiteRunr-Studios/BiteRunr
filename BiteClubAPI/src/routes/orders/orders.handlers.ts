@@ -511,7 +511,7 @@ export const addItemAndLinkToOrderUser: AppRouteHandler<
 };
 
 export const awaitingOrder: AppRouteHandler<AwaitingOrderRoute> = async (c) => {
-    const { order_id } = c.req.valid("json");
+    const { order_id } = c.req.valid("param");
 
     // order items count
     const order_locations = await db.query.orderLocations.findMany({
