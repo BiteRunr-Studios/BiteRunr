@@ -15,7 +15,7 @@ import { ListItem } from "@/components/list-item";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Animated, {useSharedValue, useAnimatedStyle, withTiming, withRepeat, Easing} from "react-native-reanimated";
 import {UserProfileType} from "@/lib/types";
-import {fetchCurrentUser} from "@/api/home/orders";
+import { fetchCurrentUser } from "@/api/profile/profile";
 
 type Item = {
     key: string;
