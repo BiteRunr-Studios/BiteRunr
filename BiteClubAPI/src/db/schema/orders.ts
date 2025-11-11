@@ -51,14 +51,6 @@ export const selectOrdersSchema = createSelectSchema(orders).extend({
     order_users: selectOrderUsersSchema.optional(),
 });
 
-export const selectOrdersWithItemsCountSchema = createSelectSchema(
-    orders
-).extend({
-    order_locations: selectOrderLocationsSchema.optional(),
-    order_users: selectOrderUsersSchema.optional(),
-    items_count: z.number().default(0),
-});
-
 export const insertOrdersSchema = createInsertSchema(orders).omit({
     id: true,
     created_at: true,

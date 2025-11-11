@@ -233,71 +233,7 @@ export const listByUserId: AppRouteHandler<ListByUserIdRoute> = async (c) => {
         return c.json([], HttpStatusCodes.OK);
     }
 
-    // Query all order locations for these orders
-    const allOrderLocations = await db.query.orderLocations.findMany({
-        where(fields, operators) {
-            return operators.inArray(
-                fields.order_id,
-                orders.map((o) => o.id)
-            );
-        },
-        columns: {
-            id: true,
-            order_id: true,
-        },
-    });
-
-    const allOrderLocationIds = allOrderLocations.map((ol) => ol.id);
-
-    // Build map of order_id -> orderLocation IDs
-    const locationsByOrder: Record<string, string[]> = allOrderLocations.reduce(
-        (acc, location) => {
-            if (!acc[location.order_id]) {
-                acc[location.order_id] = [];
-            }
-            acc[location.order_id].push(location.id);
-            return acc;
-        },
-        {} as Record<string, string[]>
-    );
-
-    let orderItemsByLocation: Record<string, number> = {};
-
-    if (allOrderLocationIds.length > 0) {
-        const allOrderItems = await db.query.orderItems.findMany({
-            where(fields, operators) {
-                return operators.inArray(
-                    fields.order_location_id,
-                    allOrderLocationIds
-                );
-            },
-            columns: {
-                order_location_id: true,
-            },
-        });
-
-        orderItemsByLocation = allOrderItems.reduce((acc, item) => {
-            acc[item.order_location_id] =
-                (acc[item.order_location_id] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>);
-    }
-
-    const orders_with_items: z.infer<
-        typeof selectOrdersWithItemsCountSchema
-    >[] = orders.map((order) => {
-        const orderLocationIds = locationsByOrder[order.id] || [];
-        const items_count = orderLocationIds.reduce((count, locationId) => {
-            return count + (orderItemsByLocation[locationId] || 0);
-        }, 0);
-
-        return {
-            ...order,
-            items_count,
-        };
-    });
-
-    return c.json(orders_with_items, HttpStatusCodes.OK);
+    return c.json(orders, HttpStatusCodes.OK);
 };
 
 export const listCompletedByUserId: AppRouteHandler<

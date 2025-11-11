@@ -210,7 +210,7 @@ export const listByUserId = createRoute({
     },
     responses: {
         [HttpStatusCodes.OK]: jsonContent(
-            z.array(selectOrdersWithItemsCountSchema),
+            z.array(selectOrdersSchema),
             "User's list of orders"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
