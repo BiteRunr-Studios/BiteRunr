@@ -4,21 +4,22 @@ import { Feather } from "@expo/vector-icons";
 import { View, Text, Image } from "react-native";
 
 export function OrderCard(order: Order) {
-    const formattedDate = order.created_at
-        .toLocaleString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-        })
-        .replace("at", "·");
     return (
         <View className="flex-col w-full gap-2 p-4 border rounded-2xl border-muted bg-card">
             <View className="flex-row justify-between">
                 <Text className="text-lg text-muted-foreground">
-                    {formattedDate}
+                    {`${new Date(order.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                    })} · ${new Date(order.created_at).toLocaleTimeString(
+                        "en-US",
+                        {
+                            hour: "numeric",
+                            minute: "2-digit",
+                            hour12: true,
+                        }
+                    )}`}
                 </Text>
                 <Feather
                     name="arrow-right-circle"

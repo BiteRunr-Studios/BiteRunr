@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import {
     ActivityIndicator,
     Alert,
+    Pressable,
     ScrollView,
     Text,
     TextInput,
@@ -14,9 +15,9 @@ import { OrderCard } from "@/components/order-card";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { Order } from "@/lib/types";
-import { supabase } from "@/lib/supabase";
 import { getOrders } from "@/api/groups/orders";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "expo-router";
 
 export default function GroupsTab() {
     const [selectedIndex, setSelectedIndex] = useState(0);
@@ -94,7 +95,14 @@ export default function GroupsTab() {
                         {!isPending && !isError && data && (
                             <>
                                 {data.map((order: Order) => (
-                                    <OrderCard key={order.id} {...order} />
+                                    <Link
+                                        href={`/order/${order.id}`}
+                                        key={order.id}
+                                        asChild>
+                                        <Pressable>
+                                            <OrderCard {...order} />
+                                        </Pressable>
+                                    </Link>
                                 ))}
                             </>
                         )}

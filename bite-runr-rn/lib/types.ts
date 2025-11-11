@@ -106,3 +106,44 @@ export enum OrderStatus {
     Active = "active",
     Cancelled = "cancelled",
 }
+
+export interface AwaitingOrdersDTO {
+    count: number;
+    order_users: AwaitingOrderUserDTO[];
+    order: AwaitingOrderDTO;
+    order_locations: AwaitingOrderLocationDTO[];
+}
+
+export interface AwaitingOrderUserDTO {
+    id: string;
+    user_id: string;
+    order_id: string;
+    status: string;
+    amount_owed: number;
+    created_at: string; // ISO
+    updated_at: string; // ISO
+    user: Profile;
+}
+
+export interface AwaitingOrderDTO {
+    id: string;
+    name: string;
+    creator_id: string;
+    comments: string | null;
+    status: OrderStatus;
+    paused: boolean;
+    created_at: string; // ISO
+    updated_at: string; // ISO
+}
+
+export interface AwaitingOrderLocationDTO {
+    id: string;
+    order_id: string;
+    location_id: string;
+    created_at: string; // ISO
+    updated_at: string; // ISO
+}
+
+export interface AwaitingOrderRequest {
+    order_id: string;
+}
