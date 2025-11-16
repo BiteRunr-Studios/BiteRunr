@@ -16,10 +16,7 @@ import { useColorScheme } from "@/lib/use-color-scheme";
 import { supabase } from "@/lib/supabase";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-// @ts-expect-error TS2882: not recognized
 import "../global.css";
-
 const LIGHT_THEME: Theme = { ...DefaultTheme, colors: NAV_THEME.light };
 const DARK_THEME: Theme = { ...DarkTheme, colors: NAV_THEME.dark };
 
@@ -33,7 +30,7 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
-    const { isDarkColorScheme } = useColorScheme();
+    const { colorScheme } = useColorScheme();
     const [ready, setReady] = React.useState(false);
     const [session, setSession] = React.useState<null | NonNullable<
         Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]
@@ -43,7 +40,7 @@ export default function RootLayout() {
         if (Platform.OS === "web" && typeof document !== "undefined") {
             document.documentElement.classList.add("bg-background");
         }
-        setAndroidNavigationBar(isDarkColorScheme ? "dark" : "light");
+        setAndroidNavigationBar(colorScheme);
     }, []);
 
     React.useEffect(() => {
@@ -96,9 +93,11 @@ export default function RootLayout() {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
+            <ThemeProvider
+                value={colorScheme == "dark" ? DARK_THEME : LIGHT_THEME}
+            >
                 <SafeAreaProvider>
-                    <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
+                    <StatusBar style="auto" />
                     <GestureHandlerRootView style={{ flex: 1 }}>
                         <Stack screenOptions={{ headerShown: false }}>
                             {session ? (
