@@ -14,26 +14,45 @@ import { Feather } from "@expo/vector-icons";
 import { OrderCard } from "@/components/order-card";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
-import { Order } from "@/lib/types";
+import { Order, OrderStatus } from "@/lib/types";
 import { getOrders } from "@/api/groups/orders";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
+import { supabase } from "@/lib/supabase";
 
 export default function GroupsTab() {
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const [userId, setUserId] = useState<string | null>(null);
     const { isDarkColorScheme } = useColorScheme();
+
+    useEffect(() => {
+        supabase.auth.getUser().then(({ data }) => {
+            setUserId(data.user?.id ?? null);
+        });
+    }, []);
 
     const { data, isPending, isError, error } = useQuery<Order[]>({
         queryKey: ["userOrders"],
         queryFn: getOrders,
+        refetchInterval: 2_500,
+    });
+
+    const filteredOrders = data?.filter((order) => {
+        if (!userId) return false;
+
+        if (selectedIndex === 0) {
+            // "Created by me" - show only orders where user is the creator
+            return order.creator_id === userId;
+        } else {
+            // "Invited to" - show only orders where user is NOT the creator
+            return order.creator_id !== userId;
+        }
     });
 
     return (
         <PageWithHeader
             title="Account"
-            logoSource={require("@/assets/images/app-logo.png")}
-            onLogoPress={() => Alert.alert("Logo pressed")}
-            onBellPress={() => Alert.alert("Notifications")}>
+            logoSource={require("@/assets/images/app-logo.png")}>
             <View className="flex-1 px-6">
                 <View className="flex-1 py-2">
                     <SegmentedControl
@@ -62,11 +81,15 @@ export default function GroupsTab() {
                             placeholder="Search"
                             className="flex-1 px-2 py-4 text-foreground"
                         />
-                        <Feather
-                            name="plus-circle"
-                            size={24}
-                            color={"hsl(32 100% 50%)"}
-                        />
+                        <Link href={`/order/create`} asChild>
+                            <Pressable>
+                                <Feather
+                                    name="plus-circle"
+                                    size={24}
+                                    color={"hsl(32 100% 50%)"}
+                                />
+                            </Pressable>
+                        </Link>
                     </View>
 
                     <ScrollView
@@ -92,18 +115,22 @@ export default function GroupsTab() {
                                 </Text>
                             </View>
                         )}
-                        {!isPending && !isError && data && (
+                        {!isPending && !isError && filteredOrders && (
                             <>
-                                {data.map((order: Order) => (
-                                    <Link
-                                        href={`/order/${order.id}`}
-                                        key={order.id}
-                                        asChild>
-                                        <Pressable>
-                                            <OrderCard {...order} />
-                                        </Pressable>
-                                    </Link>
-                                ))}
+                                {filteredOrders.map((order: Order) =>
+                                    order.status === OrderStatus.Active ? (
+                                        <Link
+                                            href={`/order/${order.id}`}
+                                            key={order.id}
+                                            asChild>
+                                            <Pressable>
+                                                <OrderCard {...order} />
+                                            </Pressable>
+                                        </Link>
+                                    ) : (
+                                        <OrderCard key={order.id} {...order} />
+                                    )
+                                )}
                             </>
                         )}
                     </ScrollView>

@@ -15,9 +15,7 @@ export default function HomeTab() {
     return (
         <PageWithHeader
             title="Account"
-            logoSource={require("@/assets/images/app-logo.png")}
-            onLogoPress={() => Alert.alert("Logo pressed")}
-            onBellPress={() => Alert.alert("Notifications")}>
+            logoSource={require("@/assets/images/app-logo.png")}>
             <ScrollView className="flex-1 px-6 py-0">
                 {isPending && (
                     <View className="mt-6">

@@ -147,3 +147,26 @@ export interface AwaitingOrderLocationDTO {
 export interface AwaitingOrderRequest {
     order_id: string;
 }
+
+export interface Friend {
+    id: string;
+    first_name: string;
+    last_name: string;
+    avatar_url: string | null;
+}
+
+export interface CreateOrderRequest {
+    name: string;
+    comments: string | null;
+    status: "active";
+    paused: boolean;
+    creator_id: string;
+    order_locations: {
+        order_id: string | null;
+        location_id: string;
+    }[];
+    order_users: {
+        order_id: string | null;
+        user_id: string;
+    }[];
+}

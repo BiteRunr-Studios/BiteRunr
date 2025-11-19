@@ -11,17 +11,16 @@ export default function SpecificOrder() {
     const { orderId } = useLocalSearchParams();
 
     const { data, isPending, isError, error } = useQuery<AwaitingOrdersDTO>({
-        queryKey: ["order"],
+        queryKey: ["order", orderId],
         queryFn: () => getOrder(orderId as string),
+        refetchInterval: 2_500,
     });
 
     if (isPending) {
         return (
             <PageWithHeader
                 title="Order Details"
-                logoSource={require("@/assets/images/app-logo.png")}
-                onLogoPress={() => Alert.alert("Logo pressed")}
-                onBellPress={() => Alert.alert("Notifications")}>
+                logoSource={require("@/assets/images/app-logo.png")}>
                 <View className="items-center justify-center flex-1 px-6">
                     <Text className="text-foreground">Loading...</Text>
                 </View>
@@ -33,9 +32,7 @@ export default function SpecificOrder() {
         return (
             <PageWithHeader
                 title="Order Details"
-                logoSource={require("@/assets/images/app-logo.png")}
-                onLogoPress={() => Alert.alert("Logo pressed")}
-                onBellPress={() => Alert.alert("Notifications")}>
+                logoSource={require("@/assets/images/app-logo.png")}>
                 <View className="items-center justify-center flex-1 px-6">
                     <Text className="text-destructive">
                         Error: {error?.message ?? "Failed to load order"}
@@ -48,14 +45,15 @@ export default function SpecificOrder() {
     return (
         <PageWithHeader
             title="Order Details"
-            logoSource={require("@/assets/images/app-logo.png")}
-            onLogoPress={() => Alert.alert("Logo pressed")}
-            onBellPress={() => Alert.alert("Notifications")}>
+            logoSource={require("@/assets/images/app-logo.png")}>
             <ScrollView className="flex-1 px-6">
                 {/* Order Information */}
                 <View className="py-4 border-b border-border">
                     <Text className="mb-2 text-2xl font-bold text-foreground">
                         {data?.order.name}
+                    </Text>
+                    <Text className="text-sm text-muted-foreground">
+                        {orderId}
                     </Text>
                     <View className="flex-row gap-2 mb-2">
                         <Text className="text-sm text-muted-foreground">

@@ -1,11 +1,17 @@
 import { NAV_THEME } from "@/lib/constants";
-import { Order } from "@/lib/types";
+import { Order, OrderStatus } from "@/lib/types";
 import { Feather } from "@expo/vector-icons";
 import { View, Text, Image } from "react-native";
 
 export function OrderCard(order: Order) {
+    const isCancelled = order.status === OrderStatus.Cancelled;
+    const isActive = order.status === OrderStatus.Active;
+
     return (
-        <View className="flex-col w-full gap-2 p-4 border rounded-2xl border-muted bg-card">
+        <View
+            className={
+                "flex-col w-full gap-2 p-4 border rounded-2xl border-muted bg-card"
+            }>
             <View className="flex-row justify-between">
                 <Text className="text-lg text-muted-foreground">
                     {`${new Date(order.created_at).toLocaleDateString("en-US", {
@@ -24,15 +30,34 @@ export function OrderCard(order: Order) {
                 <Feather
                     name="arrow-right-circle"
                     size={24}
-                    color={"hsl(215 20.2% 70%)"}
+                    color={`${
+                        isCancelled
+                            ? "#ef4444"
+                            : isActive
+                            ? "hsl(32 100% 50%)"
+                            : "hsl(217.2 32.6% 17.5%)"
+                    }`}
                 />
             </View>
             <View className="flex-row items-center justify-start gap-2">
-                <View className="flex items-center justify-center w-12 h-12 bg-primary/20 rounded-2xl">
+                <View
+                    className={`flex items-center justify-center w-12 h-12 rounded-2xl ${
+                        isCancelled
+                            ? "bg-red-500/20"
+                            : isActive
+                            ? "bg-primary/20"
+                            : "bg-muted"
+                    }`}>
                     <Feather
                         name="package"
                         size={24}
-                        color={NAV_THEME.dark.primary}
+                        color={
+                            isCancelled
+                                ? "#ef4444"
+                                : isActive
+                                ? NAV_THEME.dark.primary
+                                : NAV_THEME.dark.muted
+                        }
                     />
                 </View>
 
