@@ -102,9 +102,7 @@ export default function AccountTab() {
         : null;
 
     return (
-        <PageWithHeader
-            title="Account"
-            logoSource={require("@/assets/images/app-logo.png")}>
+        <PageWithHeader title="Account">
             <ScrollView
                 className="flex-1 p-6"
                 keyboardShouldPersistTaps="handled">

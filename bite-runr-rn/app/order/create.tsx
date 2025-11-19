@@ -131,9 +131,7 @@ export default function CreateOrder() {
     };
 
     return (
-        <PageWithHeader
-            title="Create Order"
-            logoSource={require("@/assets/images/app-logo.png")}>
+        <PageWithHeader title="Create Order">
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
                 className="flex-1">

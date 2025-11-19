@@ -13,9 +13,7 @@ export default function HomeTab() {
     });
 
     return (
-        <PageWithHeader
-            title="Account"
-            logoSource={require("@/assets/images/app-logo.png")}>
+        <PageWithHeader title="Account">
             <ScrollView className="flex-1 px-6 py-0">
                 {isPending && (
                     <View className="mt-6">

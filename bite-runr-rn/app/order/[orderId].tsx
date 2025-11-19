@@ -18,9 +18,7 @@ export default function SpecificOrder() {
 
     if (isPending) {
         return (
-            <PageWithHeader
-                title="Order Details"
-                logoSource={require("@/assets/images/app-logo.png")}>
+            <PageWithHeader title="Order Details">
                 <View className="items-center justify-center flex-1 px-6">
                     <Text className="text-foreground">Loading...</Text>
                 </View>
@@ -30,9 +28,7 @@ export default function SpecificOrder() {
 
     if (isError) {
         return (
-            <PageWithHeader
-                title="Order Details"
-                logoSource={require("@/assets/images/app-logo.png")}>
+            <PageWithHeader title="Order Details">
                 <View className="items-center justify-center flex-1 px-6">
                     <Text className="text-destructive">
                         Error: {error?.message ?? "Failed to load order"}
@@ -43,9 +39,7 @@ export default function SpecificOrder() {
     }
 
     return (
-        <PageWithHeader
-            title="Order Details"
-            logoSource={require("@/assets/images/app-logo.png")}>
+        <PageWithHeader title="Order Details">
             <ScrollView className="flex-1 px-6">
                 {/* Order Information */}
                 <View className="py-4 border-b border-border">

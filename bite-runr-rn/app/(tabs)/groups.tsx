@@ -50,9 +50,7 @@ export default function GroupsTab() {
     });
 
     return (
-        <PageWithHeader
-            title="Account"
-            logoSource={require("@/assets/images/app-logo.png")}>
+        <PageWithHeader title="Account">
             <View className="flex-1 px-6">
                 <View className="flex-1 py-2">
                     <SegmentedControl
