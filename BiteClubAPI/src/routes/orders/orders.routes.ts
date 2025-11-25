@@ -11,7 +11,6 @@ import {
     insertOrdersSchema,
     patchOrdersSchema,
     selectOrdersSchema,
-    selectOrdersWithItemsCountSchema,
 } from "@/db/schema/orders";
 import { selectOrderUsersWithUserSchema } from "@/db/schema/users";
 import { selectItemSchema, insertItemSchema } from "@/db/schema/items";

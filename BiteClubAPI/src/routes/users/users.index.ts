@@ -18,7 +18,8 @@ const router = createRouter()
         routes.getAllUsersExceptAuthenticated,
         handlers.getAllUsersExceptAuthenticated
     )
-    .openapi(routes.createFromSSO, handlers.createSSOUserProfile);
+    .openapi(routes.createFromSSO, handlers.createSSOUserProfile)
+    .openapi(routes.checkEmailExists, handlers.checkEmailExists);
 // .openapi(routes.getFriends, handlers.getFriends)
 // .openapi(routes.getFriendRequests, handlers.getFriendRequests)
 // .openapi(routes.getAllUsersExceptAuthenticated, handlers.getAllUsersExceptAuthenticated);

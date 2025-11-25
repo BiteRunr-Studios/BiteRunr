@@ -383,6 +383,33 @@ export const userHasActiveOrders = createRoute({
     },
 });
 
+export const checkEmailExists = createRoute({
+    path: "/users/check-email/:email",
+    method: "get",
+    tags,
+    security: [
+        {
+            Bearer: [],
+        },
+    ],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            email: z.string().email("Valid email is required"),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            selectAuthUserSchema,
+            "User with email found"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User with email not found"
+        ),
+    },
+});
+
 export type ListRoute = typeof list;
 export type CreateRoute = typeof create;
 export type GetOneRoute = typeof getOne;
@@ -395,3 +422,4 @@ export type GetFriendRequestsRoute = typeof getFriendRequests;
 export type UserHasActiveOrders = typeof userHasActiveOrders;
 export type GetAllUsersExceptAuthenticatedRoute =
     typeof getAllUsersExceptAuthenticated;
+export type CheckEmailExistsRoute = typeof checkEmailExists;

@@ -3,7 +3,6 @@ import {
     insertOrdersDTOSchema,
     insertOrdersSchema,
     orders,
-    selectOrdersWithItemsCountSchema,
 } from "@/db/schema/orders";
 import { orderLocationsWithLocationNameSchema } from "@/db/schema/orderLocations";
 import type {
