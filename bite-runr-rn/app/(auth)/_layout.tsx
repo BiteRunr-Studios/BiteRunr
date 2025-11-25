@@ -7,9 +7,15 @@ export default function AuthLayout() {
             screenOptions={{ headerTitleAlign: "center", headerShown: false }}
         >
             <Stack.Screen name="sign-in" options={{ title: "Sign In" }} />
+            <Stack.Screen name="sign-up" options={{ title: "Sign Up" }} />
             <Stack.Screen
-                name="sign-up"
-                options={{ title: "Create Account" }}
+                name="confirm-sign-up"
+                options={{
+                    presentation: "fullScreenModal",
+                    animation: "slide_from_bottom",
+                    headerShown: false,
+                    gestureEnabled: true,
+                }}
             />
         </Stack>
     );

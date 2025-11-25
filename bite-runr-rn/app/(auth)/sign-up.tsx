@@ -1,100 +1,267 @@
-// app/(auth)/sign-up.tsx
-import React, { useState } from "react";
-import { Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { createUserProfile, findUserProfile } from "@/api/profile/profile";
+import { OAuthButton } from "@/components/auth/oauth-button";
+import { Button } from "@/components/common/button";
+import { Input } from "@/components/common/input";
 import { supabase } from "@/lib/supabase";
-import { Link, router } from "expo-router";
+import { UserProfileType } from "@/lib/types";
+import { router } from "expo-router";
+import { useState } from "react";
+import { View, Text, Image, Pressable } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+type FieldState = {
+    label: string;
+    value: string;
+    error: string | null;
+    touched: boolean;
+    show?: boolean;
+};
+
+type FormState = {
+    firstName: FieldState;
+    lastName: FieldState;
+    email: FieldState;
+    password: FieldState;
+};
 
 export default function SignUpScreen() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [form, setForm] = useState<FormState>({
+        firstName: {
+            label: "First name",
+            value: "",
+            error: null,
+            touched: false,
+        },
+        lastName: {
+            label: "Last name",
+            value: "",
+            error: null,
+            touched: false,
+        },
+        email: { label: "Email", value: "", error: null, touched: false },
+        password: {
+            label: "Password",
+            value: "",
+            error: null,
+            touched: false,
+            show: false,
+        },
+    });
+
+    function onChange<K extends keyof FormState>(key: K, value: string) {
+        setForm((prev) => {
+            const next = { ...prev };
+            next[key] = {
+                ...prev[key],
+                value,
+                // only validate once touched
+                error: prev[key].touched
+                    ? validateField(key, value)
+                    : prev[key].error,
+            };
+            return next;
+        });
+    }
+
+    function onBlur<K extends keyof FormState>(key: K) {
+        // mark touched and validate
+        setForm((prev) => {
+            const next = { ...prev };
+            const field = prev[key];
+            next[key] = {
+                ...field,
+                touched: true,
+                error: validateField(key, field.value),
+            };
+            return next;
+        });
+    }
+
+    // Loading login button state
     const [loading, setLoading] = useState(false);
 
-    async function onSignUp() {
-        try {
-            if (!email || !password) {
-                Alert.alert("Missing info", "Please enter your email and password.");
-                return;
-            }
-            setLoading(true);
+    function validateField(key: keyof FormState, value: string): string | null {
+        if (!value.trim()) return `${form[key].label} is required`;
+        if (key === "email" && !validateEmail(value)) return "Email is invalid";
+        return null;
+    }
 
-            const { data, error } = await supabase.auth.signUp({ email, password });
-            if (error) {
-                Alert.alert("Sign up failed", error.message);
-                return;
-            }
+    function validateEmail(email: string) {
+        const emailRegex =
+            /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[A-Za-z]{2,}$/;
 
-            // If confirmation is disabled, Supabase returns a session here.
-            if (data?.session) {
-                router.replace("/(tabs)");
-                return;
-            }
+        return emailRegex.test(email.trim());
+    }
 
-            // If no session, fall through to verification flow:
-            Alert.alert("Verify your email", "Please check your inbox for email verification!");
-        } catch (e: any) {
-            Alert.alert("Error", e?.message ?? "Something went wrong.");
-        } finally {
+    async function onSignUpWithEmail() {
+        setLoading(true);
+
+        // Validate all fields
+        setForm((prev) => {
+            const next: FormState = { ...prev };
+            (Object.keys(prev) as Array<keyof FormState>).forEach((k) => {
+                next[k] = {
+                    ...prev[k],
+                    touched: true,
+                    error: validateField(k, prev[k].value),
+                };
+            });
+            return next;
+        });
+
+        // Check for validation errors
+        const formHasErrors = (
+            Object.keys(form) as Array<keyof FormState>
+        ).some((k) => validateField(k, form[k].value) !== null);
+
+        if (formHasErrors) {
             setLoading(false);
+            return;
         }
+
+        // === Pseudocode ===
+        // find user by email (make api endpoint)
+        // if user exists, then look if email is confirmed
+        //  if email is confirmed, then return as an error message on the email field, "This email is already taken"
+        //  if email is not confirmed, then resend the confirmation email, and show them the confirm-sign-up.tsx page.
+        // if user does not exist
+        // call the supabase auth sdk signUp method
+        // if errors, then return errorMessage
+        // if no errors, then create the userProfile
+        //  send the confirmation email
+        //  show the user the confirm-sign-up.tsx page
     }
 
     return (
-        <SafeAreaView className="flex-1">
-            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1">
-                <View className="px-4 py-6">
-                    <Text className="text-3xl font-bold text-foreground mb-6">Create account</Text>
+        <SafeAreaView>
+            <View className="px-4 py-6 transition-all duration-200">
+                {/* Title */}
+                <View className="items-center gap-2 mb-6">
+                    <Image
+                        className="mb-5"
+                        source={require("@/assets/images/app-logo.png")}
+                        style={{ width: 90, height: 45 }}
+                        resizeMode="contain"
+                    />
+                    <Text className="text-3xl font-bold text-foreground">
+                        Sign Up
+                    </Text>
+                    <Text className="text-lg text-muted-foreground">
+                        Your favorites, ordered for the whole crew.
+                    </Text>
+                </View>
 
-                    <View className="mb-4">
-                        <Text className="text-sm font-medium text-foreground mb-2">Email</Text>
-                        <View className="flex-row items-center rounded-lg border border-input bg-background px-3">
-                            <TextInput
-                                className="flex-1 py-3 text-foreground"
-                                placeholder="email@address.com"
-                                placeholderTextColor="hsl(215.4 16.3% 46.9%)"
-                                autoCapitalize="none"
-                                autoComplete="email"
-                                keyboardType="email-address"
-                                value={email}
-                                onChangeText={setEmail}
-                            />
-                        </View>
+                <View className="mt-2" />
+
+                <View className="flex-row items-top justify-center gap-2">
+                    {/* First Name Field */}
+                    <View className="flex-1">
+                        <Input
+                            value={form.firstName.value}
+                            placeholder="First Name"
+                            leftIcon="IdCard"
+                            autoCapitalize="words"
+                            returnKeyType="next"
+                            errorMessage={form.firstName.error}
+                            onChangeText={(v) => onChange("firstName", v)}
+                            onBlur={() => onBlur("firstName")}
+                        />
                     </View>
 
-                    <View className="mb-6">
-                        <Text className="text-sm font-medium text-foreground mb-2">Password</Text>
-                        <View className="flex-row items-center rounded-lg border border-input bg-background px-3">
-                            <TextInput
-                                className="flex-1 py-3 text-foreground"
-                                placeholder="Password"
-                                placeholderTextColor="hsl(215.4 16.3% 46.9%)"
-                                autoCapitalize="none"
-                                secureTextEntry
-                                value={password}
-                                onChangeText={setPassword}
-                            />
-                        </View>
-                    </View>
-
-                    <Pressable
-                        onPress={onSignUp}
-                        disabled={loading}
-                        className={`rounded-lg px-4 py-3 ${loading ? "bg-primary/50" : "bg-primary"}`}
-                    >
-                        <View className="flex-row justify-center items-center">
-                            {loading && <ActivityIndicator color="#fff" className="mr-2" />}
-                            <Text className="text-white font-semibold">Sign up</Text>
-                        </View>
-                    </Pressable>
-
-                    <View className="mt-4 flex-row justify-center">
-                        <Text className="text-muted-foreground">Already have an account? </Text>
-                        <Link href="/(auth)/sign-in" className="text-primary font-semibold">
-                            Sign in
-                        </Link>
+                    {/* Last Name Field */}
+                    <View className="flex-1">
+                        <Input
+                            value={form.lastName.value}
+                            placeholder="Last Name"
+                            leftIcon="IdCard"
+                            autoCapitalize="words"
+                            returnKeyType="next"
+                            errorMessage={form.lastName.error}
+                            onChangeText={(v) => onChange("lastName", v)}
+                            onBlur={() => onBlur("lastName")}
+                        />
                     </View>
                 </View>
-            </KeyboardAvoidingView>
+
+                <View className="mt-2" />
+
+                {/* Email Field*/}
+                <Input
+                    value={form.email.value}
+                    placeholder="Email"
+                    leftIcon="Mail"
+                    autoCapitalize="none"
+                    returnKeyType="next"
+                    errorMessage={form.email.error}
+                    onChangeText={(v) => onChange("email", v)}
+                    onBlur={() => onBlur("email")}
+                />
+
+                <View className="mt-2" />
+
+                {/* Password Field*/}
+                <Input
+                    value={form.password.value}
+                    placeholder="Password"
+                    leftIcon="Lock"
+                    rightIcon={form.password.show ? "Eye" : "EyeClosed"}
+                    onRightIconPress={() => {
+                        setForm((prev) => ({
+                            ...prev,
+                            password: {
+                                ...prev.password,
+                                show: !prev.password.show,
+                            },
+                        }));
+                    }}
+                    autoCapitalize="none"
+                    returnKeyType="default"
+                    errorMessage={form.password.error}
+                    onChangeText={(v) => onChange("password", v)}
+                    onBlur={() => onBlur("password")}
+                    secureTextEntry={!form.password.show}
+                />
+
+                <View className="mt-4" />
+
+                {/* Submit Button */}
+                <Button
+                    variant="full"
+                    icon="CirclePlus"
+                    label="Continue"
+                    loading={loading}
+                    onPress={onSignUpWithEmail}
+                />
+
+                <View className="mt-8" />
+
+                <View className="flex-row items-center justify-between gap-3">
+                    <View className="bg-muted h-[1px] flex-grow"></View>
+                    <Text className="text-muted-foreground italic">OR</Text>
+                    <View className="bg-muted h-[1px] flex-grow"></View>
+                </View>
+
+                <View className="mt-8" />
+
+                {/* GitHub Auth Button */}
+                <OAuthButton provider="github" />
+
+                <View className="mt-3" />
+
+                {/* Google Auth Button */}
+                <OAuthButton provider="google" />
+
+                <View className="mt-4 flex-row justify-center gap-2">
+                    <Text className="text-muted-foreground">
+                        Already have an account?
+                    </Text>
+                    <Pressable onPress={() => router.back()}>
+                        <Text className="text-primary font-semibold">
+                            Sign in
+                        </Text>
+                    </Pressable>
+                </View>
+            </View>
         </SafeAreaView>
     );
 }

@@ -1,7 +1,7 @@
 // HomeTab.tsx
 import React from "react";
 import { Alert, ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { PageWithHeader } from "@/components/page-with-header";
+import { PageWithHeader } from "@/components/layout/page-with-header";
 import { useQuery } from "@tanstack/react-query";
 import { getUserOrdersDetails } from "@/api/home/orders";
 import { UserOrderDetails } from "@/lib/types";
@@ -17,7 +17,8 @@ export default function HomeTab() {
             title="Account"
             logoSource={require("@/assets/images/app-logo.png")}
             onLogoPress={() => Alert.alert("Logo pressed")}
-            onBellPress={() => Alert.alert("Notifications")}>
+            onBellPress={() => Alert.alert("Notifications")}
+        >
             <ScrollView className="flex-1 px-6 py-0">
                 {isPending && (
                     <View className="mt-6">

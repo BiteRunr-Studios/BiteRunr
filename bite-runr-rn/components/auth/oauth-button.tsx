@@ -14,7 +14,7 @@ import { supabase } from "@/lib/supabase";
 import { createSessionFromUrl, redirectTo } from "@/app/(auth)/oauth";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { TabBarIcon } from "./tabbar-icon";
+import { TabBarIcon } from "@/components/layout/tabbar-icon";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -25,6 +25,7 @@ type OAuthButtonProps = {
     label?: string;
     disabled?: boolean;
     className?: string;
+    onSuccess?: (session: { userId: string } | null) => void;
 };
 
 export const OAuthButton: React.FC<OAuthButtonProps> = ({
@@ -32,6 +33,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
     label,
     disabled,
     className,
+    onSuccess,
 }) => {
     const { colorScheme } = useColorScheme();
     const [loading, setLoading] = useState(false);
@@ -94,7 +96,8 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
             );
 
             if (res.type === "success" && res.url) {
-                await createSessionFromUrl(res.url);
+                const session = await createSessionFromUrl(res.url);
+                onSuccess?.(session ?? null);
                 router.replace("/(tabs)");
             }
         } catch (e: any) {

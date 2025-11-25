@@ -2,7 +2,7 @@
 import React from "react";
 import { TextInput, Text, View, TextInputProps, Pressable } from "react-native";
 import { NAV_THEME } from "@/lib/constants";
-import Icon, { IconName } from "@/components/icon";
+import Icon, { IconName } from "@/components/common/icon";
 import { useColorScheme } from "@/lib/use-color-scheme";
 
 type InputProps = {

@@ -1,20 +1,13 @@
-// app/(auth)/sign-in.tsx
-import React, { useState } from "react";
-import * as WebBrowser from "expo-web-browser";
-import { Text, View, Image } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Link, router } from "expo-router";
+import { OAuthButton } from "@/components/auth/oauth-button";
+import { Button } from "@/components/common/button";
+import { Input } from "@/components/common/input";
 import { supabase } from "@/lib/supabase";
-import { Input } from "@/components/input";
-import { OAuthButton } from "@/components/oauth-button";
-import { Button } from "@/components/button";
-import { NAV_THEME } from "@/lib/constants";
-import { useColorScheme } from "@/lib/use-color-scheme";
-
-WebBrowser.maybeCompleteAuthSession();
+import { router } from "expo-router";
+import { useState } from "react";
+import { View, Text, Image, Pressable } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignInScreen() {
-    const { colorScheme } = useColorScheme();
     // Email field
     const [email, setEmail] = useState("");
     const [emailError, setEmailError] = useState<string | null>(null);
@@ -34,7 +27,6 @@ export default function SignInScreen() {
         setLoading(true);
         setTouched({ email: true, password: true });
 
-        // Clear previous errors
         setPasswordError(null);
         setEmailError(null);
 
@@ -46,7 +38,6 @@ export default function SignInScreen() {
             return;
         }
 
-        // Proceed with API call
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -55,7 +46,13 @@ export default function SignInScreen() {
         if (error) {
             const errorMessage = error.message.toLowerCase();
 
-            if (errorMessage.includes("email")) {
+            if (errorMessage.includes("email not confirmed")) {
+                supabase.auth.resend({
+                    type: "signup",
+                    email: email,
+                });
+                router.push("/confirm-sign-up");
+            } else if (errorMessage.includes("missing email or phone")) {
                 setEmailError("Email is required");
                 setPasswordError("Password is required");
             } else {
@@ -193,12 +190,11 @@ export default function SignInScreen() {
 
                 <View className="mt-4 flex-row justify-center gap-2">
                     <Text className="text-muted-foreground">No account?</Text>
-                    <Link
-                        href="/(auth)/sign-up"
-                        className="text-primary font-semibold"
-                    >
-                        Sign up
-                    </Link>
+                    <Pressable onPress={() => router.push("/(auth)/sign-up")}>
+                        <Text className="text-primary font-semibold">
+                            Sign up
+                        </Text>
+                    </Pressable>
                 </View>
             </View>
         </SafeAreaView>

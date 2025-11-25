@@ -1,6 +1,6 @@
 import { NAV_THEME } from "@/lib/constants";
 import { useEffect, useRef } from "react";
-import Icon, { IconName } from "@/components/icon";
+import Icon, { IconName } from "@/components/common/icon";
 import { Animated, Pressable, Text } from "react-native";
 import { Flow } from "react-native-animated-spinkit";
 
@@ -49,7 +49,7 @@ export const Button: React.FC<ButtonProps> = ({
         <Pressable
             onPress={onPress}
             disabled={isDisabled}
-            className={`flex-row justify-center items-center gap-2 p-4 rounded-2xl ${
+            className={`w-full flex-row justify-center items-center gap-2 p-4 rounded-2xl ${
                 isDisabled ? "opacity-50" : ""
             }`}
             style={
