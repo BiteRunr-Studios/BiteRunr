@@ -1,4 +1,3 @@
-import { createUserProfile, findUserProfile } from "@/api/profile/profile";
 import { OAuthButton } from "@/components/auth/oauth-button";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
@@ -119,6 +118,7 @@ export default function SignUpScreen() {
             return;
         }
 
+        // const existingUser =
         // === Pseudocode ===
         // find user by email (make api endpoint)
         // if user exists, then look if email is confirmed
