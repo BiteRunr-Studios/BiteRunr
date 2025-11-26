@@ -22,6 +22,183 @@ import { authMiddleware } from "@/middlewares/clerk-auth";
 
 const tags = ["Users"];
 
+export const findUserByEmail = createRoute({
+    path: "/users/find-user-by-email",
+    method: "get",
+    tags,
+    request: {
+        query: z.object({
+            email: z.string().email("Valid email is required"),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            selectAuthUserSchema,
+            "User with email found"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User with email not found"
+        ),
+    },
+});
+
+export const resetPassword = createRoute({
+    path: "reset-password/user/:id",
+    method: "patch",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: IdUUIDParamsSchema,
+        body: jsonContentRequired(
+            resetUserAuthPasswordSchema,
+            "Reset password"
+        ),
+    },
+    responses: {
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User not found"
+        ),
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+            [
+                createErrorSchema(resetUserAuthPasswordSchema),
+                createErrorSchema(IdUUIDParamsSchema),
+            ],
+            "Validation error(s)"
+        ),
+        [HttpStatusCodes.OK]: jsonContent(
+            selectAuthUserSchema,
+            "User password reset"
+        ),
+        [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
+            createErrorSchema(resetUserAuthPasswordSchema),
+            "User currently unauthorized to reset password"
+        ),
+        [HttpStatusCodes.BAD_REQUEST]: jsonContent(
+            createErrorSchema(resetUserAuthPasswordSchema),
+            "Error occured while creating user"
+        ),
+    },
+});
+
+export const createFromSSO = createRoute({
+    path: "users/sso",
+    method: "post",
+    tags,
+    request: {
+        body: jsonContentRequired(
+            insertAuthUserSSOSchema,
+            "Create SSO user profile"
+        ),
+    },
+    responses: {
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+            [
+                createErrorSchema(insertAuthUserSSOSchema),
+                createErrorSchema(IdUUIDParamsSchema),
+            ],
+            "Validation error(s)"
+        ),
+        [HttpStatusCodes.ACCEPTED]: jsonContent(
+            selectAuthUserSchema,
+            "User already exists"
+        ),
+        [HttpStatusCodes.OK]: jsonContent(selectAuthUserSchema, "User created"),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "Auth user not found"
+        ),
+    },
+});
+
+export const getFriends = createRoute({
+    path: "/users/:user_id/friends",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            user_id: z.string().uuid().nonempty("User id is required"),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(selectUserSchema),
+            "List of user's friends"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User not found"
+        ),
+    },
+});
+
+export const getFriendRequests = createRoute({
+    path: "/users/:user_id/friend-requests",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            user_id: z.string().uuid().nonempty("User id is required"),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(selectUserSchema),
+            "List of users who have sent friend requests"
+        ),
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User not found"
+        ),
+    },
+});
+
+export const getAllUsersExceptAuthenticated = createRoute({
+    path: "/users/all-except/:user_id",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: z.object({
+            user_id: z.string().uuid().nonempty("User id is required"),
+        }),
+    },
+    responses: {
+        [HttpStatusCodes.OK]: jsonContent(
+            z.array(selectUserSchema),
+            "List of all users except the specified user"
+        ),
+    },
+});
+
+export const userHasActiveOrders = createRoute({
+    path: "users/:id/active-orders",
+    method: "get",
+    tags,
+    security: [{ Bearer: [] }],
+    middleware: [authMiddleware] as const,
+    request: {
+        params: IdUUIDParamsSchema,
+    },
+    responses: {
+        [HttpStatusCodes.NOT_FOUND]: jsonContent(
+            notFoundSchema,
+            "User not found"
+        ),
+        [HttpStatusCodes.OK]: jsonContent(
+            z.boolean(),
+            "List of all active orders user part of"
+        ),
+    },
+});
+
 export const list = createRoute({
     path: "/users",
     method: "get",
@@ -143,278 +320,7 @@ export const remove = createRoute({
     },
 });
 
-export const resetPassword = createRoute({
-    path: "reset-password/user/:id",
-    method: "patch",
-    tags,
-    security: [{ Bearer: [] }],
-    middleware: [authMiddleware] as const,
-    request: {
-        params: IdUUIDParamsSchema,
-        body: jsonContentRequired(
-            resetUserAuthPasswordSchema,
-            "Reset password"
-        ),
-    },
-    responses: {
-        [HttpStatusCodes.NOT_FOUND]: jsonContent(
-            notFoundSchema,
-            "User not found"
-        ),
-        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-            [
-                createErrorSchema(resetUserAuthPasswordSchema),
-                createErrorSchema(IdUUIDParamsSchema),
-            ],
-            "Validation error(s)"
-        ),
-        [HttpStatusCodes.OK]: jsonContent(
-            selectAuthUserSchema,
-            "User password reset"
-        ),
-        [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
-            createErrorSchema(resetUserAuthPasswordSchema),
-            "User currently unauthorized to reset password"
-        ),
-        [HttpStatusCodes.BAD_REQUEST]: jsonContent(
-            createErrorSchema(resetUserAuthPasswordSchema),
-            "Error occured while creating user"
-        ),
-    },
-});
-
-export const createFromSSO = createRoute({
-    path: "users/sso",
-    method: "post",
-    tags,
-    request: {
-        body: jsonContentRequired(
-            insertAuthUserSSOSchema,
-            "Create SSO user profile"
-        ),
-    },
-    responses: {
-        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-            [
-                createErrorSchema(insertAuthUserSSOSchema),
-                createErrorSchema(IdUUIDParamsSchema),
-            ],
-            "Validation error(s)"
-        ),
-        [HttpStatusCodes.ACCEPTED]: jsonContent(
-            selectAuthUserSchema,
-            "User already exists"
-        ),
-        [HttpStatusCodes.OK]: jsonContent(selectAuthUserSchema, "User created"),
-        [HttpStatusCodes.NOT_FOUND]: jsonContent(
-            notFoundSchema,
-            "Auth user not found"
-        ),
-    },
-});
-
-// export const patchClerkId = createRoute({
-//     path: "/users/clerk/{clerk_id}",
-//     method: "patch",
-//     tags,
-//     security: [{ Bearer: [] }],
-//     middleware: [authMiddleware] as const,
-//     request: {
-//         params: z.object({
-//             clerk_id: z.string(),
-//         }),
-//         body: jsonContentRequired(patchUserSchema, "Update a user"),
-//     },
-//     responses: {
-//         [HttpStatusCodes.OK]: jsonContent(selectUserSchema, "Update a user"),
-//         [HttpStatusCodes.NOT_FOUND]: jsonContent(
-//             notFoundSchema,
-//             "User not found"
-//         ),
-//         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-//             [
-//                 createErrorSchema(patchUserSchema),
-//                 createErrorSchema(IdUUIDParamsSchema),
-//             ],
-//             "Validation error(s)"
-//         ),
-//     },
-// });
-
-export const getFriends = createRoute({
-    path: "/users/:user_id/friends",
-    method: "get",
-    tags,
-    security: [{ Bearer: [] }],
-    middleware: [authMiddleware] as const,
-    request: {
-        params: z.object({
-            user_id: z.string().uuid().nonempty("User id is required"),
-        }),
-    },
-    responses: {
-        [HttpStatusCodes.OK]: jsonContent(
-            z.array(selectUserSchema),
-            "List of user's friends"
-        ),
-        [HttpStatusCodes.NOT_FOUND]: jsonContent(
-            notFoundSchema,
-            "User not found"
-        ),
-    },
-});
-
-// export const getClerkUser = createRoute({
-//     path: "/users/clerk/{clerk_id}",
-//     method: "get",
-//     tags,
-//     security: [{ Bearer: [] }],
-//     middleware: [authMiddleware] as const,
-//     request: {
-//         params: z.object({
-//             clerk_id: z.string(),
-//         }),
-//     },
-//     responses: {
-//         [HttpStatusCodes.OK]: jsonContent(
-//             z.object({
-//                 image_url: z.string().nullable(),
-//             }),
-//             "User's Clerk image URL"
-//         ),
-//         [HttpStatusCodes.NOT_FOUND]: jsonContent(
-//             notFoundSchema,
-//             "User not found"
-//         ),
-//     },
-// });
-
-export const getFriendRequests = createRoute({
-    path: "/users/:user_id/friend-requests",
-    method: "get",
-    tags,
-    security: [{ Bearer: [] }],
-    middleware: [authMiddleware] as const,
-    request: {
-        params: z.object({
-            user_id: z.string().uuid().nonempty("User id is required"),
-        }),
-    },
-    responses: {
-        [HttpStatusCodes.OK]: jsonContent(
-            z.array(selectUserSchema),
-            "List of users who have sent friend requests"
-        ),
-        [HttpStatusCodes.NOT_FOUND]: jsonContent(
-            notFoundSchema,
-            "User not found"
-        ),
-    },
-});
-
-// export const getOneByClerkId = createRoute({
-//     path: "/users/clerk/{clerk_id}",
-//     method: "get",
-//     tags,
-//     security: [{ Bearer: [] }],
-//     middleware: [authMiddleware] as const,
-//     request: {
-//         params: z.object({
-//             clerk_id: z.string(),
-//         }),
-//     },
-//     responses: {
-//         [HttpStatusCodes.OK]: jsonContent(
-//             selectUserSchema.extend({
-//                 image_url: z.string().nullable(),
-//             }),
-//             "User by Clerk Id"
-//         ),
-//         [HttpStatusCodes.NOT_FOUND]: jsonContent(
-//             notFoundSchema,
-//             "User not found"
-//         ),
-//         [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContent(
-//             createErrorSchema(z.object({
-//                 clerk_id: z.string(),
-//             })),
-//             "Invalid Clerk Id error"
-//         ),
-//     },
-// });
-
-export const getAllUsersExceptAuthenticated = createRoute({
-    path: "/users/all-except/:user_id",
-    method: "get",
-    tags,
-    security: [{ Bearer: [] }],
-    middleware: [authMiddleware] as const,
-    request: {
-        params: z.object({
-            user_id: z.string().uuid().nonempty("User id is required"),
-        }),
-    },
-    responses: {
-        [HttpStatusCodes.OK]: jsonContent(
-            z.array(selectUserSchema),
-            "List of all users except the specified user"
-        ),
-    },
-});
-
-export const userHasActiveOrders = createRoute({
-    path: "users/:id/active-orders",
-    method: "get",
-    tags,
-    security: [{ Bearer: [] }],
-    middleware: [authMiddleware] as const,
-    request: {
-        params: IdUUIDParamsSchema,
-    },
-    responses: {
-        [HttpStatusCodes.NOT_FOUND]: jsonContent(
-            notFoundSchema,
-            "User not found"
-        ),
-        [HttpStatusCodes.OK]: jsonContent(
-            z.boolean(),
-            "List of all active orders user part of"
-        ),
-    },
-});
-
-export const checkEmailExists = createRoute({
-    path: "/users/check-email/:email",
-    method: "get",
-    tags,
-    security: [
-        {
-            Bearer: [],
-        },
-    ],
-    middleware: [authMiddleware] as const,
-    request: {
-        params: z.object({
-            email: z.string().email("Valid email is required"),
-        }),
-    },
-    responses: {
-        [HttpStatusCodes.OK]: jsonContent(
-            selectAuthUserSchema,
-            "User with email found"
-        ),
-        [HttpStatusCodes.NOT_FOUND]: jsonContent(
-            notFoundSchema,
-            "User with email not found"
-        ),
-    },
-});
-
-export type ListRoute = typeof list;
-export type CreateRoute = typeof create;
-export type GetOneRoute = typeof getOne;
-export type PatchRoute = typeof patch;
-export type RemoveRoute = typeof remove;
+export type FindUserByEmail = typeof findUserByEmail;
 export type ResetPasswordRoute = typeof resetPassword;
 export type SSOCreateRoute = typeof createFromSSO;
 export type GetFriendsRoute = typeof getFriends;
@@ -422,4 +328,8 @@ export type GetFriendRequestsRoute = typeof getFriendRequests;
 export type UserHasActiveOrders = typeof userHasActiveOrders;
 export type GetAllUsersExceptAuthenticatedRoute =
     typeof getAllUsersExceptAuthenticated;
-export type CheckEmailExistsRoute = typeof checkEmailExists;
+export type ListRoute = typeof list;
+export type CreateRoute = typeof create;
+export type GetOneRoute = typeof getOne;
+export type PatchRoute = typeof patch;
+export type RemoveRoute = typeof remove;

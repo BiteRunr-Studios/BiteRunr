@@ -17,7 +17,7 @@ import type {
     GetFriendRequestsRoute,
     GetAllUsersExceptAuthenticatedRoute,
     UserHasActiveOrders,
-    CheckEmailExistsRoute,
+    FindUserByEmail,
 } from "./users.routes";
 import type { AppRouteHandler } from "@/lib/types";
 import * as HttpStatusCodes from "stoker/http-status-codes";
@@ -25,33 +25,19 @@ import * as HttpStatusPhrases from "stoker/http-status-phrases";
 import { eq } from "drizzle-orm";
 import { supabase } from "@/lib/supabase";
 
-export const list: AppRouteHandler<ListRoute> = async (c) => {
-    const users = await db.query.authUsers.findMany({
+export const checkEmailExists: AppRouteHandler<FindUserByEmail> = async (c) => {
+    const { email } = c.req.valid("query");
+
+    const authUser = await db.query.authUsers.findFirst({
+        where(fields, operators) {
+            return operators.eq(fields.email, email);
+        },
         with: {
             profile: true,
         },
     });
 
-    return c.json(users);
-};
-
-export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
-    const { id } = c.req.valid("param");
-
-    const authUser = await db.query.authUsers.findFirst({
-        where(fields, operators) {
-            return operators.eq(fields.id, id);
-        },
-        with: {
-            profile: {
-                columns: {
-                    id: false,
-                },
-            },
-        },
-    });
-
-    if (!authUser || !authUser.profile) {
+    if (!authUser) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -61,136 +47,6 @@ export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
     }
 
     return c.json(authUser, HttpStatusCodes.OK);
-};
-
-export const create: AppRouteHandler<CreateRoute> = async (c) => {
-    const newUser = c.req.valid("json");
-
-    // supabase auth user insertion
-    const { data, error } = await supabase.auth.signUp({
-        email: newUser.email,
-        password: newUser.password,
-    });
-
-    if (error || !data.user) return c.json(error, HttpStatusCodes.BAD_REQUEST);
-
-    // user profile insertion
-    const user = {
-        id: data.user!.id,
-        first_name: newUser.profile.first_name,
-        last_name: newUser.profile.last_name,
-    };
-
-    await db.insert(users).values(user);
-
-    const response = sessionSchema.parse(data.session);
-
-    return c.json(response, HttpStatusCodes.OK);
-};
-
-export const patch: AppRouteHandler<PatchRoute> = async (c) => {
-    const { id } = c.req.valid("param");
-    const updates = c.req.valid("json");
-
-    // 1. Extract tokens (assume sent in request body for this example)
-    const { access_token, refresh_token } = updates;
-
-    // 2. Set session if tokens are present
-    if (access_token && refresh_token) {
-        const { error: sessionError } = await supabase.auth.setSession({
-            access_token: access_token,
-            refresh_token: refresh_token,
-        });
-        if (sessionError) {
-            return c.json(sessionError, HttpStatusCodes.UNAUTHORIZED);
-        }
-    }
-
-    if (updates.email) {
-        // 3. Now update the user
-        const { data, error } = await supabase.auth.updateUser({
-            email: updates.email,
-        });
-
-        if (error || !data.user)
-            return c.json(error, HttpStatusCodes.BAD_REQUEST);
-    }
-
-    const [existingUser] = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, id));
-    const [existingAuthUser] = await db
-        .select()
-        .from(authUsers)
-        .where(eq(authUsers.id, id));
-
-    if (!existingUser) {
-        return c.json(
-            { message: HttpStatusPhrases.NOT_FOUND },
-            HttpStatusCodes.NOT_FOUND
-        );
-    }
-
-    const user = {
-        first_name:
-            updates.profile.first_name !== undefined &&
-            updates.profile.first_name !== null &&
-            updates.profile.first_name !== ""
-                ? updates.profile.first_name
-                : existingUser.first_name,
-        last_name:
-            updates.profile.last_name !== undefined &&
-            updates.profile.last_name !== null &&
-            updates.profile.last_name !== ""
-                ? updates.profile.last_name
-                : existingUser.last_name,
-    };
-
-    const [updatedUser] = await db
-        .update(users)
-        .set(user)
-        .where(eq(users.id, id))
-        .returning();
-
-    if (!updatedUser) {
-        return c.json(
-            { message: HttpStatusPhrases.NOT_FOUND },
-            HttpStatusCodes.NOT_FOUND
-        );
-    }
-
-    const response = selectAuthUserSchema.parse({
-        id: updatedUser.id,
-        email: existingAuthUser.email, // If email was updated, use the new value
-        profile: {
-            first_name: updatedUser.first_name,
-            last_name: updatedUser.last_name,
-            created_at: updatedUser.created_at,
-            updated_at: updatedUser.updated_at,
-        },
-    });
-
-    return c.json(response, HttpStatusCodes.OK);
-};
-
-export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
-    const { id } = c.req.valid("param");
-    const [deletedUser] = await db
-        .delete(users)
-        .where(eq(users.id, id))
-        .returning();
-
-    if (!deletedUser) {
-        return c.json(
-            {
-                message: HttpStatusPhrases.NOT_FOUND,
-            },
-            HttpStatusCodes.NOT_FOUND
-        );
-    }
-
-    return c.json(deletedUser, HttpStatusCodes.OK);
 };
 
 export const resetPassword: AppRouteHandler<ResetPasswordRoute> = async (c) => {
@@ -458,21 +314,33 @@ export const getAllUsersExceptAuthenticated: AppRouteHandler<
     return c.json(otherUsers, HttpStatusCodes.OK);
 };
 
-export const checkEmailExists: AppRouteHandler<CheckEmailExistsRoute> = async (
-    c
-) => {
-    const { email } = c.req.valid("param");
-
-    const authUser = await db.query.authUsers.findFirst({
-        where(fields, operators) {
-            return operators.eq(fields.email, email);
-        },
+export const list: AppRouteHandler<ListRoute> = async (c) => {
+    const users = await db.query.authUsers.findMany({
         with: {
             profile: true,
         },
     });
 
-    if (!authUser) {
+    return c.json(users);
+};
+
+export const getOne: AppRouteHandler<GetOneRoute> = async (c) => {
+    const { id } = c.req.valid("param");
+
+    const authUser = await db.query.authUsers.findFirst({
+        where(fields, operators) {
+            return operators.eq(fields.id, id);
+        },
+        with: {
+            profile: {
+                columns: {
+                    id: false,
+                },
+            },
+        },
+    });
+
+    if (!authUser || !authUser.profile) {
         return c.json(
             {
                 message: HttpStatusPhrases.NOT_FOUND,
@@ -482,4 +350,134 @@ export const checkEmailExists: AppRouteHandler<CheckEmailExistsRoute> = async (
     }
 
     return c.json(authUser, HttpStatusCodes.OK);
+};
+
+export const create: AppRouteHandler<CreateRoute> = async (c) => {
+    const newUser = c.req.valid("json");
+
+    // supabase auth user insertion
+    const { data, error } = await supabase.auth.signUp({
+        email: newUser.email,
+        password: newUser.password,
+    });
+
+    if (error || !data.user) return c.json(error, HttpStatusCodes.BAD_REQUEST);
+
+    // user profile insertion
+    const user = {
+        id: data.user!.id,
+        first_name: newUser.profile.first_name,
+        last_name: newUser.profile.last_name,
+    };
+
+    await db.insert(users).values(user);
+
+    const response = sessionSchema.parse(data.session);
+
+    return c.json(response, HttpStatusCodes.OK);
+};
+
+export const patch: AppRouteHandler<PatchRoute> = async (c) => {
+    const { id } = c.req.valid("param");
+    const updates = c.req.valid("json");
+
+    // 1. Extract tokens (assume sent in request body for this example)
+    const { access_token, refresh_token } = updates;
+
+    // 2. Set session if tokens are present
+    if (access_token && refresh_token) {
+        const { error: sessionError } = await supabase.auth.setSession({
+            access_token: access_token,
+            refresh_token: refresh_token,
+        });
+        if (sessionError) {
+            return c.json(sessionError, HttpStatusCodes.UNAUTHORIZED);
+        }
+    }
+
+    if (updates.email) {
+        // 3. Now update the user
+        const { data, error } = await supabase.auth.updateUser({
+            email: updates.email,
+        });
+
+        if (error || !data.user)
+            return c.json(error, HttpStatusCodes.BAD_REQUEST);
+    }
+
+    const [existingUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, id));
+    const [existingAuthUser] = await db
+        .select()
+        .from(authUsers)
+        .where(eq(authUsers.id, id));
+
+    if (!existingUser) {
+        return c.json(
+            { message: HttpStatusPhrases.NOT_FOUND },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    const user = {
+        first_name:
+            updates.profile.first_name !== undefined &&
+            updates.profile.first_name !== null &&
+            updates.profile.first_name !== ""
+                ? updates.profile.first_name
+                : existingUser.first_name,
+        last_name:
+            updates.profile.last_name !== undefined &&
+            updates.profile.last_name !== null &&
+            updates.profile.last_name !== ""
+                ? updates.profile.last_name
+                : existingUser.last_name,
+    };
+
+    const [updatedUser] = await db
+        .update(users)
+        .set(user)
+        .where(eq(users.id, id))
+        .returning();
+
+    if (!updatedUser) {
+        return c.json(
+            { message: HttpStatusPhrases.NOT_FOUND },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    const response = selectAuthUserSchema.parse({
+        id: updatedUser.id,
+        email: existingAuthUser.email, // If email was updated, use the new value
+        profile: {
+            first_name: updatedUser.first_name,
+            last_name: updatedUser.last_name,
+            created_at: updatedUser.created_at,
+            updated_at: updatedUser.updated_at,
+        },
+    });
+
+    return c.json(response, HttpStatusCodes.OK);
+};
+
+export const remove: AppRouteHandler<RemoveRoute> = async (c) => {
+    const { id } = c.req.valid("param");
+    const [deletedUser] = await db
+        .delete(users)
+        .where(eq(users.id, id))
+        .returning();
+
+    if (!deletedUser) {
+        return c.json(
+            {
+                message: HttpStatusPhrases.NOT_FOUND,
+            },
+            HttpStatusCodes.NOT_FOUND
+        );
+    }
+
+    return c.json(deletedUser, HttpStatusCodes.OK);
 };
