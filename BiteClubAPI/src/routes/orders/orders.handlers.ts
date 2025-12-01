@@ -408,6 +408,8 @@ export const addNewItemAndLinkToOrderUser: AppRouteHandler<
     const { order_id, order_location_id } = c.req.valid("param");
     const { order_user_id, new_item, quantity, comments } = c.req.valid("json");
 
+    console.log("Raw request body", c.req.json());
+
     const [insertedItem] = await db.insert(items).values(new_item).returning();
 
     const [insertedOrderItem] = await db
@@ -760,15 +762,6 @@ export const getUserOrderDetails: AppRouteHandler<
         },
         orderBy: (fields, operators) => [operators.desc(fields.created_at)],
     });
-
-    if (!orders || orders.length === 0) {
-        return c.json(
-            {
-                message: HttpStatusPhrases.NOT_FOUND,
-            },
-            HttpStatusCodes.NOT_FOUND
-        );
-    }
 
     const ordersWithDetails = await Promise.all(
         orders.map(async (order) => {

@@ -16,6 +16,11 @@ export const orderUsersStatusEnum = pgEnum("order_users_enum", [
     "done",
 ]);
 
+export const orderUsersPeymentSettlementStatusEnum = pgEnum(
+    "order_users_payment_settlement_enum",
+    ["unpaid", "claimed", "confirmed"]
+);
+
 export const orderUsers = pgTable(
     "order_users",
     {
@@ -27,6 +32,9 @@ export const orderUsers = pgTable(
             .notNull()
             .references(() => orders.id, { onDelete: "cascade" }),
         status: orderUsersStatusEnum().notNull().default("ordering"),
+        settlement_status: orderUsersPeymentSettlementStatusEnum()
+            .notNull()
+            .default("unpaid"),
         amount_owed: numeric("amount_owed", { precision: 12, scale: 2 })
             .default("0.00")
             .notNull(),
