@@ -1,6 +1,5 @@
-import { varchar } from "drizzle-orm/pg-core";
+import { varchar, uuid, pgSchema, timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { uuid, pgSchema } from "drizzle-orm/pg-core";
 import { users } from "./index";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { baseUserSchema, insertUserSchema, patchUserSchema } from "./users";
@@ -11,6 +10,10 @@ export const authSchema = pgSchema("auth");
 export const authUsers = authSchema.table("users", {
     id: uuid("id").primaryKey(),
     email: varchar().notNull(),
+    email_confirmed_at: timestamp("email_confirmed_at", {
+        withTimezone: true,
+        mode: "date",
+    }),
 });
 
 export const authUsersRelations = relations(authUsers, ({ one }) => ({
@@ -34,9 +37,7 @@ export const insertAuthUserSchema = createInsertSchema(authUsers)
             .email("Email is not formatted correctly"),
         profile: insertUserSchema,
     })
-    .omit({
-        id: true,
-    });
+    .omit({ id: true });
 
 export const patchAuthUserSchema = insertAuthUserSchema
     .partial()
