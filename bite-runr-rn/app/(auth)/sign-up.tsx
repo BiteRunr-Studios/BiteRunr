@@ -1,3 +1,4 @@
+import { createUserProfile, findUserByEmail } from "@/api/profile/profile";
 import { OAuthButton } from "@/components/auth/oauth-button";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
@@ -118,18 +119,99 @@ export default function SignUpScreen() {
             return;
         }
 
-        // const existingUser =
-        // === Pseudocode ===
         // find user by email (make api endpoint)
+        console.log(form.email.value);
+        const existingUser = await findUserByEmail(
+            form.email.value.toLowerCase()
+        );
+        console.log(existingUser);
+
         // if user exists, then look if email is confirmed
-        //  if email is confirmed, then return as an error message on the email field, "This email is already taken"
-        //  if email is not confirmed, then resend the confirmation email, and show them the confirm-sign-up.tsx page.
+        if (existingUser) {
+            const { data } = await supabase.auth.admin.getUserById(
+                existingUser.id
+            );
+
+            const emailConfirmed = data.user?.confirmed_at;
+            console.log(emailConfirmed);
+
+            //  if email is confirmed, then return as an error message on the email field, "This email is already taken"
+            if (emailConfirmed) {
+                // Set error for a specific field (e.g., email)
+                setForm((prev) => ({
+                    ...prev,
+                    email: {
+                        ...prev.email,
+                        touched: true,
+                        error: "This email is already taken",
+                    },
+                }));
+                setLoading(false);
+                return;
+            }
+
+            //  if email is not confirmed, then resend the confirmation email, and show them the confirm-sign-up.tsx page.
+            supabase.auth.resend({
+                type: "signup",
+                email: existingUser.email,
+            });
+            router.push("/confirm-sign-up");
+            setLoading(false);
+            return;
+        }
+
         // if user does not exist
-        // call the supabase auth sdk signUp method
+        //  call the supabase auth sdk signUp method
+        const { data, error } = await supabase.auth.signUp({
+            email: form.email.value,
+            password: form.password.value,
+        });
+
         // if errors, then return errorMessage
+        if (error) {
+            setForm((prev) => ({
+                ...prev,
+                email: {
+                    ...prev.email,
+                    touched: true,
+                    error: "An error occured while signing up",
+                },
+            }));
+            setLoading(false);
+            return;
+        }
+
         // if no errors, then create the userProfile
+        const newUserProfile = {
+            id: data.user!.id,
+            first_name: form.firstName.value,
+            last_name: form.lastName.value,
+            avatar_url: null,
+        };
+        const newlyCreatedUserProfile = await createUserProfile(newUserProfile);
+        console.log(newlyCreatedUserProfile);
+        // if (!newlyCreatedUserProfile) {
+        //     setForm((prev) => ({
+        //         ...prev,
+        //         email: {
+        //             ...prev.email,
+        //             touched: true,
+        //             error: "An error occured while creating profile",
+        //         },
+        //     }));
+        //     setLoading(false);
+        //     return;
+        // }
+
         //  send the confirmation email
-        //  show the user the confirm-sign-up.tsx page
+        // supabase.auth.resend({
+        //     type: "signup",
+        //     email: newlyCreatedUserProfile.email,
+        // });
+
+        // //  show the user the confirm-sign-up.tsx page
+        // router.push("/confirm-sign-up");
+        setLoading(false);
     }
 
     return (
