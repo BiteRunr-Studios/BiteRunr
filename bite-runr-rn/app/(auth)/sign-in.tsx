@@ -1,6 +1,11 @@
 import { OAuthButton } from "@/components/auth/oauth-button";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
+import {
+    createFormHandlers,
+    FormState,
+    validateField,
+} from "@/lib/auth-helpers";
 import { supabase } from "@/lib/supabase";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -8,39 +13,53 @@ import { View, Text, Image, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignInScreen() {
-    // Email field
-    const [email, setEmail] = useState("");
-    const [emailError, setEmailError] = useState<string | null>(null);
+    const [form, setForm] = useState<FormState>({
+        email: { label: "Email", value: "", error: null, touched: false },
+        password: {
+            label: "Password",
+            value: "",
+            error: null,
+            touched: false,
+            show: false,
+        },
+    });
 
-    // Password field
-    const [password, setPassword] = useState("");
-    const [passwordError, setPasswordError] = useState<string | null>(null);
-    const [hidePassword, setHidePassword] = useState(true);
-
-    // Touched field state
-    const [touched, setTouched] = useState({ email: false, password: false });
-
-    // Loading login button state
+    const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
 
     async function onSignInWithEmail() {
         setLoading(true);
-        setTouched({ email: true, password: true });
 
-        setPasswordError(null);
-        setEmailError(null);
+        // Validate all fields
+        setForm((prev) => {
+            const next: FormState = { ...prev };
+            (Object.keys(prev) as Array<keyof FormState>).forEach((k) => {
+                const field = prev[k];
+                if (field) {
+                    // Add this check
+                    next[k] = {
+                        ...field,
+                        touched: true,
+                        error: validateField(k, field.value, prev),
+                    };
+                }
+            });
+            return next;
+        });
 
-        handlePasswordChange(password);
-        handleEmailChange(email);
+        // Check for validation errors
+        const formHasErrors = (
+            Object.keys(form) as Array<keyof FormState>
+        ).some((k) => validateField(k, form[k]!.value, form) !== null);
 
-        if (emailError || passwordError) {
+        if (formHasErrors) {
             setLoading(false);
             return;
         }
 
         const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
+            email: form.email.value,
+            password: form.password.value,
         });
 
         if (error) {
@@ -49,14 +68,24 @@ export default function SignInScreen() {
             if (errorMessage.includes("email not confirmed")) {
                 supabase.auth.resend({
                     type: "signup",
-                    email: email,
+                    email: form.email.value,
                 });
-                router.push("/confirm-sign-up");
-            } else if (errorMessage.includes("missing email or phone")) {
-                setEmailError("Email is required");
-                setPasswordError("Password is required");
+                router.push({
+                    pathname: "/confirm-sign-up",
+                    params: {
+                        email: form.email.value.toLocaleLowerCase(),
+                        password: form.password.value,
+                    },
+                });
             } else {
-                setPasswordError(errorMessage);
+                setForm((prev) => ({
+                    ...prev,
+                    email: {
+                        ...prev.email,
+                        touched: true,
+                        error: errorMessage,
+                    },
+                }));
             }
 
             setLoading(false);
@@ -66,43 +95,6 @@ export default function SignInScreen() {
         if (data?.session) router.replace("/(tabs)");
 
         setLoading(false);
-    }
-
-    function validateRequiredField(value: String) {
-        return value.trim().length > 0;
-    }
-
-    function handlePasswordChange(value: string) {
-        setPassword(value);
-
-        if (!touched["password"]) return;
-
-        if (!validateRequiredField(value)) {
-            setPasswordError("Password is required");
-        } else {
-            setPasswordError(null);
-        }
-    }
-
-    function handleEmailChange(value: string) {
-        setEmail(value);
-
-        if (!touched["email"]) return;
-
-        if (!validateRequiredField(value)) {
-            setEmailError("Email is required");
-        } else if (!validateEmail(value)) {
-            setEmailError("Email is invalid");
-        } else {
-            setEmailError(null);
-        }
-    }
-
-    function validateEmail(email: string) {
-        const emailRegex =
-            /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[A-Za-z]{2,}$/;
-
-        return emailRegex.test(email.trim());
     }
 
     return (
@@ -126,37 +118,39 @@ export default function SignInScreen() {
 
                 {/* Email Field*/}
                 <Input
-                    value={email}
+                    value={form.email.value}
                     placeholder="Email"
                     leftIcon="Mail"
                     autoCapitalize="none"
                     returnKeyType="next"
-                    errorMessage={emailError}
-                    onChangeText={(value) => {
-                        setTouched({ ...touched, email: true });
-                        handleEmailChange(value);
-                    }}
+                    errorMessage={form.email.error}
+                    onChangeText={(v) => onChange("email", v)}
+                    onBlur={() => onBlur("email")}
                 />
 
                 <View className="mt-2" />
 
                 {/* Password Field*/}
                 <Input
-                    value={password}
+                    value={form.password.value}
                     placeholder="Password"
                     leftIcon="Lock"
-                    rightIcon={hidePassword ? "Eye" : "EyeClosed"}
+                    rightIcon={form.password.show ? "EyeClosed" : "Eye"}
                     onRightIconPress={() => {
-                        setHidePassword(!hidePassword);
+                        setForm((prev) => ({
+                            ...prev,
+                            password: {
+                                ...prev.password,
+                                show: !prev.password.show,
+                            },
+                        }));
                     }}
                     autoCapitalize="none"
                     returnKeyType="default"
-                    errorMessage={passwordError}
-                    onChangeText={(value) => {
-                        setTouched({ ...touched, password: true });
-                        handlePasswordChange(value);
-                    }}
-                    secureTextEntry={hidePassword}
+                    errorMessage={form.password.error}
+                    onChangeText={(v) => onChange("password", v)}
+                    onBlur={() => onBlur("password")}
+                    secureTextEntry={!form.password.show}
                 />
 
                 <View className="mt-4" />

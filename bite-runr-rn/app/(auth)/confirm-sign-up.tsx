@@ -1,54 +1,77 @@
-import { View, Text, Image, Pressable, Alert } from "react-native";
+import { View, Text, Image, Pressable } from "react-native";
 import { Button } from "@/components/common/button";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { findUserByEmail } from "@/api/profile/profile";
 
 export default function ConfirmSignUpScreen() {
-    const { data: isConfirmed } = useQuery({
+    const { email, password } = useLocalSearchParams<{
+        email: string;
+        password: string;
+    }>();
+
+    const [resendCooldown, setResendCooldown] = useState(60);
+    const hasSignedIn = useRef(false);
+
+    useEffect(() => {
+        if (resendCooldown > 0) {
+            const timer = setTimeout(() => {
+                setResendCooldown(resendCooldown - 1);
+            }, 1000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [resendCooldown]);
+
+    const { data: isConfirmed, isLoading } = useQuery({
         queryKey: ["emailConfirmation"],
         queryFn: async () => {
-            const {
-                data: { user },
-                error,
-            } = await supabase.auth.getUser();
-            if (error) throw error;
-            return !!user?.email_confirmed_at;
+            const user = await findUserByEmail(email);
+            if (!user) throw new Error();
+            return !!user.email_confirmed_at;
         },
         refetchInterval: 3000,
+        enabled: !!email,
     });
 
     useEffect(() => {
-        if (isConfirmed) router.push("/(auth)/sign-in");
-    }, [isConfirmed]);
+        async function signInUser() {
+            if (isConfirmed === true && !hasSignedIn.current && !isLoading) {
+                hasSignedIn.current = true;
 
-    const [isResending, setIsResending] = useState(false);
+                const { error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
 
-    const handleResendLink = async () => {
-        setIsResending(true);
-
-        // Get the current user's email
-        const {
-            data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user?.email) {
-            Alert.alert("Error", "No email found. Please sign up again.");
-            router.back();
-            return;
+                if (error) {
+                    hasSignedIn.current = false;
+                    router.replace("/(auth)/sign-in");
+                    return;
+                }
+            }
         }
 
+        signInUser();
+    }, [isConfirmed, isLoading]);
+
+    const handleResendLink = async () => {
+        if (resendCooldown > 0) return;
         // Resend the confirmation email
         const { error } = await supabase.auth.resend({
             type: "signup",
-            email: user.email,
+            email: email,
         });
 
-        if (error) throw error;
+        if (error) {
+            console.log(error.message);
+            return;
+        }
 
-        setIsResending(false);
+        setResendCooldown(60);
     };
 
     const handleGoToLogin = () => {
@@ -84,9 +107,20 @@ export default function ConfirmSignUpScreen() {
                 <Text className="text-muted-foreground">
                     Didn't get the email?
                 </Text>
-                <Pressable onPress={handleResendLink}>
-                    <Text className="text-primary font-semibold">
-                        {isResending ? "Sending..." : "Resend link"}
+                <Pressable
+                    onPress={handleResendLink}
+                    disabled={resendCooldown > 0}
+                >
+                    <Text
+                        className={`font-semibold ${
+                            resendCooldown > 0
+                                ? "text-muted-foreground"
+                                : "text-primary"
+                        }`}
+                    >
+                        {resendCooldown > 0
+                            ? `Resend link (${resendCooldown}s)`
+                            : "Resend link"}
                     </Text>
                 </Pressable>
             </View>

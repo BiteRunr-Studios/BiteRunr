@@ -50,9 +50,12 @@ export async function createUserProfile(
             Accept: "application/json",
             "Content-Type": "application/json",
         },
+        body: JSON.stringify(user),
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+        return null;
+    }
 
     return (await response.json()) as UserProfileType;
 }

@@ -2,27 +2,16 @@ import { createUserProfile, findUserByEmail } from "@/api/profile/profile";
 import { OAuthButton } from "@/components/auth/oauth-button";
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
+import {
+    createFormHandlers,
+    FormState,
+    validateField,
+} from "@/lib/auth-helpers";
 import { supabase } from "@/lib/supabase";
-import { UserProfileType } from "@/lib/types";
 import { router } from "expo-router";
 import { useState } from "react";
 import { View, Text, Image, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-type FieldState = {
-    label: string;
-    value: string;
-    error: string | null;
-    touched: boolean;
-    show?: boolean;
-};
-
-type FormState = {
-    firstName: FieldState;
-    lastName: FieldState;
-    email: FieldState;
-    password: FieldState;
-};
 
 export default function SignUpScreen() {
     const [form, setForm] = useState<FormState>({
@@ -48,50 +37,8 @@ export default function SignUpScreen() {
         },
     });
 
-    function onChange<K extends keyof FormState>(key: K, value: string) {
-        setForm((prev) => {
-            const next = { ...prev };
-            next[key] = {
-                ...prev[key],
-                value,
-                // only validate once touched
-                error: prev[key].touched
-                    ? validateField(key, value)
-                    : prev[key].error,
-            };
-            return next;
-        });
-    }
-
-    function onBlur<K extends keyof FormState>(key: K) {
-        // mark touched and validate
-        setForm((prev) => {
-            const next = { ...prev };
-            const field = prev[key];
-            next[key] = {
-                ...field,
-                touched: true,
-                error: validateField(key, field.value),
-            };
-            return next;
-        });
-    }
-
-    // Loading login button state
+    const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
-
-    function validateField(key: keyof FormState, value: string): string | null {
-        if (!value.trim()) return `${form[key].label} is required`;
-        if (key === "email" && !validateEmail(value)) return "Email is invalid";
-        return null;
-    }
-
-    function validateEmail(email: string) {
-        const emailRegex =
-            /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[A-Za-z]{2,}$/;
-
-        return emailRegex.test(email.trim());
-    }
 
     async function onSignUpWithEmail() {
         setLoading(true);
@@ -100,11 +47,15 @@ export default function SignUpScreen() {
         setForm((prev) => {
             const next: FormState = { ...prev };
             (Object.keys(prev) as Array<keyof FormState>).forEach((k) => {
-                next[k] = {
-                    ...prev[k],
-                    touched: true,
-                    error: validateField(k, prev[k].value),
-                };
+                const field = prev[k];
+                if (field) {
+                    // Add this check
+                    next[k] = {
+                        ...field,
+                        touched: true,
+                        error: validateField(k, field.value, prev),
+                    };
+                }
             });
             return next;
         });
@@ -112,7 +63,7 @@ export default function SignUpScreen() {
         // Check for validation errors
         const formHasErrors = (
             Object.keys(form) as Array<keyof FormState>
-        ).some((k) => validateField(k, form[k].value) !== null);
+        ).some((k) => validateField(k, form[k]!.value, form) !== null);
 
         if (formHasErrors) {
             setLoading(false);
@@ -120,23 +71,14 @@ export default function SignUpScreen() {
         }
 
         // find user by email (make api endpoint)
-        console.log(form.email.value);
         const existingUser = await findUserByEmail(
             form.email.value.toLowerCase()
         );
-        console.log(existingUser);
 
         // if user exists, then look if email is confirmed
         if (existingUser) {
-            const { data } = await supabase.auth.admin.getUserById(
-                existingUser.id
-            );
-
-            const emailConfirmed = data.user?.confirmed_at;
-            console.log(emailConfirmed);
-
             //  if email is confirmed, then return as an error message on the email field, "This email is already taken"
-            if (emailConfirmed) {
+            if (existingUser.email_confirmed_at) {
                 // Set error for a specific field (e.g., email)
                 setForm((prev) => ({
                     ...prev,
@@ -155,7 +97,13 @@ export default function SignUpScreen() {
                 type: "signup",
                 email: existingUser.email,
             });
-            router.push("/confirm-sign-up");
+            router.push({
+                pathname: "/confirm-sign-up",
+                params: {
+                    email: form.email.value.toLowerCase(),
+                    password: form.password.value,
+                },
+            });
             setLoading(false);
             return;
         }
@@ -174,7 +122,7 @@ export default function SignUpScreen() {
                 email: {
                     ...prev.email,
                     touched: true,
-                    error: "An error occured while signing up",
+                    error: error.message,
                 },
             }));
             setLoading(false);
@@ -184,33 +132,38 @@ export default function SignUpScreen() {
         // if no errors, then create the userProfile
         const newUserProfile = {
             id: data.user!.id,
-            first_name: form.firstName.value,
-            last_name: form.lastName.value,
+            first_name: form.firstName!.value,
+            last_name: form.lastName!.value,
             avatar_url: null,
         };
         const newlyCreatedUserProfile = await createUserProfile(newUserProfile);
-        console.log(newlyCreatedUserProfile);
-        // if (!newlyCreatedUserProfile) {
-        //     setForm((prev) => ({
-        //         ...prev,
-        //         email: {
-        //             ...prev.email,
-        //             touched: true,
-        //             error: "An error occured while creating profile",
-        //         },
-        //     }));
-        //     setLoading(false);
-        //     return;
-        // }
+        if (!newlyCreatedUserProfile) {
+            setForm((prev) => ({
+                ...prev,
+                email: {
+                    ...prev.email,
+                    touched: true,
+                    error: "An error occured while creating profile",
+                },
+            }));
+            setLoading(false);
+            return;
+        }
 
         //  send the confirmation email
-        // supabase.auth.resend({
-        //     type: "signup",
-        //     email: newlyCreatedUserProfile.email,
-        // });
+        supabase.auth.resend({
+            type: "signup",
+            email: newlyCreatedUserProfile.email,
+        });
 
-        // //  show the user the confirm-sign-up.tsx page
-        // router.push("/confirm-sign-up");
+        //  show the user the confirm-sign-up.tsx page
+        router.push({
+            pathname: "/confirm-sign-up",
+            params: {
+                email: form.email.value.toLowerCase(),
+                password: form.password.value,
+            },
+        });
         setLoading(false);
     }
 
@@ -239,12 +192,12 @@ export default function SignUpScreen() {
                     {/* First Name Field */}
                     <View className="flex-1">
                         <Input
-                            value={form.firstName.value}
+                            value={form.firstName!.value}
                             placeholder="First Name"
                             leftIcon="IdCard"
                             autoCapitalize="words"
                             returnKeyType="next"
-                            errorMessage={form.firstName.error}
+                            errorMessage={form.firstName!.error}
                             onChangeText={(v) => onChange("firstName", v)}
                             onBlur={() => onBlur("firstName")}
                         />
@@ -253,12 +206,12 @@ export default function SignUpScreen() {
                     {/* Last Name Field */}
                     <View className="flex-1">
                         <Input
-                            value={form.lastName.value}
+                            value={form.lastName!.value}
                             placeholder="Last Name"
                             leftIcon="IdCard"
                             autoCapitalize="words"
                             returnKeyType="next"
-                            errorMessage={form.lastName.error}
+                            errorMessage={form.lastName!.error}
                             onChangeText={(v) => onChange("lastName", v)}
                             onBlur={() => onBlur("lastName")}
                         />
@@ -286,7 +239,7 @@ export default function SignUpScreen() {
                     value={form.password.value}
                     placeholder="Password"
                     leftIcon="Lock"
-                    rightIcon={form.password.show ? "Eye" : "EyeClosed"}
+                    rightIcon={form.password.show ? "EyeClosed" : "Eye"}
                     onRightIconPress={() => {
                         setForm((prev) => ({
                             ...prev,
