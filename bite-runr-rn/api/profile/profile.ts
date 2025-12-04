@@ -1,7 +1,5 @@
 import { UserProfileType } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
-import { splitName } from "@/lib/split-name";
-import { Session, User } from "@supabase/supabase-js";
 
 export async function fetchCurrentUser(): Promise<UserProfileType | null> {
     const { data: userData, error: userErr } = await supabase.auth.getUser();
