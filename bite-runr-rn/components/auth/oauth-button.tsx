@@ -15,6 +15,8 @@ import { createSessionFromUrl, redirectTo } from "@/app/(auth)/oauth";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { TabBarIcon } from "@/components/layout/tabbar-icon";
+import { findUserByEmail, createUserProfile } from "@/api/profile/profile";
+import { splitName } from "@/lib/split-name";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -25,7 +27,6 @@ type OAuthButtonProps = {
     label?: string;
     disabled?: boolean;
     className?: string;
-    onSuccess?: (session: { userId: string } | null) => void;
 };
 
 export const OAuthButton: React.FC<OAuthButtonProps> = ({
@@ -33,7 +34,6 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
     label,
     disabled,
     className,
-    onSuccess,
 }) => {
     const { colorScheme } = useColorScheme();
     const [loading, setLoading] = useState(false);
@@ -55,6 +55,8 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
     const scopes = provider === "github" ? "read:user user:email" : "";
     const iconName = provider === "google" ? "logo-google" : "logo-github";
 
+    const isDisabled = disabled || loading;
+
     useEffect(() => {
         Animated.parallel([
             Animated.timing(spinnerWidth, {
@@ -71,7 +73,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
     }, [loading]);
 
     const startOAuth = useCallback(async () => {
-        if (disabled || loading) return;
+        if (isDisabled) return;
         try {
             setLoading(true);
 
@@ -87,6 +89,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
             if (error) {
                 const message = error.message ?? "Sign-in failed.";
                 Alert.alert(`${provider} sign-in failed`, message);
+                setLoading(false);
                 return;
             }
 
@@ -96,8 +99,34 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
             );
 
             if (res.type === "success" && res.url) {
-                const session = await createSessionFromUrl(res.url);
-                onSuccess?.(session ?? null);
+                createSessionFromUrl(res.url);
+
+                const { data: data } = await supabase.auth.getUser();
+
+                const user = data.user;
+                const existingUser = await findUserByEmail(user?.email!);
+
+                if (existingUser && existingUser.profile) {
+                    setLoading(false);
+                    router.replace("/(tabs)");
+                    return;
+                }
+
+                const { firstName, lastName } = splitName(
+                    user?.user_metadata["full_name"] ??
+                        user?.user_metadata["name"]
+                );
+                const userProfile = {
+                    id: user?.id!,
+                    first_name: firstName,
+                    last_name: lastName,
+                    avatar_url: user?.user_metadata["avatar_url"],
+                };
+                const result = await createUserProfile(userProfile);
+                if (!result)
+                    throw Error("An error occured while creating user profile");
+
+                setLoading(false);
                 router.replace("/(tabs)");
             }
         } catch (e: any) {
@@ -107,8 +136,6 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
             setLoading(false);
         }
     }, [provider, disabled, loading, scopes]);
-
-    const isDisabled = disabled || loading;
 
     return (
         <Pressable

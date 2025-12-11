@@ -72,7 +72,7 @@ export default function SignUpScreen() {
 
         // find user by email (make api endpoint)
         const existingUser = await findUserByEmail(
-            form.email.value.toLowerCase()
+            form.email!.value.toLowerCase()
         );
 
         // if user exists, then look if email is confirmed
@@ -83,7 +83,7 @@ export default function SignUpScreen() {
                 setForm((prev) => ({
                     ...prev,
                     email: {
-                        ...prev.email,
+                        ...prev.email!,
                         touched: true,
                         error: "This email is already taken",
                     },
@@ -100,8 +100,8 @@ export default function SignUpScreen() {
             router.push({
                 pathname: "/confirm-sign-up",
                 params: {
-                    email: form.email.value.toLowerCase(),
-                    password: form.password.value,
+                    email: form.email!.value.toLowerCase(),
+                    password: form.password!.value,
                 },
             });
             setLoading(false);
@@ -111,8 +111,8 @@ export default function SignUpScreen() {
         // if user does not exist
         //  call the supabase auth sdk signUp method
         const { data, error } = await supabase.auth.signUp({
-            email: form.email.value,
-            password: form.password.value,
+            email: form.email!.value,
+            password: form.password!.value,
         });
 
         // if errors, then return errorMessage
@@ -120,7 +120,7 @@ export default function SignUpScreen() {
             setForm((prev) => ({
                 ...prev,
                 email: {
-                    ...prev.email,
+                    ...prev.email!,
                     touched: true,
                     error: error.message,
                 },
@@ -141,7 +141,7 @@ export default function SignUpScreen() {
             setForm((prev) => ({
                 ...prev,
                 email: {
-                    ...prev.email,
+                    ...prev.email!,
                     touched: true,
                     error: "An error occured while creating profile",
                 },
@@ -160,142 +160,130 @@ export default function SignUpScreen() {
         router.push({
             pathname: "/confirm-sign-up",
             params: {
-                email: form.email.value.toLowerCase(),
-                password: form.password.value,
+                email: form.email!.value.toLowerCase(),
+                password: form.password!.value,
             },
         });
         setLoading(false);
     }
 
     return (
-        <SafeAreaView>
-            <View className="px-4 py-6 transition-all duration-200">
-                {/* Title */}
-                <View className="items-center gap-2 mb-6">
-                    <Image
-                        className="mb-5"
-                        source={require("@/assets/images/app-logo.png")}
-                        style={{ width: 90, height: 45 }}
-                        resizeMode="contain"
+        <SafeAreaView className="flex-1 px-4 justify-center transition-all duration-200">
+            <View className="mt-10"></View>
+            {/* Title */}
+            <Text className="text-3xl font-bold text-foreground mb-2">
+                Sign Up
+            </Text>
+            <Text className="text-lg text-muted-foreground">
+                Your favorites, ordered for the whole crew.
+            </Text>
+
+            <View className="mt-8" />
+
+            <View className="flex-row items-top justify-center gap-2">
+                {/* First Name Field */}
+                <View className="flex-1">
+                    <Input
+                        value={form.firstName!.value}
+                        placeholder="First Name"
+                        leftIcon="IdCard"
+                        autoCapitalize="words"
+                        returnKeyType="next"
+                        errorMessage={form.firstName!.error}
+                        onChangeText={(v) => onChange("firstName", v)}
+                        onBlur={() => onBlur("firstName")}
                     />
-                    <Text className="text-3xl font-bold text-foreground">
-                        Sign Up
-                    </Text>
-                    <Text className="text-lg text-muted-foreground">
-                        Your favorites, ordered for the whole crew.
-                    </Text>
                 </View>
 
-                <View className="mt-2" />
-
-                <View className="flex-row items-top justify-center gap-2">
-                    {/* First Name Field */}
-                    <View className="flex-1">
-                        <Input
-                            value={form.firstName!.value}
-                            placeholder="First Name"
-                            leftIcon="IdCard"
-                            autoCapitalize="words"
-                            returnKeyType="next"
-                            errorMessage={form.firstName!.error}
-                            onChangeText={(v) => onChange("firstName", v)}
-                            onBlur={() => onBlur("firstName")}
-                        />
-                    </View>
-
-                    {/* Last Name Field */}
-                    <View className="flex-1">
-                        <Input
-                            value={form.lastName!.value}
-                            placeholder="Last Name"
-                            leftIcon="IdCard"
-                            autoCapitalize="words"
-                            returnKeyType="next"
-                            errorMessage={form.lastName!.error}
-                            onChangeText={(v) => onChange("lastName", v)}
-                            onBlur={() => onBlur("lastName")}
-                        />
-                    </View>
+                {/* Last Name Field */}
+                <View className="flex-1">
+                    <Input
+                        value={form.lastName!.value}
+                        placeholder="Last Name"
+                        leftIcon="IdCard"
+                        autoCapitalize="words"
+                        returnKeyType="next"
+                        errorMessage={form.lastName!.error}
+                        onChangeText={(v) => onChange("lastName", v)}
+                        onBlur={() => onBlur("lastName")}
+                    />
                 </View>
+            </View>
 
-                <View className="mt-2" />
+            <View className="mt-2" />
 
-                {/* Email Field*/}
-                <Input
-                    value={form.email.value}
-                    placeholder="Email"
-                    leftIcon="Mail"
-                    autoCapitalize="none"
-                    returnKeyType="next"
-                    errorMessage={form.email.error}
-                    onChangeText={(v) => onChange("email", v)}
-                    onBlur={() => onBlur("email")}
-                />
+            {/* Email Field*/}
+            <Input
+                value={form.email!.value}
+                placeholder="Email"
+                leftIcon="Mail"
+                autoCapitalize="none"
+                returnKeyType="next"
+                errorMessage={form.email!.error}
+                onChangeText={(v) => onChange("email", v)}
+                onBlur={() => onBlur("email")}
+            />
 
-                <View className="mt-2" />
+            <View className="mt-2" />
 
-                {/* Password Field*/}
-                <Input
-                    value={form.password.value}
-                    placeholder="Password"
-                    leftIcon="Lock"
-                    rightIcon={form.password.show ? "EyeClosed" : "Eye"}
-                    onRightIconPress={() => {
-                        setForm((prev) => ({
-                            ...prev,
-                            password: {
-                                ...prev.password,
-                                show: !prev.password.show,
-                            },
-                        }));
-                    }}
-                    autoCapitalize="none"
-                    returnKeyType="default"
-                    errorMessage={form.password.error}
-                    onChangeText={(v) => onChange("password", v)}
-                    onBlur={() => onBlur("password")}
-                    secureTextEntry={!form.password.show}
-                />
+            {/* Password Field*/}
+            <Input
+                value={form.password!.value}
+                placeholder="Password"
+                leftIcon="Lock"
+                rightIcon={form.password!.show ? "EyeClosed" : "Eye"}
+                onRightIconPress={() => {
+                    setForm((prev) => ({
+                        ...prev,
+                        password: {
+                            ...prev.password!,
+                            show: !prev.password!.show,
+                        },
+                    }));
+                }}
+                autoCapitalize="none"
+                returnKeyType="default"
+                errorMessage={form.password!.error}
+                onChangeText={(v) => onChange("password", v)}
+                onBlur={() => onBlur("password")}
+                secureTextEntry={!form.password!.show}
+            />
 
-                <View className="mt-4" />
+            <View className="mt-4" />
 
-                {/* Submit Button */}
-                <Button
-                    variant="full"
-                    icon="CirclePlus"
-                    label="Continue"
-                    loading={loading}
-                    onPress={onSignUpWithEmail}
-                />
+            {/* Submit Button */}
+            <Button
+                variant="full"
+                label="Continue"
+                loading={loading}
+                onPress={onSignUpWithEmail}
+            />
 
-                <View className="mt-8" />
+            <View className="mt-8" />
 
-                <View className="flex-row items-center justify-between gap-3">
-                    <View className="bg-muted h-[1px] flex-grow"></View>
-                    <Text className="text-muted-foreground italic">OR</Text>
-                    <View className="bg-muted h-[1px] flex-grow"></View>
-                </View>
+            <View className="flex-row items-center justify-between gap-3">
+                <View className="bg-muted h-[1px] flex-grow"></View>
+                <Text className="text-muted-foreground italic">OR</Text>
+                <View className="bg-muted h-[1px] flex-grow"></View>
+            </View>
 
-                <View className="mt-8" />
+            <View className="mt-8" />
 
-                {/* GitHub Auth Button */}
-                <OAuthButton provider="github" />
+            {/* GitHub Auth Button */}
+            <OAuthButton provider="github" />
 
-                <View className="mt-3" />
+            <View className="mt-3" />
 
-                {/* Google Auth Button */}
-                <OAuthButton provider="google" />
+            {/* Google Auth Button */}
+            <OAuthButton provider="google" />
 
-                <View className="mt-4 flex-row justify-center gap-2">
-                    <Text className="text-muted-foreground">
-                        Already have an account?
-                    </Text>
-                    <Pressable onPress={() => router.back()}>
-                        <Text className="text-primary font-semibold">
-                            Sign in
-                        </Text>
-                    </Pressable>
-                </View>
+            <View className="mt-4 flex-row justify-center gap-2">
+                <Text className="text-muted-foreground">
+                    Already have an account?
+                </Text>
+                <Pressable onPress={() => router.back()}>
+                    <Text className="text-primary font-semibold">Sign in</Text>
+                </Pressable>
             </View>
         </SafeAreaView>
     );

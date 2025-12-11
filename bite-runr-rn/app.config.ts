@@ -14,7 +14,8 @@ const config: ExpoConfig = {
             {
                 action: "VIEW",
                 data: [
-                    { scheme: "biterunr", host: "auth", pathPrefix: "/callback" }
+                    { scheme: "biterunr", host: "auth", pathPrefix: "/callback" },
+                    { scheme: "biterunr", host: "auth", pathPrefix: "/reset-password" }
                 ],
                 category: ["BROWSABLE", "DEFAULT"],
             },

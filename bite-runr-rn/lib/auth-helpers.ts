@@ -9,8 +9,9 @@ export type FieldState = {
 export type FormState = {
     firstName?: FieldState;
     lastName?: FieldState;
-    email: FieldState;
-    password: FieldState;
+    email?: FieldState;
+    password?: FieldState;
+    confirmPassword?: FieldState;
 };
 
 export function createFormHandlers(
@@ -60,6 +61,8 @@ export function validateField(
     if (!field) return null;
     if (!value.trim()) return `${field.label} is required`;
     if (key === "email" && !validateEmail(value)) return "Email is invalid";
+    if (key === "confirmPassword" && form["password"]!.value !== field.value)
+        return "Confirm password does not match password";
     return null;
 }
 

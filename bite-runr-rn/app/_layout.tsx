@@ -35,6 +35,7 @@ export default function RootLayout() {
     const [session, setSession] = React.useState<null | NonNullable<
         Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]
     >>(null);
+    const hasNavigated = React.useRef(false);
 
     React.useEffect(() => {
         if (Platform.OS === "web" && typeof document !== "undefined") {
@@ -63,6 +64,16 @@ export default function RootLayout() {
                     event,
                     session: newSession,
                 });
+
+                // Handle password recovery - navigate to reset screen
+                if (event === "PASSWORD_RECOVERY") {
+                    hasNavigated.current = true;
+                    router.push("/(auth)/reset-password");
+                } else if (event === "SIGNED_OUT") {
+                    // After sign out, allow normal navigation again
+                    hasNavigated.current = false;
+                }
+
                 setSession(newSession ?? null);
             }
         );
@@ -75,6 +86,9 @@ export default function RootLayout() {
 
     React.useEffect(() => {
         if (!ready) return;
+
+        // Skip automatic redirect if we've already handled navigation (e.g., PASSWORD_RECOVERY)
+        if (hasNavigated.current) return;
 
         if (session) {
             router.replace("/(tabs)");
