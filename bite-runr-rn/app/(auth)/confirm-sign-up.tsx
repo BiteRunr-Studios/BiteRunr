@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { findUserByEmail } from "@/api/profile/profile";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function ConfirmSignUpScreen() {
     const { email, password } = useLocalSearchParams<{
@@ -26,31 +27,61 @@ export default function ConfirmSignUpScreen() {
         }
     }, [resendCooldown]);
 
+    const isFocused = useIsFocused();
     const { data: isConfirmed, isLoading } = useQuery({
-        queryKey: ["emailConfirmation"],
+        queryKey: ["emailConfirmation", email],
         queryFn: async () => {
             const user = await findUserByEmail(email);
-            if (!user) throw new Error();
-            return !!user.email_confirmed_at;
+            console.log(user);
+            if (!user) {
+                console.log("User not found for email:", email);
+                throw new Error("User not found");
+            }
+            const confirmed = !!user.email_confirmed_at;
+            console.log("Email confirmation check:", {
+                email,
+                confirmed,
+                email_confirmed_at: user.email_confirmed_at,
+            });
+            return confirmed;
         },
-        refetchInterval: 3000,
-        enabled: !!email,
+        refetchInterval: isFocused ? 3000 : false,
+        enabled: !!email && isFocused,
+        staleTime: 0, // Always treat data as stale
+        gcTime: 0, // Don't cache results
     });
 
     useEffect(() => {
+        console.log("Confirmation status:", {
+            isConfirmed,
+            isLoading,
+            hasSignedIn: hasSignedIn.current,
+        });
+
         async function signInUser() {
             if (isConfirmed === true && !hasSignedIn.current && !isLoading) {
+                console.log("Email confirmed! Attempting to sign in...");
                 hasSignedIn.current = true;
 
-                const { error } = await supabase.auth.signInWithPassword({
+                const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password,
                 });
 
                 if (error) {
+                    console.error("Sign in error:", error);
                     hasSignedIn.current = false;
                     router.replace("/(auth)/sign-in");
                     return;
+                }
+
+                // Only navigate if we have a valid session
+                if (data?.session) {
+                    console.log("Sign in successful, navigating...");
+                    router.replace("/(protected)/(tabs)");
+                } else {
+                    console.error("No session after sign in");
+                    hasSignedIn.current = false;
                 }
             }
         }

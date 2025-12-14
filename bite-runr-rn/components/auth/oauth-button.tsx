@@ -108,7 +108,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
 
                 if (existingUser && existingUser.profile) {
                     setLoading(false);
-                    router.replace("/(tabs)");
+                    router.replace("/(protected)/(tabs)");
                     return;
                 }
 
@@ -127,7 +127,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
                     throw Error("An error occured while creating user profile");
 
                 setLoading(false);
-                router.replace("/(tabs)");
+                router.replace("/(protected)/(tabs)");
             }
         } catch (e: any) {
             const msg = e?.message ?? "Something went wrong.";

@@ -1,6 +1,6 @@
 import * as QueryParams from "expo-auth-session/build/QueryParams";
 import { makeRedirectUri } from "expo-auth-session";
-import {supabase} from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 export const redirectTo = makeRedirectUri({
     scheme: "biterunr",
@@ -12,6 +12,9 @@ export async function createSessionFromUrl(url: string) {
     if (errorCode) throw new Error(errorCode);
     const { access_token, refresh_token } = params;
     if (!access_token || !refresh_token) return;
-    const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+    const { error } = await supabase.auth.setSession({
+        access_token,
+        refresh_token,
+    });
     if (error) throw error;
 }

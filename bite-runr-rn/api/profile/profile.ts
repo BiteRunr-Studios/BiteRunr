@@ -24,13 +24,17 @@ export async function fetchCurrentUser(): Promise<UserProfileType | null> {
 export async function findUserByEmail(
     email: string
 ): Promise<UserProfileType | null> {
-    const url = `https://biterunrapi-4bmpv.kinsta.app/users/find-user-by-email?email=${email}`;
+    console.log("test find user by email");
+    const url = `https://biterunrapi-4bmpv.kinsta.app/users/find-user-by-email?email=${encodeURIComponent(
+        email
+    )}`;
     const response = await fetch(url, {
         method: "GET",
         headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
         },
+        cache: "no-store", // Disable caching to always get fresh data
     });
 
     if (!response.ok) return null;

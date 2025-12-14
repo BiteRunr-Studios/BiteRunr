@@ -36,7 +36,15 @@ export default function ResetPasswordScreen() {
     useEffect(() => {
         // Get the user's email from the authenticated session
         const getUserEmail = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+
+            if (!user) {
+                router.dismissTo("/(auth)/sign-in");
+                return;
+            }
+
             if (user?.email) {
                 setUserEmail(user.email);
             }
@@ -126,7 +134,8 @@ export default function ResetPasswordScreen() {
 
             {userEmail && (
                 <Text className="text-sm text-muted-foreground mt-4">
-                    Resetting password for: <Text className="font-semibold">{userEmail}</Text>
+                    Resetting password for:{" "}
+                    <Text className="font-semibold">{userEmail}</Text>
                 </Text>
             )}
 

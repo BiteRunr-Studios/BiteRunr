@@ -9,7 +9,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { router } from "expo-router";
 import { useState } from "react";
-import { View, Text, Image, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignInScreen() {
@@ -92,7 +92,7 @@ export default function SignInScreen() {
             return;
         }
 
-        if (data?.session) router.replace("/(tabs)");
+        if (data?.session) router.replace("/(protected)/(tabs)");
 
         setLoading(false);
     }

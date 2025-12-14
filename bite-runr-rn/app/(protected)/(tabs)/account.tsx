@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
     ScrollView,
     Text,
@@ -22,6 +22,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { UserProfileType } from "@/lib/types";
 import { fetchCurrentUser } from "@/api/profile/profile";
+import { AuthContext } from "@/lib/supabase-auth-context";
 
 type Item = {
     key: string;
@@ -71,6 +72,7 @@ const items: Item[] = [
 
 export default function AccountTab() {
     const queryClient = useQueryClient();
+    const { signOut } = useContext(AuthContext);
 
     const {
         data: user,
@@ -88,11 +90,7 @@ export default function AccountTab() {
     async function onSignOut() {
         try {
             await supabase.auth.stopAutoRefresh();
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                Alert.alert("Sign out failed", error.message);
-                return;
-            }
+            await signOut();
             queryClient.removeQueries({ queryKey: ["current-user"] });
         } catch (e: any) {
             Alert.alert("Error", e?.message ?? "Something went wrong.");
