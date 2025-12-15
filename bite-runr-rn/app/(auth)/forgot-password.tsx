@@ -1,18 +1,22 @@
 import { findUserByEmail } from "@/api/profile/profile";
 import { Button } from "@/components/common/button";
+import Icon from "@/components/common/icon";
 import { Input } from "@/components/common/input";
 import {
     createFormHandlers,
     FormState,
     validateField,
 } from "@/lib/auth-helpers";
+import { NAV_THEME } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
+import { useColorScheme } from "@/lib/use-color-scheme";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState, useEffect, useRef } from "react";
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ForgotPasswordScreen() {
+    const { colorScheme } = useColorScheme();
     const { email } = useLocalSearchParams<{
         email: string;
     }>();
@@ -90,7 +94,7 @@ export default function ForgotPasswordScreen() {
         const { error } = await supabase.auth.resetPasswordForEmail(
             form.email!.value.toLowerCase(),
             {
-                redirectTo: "biterunr://auth/reset-password",
+                redirectTo: "biterunr://(auth)reset-password",
             }
         );
 
@@ -114,7 +118,18 @@ export default function ForgotPasswordScreen() {
 
     return (
         <SafeAreaView className="flex-1 px-6 justify-center">
-            <View className="mt-10"></View>
+            {/* Back Button w/ Icon */}
+            <Pressable
+                onPress={() => router.back()}
+                className="flex-row items-center gap-2 mt-8 mb-6"
+            >
+                <Icon
+                    name="ArrowLeft"
+                    size={20}
+                    color={NAV_THEME[colorScheme].text}
+                />
+                <Text className="text-foreground text-lg">Back</Text>
+            </Pressable>
 
             {/* Title */}
             <Text className="text-3xl font-bold text-foreground mb-2">

@@ -9,9 +9,10 @@ import { supabase } from "@/lib/supabase";
 import { useState, useEffect } from "react";
 import { View, Text, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 export default function ResetPasswordScreen() {
+    const params = useLocalSearchParams();
     const [form, setForm] = useState<FormState>({
         password: {
             label: "Password",
@@ -31,26 +32,48 @@ export default function ResetPasswordScreen() {
 
     const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
-    const [userEmail, setUserEmail] = useState<string | null>(null);
+    const [sessionHandled, setSessionHandled] = useState(false);
 
     useEffect(() => {
-        // Get the user's email from the authenticated session
-        const getUserEmail = async () => {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
+        // Prevent running setup again if we already handled the session
+        if (sessionHandled) {
+            return;
+        }
 
-            if (!user) {
-                router.dismissTo("/(auth)/sign-in");
+        const setupRecoverySession = async () => {
+            console.log("Reset password params:", params);
+
+            const fragment = params["#"] as string;
+            console.log("Parsing fragment:", fragment);
+
+            const fragmentParams = new URLSearchParams(fragment);
+            const accessToken = fragmentParams.get("access_token")!;
+            const refreshToken = fragmentParams.get("refresh_token")!;
+
+            setSessionHandled(true);
+
+            const { data, error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+            });
+
+            if (error) {
+                console.error("Error setting recovery session:", error);
+                Alert.alert(
+                    "Invalid Reset Link",
+                    "This password reset link is invalid or has expired. Please request a new one."
+                );
+                router.replace("/(auth)/sign-in");
                 return;
             }
 
-            if (user?.email) {
-                setUserEmail(user.email);
-            }
+            console.log("Recovery session set:", data);
+
+            setSessionHandled(true);
         };
-        getUserEmail();
-    }, []);
+
+        setupRecoverySession();
+    }, [params, sessionHandled]);
 
     async function resetPassword() {
         setLoading(true);
@@ -105,15 +128,14 @@ export default function ResetPasswordScreen() {
         await supabase.auth.signOut();
 
         setLoading(false);
+
+        // Navigate to sign-in and show success message
+        router.replace("/(auth)/sign-in");
+
+        // Show alert after a brief delay to ensure navigation completes
         Alert.alert(
             "Password Reset Successful",
-            "Your password has been updated. You can now sign in with your new password.",
-            [
-                {
-                    text: "OK",
-                    onPress: () => router.replace("/(auth)/sign-in"),
-                },
-            ]
+            "Your password has been updated. You can now sign in with your new password."
         );
     }
 
@@ -131,13 +153,6 @@ export default function ResetPasswordScreen() {
                 Type in your new password and you should be good to go! This
                 password should be different from the previous password.
             </Text>
-
-            {userEmail && (
-                <Text className="text-sm text-muted-foreground mt-4">
-                    Resetting password for:{" "}
-                    <Text className="font-semibold">{userEmail}</Text>
-                </Text>
-            )}
 
             <View className="mt-8" />
 

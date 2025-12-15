@@ -143,7 +143,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
             disabled={isDisabled}
             className={
                 className ??
-                "w-full flex-row items-center justify-center gap-2 rounded-2xl p-4 border border-muted bg-background active:opacity-80"
+                "w-full flex-row items-center h-[55px] justify-center gap-2 rounded-2xl p-4 border border-muted active:opacity-80"
             }
             accessibilityRole="button"
             accessibilityLabel={label ?? defaultLabel}
@@ -162,7 +162,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
 
             <TabBarIcon name={iconName} color={NAV_THEME[colorScheme].text} />
 
-            <Text className={"text-foreground font-semibold text-lg "}>
+            <Text className={"text-foreground font-semibold text-lg"}>
                 {label ?? defaultLabel}
             </Text>
         </Pressable>

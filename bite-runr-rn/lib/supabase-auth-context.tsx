@@ -68,16 +68,31 @@ export function AuthProvider({ children }: PropsWithChildren) {
                 console.log("onAuthStateChange:", {
                     event,
                     session: newSession,
+                    hasNavigated: hasNavigated.current,
                 });
 
                 // Handle password recovery - navigate to reset screen
                 if (event === "PASSWORD_RECOVERY") {
+                    console.log(
+                        "PASSWORD_RECOVERY detected, navigating to reset-password"
+                    );
                     hasNavigated.current = true;
-                    router.push("/(auth)/reset-password");
+                    router.replace("/(auth)/reset-password");
                 } else if (event === "SIGNED_OUT") {
-                    // After sign out, allow normal navigation again
-                    router.dismissTo("/(auth)/sign-in");
-                    hasNavigated.current = false;
+                    console.log(
+                        "SIGNED_OUT detected, hasNavigated:",
+                        hasNavigated.current
+                    );
+                    // Only navigate to sign-in if not during password recovery
+                    if (!hasNavigated.current) {
+                        console.log("Navigating to sign-in");
+                        router.dismissTo("/(auth)/sign-in");
+                    } else {
+                        console.log(
+                            "Skipping sign-in navigation (in recovery flow)"
+                        );
+                    }
+                    // Don't reset hasNavigated here - let the password recovery flow complete
                 }
 
                 setSession(newSession ?? null);

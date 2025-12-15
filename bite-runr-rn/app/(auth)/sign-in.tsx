@@ -1,18 +1,22 @@
 import { OAuthButton } from "@/components/auth/oauth-button";
 import { Button } from "@/components/common/button";
+import Icon from "@/components/common/icon";
 import { Input } from "@/components/common/input";
 import {
     createFormHandlers,
     FormState,
     validateField,
 } from "@/lib/auth-helpers";
+import { NAV_THEME } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
+import { useColorScheme } from "@/lib/use-color-scheme";
 import { router } from "expo-router";
 import { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignInScreen() {
+    const { colorScheme } = useColorScheme();
     const [form, setForm] = useState<FormState>({
         email: { label: "Email", value: "", error: null, touched: false },
         password: {
@@ -191,10 +195,18 @@ export default function SignInScreen() {
             {/* Google Auth Button */}
             <OAuthButton provider="google" />
 
-            <View className="mt-4 flex-row justify-center gap-2">
+            <View className="mt-4 flex-row items-center justify-center gap-2">
                 <Text className="text-muted-foreground">No account?</Text>
-                <Pressable onPress={() => router.push("/(auth)/sign-up")}>
+                <Pressable
+                    className="flex-row items-center gap-1"
+                    onPress={() => router.push("/(auth)/sign-up")}
+                >
                     <Text className="text-primary font-semibold">Sign up</Text>
+                    <Icon
+                        name="ArrowRight"
+                        size={15}
+                        color={NAV_THEME[colorScheme].primary}
+                    />
                 </Pressable>
             </View>
         </SafeAreaView>

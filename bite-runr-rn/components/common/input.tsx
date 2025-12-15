@@ -32,8 +32,8 @@ export function Input({
     rightIconColor = NAV_THEME.light.primary,
     onRightIconPress,
     errorMessage = "",
-    className = "flex-row items-center px-4 gap-3 rounded-2xl border transition-all duration-200",
-    inputClassName = "text-lg font-regular text-vertical py-5 text-foreground focus:outline-none placeholder:text-muted-foreground flex-1",
+    className = "flex-row items-center h-[55px] px-4 gap-3 rounded-2xl border transition-all duration-200",
+    inputClassName = "text-lg h-full font-regular text-vertical text-foreground focus:outline-none placeholder:text-muted-foreground flex-1",
     autoCorrect = false,
     secureTextEntry = false,
     ...textInputProps

@@ -13,7 +13,6 @@ import {
 } from "@react-navigation/native";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
-import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/lib/supabase-auth-context";
 import "../global.css";
@@ -36,9 +35,14 @@ export default function RootLayout() {
     React.useEffect(() => {
         if (Platform.OS === "web" && typeof document !== "undefined") {
             document.documentElement.classList.add("bg-background");
+            // Toggle dark class based on color scheme
+            if (colorScheme === "dark") {
+                document.documentElement.classList.add("dark");
+            } else {
+                document.documentElement.classList.remove("dark");
+            }
         }
-        setAndroidNavigationBar(colorScheme);
-    }, []);
+    }, [colorScheme]);
 
     return (
         <AuthProvider>

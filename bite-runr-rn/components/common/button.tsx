@@ -49,7 +49,7 @@ export const Button: React.FC<ButtonProps> = ({
         <Pressable
             onPress={onPress}
             disabled={isDisabled}
-            className={`w-full flex-row justify-center items-center gap-2 p-4 rounded-2xl ${
+            className={`w-full flex-row justify-center items-center h-[55px] gap-2 p-4 rounded-2xl ${
                 isDisabled ? "opacity-50" : ""
             }`}
             style={
