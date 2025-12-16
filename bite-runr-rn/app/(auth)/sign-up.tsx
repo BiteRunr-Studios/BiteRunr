@@ -10,13 +10,15 @@ import {
 } from "@/lib/auth-helpers";
 import { NAV_THEME } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
+import { AuthContext } from "@/lib/supabase-auth-context";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignUpScreen() {
+    const { setPendingAuth } = useContext(AuthContext);
     const { colorScheme } = useColorScheme();
     const [form, setForm] = useState<FormState>({
         firstName: {
@@ -101,13 +103,11 @@ export default function SignUpScreen() {
                 type: "signup",
                 email: existingUser.email,
             });
-            router.push({
-                pathname: "/confirm-sign-up",
-                params: {
-                    email: form.email!.value.toLowerCase(),
-                    password: form.password!.value,
-                },
+            setPendingAuth({
+                email: form.email!.value,
+                password: form.password!.value,
             });
+            router.push("/(auth)/confirm-sign-up");
             setLoading(false);
             return;
         }
@@ -161,13 +161,11 @@ export default function SignUpScreen() {
         });
 
         //  show the user the confirm-sign-up.tsx page
-        router.push({
-            pathname: "/confirm-sign-up",
-            params: {
-                email: form.email!.value.toLowerCase(),
-                password: form.password!.value,
-            },
+        setPendingAuth({
+            email: form.email!.value,
+            password: form.password!.value,
         });
+        router.push("/(auth)/confirm-sign-up");
         setLoading(false);
     }
 

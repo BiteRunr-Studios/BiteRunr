@@ -9,13 +9,15 @@ import {
 } from "@/lib/auth-helpers";
 import { NAV_THEME } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
+import { AuthContext } from "@/lib/supabase-auth-context";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignInScreen() {
+    const { setPendingAuth } = useContext(AuthContext);
     const { colorScheme } = useColorScheme();
     const [form, setForm] = useState<FormState>({
         email: { label: "Email", value: "", error: null, touched: false },
@@ -74,13 +76,11 @@ export default function SignInScreen() {
                     type: "signup",
                     email: form.email!.value,
                 });
-                router.push({
-                    pathname: "/confirm-sign-up",
-                    params: {
-                        email: form.email!.value.toLocaleLowerCase(),
-                        password: form.password!.value,
-                    },
+                setPendingAuth({
+                    email: form.email!.value,
+                    password: form.password!.value,
                 });
+                router.push("/(auth)/confirm-sign-up");
             } else {
                 setForm((prev) => ({
                     ...prev,

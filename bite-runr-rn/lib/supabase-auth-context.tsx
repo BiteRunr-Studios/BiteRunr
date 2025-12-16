@@ -11,11 +11,18 @@ import type { Session } from "@supabase/supabase-js";
 
 SplashScreen.preventAutoHideAsync();
 
+type PendingAuth = {
+    email: string;
+    password: string;
+};
+
 type AuthState = {
     session: Session | null;
     isReady: boolean;
     isLoggedIn: boolean;
     signOut: () => Promise<void>;
+    pendingAuth: PendingAuth | null;
+    setPendingAuth: (auth: PendingAuth | null) => void;
 };
 
 export const AuthContext = createContext<AuthState>({
@@ -23,17 +30,21 @@ export const AuthContext = createContext<AuthState>({
     isReady: false,
     isLoggedIn: false,
     signOut: async () => {},
+    pendingAuth: null,
+    setPendingAuth: () => {},
 });
 
 export function AuthProvider({ children }: PropsWithChildren) {
     const [isReady, setIsReady] = useState(false);
     const [session, setSession] = useState<Session | null>(null);
+    const [pendingAuth, setPendingAuth] = useState<PendingAuth | null>(null);
     const router = useRouter();
     const hasNavigated = useRef(false);
 
     const signOut = async () => {
         await supabase.auth.signOut();
         hasNavigated.current = false;
+        setPendingAuth(null); // Clear pending auth on sign out
     };
 
     useEffect(() => {
@@ -119,6 +130,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
                 isReady,
                 isLoggedIn: !!session,
                 signOut,
+                pendingAuth,
+                setPendingAuth,
             }}
         >
             {children}

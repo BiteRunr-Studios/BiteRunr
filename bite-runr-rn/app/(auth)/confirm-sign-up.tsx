@@ -1,21 +1,25 @@
 import { View, Text, Image, Pressable } from "react-native";
 import { Button } from "@/components/common/button";
-import { router, useLocalSearchParams } from "expo-router";
+import { Redirect, router, Slot, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { findUserByEmail } from "@/api/profile/profile";
 import { useIsFocused } from "@react-navigation/native";
+import { AuthContext } from "@/lib/supabase-auth-context";
 
 export default function ConfirmSignUpScreen() {
-    const { email, password } = useLocalSearchParams<{
-        email: string;
-        password: string;
-    }>();
+    const { pendingAuth, setPendingAuth } = useContext(AuthContext);
+    const email = pendingAuth?.email;
+    const password = pendingAuth?.password;
 
     const [resendCooldown, setResendCooldown] = useState(60);
     const hasSignedIn = useRef(false);
+
+    if (!email || !password) {
+        return <Redirect href={"/sign-in"} />;
+    }
 
     useEffect(() => {
         if (resendCooldown > 0) {
@@ -31,18 +35,11 @@ export default function ConfirmSignUpScreen() {
     const { data: isConfirmed, isLoading } = useQuery({
         queryKey: ["emailConfirmation", email],
         queryFn: async () => {
-            const user = await findUserByEmail(email);
-            console.log(user);
+            const user = await findUserByEmail(email!);
             if (!user) {
-                console.log("User not found for email:", email);
                 throw new Error("User not found");
             }
             const confirmed = !!user.email_confirmed_at;
-            console.log("Email confirmation check:", {
-                email,
-                confirmed,
-                email_confirmed_at: user.email_confirmed_at,
-            });
             return confirmed;
         },
         refetchInterval: isFocused ? 3000 : false,
@@ -52,24 +49,16 @@ export default function ConfirmSignUpScreen() {
     });
 
     useEffect(() => {
-        console.log("Confirmation status:", {
-            isConfirmed,
-            isLoading,
-            hasSignedIn: hasSignedIn.current,
-        });
-
         async function signInUser() {
             if (isConfirmed === true && !hasSignedIn.current && !isLoading) {
-                console.log("Email confirmed! Attempting to sign in...");
                 hasSignedIn.current = true;
 
                 const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password,
+                    email: email!,
+                    password: password!,
                 });
 
                 if (error) {
-                    console.error("Sign in error:", error);
                     hasSignedIn.current = false;
                     router.replace("/(auth)/sign-in");
                     return;
@@ -77,10 +66,8 @@ export default function ConfirmSignUpScreen() {
 
                 // Only navigate if we have a valid session
                 if (data?.session) {
-                    console.log("Sign in successful, navigating...");
                     router.replace("/(protected)/(tabs)");
                 } else {
-                    console.error("No session after sign in");
                     hasSignedIn.current = false;
                 }
             }
@@ -94,7 +81,7 @@ export default function ConfirmSignUpScreen() {
         // Resend the confirmation email
         const { error } = await supabase.auth.resend({
             type: "signup",
-            email: email,
+            email: email!,
         });
 
         if (error) {
@@ -106,6 +93,7 @@ export default function ConfirmSignUpScreen() {
     };
 
     const handleGoToLogin = () => {
+        setPendingAuth(null);
         router.dismissAll();
     };
 
