@@ -93,7 +93,6 @@ export default function ConfirmSignUpScreen() {
     };
 
     const handleGoToLogin = () => {
-        setPendingAuth(null);
         router.dismissAll();
     };
 
