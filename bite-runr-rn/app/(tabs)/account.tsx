@@ -1,4 +1,3 @@
-// app/(tabs)/account.tsx
 import React from "react";
 import {
     ScrollView,
@@ -6,92 +5,97 @@ import {
     View,
     Alert,
     Pressable,
-    ActivityIndicator,
     Image,
+    FlatList,
+    RefreshControl,
 } from "react-native";
 import { PageWithHeader } from "@/components/page-with-header";
 import { supabase } from "@/lib/supabase";
-import { apiFetch } from "@/lib/api";
-import { router } from "expo-router";
+import { ListItem } from "@/components/list-item";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    withRepeat,
+    Easing,
+} from "react-native-reanimated";
+import { UserProfileType } from "@/lib/types";
+import { fetchCurrentUser } from "@/api/profile/profile";
 
-type ApiUserResponse = {
-    id: string;
-    email: string;
-    profile: {
-        first_name: string | null;
-        last_name: string | null;
-        avatar_url: string | null;
-        created_at: string;
-        updated_at: string;
-    } | null;
+type Item = {
+    key: string;
+    title: string;
+    subtitle: string;
+    icon: React.ComponentProps<typeof ListItem>["iconName"];
+    href: string;
 };
 
+const items: Item[] = [
+    {
+        key: "personal",
+        title: "Personal Information",
+        subtitle: "View & edit account details",
+        icon: "person",
+        href: "/account/account-info",
+    },
+    {
+        key: "friends",
+        title: "Friends",
+        subtitle: "View, make & manage friends",
+        icon: "people",
+        href: "/account/friends",
+    },
+    {
+        key: "payments",
+        title: "Payments",
+        subtitle: "View & claim owed amounts",
+        icon: "card",
+        href: "/account/payments",
+    },
+    {
+        key: "support",
+        title: "Support",
+        subtitle: "Report an issue with the app",
+        icon: "headset",
+        href: "/account/support",
+    },
+    {
+        key: "about",
+        title: "About",
+        subtitle: "Release notes & about us",
+        icon: "information-circle",
+        href: "/account/about",
+    },
+];
+
 export default function AccountTab() {
-    const [loading, setLoading] = React.useState(true);
-    const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
-    const [user, setUser] = React.useState<ApiUserResponse | null>(null);
+    const queryClient = useQueryClient();
 
-    React.useEffect(() => {
-        let mounted = true;
-
-        async function load() {
-            try {
-                setLoading(true);
-                setErrorMsg(null);
-
-                const { data: userData, error: userErr } =
-                    await supabase.auth.getUser();
-                if (userErr) throw userErr;
-                const authUser = userData.user;
-                if (!authUser) {
-                    if (!mounted) return;
-                    setUser(null);
-                    setLoading(false);
-                    return;
-                }
-
-                const url = `https://biterunrapi-4bmpv.kinsta.app/users/${encodeURIComponent(
-                    authUser.id
-                )}`;
-                const json = await apiFetch<ApiUserResponse>(url, {
-                    requireAuth: false,
-                });
-
-                if (mounted) {
-                    setUser(json);
-                }
-            } catch (e: any) {
-                if (mounted) {
-                    setErrorMsg(e?.message ?? "Failed to load user profile.");
-                }
-            } finally {
-                if (mounted) setLoading(false);
-            }
-        }
-
-        load();
-
-        const { data: sub } = supabase.auth.onAuthStateChange((_event) => {
-            load();
-        });
-
-        return () => {
-            mounted = false;
-            sub.subscription?.unsubscribe();
-        };
-    }, []);
+    const {
+        data: user,
+        isLoading,
+        isRefetching,
+        error,
+        refetch,
+    } = useQuery<UserProfileType | null, Error>({
+        queryKey: ["current-user"],
+        queryFn: fetchCurrentUser,
+        refetchOnWindowFocus: true,
+        refetchOnReconnect: true,
+    });
 
     async function onSignOut() {
         try {
-            supabase.auth.stopAutoRefresh();
+            await supabase.auth.stopAutoRefresh();
             const { error } = await supabase.auth.signOut();
             if (error) {
                 Alert.alert("Sign out failed", error.message);
                 return;
             }
+            queryClient.removeQueries({ queryKey: ["current-user"] });
         } catch (e: any) {
             Alert.alert("Error", e?.message ?? "Something went wrong.");
-        } finally {
         }
     }
 
@@ -102,130 +106,184 @@ export default function AccountTab() {
         : null;
 
     return (
-        <PageWithHeader title="Account">
+        <PageWithHeader
+            title="Account"
+            logoSource={require("@/assets/images/app-logo.png")}
+            onLogoPress={() => Alert.alert("Logo pressed")}
+            onBellPress={() => Alert.alert("Notifications")}>
             <ScrollView
-                className="flex-1 p-6"
-                keyboardShouldPersistTaps="handled">
-                <View className="py-2">
-                    <Text className="mb-2 text-3xl font-bold text-foreground">
-                        Account
-                    </Text>
-                    <Text className="mb-6 text-2xl text-muted-foreground">
-                        Discover your account
-                    </Text>
+                className="flex-1"
+                contentContainerStyle={{ padding: 12 }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefetching}
+                        onRefresh={() => refetch()}
+                    />
+                }>
+                {(isLoading || isRefetching) && (
+                    <>
+                        <ProfileSkeleton />
+                    </>
+                )}
 
-                    {loading && (
-                        <View className="flex-row items-center">
-                            <ActivityIndicator />
-                            <Text className="ml-2 text-muted-foreground">
-                                Loading profile…
-                            </Text>
-                        </View>
-                    )}
-
-                    {!loading && errorMsg && (
-                        <View className="p-3 mb-4 border rounded-lg bg-destructive/10 border-destructive/30">
-                            <Text className="text-destructive">{errorMsg}</Text>
-                        </View>
-                    )}
-
-                    {!loading && !errorMsg && user && (
-                        <>
-                            <View className="flex-row items-center mb-6">
-                                {user.profile?.avatar_url ? (
-                                    <Image
-                                        source={{
-                                            uri: user.profile.avatar_url,
-                                        }}
-                                        className="w-16 h-16 rounded-full"
-                                        resizeMode="cover"
-                                    />
-                                ) : (
-                                    <View className="items-center justify-center w-16 h-16 rounded-full bg-muted">
-                                        <Text className="font-semibold text-muted-foreground">
-                                            {(fullName || user.email || "U")
-                                                .slice(0, 2)
-                                                .toUpperCase()}
-                                        </Text>
-                                    </View>
-                                )}
-                                <View className="ml-4">
-                                    <Text className="text-lg font-semibold text-foreground">
-                                        {fullName || "Unknown User"}
-                                    </Text>
-                                    <Text className="text-muted-foreground">
-                                        {user.email}
-                                    </Text>
-                                </View>
-                            </View>
-
-                            {/* Details */}
-                            <View className="mb-6 space-y-3">
-                                <View className="flex-row">
-                                    <Text className="w-32 text-muted-foreground">
-                                        First name
-                                    </Text>
-                                    <Text className="text-foreground">
-                                        {user.profile?.first_name || "—"}
-                                    </Text>
-                                </View>
-                                <View className="flex-row">
-                                    <Text className="w-32 text-muted-foreground">
-                                        Last name
-                                    </Text>
-                                    <Text className="text-foreground">
-                                        {user.profile?.last_name || "—"}
-                                    </Text>
-                                </View>
-                                <View className="flex-row">
-                                    <Text className="w-32 text-muted-foreground">
-                                        Created
-                                    </Text>
-                                    <Text className="text-foreground">
-                                        {user.profile?.created_at
-                                            ? new Date(
-                                                  user.profile.created_at
-                                              ).toLocaleString()
-                                            : "—"}
-                                    </Text>
-                                </View>
-                                <View className="flex-row">
-                                    <Text className="w-32 text-muted-foreground">
-                                        Updated
-                                    </Text>
-                                    <Text className="text-foreground">
-                                        {user.profile?.updated_at
-                                            ? new Date(
-                                                  user.profile.updated_at
-                                              ).toLocaleString()
-                                            : "—"}
-                                    </Text>
-                                </View>
-                            </View>
-                        </>
-                    )}
-
-                    {!loading && !errorMsg && !user && (
-                        <View className="p-3 rounded-lg bg-muted">
-                            <Text className="text-foreground">
-                                You’re not signed in. Please sign in to see your
-                                profile.
-                            </Text>
-                        </View>
-                    )}
-
-                    {/* Actions */}
-                    <View className="mt-2">
+                {!isLoading && error && (
+                    <View className="p-3 mb-4 border rounded-lg bg-destructive/10 border-destructive/30">
+                        <Text className="text-destructive">
+                            {error.message}
+                        </Text>
                         <Pressable
-                            onPress={onSignOut}
-                            className="px-4 py-3 border rounded-lg border-destructive active:opacity-80">
-                            <Text className="font-semibold text-center text-destructive">
-                                Sign out
-                            </Text>
+                            onPress={() => refetch()}
+                            className="px-3 py-2 mt-2 border rounded-lg border-black/10 dark:border-white/20 active:opacity-80">
+                            <Text className="text-foreground">Try again</Text>
                         </Pressable>
                     </View>
+                )}
+
+                {!isLoading && !error && user && (
+                    <View className="items-center mb-3">
+                        {user.profile?.avatar_url ? (
+                            <Image
+                                source={{ uri: user.profile.avatar_url }}
+                                className="w-32 h-32 rounded-full"
+                                resizeMode="cover"
+                            />
+                        ) : (
+                            <View className="items-center justify-center w-24 h-24 rounded-full bg-muted">
+                                <Text className="font-semibold text-muted-foreground">
+                                    {(fullName || user.email || "U")
+                                        .slice(0, 2)
+                                        .toUpperCase()}
+                                </Text>
+                            </View>
+                        )}
+
+                        <Text className="mt-3 text-lg font-semibold text-center text-foreground">
+                            {fullName || "Unknown User"}
+                        </Text>
+                        <Text className="text-center text-muted-foreground">
+                            {user.email}
+                        </Text>
+                    </View>
+                )}
+
+                {!isLoading && !error && !user && (
+                    <View className="p-3 mb-4 rounded-lg bg-muted">
+                        <Text className="text-foreground">
+                            You’re not signed in. Please sign in to see your
+                            profile.
+                        </Text>
+                    </View>
+                )}
+
+                <View className="gap-y-3">
+                    <FlatList
+                        data={items}
+                        keyExtractor={(item) => item.key}
+                        ItemSeparatorComponent={() => (
+                            <View className="h-[1px] bg-transparent" />
+                        )}
+                        renderItem={({ item }) => (
+                            <ListItem
+                                iconName={item.icon}
+                                title={item.title}
+                                subtitle={item.subtitle}
+                                // onPress={() => router.push(item.href)}
+                                testID={`listitem-${item.key}`}
+                            />
+                        )}
+                        contentContainerStyle={{ gap: 12 }}
+                        scrollEnabled={false}
+                    />
+                </View>
+
+                <View className="mt-2">
+                    <Pressable
+                        onPress={onSignOut}
+                        className="px-4 py-3 border rounded-lg border-destructive active:opacity-80">
+                        <Text className="font-semibold text-center text-destructive">
+                            Sign out
+                        </Text>
+                    </Pressable>
                 </View>
             </ScrollView>
         </PageWithHeader>
+    );
+}
+
+function ProfileSkeleton() {
+    const sweep = useSharedValue(0);
+
+    React.useEffect(() => {
+        sweep.value = withRepeat(
+            withTiming(1, {
+                duration: 1400,
+                easing: Easing.inOut(Easing.ease),
+            }),
+            -1,
+            true
+        );
+    }, [sweep]);
+
+    const shimmerStyle = useAnimatedStyle(() => {
+        const translatePercent = -40 + sweep.value * 80;
+        return {
+            transform: [{ translateX: translatePercent }],
+            opacity: 0.18,
+        };
+    });
+
+    const Block = ({
+        width,
+        height,
+        rounded = "rounded-md",
+        className = "",
+    }: {
+        width: number;
+        height: number;
+        rounded?: "rounded-md" | "rounded-lg" | "rounded-full";
+        className?: string;
+    }) => {
+        return (
+            <View
+                className={`bg-muted ${rounded} overflow-hidden ${className}`}
+                style={{ width, height }}>
+                {/* Shimmer overlay band */}
+                <Animated.View
+                    style={[
+                        shimmerStyle,
+                        {
+                            position: "absolute",
+                            top: 0,
+                            bottom: 0,
+                            width: width * 0.35,
+                            backgroundColor: "#ffffff",
+                        },
+                    ]}
+                />
+            </View>
+        );
+    };
+
+    return (
+        <View className="items-center mb-3">
+            {/* Avatar circle */}
+            <Block width={144} height={144} rounded="rounded-full" />
+
+            {/* Name bar */}
+            <Block
+                width={176}
+                height={24}
+                rounded="rounded-md"
+                className="mt-3"
+            />
+
+            {/* Email bar */}
+            <Block
+                width={128}
+                height={20}
+                rounded="rounded-md"
+                className="mt-2"
+            />
+        </View>
     );
 }

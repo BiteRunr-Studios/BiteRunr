@@ -27,6 +27,17 @@ export interface UserOrderDetails {
     items_count: number;
     people_count: number;
 }
+export type UserProfileType = {
+    id: string;
+    email: string;
+    profile: {
+        first_name: string | null;
+        last_name: string | null;
+        avatar_url: string | null;
+        created_at: string;
+        updated_at: string;
+    } | null;
+};
 
 export interface Order {
     id: string;
