@@ -170,3 +170,33 @@ export interface CreateOrderRequest {
         user_id: string;
     }[];
 }
+
+export interface SelectItemsOrderLocationDTO {
+    location_id: string;
+    order_location_id: string;
+    location_name: string;
+}
+
+export interface SelectItemsOrderUserLocationItemDTO {
+    id: string;
+    order_location_id: string;
+    order_user_id: string;
+    item_id: string;
+    comments: string | null;
+    quantity: number;
+    created_at: string | null;
+    updated_at: string | null;
+    item: SelectItemsItemDTO;
+}
+
+export interface SelectItemsItemDTO {
+    id: string;
+    name: string;
+    location_id: string;
+    created_at: string | null;
+    updated_at: string | null;
+}
+
+export interface SelectItemsOrderStatus {
+    status: "done" | "ordering";
+}

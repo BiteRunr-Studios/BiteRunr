@@ -8,10 +8,7 @@ export function OrderCard(order: Order) {
     const isActive = order.status === OrderStatus.Active;
 
     return (
-        <View
-            className={
-                "flex-col w-full gap-2 p-4 border rounded-2xl border-muted bg-card"
-            }>
+        <View className="flex-col w-full gap-2 p-4 border rounded-2xl border-muted bg-card">
             <View className="flex-row justify-between">
                 <Text className="text-lg text-muted-foreground">
                     {`${new Date(order.created_at).toLocaleDateString("en-US", {
@@ -69,8 +66,8 @@ export function OrderCard(order: Order) {
                 {order.comments}
             </Text>
             <View className="flex-row items-center">
-                {order
-                    .orderUsers!.slice(0, order.orderUsers!.length > 4 ? 3 : 4)
+                {order.orderUsers
+                    ?.slice(0, order.orderUsers?.length > 4 ? 3 : 4)
                     .map((order_user, idx) => (
                         <View
                             key={idx}
@@ -89,7 +86,7 @@ export function OrderCard(order: Order) {
                             />
                         </View>
                     ))}
-                {order.orderUsers!.length > 4 && (
+                {order.orderUsers && order.orderUsers.length > 4 && (
                     <View
                         style={{
                             marginLeft: -18,
@@ -98,7 +95,7 @@ export function OrderCard(order: Order) {
                         }}
                         className="flex items-center justify-center border-2 rounded-full border-card bg-primary">
                         <Text className="text-xs font-semibold text-foreground">
-                            +{order.orderUsers!.length - 3}
+                            +{order.orderUsers.length - 3}
                         </Text>
                     </View>
                 )}

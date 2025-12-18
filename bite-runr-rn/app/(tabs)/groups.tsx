@@ -19,11 +19,13 @@ import { getOrders } from "@/api/groups/orders";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "expo-router";
 import { supabase } from "@/lib/supabase";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function GroupsTab() {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [userId, setUserId] = useState<string | null>(null);
     const { isDarkColorScheme } = useColorScheme();
+    const isFocused = useIsFocused();
 
     useEffect(() => {
         supabase.auth.getUser().then(({ data }) => {
@@ -34,7 +36,8 @@ export default function GroupsTab() {
     const { data, isPending, isError, error } = useQuery<Order[]>({
         queryKey: ["userOrders"],
         queryFn: getOrders,
-        refetchInterval: 2_500,
+        enabled: isFocused,
+        refetchInterval: isFocused ? 2_500 : false,
     });
 
     const filteredOrders = data?.filter((order) => {

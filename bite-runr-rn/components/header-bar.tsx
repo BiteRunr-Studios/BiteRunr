@@ -8,7 +8,7 @@ export function HeaderBar() {
         <View className="bg-background">
             <View className="flex-row items-center justify-between px-4 py-2 min-h-20">
                 <Pressable
-                    onPress={() => router.navigate("/")}
+                    onPress={() => router.dismissTo("/")}
                     className="flex-row items-center">
                     <Image
                         source={require("@/assets/images/app-logo.png")}
