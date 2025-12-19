@@ -20,6 +20,7 @@ import {
     TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AddItemSheet } from "@/components/add-item-sheet";
 
 export default function SelectItems() {
     const { orderUserId, orderId } = useLocalSearchParams();
@@ -27,6 +28,11 @@ export default function SelectItems() {
         useState<SelectItemsOrderLocationDTO | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+    const [sheetVisible, setSheetVisible] = useState(false);
+    const [selectedItem, setSelectedItem] = useState<{
+        name: string;
+        id: string;
+    } | null>(null);
     const isFocused = useIsFocused();
 
     useEffect(() => {
@@ -102,8 +108,30 @@ export default function SelectItems() {
     }, [orderLocations, selectedLocation?.location_id]);
 
     function handleDone() {
-        setOrderUserStatus(orderId as string, "done");
+        setOrderUserStatus(orderId as string, { status: "done" });
         router.dismiss();
+    }
+
+    function handleItemPress(item: { name: string; id: string }) {
+        setSelectedItem(item);
+        setSheetVisible(true);
+    }
+
+    function handleAddItem(quantity: number, comments: string) {
+        // TODO: Implement API call to add item to order
+        console.log("Adding item:", {
+            item: selectedItem,
+            quantity,
+            comments,
+            orderUserId,
+            locationId: selectedLocation?.location_id,
+        });
+        setSheetVisible(false);
+    }
+
+    function handleCloseSheet() {
+        setSheetVisible(false);
+        setSelectedItem(null);
     }
 
     return (
@@ -172,9 +200,15 @@ export default function SelectItems() {
                             // Search results
                             searchResults && searchResults.length > 0 ? (
                                 searchResults.map((item, idx) => (
-                                    <View
+                                    <Pressable
                                         key={idx}
-                                        className="flex-row justify-between w-full gap-2 p-4 border rounded-2xl border-muted bg-card">
+                                        onPress={() =>
+                                            handleItemPress({
+                                                name: item.name,
+                                                id: item.id,
+                                            })
+                                        }
+                                        className="flex-row justify-between w-full gap-2 p-4 border rounded-2xl border-muted bg-card active:opacity-70">
                                         <View className="flex-row justify-between gap-2">
                                             <View className="flex items-center justify-center w-12 h-12 rounded-full bg-muted-foreground"></View>
                                             <View className="flex-col">
@@ -189,7 +223,7 @@ export default function SelectItems() {
                                                 </Text>
                                             </View>
                                         </View>
-                                    </View>
+                                    </Pressable>
                                 ))
                             ) : isSearchPending ? null : (
                                 <Text className="text-center text-muted-foreground">
@@ -200,9 +234,17 @@ export default function SelectItems() {
                             // Order user location items
                             orderUserLocationItems?.map(
                                 (orderUserLocationItem, idx) => (
-                                    <View
+                                    <Pressable
                                         key={idx}
-                                        className="flex-row justify-between w-full gap-2 p-4 border rounded-2xl border-muted bg-card">
+                                        onPress={() =>
+                                            handleItemPress({
+                                                name: orderUserLocationItem.item
+                                                    .name,
+                                                id: orderUserLocationItem.item
+                                                    .id,
+                                            })
+                                        }
+                                        className="flex-row justify-between w-full gap-2 p-4 border rounded-2xl border-muted bg-card active:opacity-70">
                                         <View className="flex-row justify-between gap-2">
                                             <View className="flex items-center justify-center w-12 h-12 rounded-full bg-muted-foreground"></View>
                                             <View className="flex-col">
@@ -226,7 +268,7 @@ export default function SelectItems() {
                                                 {orderUserLocationItem.quantity}
                                             </Text>
                                         </View>
-                                    </View>
+                                    </Pressable>
                                 )
                             )
                         )}
@@ -246,6 +288,15 @@ export default function SelectItems() {
                     </View>
                 </View>
             </View>
+
+            {/* Add Item Sheet */}
+            <AddItemSheet
+                visible={sheetVisible}
+                onClose={handleCloseSheet}
+                onAdd={handleAddItem}
+                itemName={selectedItem?.name || ""}
+                locationName={selectedLocation?.location_name || ""}
+            />
         </>
     );
 }

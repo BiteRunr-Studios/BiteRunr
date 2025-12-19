@@ -95,7 +95,7 @@ export default function SpecificOrder() {
     };
 
     function handleSelectItems() {
-        setOrderUserStatus(orderId as string, "ordering");
+        setOrderUserStatus(orderId as string, { status: "ordering" });
         router.push(
             `/order/items?orderUserId=${
                 data?.order_users.find((x) => x.user_id === currentUserId)?.id

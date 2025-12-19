@@ -211,3 +211,11 @@ export interface SelectItemsItemDTO {
 export interface SelectItemsOrderStatus {
     status: "done" | "ordering";
 }
+
+export interface SelectItemsAddExistingItemDTO {
+    orderLocationId: string;
+    orderUserId: string;
+    itemId: string;
+    comments: string | null;
+    quantity: number;
+}

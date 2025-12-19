@@ -4,7 +4,7 @@ import { SelectItemsOrderStatus } from "@/lib/types";
 
 export async function setOrderUserStatus(
     orderId: string,
-    status: "done" | "ordering"
+    status: SelectItemsOrderStatus
 ): Promise<string> {
     const { data, error } = await supabase.auth.getUser();
     if (error) throw new Error(`Auth error: ${error.message}`);
@@ -15,7 +15,7 @@ export async function setOrderUserStatus(
         `/orders/${orderId}/users/${userId}/change-status`,
         {
             method: "PATCH",
-            body: { status },
+            body: status,
         }
     );
 }
