@@ -1,7 +1,7 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { useColorScheme } from "@/lib/use-color-scheme";
-import { TabBarIcon } from "@/components/tabbar-icon";
+import { TabBarIcon } from "@/components/layout/tabbar-icon";
 import { NAV_THEME } from "@/lib/constants";
 
 export default function TabLayout() {
@@ -21,7 +21,8 @@ export default function TabLayout() {
                         ? NAV_THEME.dark.border
                         : NAV_THEME.light.border,
                 },
-            }}>
+            }}
+        >
             <Tabs.Screen
                 name="index"
                 options={{

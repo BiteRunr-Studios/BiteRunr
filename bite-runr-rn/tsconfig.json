@@ -11,6 +11,9 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "nativewind-env.d.ts"
+    "nativewind-env.d.ts",
+    "lib/constants.js",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
   ]
 }

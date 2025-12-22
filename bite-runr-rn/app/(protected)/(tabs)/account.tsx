@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
     ScrollView,
     Text,
@@ -9,13 +9,20 @@ import {
     FlatList,
     RefreshControl,
 } from "react-native";
-import { PageWithHeader } from "@/components/page-with-header";
+import { PageWithHeader } from "@/components/layout/page-with-header";
 import { supabase } from "@/lib/supabase";
-import { ListItem } from "@/components/list-item";
+import { ListItem } from "@/components/profile/list-item";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Animated, {useSharedValue, useAnimatedStyle, withTiming, withRepeat, Easing} from "react-native-reanimated";
-import {UserProfileType} from "@/lib/types";
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    withRepeat,
+    Easing,
+} from "react-native-reanimated";
+import { UserProfileType } from "@/lib/types";
 import { fetchCurrentUser } from "@/api/profile/profile";
+import { AuthContext } from "@/lib/supabase-auth-context";
 
 type Item = {
     key: string;
@@ -26,15 +33,46 @@ type Item = {
 };
 
 const items: Item[] = [
-    { key: "personal", title: "Personal Information", subtitle: "View & edit account details", icon: "person", href: "/account/account-info" },
-    { key: "friends", title: "Friends", subtitle: "View, make & manage friends", icon: "people", href: "/account/friends" },
-    { key: "payments", title: "Payments", subtitle: "View & claim owed amounts", icon: "card", href: "/account/payments" },
-    { key: "support", title: "Support", subtitle: "Report an issue with the app", icon: "headset", href: "/account/support" },
-    { key: "about", title: "About", subtitle: "Release notes & about us", icon: "information-circle", href: "/account/about" },
+    {
+        key: "personal",
+        title: "Personal Information",
+        subtitle: "View & edit account details",
+        icon: "person",
+        href: "/account/account-info",
+    },
+    {
+        key: "friends",
+        title: "Friends",
+        subtitle: "View, make & manage friends",
+        icon: "people",
+        href: "/account/friends",
+    },
+    {
+        key: "payments",
+        title: "Payments",
+        subtitle: "View & claim owed amounts",
+        icon: "card",
+        href: "/account/payments",
+    },
+    {
+        key: "support",
+        title: "Support",
+        subtitle: "Report an issue with the app",
+        icon: "headset",
+        href: "/account/support",
+    },
+    {
+        key: "about",
+        title: "About",
+        subtitle: "Release notes & about us",
+        icon: "information-circle",
+        href: "/account/about",
+    },
 ];
 
 export default function AccountTab() {
     const queryClient = useQueryClient();
+    const { signOut } = useContext(AuthContext);
 
     const {
         data: user,
@@ -52,21 +90,18 @@ export default function AccountTab() {
     async function onSignOut() {
         try {
             await supabase.auth.stopAutoRefresh();
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                Alert.alert("Sign out failed", error.message);
-                return;
-            }
+            await signOut();
             queryClient.removeQueries({ queryKey: ["current-user"] });
         } catch (e: any) {
             Alert.alert("Error", e?.message ?? "Something went wrong.");
         }
     }
 
-    const fullName =
-        user?.profile
-            ? [user.profile.first_name, user.profile.last_name].filter(Boolean).join(" ")
-            : null;
+    const fullName = user?.profile
+        ? [user.profile.first_name, user.profile.last_name]
+              .filter(Boolean)
+              .join(" ")
+        : null;
 
     return (
         <PageWithHeader
@@ -79,7 +114,10 @@ export default function AccountTab() {
                 className="flex-1"
                 contentContainerStyle={{ padding: 12 }}
                 refreshControl={
-                    <RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} />
+                    <RefreshControl
+                        refreshing={isRefetching}
+                        onRefresh={() => refetch()}
+                    />
                 }
             >
                 {(isLoading || isRefetching) && (
@@ -88,10 +126,11 @@ export default function AccountTab() {
                     </>
                 )}
 
-
                 {!isLoading && error && (
                     <View className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 mb-4">
-                        <Text className="text-destructive">{error.message}</Text>
+                        <Text className="text-destructive">
+                            {error.message}
+                        </Text>
                         <Pressable
                             onPress={() => refetch()}
                             className="mt-2 rounded-lg px-3 py-2 border border-black/10 dark:border-white/20 active:opacity-80"
@@ -112,7 +151,9 @@ export default function AccountTab() {
                         ) : (
                             <View className="w-24 h-24 rounded-full bg-muted items-center justify-center">
                                 <Text className="text-muted-foreground font-semibold">
-                                    {(fullName || user.email || "U").slice(0, 2).toUpperCase()}
+                                    {(fullName || user.email || "U")
+                                        .slice(0, 2)
+                                        .toUpperCase()}
                                 </Text>
                             </View>
                         )}
@@ -120,14 +161,17 @@ export default function AccountTab() {
                         <Text className="text-lg font-semibold text-foreground mt-3 text-center">
                             {fullName || "Unknown User"}
                         </Text>
-                        <Text className="text-muted-foreground text-center">{user.email}</Text>
+                        <Text className="text-muted-foreground text-center">
+                            {user.email}
+                        </Text>
                     </View>
                 )}
 
                 {!isLoading && !error && !user && (
                     <View className="p-3 rounded-lg bg-muted mb-4">
                         <Text className="text-foreground">
-                            You’re not signed in. Please sign in to see your profile.
+                            You’re not signed in. Please sign in to see your
+                            profile.
                         </Text>
                     </View>
                 )}
@@ -136,7 +180,9 @@ export default function AccountTab() {
                     <FlatList
                         data={items}
                         keyExtractor={(item) => item.key}
-                        ItemSeparatorComponent={() => <View className="h-[1px] bg-transparent" />}
+                        ItemSeparatorComponent={() => (
+                            <View className="h-[1px] bg-transparent" />
+                        )}
                         renderItem={({ item }) => (
                             <ListItem
                                 iconName={item.icon}
@@ -156,7 +202,9 @@ export default function AccountTab() {
                         onPress={onSignOut}
                         className="rounded-lg px-4 py-3 border border-destructive active:opacity-80"
                     >
-                        <Text className="text-destructive font-semibold text-center">Sign out</Text>
+                        <Text className="text-destructive font-semibold text-center">
+                            Sign out
+                        </Text>
                     </Pressable>
                 </View>
             </ScrollView>
@@ -169,7 +217,10 @@ function ProfileSkeleton() {
 
     React.useEffect(() => {
         sweep.value = withRepeat(
-            withTiming(1, { duration: 1400, easing: Easing.inOut(Easing.ease) }),
+            withTiming(1, {
+                duration: 1400,
+                easing: Easing.inOut(Easing.ease),
+            }),
             -1,
             true
         );
@@ -184,11 +235,11 @@ function ProfileSkeleton() {
     });
 
     const Block = ({
-                       width,
-                       height,
-                       rounded = "rounded-md",
-                       className = "",
-                   }: {
+        width,
+        height,
+        rounded = "rounded-md",
+        className = "",
+    }: {
         width: number;
         height: number;
         rounded?: "rounded-md" | "rounded-lg" | "rounded-full";
@@ -222,11 +273,20 @@ function ProfileSkeleton() {
             <Block width={144} height={144} rounded="rounded-full" />
 
             {/* Name bar */}
-            <Block width={176} height={24} rounded="rounded-md" className="mt-3" />
+            <Block
+                width={176}
+                height={24}
+                rounded="rounded-md"
+                className="mt-3"
+            />
 
             {/* Email bar */}
-            <Block width={128} height={20} rounded="rounded-md" className="mt-2" />
+            <Block
+                width={128}
+                height={20}
+                rounded="rounded-md"
+                className="mt-2"
+            />
         </View>
     );
 }
-

@@ -14,13 +14,13 @@ type ListItemProps = {
 };
 
 export const ListItem: React.FC<ListItemProps> = ({
-                                                      iconName,
-                                                      iconColor = "#f97316",
-                                                      title,
-                                                      subtitle,
-                                                      onPress,
-                                                      testID,
-                                                  }) => {
+    iconName,
+    iconColor = "#f97316",
+    title,
+    subtitle,
+    onPress,
+    testID,
+}) => {
     return (
         <Pressable
             testID={testID}
@@ -33,8 +33,12 @@ export const ListItem: React.FC<ListItemProps> = ({
                     <Ionicons name={iconName} size={20} color={iconColor} />
                 </View>
                 <View>
-                    <Text className="text-foreground text-base font-semibold">{title}</Text>
-                    <Text className="text-muted-foreground text-sm">{subtitle}</Text>
+                    <Text className="text-foreground text-base font-semibold">
+                        {title}
+                    </Text>
+                    <Text className="text-muted-foreground text-sm">
+                        {subtitle}
+                    </Text>
                 </View>
             </View>
             <Ionicons name="chevron-forward" size={18} color="#8e8e93" />

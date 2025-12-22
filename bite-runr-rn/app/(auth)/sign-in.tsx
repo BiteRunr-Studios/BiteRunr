@@ -1,240 +1,214 @@
-// app/(auth)/sign-in.tsx
-import React, { useState } from "react";
-import * as WebBrowser from "expo-web-browser";
+import { OAuthButton } from "@/components/auth/oauth-button";
+import { Button } from "@/components/common/button";
+import Icon from "@/components/common/icon";
+import { Input } from "@/components/common/input";
 import {
-    Alert,
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    Text,
-    TextInput,
-    View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Link, router } from "expo-router";
+    createFormHandlers,
+    FormState,
+    validateField,
+} from "@/lib/auth-helpers";
+import { NAV_THEME } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
-import { TabBarIcon } from "@/components/tabbar-icon";
-import { createSessionFromUrl, redirectTo } from "@/app/(auth)/oauth";
-
-WebBrowser.maybeCompleteAuthSession();
+import { AuthContext } from "@/lib/supabase-auth-context";
+import { useColorScheme } from "@/lib/use-color-scheme";
+import { router } from "expo-router";
+import { useContext, useState } from "react";
+import { View, Text, Pressable } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignInScreen() {
-    // Email field
-    const [email, setEmail] = useState("");
-    const [emailError, setEmailError] = useState<string | null>(null);
+    const { setPendingAuth } = useContext(AuthContext);
+    const { colorScheme } = useColorScheme();
+    const [form, setForm] = useState<FormState>({
+        email: { label: "Email", value: "", error: null, touched: false },
+        password: {
+            label: "Password",
+            value: "",
+            error: null,
+            touched: false,
+            show: false,
+        },
+    });
 
-    // Password field
-    const [password, setPassword] = useState("");
-    const [passwordError, setPasswordError] = useState<string | null>(null);
-
-    const [touched, setTouched] = useState({ email: false, password: false }); // Field touched state
-
+    const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
-    const [loadingProvider, setLoadingProvider] =
-        useState<OAuthProvider | null>(null);
-
-    type OAuthProvider = "github" | "google";
 
     async function onSignInWithEmail() {
-        try {
-            if (!email || !password) {
-                Alert.alert(
-                    "Missing info",
-                    "Please enter your email and password."
-                );
-                return;
-            }
-            setLoading(true);
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-            console.log("signInWithPassword:", {
-                error,
-                hasSession: !!data?.session,
-            });
+        setLoading(true);
 
-            if (error) {
-                Alert.alert("Sign in failed", error.message);
-                return;
-            }
-            if (data?.session) {
-                router.replace("/(tabs)");
-            } else {
-                Alert.alert("Sign-in incomplete", "No session returned.");
-            }
-        } catch (e: any) {
-            Alert.alert("Error", e?.message ?? "Something went wrong.");
-        } finally {
+        // Validate all fields
+        setForm((prev) => {
+            const next: FormState = { ...prev };
+            (Object.keys(prev) as Array<keyof FormState>).forEach((k) => {
+                const field = prev[k];
+                if (field) {
+                    // Add this check
+                    next[k] = {
+                        ...field,
+                        touched: true,
+                        error: validateField(k, field.value, prev),
+                    };
+                }
+            });
+            return next;
+        });
+
+        // Check for validation errors
+        const formHasErrors = (
+            Object.keys(form) as Array<keyof FormState>
+        ).some((k) => validateField(k, form[k]!.value, form) !== null);
+
+        if (formHasErrors) {
             setLoading(false);
+            return;
         }
-    }
 
-    async function onSignInWithOAuth(identityProvider: OAuthProvider) {
-        try {
-            setLoadingProvider(identityProvider);
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: identityProvider,
-                options: {
-                    redirectTo,
-                    skipBrowserRedirect: true,
-                    scopes:
-                        identityProvider == "github"
-                            ? "read:user user:email"
-                            : "",
-                },
-            });
-            console.log("OAuth start:", { data, error });
-            if (error) {
-                Alert.alert(
-                    `${identityProvider} sign-in failed`,
-                    error.message
-                );
-                return;
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: form.email!.value,
+            password: form.password!.value,
+        });
+
+        if (error) {
+            const errorMessage = error.message.toLowerCase();
+
+            if (errorMessage.includes("email not confirmed")) {
+                supabase.auth.resend({
+                    type: "signup",
+                    email: form.email!.value,
+                });
+                setPendingAuth({
+                    email: form.email!.value,
+                    password: form.password!.value,
+                });
+                router.push("/(auth)/confirm-sign-up");
+            } else {
+                setForm((prev) => ({
+                    ...prev,
+                    email: {
+                        ...prev.email!,
+                        touched: true,
+                        error: errorMessage,
+                    },
+                }));
             }
 
-            const res = await WebBrowser.openAuthSessionAsync(
-                data?.url ?? "",
-                redirectTo
-            );
-            if (res.type === "success" && res.url) {
-                await createSessionFromUrl(res.url);
-                router.replace("/(tabs)");
-            } else if (res.type === "cancel") {
-                console.log("OAuth cancelled");
-            }
-            setLoadingProvider(identityProvider);
-        } catch (e: any) {
-            Alert.alert("Error", e?.message ?? "Something went wrong.");
-        } finally {
-            setLoadingProvider(null);
+            setLoading(false);
+            return;
         }
-    }
 
-    function validateRequiredField(value: String) {
-        return value.trim().length > 0;
-    }
+        if (data?.session) router.replace("/(protected)/(tabs)");
 
-    function validateEmail(email: string) {
-        if (!validateRequiredField(email)) return false;
-
-        const emailRegex =
-            /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[A-Za-z]{2,}$/;
-
-        return emailRegex.test(email.trim());
+        setLoading(false);
     }
 
     return (
-        <SafeAreaView className="flex-1" edges={["top"]}>
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
-                className="flex-1"
+        <SafeAreaView className="flex-1 px-4 justify-center transition-all duration-200">
+            <View className="mt-10"></View>
+            {/* Title */}
+            <Text className="text-3xl font-bold text-foreground mb-2">
+                Welcome back
+            </Text>
+            <Text className="text-lg text-muted-foreground">
+                Your favorites, ordered for the whole crew.
+            </Text>
+
+            <View className="mt-8" />
+
+            {/* Email Field*/}
+            <Input
+                value={form.email!.value}
+                placeholder="Email"
+                leftIcon="Mail"
+                autoCapitalize="none"
+                returnKeyType="next"
+                errorMessage={form.email!.error}
+                onChangeText={(v) => onChange("email", v)}
+                onBlur={() => onBlur("email")}
+            />
+
+            <View className="mt-2" />
+
+            <Pressable
+                className="mb-2 w-fit ml-auto"
+                onPress={() =>
+                    router.push({
+                        pathname: "/forgot-password",
+                        params: {
+                            email: form.email!.value.toLocaleLowerCase(),
+                        },
+                    })
+                }
             >
-                <View className="px-4 py-6">
-                    <Text className="text-3xl font-bold text-foreground mb-6">
-                        Welcome back
-                    </Text>
+                <Text className="text-muted-foreground underline">
+                    Forgot password?
+                </Text>
+            </Pressable>
 
-                    <View className="mb-4">
-                        <Text className="text-sm font-medium text-foreground mb-2">
-                            Email
-                        </Text>
-                        <View className="flex-row items-center rounded-lg border border-input bg-background px-3">
-                            <TextInput
-                                className="flex-1 py-3 text-foreground"
-                                placeholder="email@address.com"
-                                placeholderTextColor="hsl(215.4 16.3% 46.9%)"
-                                autoCapitalize="none"
-                                autoComplete="email"
-                                keyboardType="email-address"
-                                value={email}
-                                onChangeText={setEmail}
-                            />
-                        </View>
-                    </View>
+            {/* Password Field*/}
+            <Input
+                value={form.password!.value}
+                placeholder="Password"
+                leftIcon="Lock"
+                rightIcon={form.password!.show ? "EyeClosed" : "Eye"}
+                onRightIconPress={() => {
+                    setForm((prev) => ({
+                        ...prev,
+                        password: {
+                            ...prev.password!,
+                            show: !prev.password!.show,
+                        },
+                    }));
+                }}
+                autoCapitalize="none"
+                returnKeyType="default"
+                errorMessage={form.password!.error}
+                onChangeText={(v) => onChange("password", v)}
+                onBlur={() => onBlur("password")}
+                secureTextEntry={!form.password!.show}
+            />
 
-                    <View className="mb-6">
-                        <Text className="text-sm font-medium text-foreground mb-2">
-                            Password
-                        </Text>
-                        <View className="flex-row items-center rounded-lg border border-input bg-background px-3">
-                            <TextInput
-                                className="flex-1 py-3 text-foreground"
-                                placeholder="Password"
-                                placeholderTextColor="hsl(215.4 16.3% 46.9%)"
-                                autoCapitalize="none"
-                                secureTextEntry
-                                value={password}
-                                onChangeText={setPassword}
-                            />
-                        </View>
-                    </View>
+            <View className="mt-4" />
 
-                    <Pressable
-                        onPress={onSignInWithEmail}
-                        disabled={loading}
-                        className={`rounded-lg px-4 py-3 ${
-                            loading ? "bg-primary/50" : "bg-primary"
-                        }`}
-                    >
-                        <View className="flex-row justify-center items-center">
-                            {loading && (
-                                <ActivityIndicator
-                                    color="#fff"
-                                    className="mr-2"
-                                />
-                            )}
-                            <Text className="text-white font-semibold">
-                                Sign in
-                            </Text>
-                        </View>
-                    </Pressable>
+            {/* Submit Button */}
+            <Button
+                variant="full"
+                label="Continue"
+                loading={loading}
+                onPress={onSignInWithEmail}
+            />
 
-                    <View className="mt-4" />
+            <View className="mt-8" />
 
-                    <Pressable
-                        onPress={() => onSignInWithOAuth("github")}
-                        disabled={loadingProvider === "github"}
-                        className="flex-row items-center justify-center gap-2 rounded-lg px-4 py-3 border border-input bg-background active:opacity-80"
-                    >
-                        {loadingProvider === "github" && (
-                            <ActivityIndicator className="mr-2" />
-                        )}
-                        <TabBarIcon color="" name="logo-github" />
-                        <Text className="font-semibold">
-                            Continue with GitHub
-                        </Text>
-                    </Pressable>
+            <View className="flex-row items-center justify-between gap-3">
+                <View className="bg-muted h-[1px] flex-grow"></View>
+                <Text className="text-muted-foreground italic">OR</Text>
+                <View className="bg-muted h-[1px] flex-grow"></View>
+            </View>
 
-                    <View className="mt-2" />
-                    <Pressable
-                        onPress={() => onSignInWithOAuth("google")}
-                        disabled={loadingProvider === "github"}
-                        className="flex-row items-center justify-center gap-2 rounded-lg px-4 py-3 border border-input bg-background active:opacity-80"
-                    >
-                        {loadingProvider === "google" && (
-                            <ActivityIndicator className="mr-2" />
-                        )}
-                        <TabBarIcon name="logo-google" color="" />
-                        <Text className="text-foreground font-semibold">
-                            Continue with Google
-                        </Text>
-                    </Pressable>
+            <View className="mt-8" />
 
-                    <View className="mt-4 flex-row justify-center">
-                        <Text className="text-muted-foreground">
-                            No account?
-                        </Text>
-                        <Link
-                            href="/(auth)/sign-up"
-                            className="text-primary font-semibold"
-                        >
-                            Sign up
-                        </Link>
-                    </View>
-                </View>
-            </KeyboardAvoidingView>
+            {/* GitHub Auth Button */}
+            <OAuthButton provider="github" />
+
+            <View className="mt-3" />
+
+            {/* Google Auth Button */}
+            <OAuthButton provider="google" />
+
+            <View className="mt-4 flex-row items-center justify-center gap-2">
+                <Text className="text-muted-foreground">No account?</Text>
+                <Pressable
+                    className="flex-row items-center gap-1"
+                    onPress={() => router.push("/(auth)/sign-up")}
+                >
+                    <Text className="text-primary font-semibold">Sign up</Text>
+                    <Icon
+                        name="ArrowRight"
+                        size={15}
+                        color={NAV_THEME[colorScheme].primary}
+                    />
+                </Pressable>
+            </View>
         </SafeAreaView>
     );
 }
