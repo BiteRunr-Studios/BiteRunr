@@ -41,10 +41,7 @@ export default function ResetPasswordScreen() {
         }
 
         const setupRecoverySession = async () => {
-            console.log("Reset password params:", params);
-
             const fragment = params["#"] as string;
-            console.log("Parsing fragment:", fragment);
 
             const fragmentParams = new URLSearchParams(fragment);
             const accessToken = fragmentParams.get("access_token")!;
@@ -58,7 +55,6 @@ export default function ResetPasswordScreen() {
             });
 
             if (error) {
-                console.error("Error setting recovery session:", error);
                 Alert.alert(
                     "Invalid Reset Link",
                     "This password reset link is invalid or has expired. Please request a new one."
@@ -66,8 +62,6 @@ export default function ResetPasswordScreen() {
                 router.replace("/(auth)/sign-in");
                 return;
             }
-
-            console.log("Recovery session set:", data);
 
             setSessionHandled(true);
         };

@@ -129,7 +129,7 @@ export default function SignInScreen() {
             <View className="mt-2" />
 
             <Pressable
-                className="mb-2"
+                className="mb-2 w-fit ml-auto"
                 onPress={() =>
                     router.push({
                         pathname: "/forgot-password",
@@ -139,7 +139,7 @@ export default function SignInScreen() {
                     })
                 }
             >
-                <Text className="text-right text-muted-foreground underline">
+                <Text className="text-muted-foreground underline">
                     Forgot password?
                 </Text>
             </Pressable>

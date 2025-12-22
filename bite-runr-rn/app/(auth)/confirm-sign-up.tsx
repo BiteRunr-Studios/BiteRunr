@@ -10,16 +10,14 @@ import { useIsFocused } from "@react-navigation/native";
 import { AuthContext } from "@/lib/supabase-auth-context";
 
 export default function ConfirmSignUpScreen() {
-    const { pendingAuth, setPendingAuth } = useContext(AuthContext);
+    const { pendingAuth } = useContext(AuthContext);
     const email = pendingAuth?.email;
     const password = pendingAuth?.password;
 
     const [resendCooldown, setResendCooldown] = useState(60);
     const hasSignedIn = useRef(false);
 
-    if (!email || !password) {
-        return <Redirect href={"/sign-in"} />;
-    }
+    if (!email || !password) return <Redirect href={"/sign-in"} />;
 
     useEffect(() => {
         if (resendCooldown > 0) {
@@ -44,8 +42,8 @@ export default function ConfirmSignUpScreen() {
         },
         refetchInterval: isFocused ? 3000 : false,
         enabled: !!email && isFocused,
-        staleTime: 0, // Always treat data as stale
-        gcTime: 0, // Don't cache results
+        staleTime: 0,
+        gcTime: 0,
     });
 
     useEffect(() => {
@@ -64,7 +62,6 @@ export default function ConfirmSignUpScreen() {
                     return;
                 }
 
-                // Only navigate if we have a valid session
                 if (data?.session) {
                     router.replace("/(protected)/(tabs)");
                 } else {
@@ -78,7 +75,7 @@ export default function ConfirmSignUpScreen() {
 
     const handleResendLink = async () => {
         if (resendCooldown > 0) return;
-        // Resend the confirmation email
+
         const { error } = await supabase.auth.resend({
             type: "signup",
             email: email!,
@@ -90,10 +87,6 @@ export default function ConfirmSignUpScreen() {
         }
 
         setResendCooldown(60);
-    };
-
-    const handleGoToLogin = () => {
-        router.dismissAll();
     };
 
     return (
@@ -149,7 +142,7 @@ export default function ConfirmSignUpScreen() {
             <Button
                 variant="full"
                 label="Go to login"
-                onPress={handleGoToLogin}
+                onPress={() => router.dismissAll()}
             />
         </SafeAreaView>
     );

@@ -121,7 +121,7 @@ export default function ForgotPasswordScreen() {
             {/* Back Button w/ Icon */}
             <Pressable
                 onPress={() => router.back()}
-                className="flex-row items-center gap-2 mt-8 mb-6"
+                className="w-fit flex-row items-center gap-2 mt-8 mb-6"
             >
                 <Icon
                     name="ArrowLeft"
