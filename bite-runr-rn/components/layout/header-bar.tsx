@@ -1,6 +1,8 @@
 import React from "react";
 import { View, Image, Pressable } from "react-native";
-import { TabBarIcon } from "@/components/layout/tabbar-icon";
+import Icon from "@/components/common/icon";
+import { NAV_THEME } from "@/lib/constants";
+import { useColorScheme } from "@/lib/use-color-scheme";
 
 type HeaderBarProps = {
     onLogoPress?: () => void;
@@ -13,9 +15,11 @@ export function HeaderBar({
     onBellPress,
     logoSource,
 }: HeaderBarProps) {
+    const { colorScheme } = useColorScheme();
+
     return (
         <View className="bg-background">
-            <View className="flex-row items-center justify-between px-4 py-2 min-h-20">
+            <View className="flex-row items-center justify-between min-h-20">
                 <Pressable
                     onPress={onLogoPress}
                     className="flex-row items-center"
@@ -33,10 +37,7 @@ export function HeaderBar({
                     accessibilityRole="button"
                     accessibilityLabel="Notifications"
                 >
-                    <TabBarIcon
-                        name="notifications"
-                        color="hsl(215.4 16.3% 46.9%)"
-                    />
+                    <Icon color={NAV_THEME[colorScheme].primary} name="Bell" />
                 </Pressable>
             </View>
         </View>

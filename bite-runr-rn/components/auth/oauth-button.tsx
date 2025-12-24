@@ -14,9 +14,9 @@ import { supabase } from "@/lib/supabase";
 import { createSessionFromUrl, redirectTo } from "@/lib/auth-helpers";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { TabBarIcon } from "@/components/layout/tabbar-icon";
 import { findUserByEmail, createUserProfile } from "@/api/profile/profile";
 import { splitName } from "@/lib/auth-helpers";
+import { Ionicons } from "@expo/vector-icons";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -160,7 +160,11 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
                 )}
             </Animated.View>
 
-            <TabBarIcon name={iconName} color={NAV_THEME[colorScheme].text} />
+            <Ionicons
+                size={24}
+                name={iconName}
+                color={NAV_THEME[colorScheme].text}
+            />
 
             <Text className={"text-foreground font-semibold text-lg"}>
                 {label ?? defaultLabel}
