@@ -1,25 +1,22 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { useColorScheme } from "@/lib/use-color-scheme";
-import { TabBarIcon } from "@/components/layout/tabbar-icon";
 import { NAV_THEME } from "@/lib/constants";
+import Icon from "@/components/common/icon";
+import Avatar from "@/components/profile/avatar";
 
 export default function TabLayout() {
-    const { isDarkColorScheme } = useColorScheme();
+    const { colorScheme } = useColorScheme();
 
     return (
         <Tabs
             screenOptions={{
                 headerShown: false,
-                tabBarActiveTintColor: "hsl(32 100% 50%)",
+                tabBarActiveTintColor: NAV_THEME[colorScheme].primary,
                 tabBarInactiveTintColor: "hsl(0 0% 50%)",
                 tabBarStyle: {
-                    backgroundColor: isDarkColorScheme
-                        ? NAV_THEME.dark.background
-                        : NAV_THEME.light.background,
-                    borderTopColor: isDarkColorScheme
-                        ? NAV_THEME.dark.border
-                        : NAV_THEME.light.border,
+                    backgroundColor: NAV_THEME[colorScheme].background,
+                    borderTopColor: NAV_THEME[colorScheme].border,
                 },
             }}
         >
@@ -28,7 +25,7 @@ export default function TabLayout() {
                 options={{
                     title: "Home",
                     tabBarIcon: ({ color }) => (
-                        <TabBarIcon name="home" color={color} />
+                        <Icon size={22} name="House" color={color} />
                     ),
                 }}
             />
@@ -37,17 +34,15 @@ export default function TabLayout() {
                 options={{
                     title: "Groups",
                     tabBarIcon: ({ color }) => (
-                        <TabBarIcon name="bag-sharp" color={color} />
+                        <Icon size={22} name="ShoppingBag" color={color} />
                     ),
                 }}
             />
             <Tabs.Screen
                 name="account"
                 options={{
-                    title: "Account",
-                    tabBarIcon: ({ color }) => (
-                        <TabBarIcon name="person" color={color} />
-                    ),
+                    title: "You",
+                    tabBarIcon: ({ color }) => <Avatar color={color} />,
                 }}
             />
         </Tabs>
