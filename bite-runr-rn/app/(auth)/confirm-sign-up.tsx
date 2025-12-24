@@ -1,6 +1,6 @@
 import { View, Text, Image, Pressable } from "react-native";
 import { Button } from "@/components/common/button";
-import { Redirect, router, Slot, useLocalSearchParams } from "expo-router";
+import { Redirect, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";

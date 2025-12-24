@@ -17,9 +17,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/lib/supabase-auth-context";
 import "../global.css";
 
-const LIGHT_THEME: Theme = { ...DefaultTheme, colors: NAV_THEME.light };
-const DARK_THEME: Theme = { ...DarkTheme, colors: NAV_THEME.dark };
-
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
@@ -31,28 +28,18 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
     const { colorScheme } = useColorScheme();
-
-    React.useEffect(() => {
-        if (Platform.OS === "web" && typeof document !== "undefined") {
-            document.documentElement.classList.add("bg-background");
-            // Toggle dark class based on color scheme
-            if (colorScheme === "dark") {
-                document.documentElement.classList.add("dark");
-            } else {
-                document.documentElement.classList.remove("dark");
-            }
-        }
-    }, [colorScheme]);
+    const theme: Theme = {
+        ...(colorScheme === "dark" ? DarkTheme : DefaultTheme),
+        colors: NAV_THEME[colorScheme],
+    };
 
     return (
         <AuthProvider>
             <QueryClientProvider client={queryClient}>
-                <ThemeProvider
-                    value={colorScheme == "dark" ? DARK_THEME : LIGHT_THEME}
-                >
+                <ThemeProvider value={theme}>
                     <SafeAreaProvider>
-                        <StatusBar style="auto" />
-                        <GestureHandlerRootView style={{ flex: 1 }}>
+                        <StatusBar />
+                        <GestureHandlerRootView>
                             <Stack screenOptions={{ headerShown: false }}>
                                 <Stack.Screen
                                     name="(protected)"
