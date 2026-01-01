@@ -1,0 +1,29 @@
+// .vscode/launch.json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug iOS - Expo",
+            "cwd": "${workspaceFolder}/bite-runr-rn",
+            "type": "reactnative",
+            "request": "launch",
+            "platform": "ios",
+            "sourceMaps": true
+        },
+        {
+            "name": "Debug Android - Expo",
+            "cwd": "${workspaceFolder}/bite-runr-rn",
+            "type": "reactnative",
+            "request": "launch",
+            "platform": "android",
+            "sourceMaps": true
+        },
+        {
+            "name": "Attach to packager - Expo",
+            "cwd": "${workspaceFolder}/bite-runr-rn",
+            "type": "reactnative",
+            "request": "attach",
+            "sourceMaps": true
+        }
+    ]
+}

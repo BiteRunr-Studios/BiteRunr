@@ -1,0 +1,63 @@
+import { UserProfileType } from "@/lib/types";
+import { supabase } from "@/lib/supabase";
+
+export async function fetchCurrentUser(): Promise<UserProfileType | null> {
+    const { data: userData, error: userErr } = await supabase.auth.getUser();
+    if (userErr) throw userErr;
+    const authUser = userData.user;
+    if (!authUser) return null;
+
+    const url = `https://biterunrapi-4bmpv.kinsta.app/users/${encodeURIComponent(
+        authUser.id
+    )}`;
+    const res = await fetch(url, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+    });
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`API ${res.status}: ${text}`);
+    }
+    return (await res.json()) as UserProfileType;
+}
+
+export async function findUserByEmail(
+    email: string
+): Promise<UserProfileType | null> {
+    console.log("test find user by email");
+    const url = `https://biterunrapi-4bmpv.kinsta.app/users/find-user-by-email?email=${encodeURIComponent(
+        email
+    )}`;
+    const response = await fetch(url, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+        },
+        cache: "no-store", // Disable caching to always get fresh data
+    });
+
+    if (!response.ok) return null;
+
+    return (await response.json()) as UserProfileType;
+}
+
+export async function createUserProfile(
+    user: any
+): Promise<UserProfileType | null> {
+    const url = `https://biterunrapi-4bmpv.kinsta.app/users/sso`;
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(user),
+    });
+
+    if (!response.ok) {
+        return null;
+    }
+
+    return (await response.json()) as UserProfileType;
+}
