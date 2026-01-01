@@ -19,7 +19,7 @@ export default function Skeleton({
 }: SkeletonProps) {
     const { colorScheme } = useColorScheme();
     const animatedValue = useRef(new Animated.Value(0.3)).current;
-    const baseColor = NAV_THEME[colorScheme].border;
+    const baseColor = NAV_THEME[colorScheme].muted;
     const backgroundColor = animatedValue.interpolate({
         inputRange: [0, 1],
         outputRange: [hslToHsla(baseColor, 0.3), hslToHsla(baseColor, 1)],

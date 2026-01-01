@@ -30,7 +30,14 @@ export default function RootLayout() {
     const { colorScheme } = useColorScheme();
     const theme: Theme = {
         ...(colorScheme === "dark" ? DarkTheme : DefaultTheme),
-        colors: NAV_THEME[colorScheme],
+        colors: {
+            background: NAV_THEME[colorScheme].background,
+            border: NAV_THEME[colorScheme].border,
+            card: NAV_THEME[colorScheme].card,
+            notification: NAV_THEME[colorScheme].destructive,
+            primary: NAV_THEME[colorScheme].primary,
+            text: NAV_THEME[colorScheme].foreground,
+        },
     };
 
     return (

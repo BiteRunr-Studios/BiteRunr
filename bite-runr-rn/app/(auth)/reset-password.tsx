@@ -134,7 +134,7 @@ export default function ResetPasswordScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 px-6 justify-center">
+        <SafeAreaView className="flex-1 px-4 justify-center">
             <View className="mt-10"></View>
 
             {/* Title */}

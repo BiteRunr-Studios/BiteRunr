@@ -1,110 +1,154 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Text, View, Alert } from "react-native";
-import { PageWithHeader } from "@/components/layout/page-with-header";
-import { supabase } from "@/lib/supabase";
+import React, { useContext } from "react";
+import { Text, FlatList, ScrollView } from "react-native";
 import { ListItem } from "@/components/profile/list-item";
-import { UserProfileType } from "@/lib/types";
-import { findUserByEmail } from "@/api/profile/profile";
 import { AuthContext } from "@/lib/supabase-auth-context";
-import Avatar from "@/components/profile/avatar";
-import { Button } from "@/components/common/button";
+import { router } from "expo-router";
+import { IconName } from "@/components/common/icon";
+import ProfileHeader from "@/components/profile/profile-header";
 
 type Item = {
     key: string;
     title: string;
     subtitle: string;
-    icon: React.ComponentProps<typeof ListItem>["iconName"];
-    href: string;
+    icon: IconName;
+    href?: string;
 };
 
-const items: Item[] = [
-    {
-        key: "personal",
-        title: "Personal Information",
-        subtitle: "View & edit account details",
-        icon: "person",
-        href: "/account/account-info",
-    },
+const profileSettingsItems: Item[] = [
     {
         key: "friends",
         title: "Friends",
         subtitle: "View, make & manage friends",
-        icon: "people",
-        href: "/account/friends",
+        icon: "UsersRound",
+        href: "profile/friends",
     },
     {
         key: "payments",
         title: "Payments",
         subtitle: "View & claim owed amounts",
-        icon: "card",
-        href: "/account/payments",
+        icon: "CreditCard",
+        href: "profile/payments",
     },
+    {
+        key: "wallet",
+        title: "Wallet",
+        subtitle: "View & change payment method",
+        icon: "Wallet",
+        href: "profile/wallet",
+    },
+    {
+        key: "settings",
+        title: "Settings",
+        subtitle: "Set & configure profile preferences",
+        icon: "Settings",
+        href: "profile/settings",
+    },
+];
+
+const settingsItems: Item[] = [
     {
         key: "support",
         title: "Support",
         subtitle: "Report an issue with the app",
-        icon: "headset",
-        href: "/account/support",
+        icon: "Headset",
+        href: "profile/support",
     },
     {
         key: "about",
         title: "About",
         subtitle: "Release notes & about us",
-        icon: "information-circle",
-        href: "/account/about",
+        icon: "Info",
+        href: "profile/about",
+    },
+];
+
+const sessionItems: Item[] = [
+    {
+        key: "logout",
+        title: "Logout",
+        subtitle: "Leave & come back later",
+        icon: "LogOut",
+    },
+    {
+        key: "delete",
+        title: "Delete Profile",
+        subtitle: "Permanently delete profile",
+        icon: "Trash2",
+        href: "profile/delete",
     },
 ];
 
 export default function ProfileScreen() {
-    const { session, signOut } = useContext(AuthContext);
-    const [user, setUser] = useState<UserProfileType | null>(null);
-
-    useEffect(() => {
-        async function getCurrentUser() {
-            const user = await findUserByEmail(session?.user.email!);
-            if (user) setUser(user);
-        }
-        getCurrentUser();
-    }, [session]);
-
-    async function onSignOut() {
-        try {
-            await supabase.auth.stopAutoRefresh();
-            await signOut();
-        } catch (e: any) {
-            Alert.alert("Error", e?.message ?? "Something went wrong.");
-        }
-    }
-
-    const fullName = user?.profile
-        ? [user.profile.first_name, user.profile.last_name]
-              .filter(Boolean)
-              .join(" ")
-        : null;
+    const { userProfile, signOut } = useContext(AuthContext);
 
     return (
-        <PageWithHeader
-            title="You"
-            logoSource={require("@/assets/images/app-logo.png")}
-            onLogoPress={() => Alert.alert("Logo pressed")}
-            onBellPress={() => Alert.alert("Notifications")}
-        >
-            <View className="flex items-center justify-center gap-2">
-                <Avatar size={160} />
-                <Text className="text-2xl text-foreground font-semibold">
-                    {fullName}
-                </Text>
-                <Text className="-mt-3 text-lg text-muted-foreground">
-                    {user?.email}
-                </Text>
-            </View>
-
-            <Button
-                onPress={onSignOut}
-                label="Logout"
-                variant="outline"
-                color="red"
+        <ScrollView className="px-4 pt-2">
+            <ProfileHeader
+                user={userProfile}
+                onPress={() =>
+                    router.push("/(protected)/profile/personal-information")
+                }
             />
-        </PageWithHeader>
+
+            <Text className="ml-1 text-foreground/50 my-3">
+                Profile Settings
+            </Text>
+            <FlatList
+                className="mb-3 bg-[#fdfdfd] dark:bg-[#020202] border border-primary/30 rounded-2xl"
+                data={profileSettingsItems}
+                keyExtractor={(item) => item.key}
+                renderItem={({ item }) => (
+                    <ListItem
+                        iconName={item.icon}
+                        title={item.title}
+                        subtitle={item.subtitle}
+                        onPress={() => router.push(item.href)}
+                        id={item.key}
+                    />
+                )}
+                scrollEnabled={false}
+            />
+
+            <Text className="ml-1 text-foreground/50 my-3">Help & Support</Text>
+            <FlatList
+                className="mb-3 bg-[#fdfdfd] dark:bg-[#020202] border border-primary/30 rounded-2xl"
+                data={settingsItems}
+                keyExtractor={(item) => item.key}
+                renderItem={({ item }) => (
+                    <ListItem
+                        iconName={item.icon}
+                        title={item.title}
+                        subtitle={item.subtitle}
+                        onPress={() => router.push(item.href)}
+                        id={item.key}
+                    />
+                )}
+                scrollEnabled={false}
+            />
+
+            <Text className="ml-1 text-foreground/50 my-3">Session</Text>
+            <FlatList
+                className="mb-6 bg-[#fdfdfd] dark:bg-[#020202] border border-primary/30 rounded-2xl"
+                data={sessionItems}
+                keyExtractor={(item) => item.key}
+                renderItem={({ item }) => (
+                    <ListItem
+                        iconName={item.icon}
+                        title={item.title}
+                        subtitle={item.subtitle}
+                        onPress={() => {
+                            if (item.key == "logout") {
+                                signOut();
+                                return;
+                            }
+
+                            router.push(item.href);
+                        }}
+                        id={item.key}
+                    />
+                )}
+                scrollEnabled={false}
+            />
+        </ScrollView>
     );
 }

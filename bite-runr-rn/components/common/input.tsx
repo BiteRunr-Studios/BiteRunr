@@ -32,10 +32,11 @@ export function Input({
     rightIconColor = NAV_THEME.light.primary,
     onRightIconPress,
     errorMessage = "",
-    className = "flex-row items-center h-[55px] px-4 gap-3 rounded-2xl border transition-all duration-200",
+    className = "flex-row items-center w-full h-[55px] px-4 gap-3 rounded-2xl border transition-all duration-200",
     inputClassName = "text-lg h-full font-regular text-vertical text-foreground focus:outline-none placeholder:text-muted-foreground flex-1",
     autoCorrect = false,
     secureTextEntry = false,
+    editable = true,
     ...textInputProps
 }: InputProps) {
     const { colorScheme } = useColorScheme();
@@ -45,7 +46,7 @@ export function Input({
             <View
                 className={`${className} ${
                     errorMessage ? "border-red-500" : "border-muted"
-                }`}
+                } ${!editable ? "opacity-50 bg-muted" : ""}`}
                 style={{
                     flexDirection: "row",
                     alignItems: "center",
@@ -55,16 +56,18 @@ export function Input({
                     <Icon
                         name={leftIcon}
                         size={19}
-                        color={NAV_THEME[colorScheme].text}
+                        color={NAV_THEME[colorScheme].foreground}
                     />
                 ) : null}
                 <TextInput
+                    focusable={!editable}
                     value={value}
                     onChangeText={onChangeText}
                     placeholder={placeholder}
                     placeholderTextColor="rgba(255,255,255,0.6)"
                     autoCorrect={autoCorrect}
                     secureTextEntry={secureTextEntry}
+                    editable={editable}
                     className={inputClassName}
                     style={{
                         lineHeight: 19,
@@ -77,6 +80,7 @@ export function Input({
                 {rightIcon ? (
                     onRightIconPress ? (
                         <Pressable
+                            disabled={!editable}
                             onPress={onRightIconPress}
                             accessibilityRole="button"
                             accessibilityLabel="Action"

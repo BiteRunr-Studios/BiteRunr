@@ -1,4 +1,3 @@
-// components/OAuthButton.tsx
 import React, {
     useCallback,
     useMemo,
@@ -29,12 +28,12 @@ type OAuthButtonProps = {
     className?: string;
 };
 
-export const OAuthButton: React.FC<OAuthButtonProps> = ({
+export function OAuthButton({
     provider,
     label,
     disabled,
     className,
-}) => {
+}: OAuthButtonProps) {
     const { colorScheme } = useColorScheme();
     const [loading, setLoading] = useState(false);
 
@@ -156,14 +155,14 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
                 }}
             >
                 {loading && (
-                    <Flow color={NAV_THEME[colorScheme].text} size={22} />
+                    <Flow color={NAV_THEME[colorScheme].foreground} size={22} />
                 )}
             </Animated.View>
 
             <Ionicons
                 size={24}
                 name={iconName}
-                color={NAV_THEME[colorScheme].text}
+                color={NAV_THEME[colorScheme].foreground}
             />
 
             <Text className={"text-foreground font-semibold text-lg"}>
@@ -171,4 +170,4 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
             </Text>
         </Pressable>
     );
-};
+}

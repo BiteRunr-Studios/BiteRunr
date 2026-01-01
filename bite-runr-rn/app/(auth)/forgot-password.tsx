@@ -28,7 +28,7 @@ export default function ForgotPasswordScreen() {
     const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
     const [cooldownSeconds, setCooldownSeconds] = useState(0);
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const timerRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (cooldownSeconds > 0) {
@@ -117,7 +117,7 @@ export default function ForgotPasswordScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 px-6 justify-center">
+        <SafeAreaView className="flex-1 px-4 items-start">
             {/* Back Button w/ Icon */}
             <Pressable
                 onPress={() => router.back()}
@@ -126,7 +126,7 @@ export default function ForgotPasswordScreen() {
                 <Icon
                     name="ArrowLeft"
                     size={20}
-                    color={NAV_THEME[colorScheme].text}
+                    color={NAV_THEME[colorScheme].foreground}
                 />
                 <Text className="text-foreground text-lg">Back</Text>
             </Pressable>

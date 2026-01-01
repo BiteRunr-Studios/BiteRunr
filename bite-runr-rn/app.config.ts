@@ -28,6 +28,12 @@ const config: ExpoConfig = {
                 backgroundColor: "#000000",
             },
         },
+        infoPlist: {
+            NSPhotoLibraryUsageDescription:
+                "We need access to your photo library to let you choose a profile picture.",
+            NSPhotoLibraryAddUsageDescription:
+                "We need to save photos to your library (optional).",
+        },
     },
     android: {
         adaptiveIcon: {
@@ -50,6 +56,7 @@ const config: ExpoConfig = {
         edgeToEdgeEnabled: true,
         predictiveBackGestureEnabled: false,
         package: "com.RunrStudios.BiteRunrRN",
+        permissions: ["READ_MEDIA_IMAGES", "READ_EXTERNAL_STORAGE"],
     },
     web: {
         output: "static",

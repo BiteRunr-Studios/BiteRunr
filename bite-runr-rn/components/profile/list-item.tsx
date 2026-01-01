@@ -1,47 +1,63 @@
 import React from "react";
 import { Pressable, View, Text } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-
-type IoniconName = keyof typeof Ionicons.glyphMap;
+import Icon, { IconName } from "@/components/common/icon";
+import { NAV_THEME } from "@/lib/constants";
+import { useColorScheme } from "@/lib/use-color-scheme";
 
 type ListItemProps = {
-    iconName: IoniconName;
-    iconColor?: string;
+    iconName: IconName;
     title: string;
     subtitle: string;
     onPress?: () => void;
-    testID?: string;
+    id?: string;
 };
 
 export const ListItem: React.FC<ListItemProps> = ({
     iconName,
-    iconColor = "#f97316",
     title,
     subtitle,
     onPress,
-    testID,
+    id,
 }) => {
+    const { colorScheme } = useColorScheme();
     return (
         <Pressable
-            testID={testID}
-            className="flex-row items-center justify-between rounded-xl px-4 py-3 border border-black dark:border-muted-foreground"
-            android_ripple={{ color: "#2a2a2d" }}
+            id={id}
+            className="flex-row items-center justify-between py-5 px-4"
             onPress={onPress}
         >
-            <View className="flex-row items-center">
-                <View className="w-10 h-10 rounded-2xl bg-[#402500] items-center justify-center mr-3">
-                    <Ionicons name={iconName} size={20} color={iconColor} />
+            <View className="flex-1 flex-row items-center gap-3 justify-center">
+                <View className="w-10 h-10 rounded-xl bg-primary/30 items-center justify-center">
+                    <Icon
+                        name={iconName}
+                        size={20}
+                        color={NAV_THEME[colorScheme].primary}
+                    />
                 </View>
-                <View>
-                    <Text className="text-foreground text-base font-semibold">
+                <View className="flex-1 items-start justify-center gap-1">
+                    <Text
+                        className="leading-none text-foreground text-lg font-semibold"
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                    >
                         {title}
                     </Text>
-                    <Text className="text-muted-foreground text-sm">
+                    <Text
+                        className="leading-none text-muted-foreground/60"
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                    >
                         {subtitle}
                     </Text>
                 </View>
             </View>
-            <Ionicons name="chevron-forward" size={18} color="#8e8e93" />
+            <View className="flex-0 bg-muted rounded-full p-0.5">
+                <Icon
+                    name="ChevronRight"
+                    size={16}
+                    color={NAV_THEME[colorScheme].mutedForeground}
+                />
+            </View>
         </Pressable>
     );
 };

@@ -16,11 +16,14 @@ export type FormState = {
     email?: FieldState;
     password?: FieldState;
     confirmPassword?: FieldState;
+    newPassword?: FieldState;
+    confirmNewPassword?: FieldState;
 };
 
 export function createFormHandlers(
     form: FormState,
-    setForm: React.Dispatch<React.SetStateAction<FormState>>
+    setForm: React.Dispatch<React.SetStateAction<FormState>>,
+    setHasChanged?: React.Dispatch<React.SetStateAction<boolean>>
 ) {
     function onChange<K extends keyof FormState>(key: K, value: string) {
         setForm((prev) => {
@@ -33,6 +36,15 @@ export function createFormHandlers(
                     ? validateField(key, value, prev)
                     : prev[key]!.error,
             };
+
+            if (form && setHasChanged) {
+                const hasChanged = Object.keys(next).some((k) => {
+                    const formKey = k as keyof FormState;
+                    return next[formKey]?.value !== form[formKey]?.value;
+                });
+                setHasChanged(hasChanged);
+            }
+
             return next;
         });
     }
@@ -63,7 +75,8 @@ export function validateField(
 ): string | null {
     const field = form[key];
     if (!field) return null;
-    if (!value.trim()) return `${field.label} is required`;
+    if (key !== "newPassword" && key !== "confirmNewPassword" && !value.trim())
+        return `${field.label} is required`;
     if (key === "email" && !validateEmail(value)) return "Email is invalid";
     if (key === "confirmPassword" && form["password"]!.value !== field.value)
         return "Confirm password does not match password";
