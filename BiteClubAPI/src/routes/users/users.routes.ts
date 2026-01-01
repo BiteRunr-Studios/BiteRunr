@@ -6,7 +6,12 @@ import {
 } from "stoker/openapi/helpers";
 import * as HttpStatusCodes from "stoker/http-status-codes";
 import { z } from "zod";
-import { baseUserSchema, selectUserSchema } from "@/db/schema/users";
+import {
+    baseUserSchema,
+    insertUserSchema,
+    patchUserSchema,
+    selectUserSchema,
+} from "@/db/schema/users";
 
 import {
     insertAuthUserSchema,
@@ -269,31 +274,23 @@ export const patch = createRoute({
     middleware: [authMiddleware] as const,
     request: {
         params: IdUUIDParamsSchema,
-        body: jsonContentRequired(patchAuthUserSchema, "Update a user"),
+        body: jsonContentRequired(insertUserSchema, "Update user profile"),
     },
     responses: {
+        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
+            [
+                createErrorSchema(insertUserSchema),
+                createErrorSchema(IdUUIDParamsSchema),
+            ],
+            "Validation error(s)"
+        ),
         [HttpStatusCodes.OK]: jsonContent(
-            selectAuthUserSchema,
-            "Update a user"
+            insertUserSchema,
+            "User profile updated"
         ),
         [HttpStatusCodes.NOT_FOUND]: jsonContent(
             notFoundSchema,
             "User not found"
-        ),
-        [HttpStatusCodes.BAD_REQUEST]: jsonContent(
-            createErrorSchema(patchAuthUserSchema),
-            "Error occured while updating user email"
-        ),
-        [HttpStatusCodes.UNAUTHORIZED]: jsonContent(
-            createErrorSchema(patchAuthUserSchema),
-            "User currently unauthorized to update email"
-        ),
-        [HttpStatusCodes.UNPROCESSABLE_ENTITY]: jsonContentOneOf(
-            [
-                createErrorSchema(patchAuthUserSchema),
-                createErrorSchema(IdUUIDParamsSchema),
-            ],
-            "Validation error(s)"
         ),
     },
 });
