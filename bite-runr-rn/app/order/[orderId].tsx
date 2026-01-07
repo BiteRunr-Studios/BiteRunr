@@ -6,7 +6,7 @@ import {
     TouchableOpacity,
     Animated,
 } from "react-native";
-import { PageWithHeader } from "@/components/page-with-header";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { AwaitingOrdersDTO, OrderStatus } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
@@ -110,28 +110,29 @@ export default function SpecificOrder() {
 
     if (isPending) {
         return (
-            <PageWithHeader title="Order Details">
+            <>
                 <View className="items-center justify-center flex-1 px-6">
                     <Text className="text-foreground">Loading...</Text>
                 </View>
-            </PageWithHeader>
+            </>
         );
     }
 
     if (isError) {
         return (
-            <PageWithHeader title="Order Details">
+            <>
                 <View className="items-center justify-center flex-1 px-6">
                     <Text className="text-destructive">
                         Error: {error?.message ?? "Failed to load order"}
                     </Text>
                 </View>
-            </PageWithHeader>
+            </>
         );
     }
 
     return (
-        <PageWithHeader title="Order Details">
+        <>
+            <SafeAreaView edges={["top"]}></SafeAreaView>
             <View className="flex-1 px-6">
                 <View className="flex-col w-full gap-2 p-4 mb-2 border rounded-2xl border-muted bg-card">
                     <View className="flex-row justify-between">
@@ -230,6 +231,6 @@ export default function SpecificOrder() {
                     </View>
                 </View>
             </View>
-        </PageWithHeader>
+        </>
     );
 }
