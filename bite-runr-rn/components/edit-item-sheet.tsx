@@ -7,65 +7,60 @@ import {
     TouchableOpacity,
 } from "react-native";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
-import { addItemToOrderUser } from "@/api/order/addItemToOrderUser";
+import { updateOrderItem } from "@/api/order/updateOrderItem";
 
-interface AddItemSheetProps {
+interface EditItemSheetProps {
     visible: boolean;
     onClose: () => void;
-    onAdd: () => void;
+    onUpdate: () => void;
     itemName: string;
     locationName: string;
-    itemId: string;
-    orderUserId: string;
-    orderLocationId: string;
+    orderItemId: string;
+    initialQuantity: number;
+    initialComments: string | null;
 }
 
-export function AddItemSheet({
+export function EditItemSheet({
     visible,
     onClose,
-    onAdd,
+    onUpdate,
     itemName,
     locationName,
-    itemId,
-    orderUserId,
-    orderLocationId,
-}: AddItemSheetProps) {
+    orderItemId,
+    initialQuantity,
+    initialComments,
+}: EditItemSheetProps) {
     const actionSheetRef = useRef<ActionSheetRef>(null);
-    const [quantity, setQuantity] = useState(1);
-    const [comments, setComments] = useState("");
+    const [quantity, setQuantity] = useState(initialQuantity);
+    const [comments, setComments] = useState(initialComments || "");
 
     useEffect(() => {
         if (visible) {
+            // Reset to initial values when sheet opens
+            setQuantity(initialQuantity);
+            setComments(initialComments || "");
             actionSheetRef.current?.show();
         } else {
             actionSheetRef.current?.hide();
         }
-    }, [visible]);
+    }, [visible, initialQuantity, initialComments]);
 
-    const handleAdd = async () => {
+    const handleUpdate = async () => {
         try {
-            await addItemToOrderUser({
-                order_location_id: orderLocationId,
-                order_user_id: orderUserId,
-                item_id: itemId,
+            await updateOrderItem({
+                order_item_id: orderItemId,
                 comments: comments || null,
                 quantity,
             });
-            // Reset state
-            setQuantity(1);
-            setComments("");
             actionSheetRef.current?.hide();
-            onAdd();
+            onUpdate();
         } catch (error) {
-            console.error("Error adding item:", error);
+            console.error("Error updating item:", error);
             // Optionally show an error message to the user
         }
     };
 
     const handleClose = () => {
-        // Reset state
-        setQuantity(1);
-        setComments("");
         onClose();
     };
 
@@ -154,10 +149,10 @@ export function AddItemSheet({
                 <View className="px-4 py-3 border-t border-border bg-background">
                     <View className="flex-col gap-2">
                         <TouchableOpacity
-                            onPress={handleAdd}
+                            onPress={handleUpdate}
                             className="w-full py-3 rounded-lg bg-primary">
                             <Text className="text-base font-semibold text-center text-white">
-                                Add to Order
+                                Update Item
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity

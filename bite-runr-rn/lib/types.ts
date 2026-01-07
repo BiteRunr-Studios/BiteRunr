@@ -213,9 +213,9 @@ export interface SelectItemsOrderStatus {
 }
 
 export interface SelectItemsAddExistingItemDTO {
-    orderLocationId: string;
-    orderUserId: string;
-    itemId: string;
+    order_location_id: string;
+    order_user_id: string;
+    item_id: string;
     comments: string | null;
     quantity: number;
 }

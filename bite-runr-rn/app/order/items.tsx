@@ -2,13 +2,14 @@ import { getOrderLocationsForItemSelection } from "@/api/order/orderLocations";
 import { getOrderUserLocationItems } from "@/api/order/orderUserLocationItems";
 import { setOrderUserStatus } from "@/api/order/setOrderUserStatus";
 import { searchItems } from "@/api/order/searchItems";
+import { deleteOrderItem } from "@/api/order/deleteOrderItem";
 import {
     SelectItemsOrderLocationDTO,
     SelectItemsOrderUserLocationItemDTO,
     SelectItemsItemDTO,
 } from "@/lib/types";
 import { useIsFocused } from "@react-navigation/native";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -18,21 +19,34 @@ import {
     Pressable,
     TextInput,
     TouchableOpacity,
+    Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AddItemSheet } from "@/components/add-item-sheet";
+import { EditItemSheet } from "@/components/edit-item-sheet";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import Animated, {
+    useAnimatedStyle,
+    interpolate,
+    SharedValue,
+    Extrapolation,
+} from "react-native-reanimated";
 
 export default function SelectItems() {
     const { orderUserId, orderId } = useLocalSearchParams();
+    const queryClient = useQueryClient();
     const [selectedLocation, setSelectedLocation] =
         useState<SelectItemsOrderLocationDTO | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-    const [sheetVisible, setSheetVisible] = useState(false);
+    const [addSheetVisible, setAddSheetVisible] = useState(false);
+    const [editSheetVisible, setEditSheetVisible] = useState(false);
     const [selectedItem, setSelectedItem] = useState<{
         name: string;
         id: string;
     } | null>(null);
+    const [selectedOrderUserLocationItem, setSelectedOrderUserLocationItem] =
+        useState<SelectItemsOrderUserLocationItemDTO | null>(null);
     const isFocused = useIsFocused();
 
     useEffect(() => {
@@ -112,26 +126,157 @@ export default function SelectItems() {
         router.dismiss();
     }
 
-    function handleItemPress(item: { name: string; id: string }) {
+    function handleSearchItemPress(item: { name: string; id: string }) {
         setSelectedItem(item);
-        setSheetVisible(true);
+        setAddSheetVisible(true);
     }
 
-    function handleAddItem(quantity: number, comments: string) {
-        // TODO: Implement API call to add item to order
-        console.log("Adding item:", {
-            item: selectedItem,
-            quantity,
-            comments,
-            orderUserId,
-            locationId: selectedLocation?.location_id,
+    function handleExistingItemPress(
+        orderUserLocationItem: SelectItemsOrderUserLocationItemDTO
+    ) {
+        setSelectedOrderUserLocationItem(orderUserLocationItem);
+        setEditSheetVisible(true);
+    }
+
+    function handleAddItem() {
+        // Refetch the order user location items after adding
+        queryClient.invalidateQueries({
+            queryKey: [
+                "orderUserLocationItems",
+                orderUserId,
+                selectedLocation?.location_id,
+            ],
         });
-        setSheetVisible(false);
+        setSearchQuery("");
+        setAddSheetVisible(false);
     }
 
-    function handleCloseSheet() {
-        setSheetVisible(false);
+    function handleUpdateItem() {
+        // Refetch the order user location items after updating
+        queryClient.invalidateQueries({
+            queryKey: [
+                "orderUserLocationItems",
+                orderUserId,
+                selectedLocation?.location_id,
+            ],
+        });
+        setEditSheetVisible(false);
+    }
+
+    function handleCloseAddSheet() {
+        setAddSheetVisible(false);
         setSelectedItem(null);
+    }
+
+    function handleCloseEditSheet() {
+        setEditSheetVisible(false);
+        setSelectedOrderUserLocationItem(null);
+    }
+
+    async function handleDeleteItem(orderItemId: string) {
+        try {
+            await deleteOrderItem(orderItemId);
+            // Refetch the order user location items after deleting
+            queryClient.invalidateQueries({
+                queryKey: [
+                    "orderUserLocationItems",
+                    orderUserId,
+                    selectedLocation?.location_id,
+                ],
+            });
+        } catch (error) {
+            console.error("Error deleting item:", error);
+        }
+    }
+
+    function confirmDelete(
+        orderItemId: string,
+        itemName: string,
+        swipeable: any
+    ) {
+        Alert.alert(
+            "Delete Item",
+            `Are you sure you want to delete ${itemName}?`,
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel",
+                    onPress: () => swipeable.close(),
+                },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: () => {
+                        handleDeleteItem(orderItemId);
+                        swipeable.close();
+                    },
+                },
+            ]
+        );
+    }
+
+    function RightAction({
+        progress,
+        orderItemId,
+        itemName,
+        swipeable,
+    }: {
+        progress: SharedValue<number>;
+        orderItemId: string;
+        itemName: string;
+        swipeable: any;
+    }) {
+        const animatedStyle = useAnimatedStyle(() => {
+            const scale = interpolate(
+                progress.value,
+                [0, 1],
+                [0.5, 1],
+                Extrapolation.CLAMP
+            );
+            const opacity = interpolate(
+                progress.value,
+                [0, 0.5, 1],
+                [0, 0.5, 1],
+                Extrapolation.CLAMP
+            );
+
+            return {
+                transform: [{ scale }],
+                opacity,
+            };
+        });
+
+        return (
+            <View className="justify-center pl-4">
+                <Animated.View style={animatedStyle}>
+                    <TouchableOpacity
+                        onPress={() =>
+                            confirmDelete(orderItemId, itemName, swipeable)
+                        }
+                        className="items-center justify-center w-16 h-16 bg-red-500 rounded-full"
+                        activeOpacity={0.7}>
+                        <Text className="text-2xl font-bold text-white">
+                            ×
+                        </Text>
+                    </TouchableOpacity>
+                </Animated.View>
+            </View>
+        );
+    }
+
+    function renderRightActions(orderItemId: string, itemName: string) {
+        return (
+            progress: SharedValue<number>,
+            _drag: SharedValue<number>,
+            swipeable: any
+        ) => (
+            <RightAction
+                progress={progress}
+                orderItemId={orderItemId}
+                itemName={itemName}
+                swipeable={swipeable}
+            />
+        );
     }
 
     return (
@@ -203,7 +348,7 @@ export default function SelectItems() {
                                     <Pressable
                                         key={idx}
                                         onPress={() =>
-                                            handleItemPress({
+                                            handleSearchItemPress({
                                                 name: item.name,
                                                 id: item.id,
                                             })
@@ -234,41 +379,46 @@ export default function SelectItems() {
                             // Order user location items
                             orderUserLocationItems?.map(
                                 (orderUserLocationItem, idx) => (
-                                    <Pressable
+                                    <Swipeable
                                         key={idx}
-                                        onPress={() =>
-                                            handleItemPress({
-                                                name: orderUserLocationItem.item
-                                                    .name,
-                                                id: orderUserLocationItem.item
-                                                    .id,
-                                            })
-                                        }
-                                        className="flex-row justify-between w-full gap-2 p-4 border rounded-2xl border-muted bg-card active:opacity-70">
-                                        <View className="flex-row justify-between gap-2">
-                                            <View className="flex items-center justify-center w-12 h-12 rounded-full bg-muted-foreground"></View>
-                                            <View className="flex-col">
+                                        renderRightActions={renderRightActions(
+                                            orderUserLocationItem.id,
+                                            orderUserLocationItem.item.name
+                                        )}>
+                                        <Pressable
+                                            onPress={() =>
+                                                handleExistingItemPress(
+                                                    orderUserLocationItem
+                                                )
+                                            }
+                                            className="flex-row justify-between w-full gap-2 p-4 border rounded-2xl border-muted bg-card active:opacity-70">
+                                            <View className="flex-row justify-between gap-2">
+                                                <View className="flex items-center justify-center w-12 h-12 rounded-full bg-muted-foreground"></View>
+                                                <View className="flex-col">
+                                                    <Text className="text-lg">
+                                                        {
+                                                            orderUserLocationItem
+                                                                .item.name
+                                                        }
+                                                    </Text>
+                                                    <Text className="text-muted-foreground">
+                                                        From{" "}
+                                                        {
+                                                            selectedLocation?.location_name
+                                                        }
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                            <View className="flex-row items-center justify-center gap-2">
                                                 <Text className="text-lg">
+                                                    x
                                                     {
-                                                        orderUserLocationItem
-                                                            .item.name
-                                                    }
-                                                </Text>
-                                                <Text className="text-muted-foreground">
-                                                    From{" "}
-                                                    {
-                                                        selectedLocation?.location_name
+                                                        orderUserLocationItem.quantity
                                                     }
                                                 </Text>
                                             </View>
-                                        </View>
-                                        <View className="flex-row items-center justify-center gap-2">
-                                            <Text className="text-lg">
-                                                x
-                                                {orderUserLocationItem.quantity}
-                                            </Text>
-                                        </View>
-                                    </Pressable>
+                                        </Pressable>
+                                    </Swipeable>
                                 )
                             )
                         )}
@@ -291,11 +441,28 @@ export default function SelectItems() {
 
             {/* Add Item Sheet */}
             <AddItemSheet
-                visible={sheetVisible}
-                onClose={handleCloseSheet}
+                visible={addSheetVisible}
+                onClose={handleCloseAddSheet}
                 onAdd={handleAddItem}
                 itemName={selectedItem?.name || ""}
                 locationName={selectedLocation?.location_name || ""}
+                itemId={selectedItem?.id || ""}
+                orderUserId={orderUserId as string}
+                orderLocationId={selectedLocation?.order_location_id || ""}
+            />
+
+            {/* Edit Item Sheet */}
+            <EditItemSheet
+                visible={editSheetVisible}
+                onClose={handleCloseEditSheet}
+                onUpdate={handleUpdateItem}
+                itemName={selectedOrderUserLocationItem?.item.name || ""}
+                locationName={selectedLocation?.location_name || ""}
+                orderItemId={selectedOrderUserLocationItem?.id || ""}
+                initialQuantity={selectedOrderUserLocationItem?.quantity || 1}
+                initialComments={
+                    selectedOrderUserLocationItem?.comments || null
+                }
             />
         </>
     );
