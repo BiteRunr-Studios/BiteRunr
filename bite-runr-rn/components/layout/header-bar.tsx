@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Image, Pressable } from "react-native";
-import { TabBarIcon } from "@/components/tabbar-icon";
+import { TabBarIcon } from "@/components/layout/tabbar-icon";
 import { router } from "expo-router";
 
 export function HeaderBar() {

@@ -1,7 +1,7 @@
 // HomeTab.tsx
 import React from "react";
 import { Alert, ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { PageWithHeader } from "@/components/page-with-header";
+import { PageWithHeader } from "@/components/layout/page-with-header";
 import { useQuery } from "@tanstack/react-query";
 import { getUserOrdersDetails } from "@/api/home/orders";
 import { UserOrderDetails } from "@/lib/types";

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
     ScrollView,
     Text,
@@ -9,9 +9,9 @@ import {
     FlatList,
     RefreshControl,
 } from "react-native";
-import { PageWithHeader } from "@/components/page-with-header";
+import { PageWithHeader } from "@/components/layout/page-with-header";
 import { supabase } from "@/lib/supabase";
-import { ListItem } from "@/components/list-item";
+import { ListItem } from "@/components/profile/list-item";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Animated, {
     useSharedValue,
@@ -22,6 +22,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { UserProfileType } from "@/lib/types";
 import { fetchCurrentUser } from "@/api/profile/profile";
+import { AuthContext } from "@/lib/supabase-auth-context";
 
 type Item = {
     key: string;
@@ -71,6 +72,7 @@ const items: Item[] = [
 
 export default function AccountTab() {
     const queryClient = useQueryClient();
+    const { signOut } = useContext(AuthContext);
 
     const {
         data: user,
@@ -88,11 +90,7 @@ export default function AccountTab() {
     async function onSignOut() {
         try {
             await supabase.auth.stopAutoRefresh();
-            const { error } = await supabase.auth.signOut();
-            if (error) {
-                Alert.alert("Sign out failed", error.message);
-                return;
-            }
+            await signOut();
             queryClient.removeQueries({ queryKey: ["current-user"] });
         } catch (e: any) {
             Alert.alert("Error", e?.message ?? "Something went wrong.");
@@ -169,7 +167,7 @@ export default function AccountTab() {
                 {!isLoading && !error && !user && (
                     <View className="p-3 mb-4 rounded-lg bg-muted">
                         <Text className="text-foreground">
-                            You’re not signed in. Please sign in to see your
+                            You're not signed in. Please sign in to see your
                             profile.
                         </Text>
                     </View>

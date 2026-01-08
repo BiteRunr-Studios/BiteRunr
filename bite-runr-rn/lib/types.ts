@@ -30,6 +30,7 @@ export interface UserOrderDetails {
 export type UserProfileType = {
     id: string;
     email: string;
+    email_confirmed_at: Date | null;
     profile: {
         first_name: string | null;
         last_name: string | null;

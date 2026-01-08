@@ -8,7 +8,7 @@ import {
     TextInput,
     View,
 } from "react-native";
-import { PageWithHeader } from "@/components/page-with-header";
+import { PageWithHeader } from "@/components/layout/page-with-header";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
 import { Feather } from "@expo/vector-icons";
 import { OrderCard } from "@/components/order-card";

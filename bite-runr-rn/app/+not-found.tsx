@@ -2,7 +2,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import { Link, Stack } from "expo-router";
-import { Container } from "@/components/container";
+import { Container } from "@/components/common/container";
 
 export default function NotFoundScreen() {
     return (
