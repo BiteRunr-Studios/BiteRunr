@@ -276,52 +276,48 @@ export default function SpecificOrder() {
                         ))}
                     </View>
                 </ScrollView>
+            </View>
 
-                {/* Footer */}
-                <View className="pt-4 pb-10 border-t border-muted bg-background">
-                    <Text className="mb-3 text-sm text-center text-muted-foreground">
-                        {data?.count > 0
-                            ? `${data?.count} Items Added`
-                            : "No Items Added"}
-                    </Text>
-                    <View className="flex-col gap-2">
-                        <TouchableOpacity
-                            className="w-full py-3 rounded-lg bg-primary"
-                            onPress={handleSelectItems}>
-                            <Text className="text-sm font-semibold text-center text-foreground">
-                                Select Items
-                            </Text>
-                        </TouchableOpacity>
-                        {isCreator && (
-                            <Animated.View
-                                style={{
-                                    opacity: buttonOpacity,
-                                    transform: [
-                                        { translateY: buttonTranslateY },
-                                    ],
-                                }}>
-                                <TouchableOpacity
-                                    className={`w-full py-3 border rounded-lg ${
+            {/* Footer */}
+            <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
+                <Text className="mb-3 text-sm text-center text-muted-foreground">
+                    {data?.count > 0
+                        ? `${data?.count} Items Added`
+                        : "No Items Added"}
+                </Text>
+                <View className="flex-col gap-2">
+                    <TouchableOpacity
+                        className="w-full py-3 rounded-lg bg-primary"
+                        onPress={handleSelectItems}>
+                        <Text className="text-sm font-semibold text-center text-foreground">
+                            Select Items
+                        </Text>
+                    </TouchableOpacity>
+                    {isCreator && (
+                        <Animated.View
+                            style={{
+                                opacity: buttonOpacity,
+                                transform: [{ translateY: buttonTranslateY }],
+                            }}>
+                            <TouchableOpacity
+                                className={`w-full py-3 border rounded-lg ${
+                                    isButtonDisabled
+                                        ? "border-muted bg-muted"
+                                        : "border-primary bg-primary/10"
+                                }`}
+                                onPress={() => console.log("Start Run pressed")}
+                                disabled={isButtonDisabled}>
+                                <Text
+                                    className={`text-sm font-semibold text-center ${
                                         isButtonDisabled
-                                            ? "border-muted bg-muted"
-                                            : "border-primary bg-primary/10"
-                                    }`}
-                                    onPress={() =>
-                                        console.log("Start Run pressed")
-                                    }
-                                    disabled={isButtonDisabled}>
-                                    <Text
-                                        className={`text-sm font-semibold text-center ${
-                                            isButtonDisabled
-                                                ? "text-muted-foreground"
-                                                : "text-primary"
-                                        }`}>
-                                        {buttonText}
-                                    </Text>
-                                </TouchableOpacity>
-                            </Animated.View>
-                        )}
-                    </View>
+                                            ? "text-muted-foreground"
+                                            : "text-primary"
+                                    }`}>
+                                    {buttonText}
+                                </Text>
+                            </TouchableOpacity>
+                        </Animated.View>
+                    )}
                 </View>
             </View>
         </>

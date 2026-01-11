@@ -11,7 +11,7 @@ import {
 import { useIsFocused } from "@react-navigation/native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
     View,
     Text,
@@ -262,20 +262,23 @@ export default function SelectItems() {
         );
     }
 
-    function renderRightActions(orderItemId: string, itemName: string) {
-        return (
-            progress: SharedValue<number>,
-            _drag: SharedValue<number>,
-            swipeable: any
-        ) => (
-            <RightAction
-                progress={progress}
-                orderItemId={orderItemId}
-                itemName={itemName}
-                swipeable={swipeable}
-            />
-        );
-    }
+    const renderRightActions = useCallback(
+        (orderItemId: string, itemName: string) => {
+            return (
+                progress: SharedValue<number>,
+                _drag: SharedValue<number>,
+                swipeable: any
+            ) => (
+                <RightAction
+                    progress={progress}
+                    orderItemId={orderItemId}
+                    itemName={itemName}
+                    swipeable={swipeable}
+                />
+            );
+        },
+        []
+    );
 
     return (
         <>
