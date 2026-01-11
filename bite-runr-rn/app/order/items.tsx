@@ -255,9 +255,7 @@ export default function SelectItems() {
                         }
                         className="items-center justify-center w-16 h-16 bg-red-500 rounded-full"
                         activeOpacity={0.7}>
-                        <Text className="text-2xl font-bold text-white">
-                            ×
-                        </Text>
+                        <Text className="text-2xl font-bold text-white">×</Text>
                     </TouchableOpacity>
                 </Animated.View>
             </View>
@@ -357,7 +355,7 @@ export default function SelectItems() {
                                         <View className="flex-row justify-between gap-2">
                                             <View className="flex items-center justify-center w-12 h-12 rounded-full bg-muted-foreground"></View>
                                             <View className="flex-col">
-                                                <Text className="text-lg">
+                                                <Text className="text-lg text-white">
                                                     {item.name}
                                                 </Text>
                                                 <Text className="text-muted-foreground">
@@ -395,7 +393,7 @@ export default function SelectItems() {
                                             <View className="flex-row justify-between gap-2">
                                                 <View className="flex items-center justify-center w-12 h-12 rounded-full bg-muted-foreground"></View>
                                                 <View className="flex-col">
-                                                    <Text className="text-lg">
+                                                    <Text className="text-lg text-white">
                                                         {
                                                             orderUserLocationItem
                                                                 .item.name
@@ -410,7 +408,7 @@ export default function SelectItems() {
                                                 </View>
                                             </View>
                                             <View className="flex-row items-center justify-center gap-2">
-                                                <Text className="text-lg">
+                                                <Text className="text-lg text-white">
                                                     x
                                                     {
                                                         orderUserLocationItem.quantity

@@ -1,30 +1,26 @@
 import { useState, useEffect } from "react";
 import {
     ActivityIndicator,
-    Alert,
     Pressable,
     ScrollView,
     Text,
-    TextInput,
     View,
 } from "react-native";
 import { PageWithHeader } from "@/components/layout/page-with-header";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
-import { Feather } from "@expo/vector-icons";
 import { OrderCard } from "@/components/order-card";
-import { NAV_THEME } from "@/lib/constants";
-import { useColorScheme } from "@/lib/use-color-scheme";
 import { Order, OrderStatus } from "@/lib/types";
 import { getOrders } from "@/api/groups/orders";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { supabase } from "@/lib/supabase";
 import { useIsFocused } from "@react-navigation/native";
+import { Input } from "@/components/common/input";
 
 export default function GroupsTab() {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [userId, setUserId] = useState<string | null>(null);
-    const { isDarkColorScheme } = useColorScheme();
+    const [searchQuery, setSearchQuery] = useState("");
     const isFocused = useIsFocused();
 
     useEffect(() => {
@@ -43,13 +39,37 @@ export default function GroupsTab() {
     const filteredOrders = data?.filter((order) => {
         if (!userId) return false;
 
-        if (selectedIndex === 0) {
-            // "Created by me" - show only orders where user is the creator
-            return order.creator_id === userId;
-        } else {
-            // "Invited to" - show only orders where user is NOT the creator
-            return order.creator_id !== userId;
+        // Filter by creator (Created by me vs Invited to)
+        const matchesCreator =
+            selectedIndex === 0
+                ? order.creator_id === userId
+                : order.creator_id !== userId;
+
+        if (!matchesCreator) return false;
+
+        // Filter by search query
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            const orderName = order.name?.toLowerCase() || "";
+            const orderComments = order.comments?.toLowerCase() || "";
+            const creatorFirstName =
+                order.creator?.profile?.first_name?.toLowerCase() || "";
+            const creatorLastName =
+                order.creator?.profile?.last_name?.toLowerCase() || "";
+            const creatorFullName =
+                `${creatorFirstName} ${creatorLastName}`.trim();
+
+            const matchesSearch =
+                orderName.includes(query) ||
+                orderComments.includes(query) ||
+                creatorFirstName.includes(query) ||
+                creatorLastName.includes(query) ||
+                creatorFullName.includes(query);
+
+            return matchesSearch;
         }
+
+        return true;
     });
 
     return (
@@ -67,34 +87,26 @@ export default function GroupsTab() {
                             );
                         }}
                     />
-                    <View className="flex-row items-center px-4 my-4 border rounded-2xl border-muted">
-                        <Feather
-                            name="search"
-                            size={24}
-                            color={
-                                isDarkColorScheme
-                                    ? NAV_THEME.dark.foreground
-                                    : NAV_THEME.light.foreground
-                            }
-                        />
-                        <TextInput
-                            autoCorrect={false}
+
+                    <View className="mt-4 mb-2">
+                        <Input
+                            value={searchQuery}
                             placeholder="Search"
-                            className="flex-1 px-2 py-4 text-foreground"
+                            leftIcon="Search"
+                            rightIcon="CirclePlus"
+                            onRightIconPress={() =>
+                                router.push("/order/create")
+                            }
+                            autoCapitalize="none"
+                            returnKeyType="search"
+                            errorMessage=""
+                            onChangeText={setSearchQuery}
+                            onBlur={() => null}
                         />
-                        <Link href={`/order/create`} asChild>
-                            <Pressable>
-                                <Feather
-                                    name="plus-circle"
-                                    size={24}
-                                    color={"hsl(32 100% 50%)"}
-                                />
-                            </Pressable>
-                        </Link>
                     </View>
 
                     <ScrollView
-                        className="flex-1"
+                        className="flex-1 pt-2"
                         contentContainerStyle={{ gap: 16, paddingBottom: 16 }}
                         showsVerticalScrollIndicator={false}>
                         {isPending && (

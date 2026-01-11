@@ -1,11 +1,13 @@
 import { NAV_THEME } from "@/lib/constants";
 import { Order, OrderStatus } from "@/lib/types";
-import { Feather } from "@expo/vector-icons";
+import { useColorScheme } from "@/lib/use-color-scheme";
 import { View, Text, Image } from "react-native";
+import Icon from "./common/icon";
 
 export function OrderCard(order: Order) {
     const isCancelled = order.status === OrderStatus.Cancelled;
     const isActive = order.status === OrderStatus.Active;
+    const { colorScheme } = useColorScheme();
 
     return (
         <View className="flex-col w-full gap-2 p-4 border rounded-2xl border-muted bg-card">
@@ -24,15 +26,15 @@ export function OrderCard(order: Order) {
                         }
                     )}`}
                 </Text>
-                <Feather
-                    name="arrow-right-circle"
+                <Icon
+                    name="CircleArrowRight"
                     size={24}
                     color={`${
                         isCancelled
-                            ? "#ef4444"
+                            ? NAV_THEME[colorScheme].notification
                             : isActive
-                            ? "hsl(32 100% 50%)"
-                            : "hsl(217.2 32.6% 17.5%)"
+                            ? NAV_THEME[colorScheme].primary
+                            : NAV_THEME[colorScheme].border
                     }`}
                 />
             </View>
@@ -43,17 +45,17 @@ export function OrderCard(order: Order) {
                             ? "bg-red-500/20"
                             : isActive
                             ? "bg-primary/20"
-                            : "bg-muted"
+                            : NAV_THEME[colorScheme].border
                     }`}>
-                    <Feather
-                        name="package"
+                    <Icon
+                        name="Package"
                         size={24}
                         color={
                             isCancelled
-                                ? "#ef4444"
+                                ? NAV_THEME[colorScheme].notification
                                 : isActive
-                                ? NAV_THEME.dark.primary
-                                : NAV_THEME.dark.muted
+                                ? NAV_THEME[colorScheme].primary
+                                : NAV_THEME[colorScheme].text
                         }
                     />
                 </View>
@@ -73,15 +75,20 @@ export function OrderCard(order: Order) {
                             key={idx}
                             style={{
                                 marginLeft: idx > 0 ? -18 : 0,
+                                backgroundColor:
+                                    NAV_THEME[colorScheme].background,
                             }}
-                            className="border-2 rounded-full border-card bg-background">
+                            className="border-2 rounded-full border-card">
                             <Image
-                                style={{ width: 36, height: 36 }}
+                                style={{
+                                    width: 36,
+                                    height: 36,
+                                }}
                                 className="rounded-full"
                                 source={{
                                     uri:
                                         order_user.user?.avatar_url ??
-                                        `https://ui-avatars.com/api/?name=${order_user.user?.first_name}+${order_user.user?.last_name}`,
+                                        `https://ui-avatars.com/api/?name=${order_user.user?.first_name}+${order_user.user?.last_name}&background=FFE7CC&color=000`,
                                 }}
                             />
                         </View>
