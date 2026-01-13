@@ -1,38 +1,27 @@
 import React from "react";
 import { View, Image, Pressable } from "react-native";
 import { TabBarIcon } from "@/components/layout/tabbar-icon";
+import { router } from "expo-router";
 
-type HeaderBarProps = {
-    onLogoPress?: () => void;
-    onBellPress?: () => void;
-    logoSource: any;
-};
-
-export function HeaderBar({
-    onLogoPress,
-    onBellPress,
-    logoSource,
-}: HeaderBarProps) {
+export function HeaderBar() {
     return (
         <View className="bg-background">
             <View className="flex-row items-center justify-between px-4 py-2 min-h-20">
                 <Pressable
-                    onPress={onLogoPress}
-                    className="flex-row items-center"
-                >
+                    onPress={() => router.dismissTo("/")}
+                    className="flex-row items-center">
                     <Image
-                        source={logoSource}
+                        source={require("@/assets/images/app-logo.png")}
                         style={{ width: 80, height: 80 }}
                         resizeMode="contain"
                     />
                 </Pressable>
 
                 <Pressable
-                    onPress={onBellPress}
+                    onPress={() => router.navigate("/notifications")}
                     className="px-3 py-2 rounded-lg active:opacity-80"
                     accessibilityRole="button"
-                    accessibilityLabel="Notifications"
-                >
+                    accessibilityLabel="Notifications">
                     <TabBarIcon
                         name="notifications"
                         color="hsl(215.4 16.3% 46.9%)"

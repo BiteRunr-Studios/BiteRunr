@@ -108,8 +108,7 @@ export default function AccountTab() {
             title="Account"
             logoSource={require("@/assets/images/app-logo.png")}
             onLogoPress={() => Alert.alert("Logo pressed")}
-            onBellPress={() => Alert.alert("Notifications")}
-        >
+            onBellPress={() => Alert.alert("Notifications")}>
             <ScrollView
                 className="flex-1"
                 contentContainerStyle={{ padding: 12 }}
@@ -118,8 +117,7 @@ export default function AccountTab() {
                         refreshing={isRefetching}
                         onRefresh={() => refetch()}
                     />
-                }
-            >
+                }>
                 {(isLoading || isRefetching) && (
                     <>
                         <ProfileSkeleton />
@@ -127,14 +125,13 @@ export default function AccountTab() {
                 )}
 
                 {!isLoading && error && (
-                    <View className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 mb-4">
+                    <View className="p-3 mb-4 border rounded-lg bg-destructive/10 border-destructive/30">
                         <Text className="text-destructive">
                             {error.message}
                         </Text>
                         <Pressable
                             onPress={() => refetch()}
-                            className="mt-2 rounded-lg px-3 py-2 border border-black/10 dark:border-white/20 active:opacity-80"
-                        >
+                            className="px-3 py-2 mt-2 border rounded-lg border-black/10 dark:border-white/20 active:opacity-80">
                             <Text className="text-foreground">Try again</Text>
                         </Pressable>
                     </View>
@@ -149,8 +146,8 @@ export default function AccountTab() {
                                 resizeMode="cover"
                             />
                         ) : (
-                            <View className="w-24 h-24 rounded-full bg-muted items-center justify-center">
-                                <Text className="text-muted-foreground font-semibold">
+                            <View className="items-center justify-center w-24 h-24 rounded-full bg-muted">
+                                <Text className="font-semibold text-muted-foreground">
                                     {(fullName || user.email || "U")
                                         .slice(0, 2)
                                         .toUpperCase()}
@@ -158,19 +155,19 @@ export default function AccountTab() {
                             </View>
                         )}
 
-                        <Text className="text-lg font-semibold text-foreground mt-3 text-center">
+                        <Text className="mt-3 text-lg font-semibold text-center text-foreground">
                             {fullName || "Unknown User"}
                         </Text>
-                        <Text className="text-muted-foreground text-center">
+                        <Text className="text-center text-muted-foreground">
                             {user.email}
                         </Text>
                     </View>
                 )}
 
                 {!isLoading && !error && !user && (
-                    <View className="p-3 rounded-lg bg-muted mb-4">
+                    <View className="p-3 mb-4 rounded-lg bg-muted">
                         <Text className="text-foreground">
-                            You’re not signed in. Please sign in to see your
+                            You're not signed in. Please sign in to see your
                             profile.
                         </Text>
                     </View>
@@ -200,9 +197,8 @@ export default function AccountTab() {
                 <View className="mt-2">
                     <Pressable
                         onPress={onSignOut}
-                        className="rounded-lg px-4 py-3 border border-destructive active:opacity-80"
-                    >
-                        <Text className="text-destructive font-semibold text-center">
+                        className="px-4 py-3 border rounded-lg border-destructive active:opacity-80">
+                        <Text className="font-semibold text-center text-destructive">
                             Sign out
                         </Text>
                     </Pressable>
@@ -248,8 +244,7 @@ function ProfileSkeleton() {
         return (
             <View
                 className={`bg-muted ${rounded} overflow-hidden ${className}`}
-                style={{ width, height }}
-            >
+                style={{ width, height }}>
                 {/* Shimmer overlay band */}
                 <Animated.View
                     style={[

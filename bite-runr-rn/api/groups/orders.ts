@@ -1,16 +1,14 @@
 import { supabase } from "@/lib/supabase";
-import { UserOrderDetails } from "@/lib/types";
+import { Order } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
 
-export type OrdersUserDetailsResponse = UserOrderDetails[];
+export type OrdersResponse = Order[];
 
-export async function getUserOrdersDetails(): Promise<OrdersUserDetailsResponse> {
+export async function getOrders(): Promise<Order[]> {
     const { data, error } = await supabase.auth.getUser();
     if (error) throw new Error(`Auth error: ${error.message}`);
     const userId = data.user?.id;
     if (!userId) throw new Error("No authenticated user");
 
-    return apiFetch<OrdersUserDetailsResponse>(
-        `/orders/user/${userId}/details`
-    );
+    return apiFetch<OrdersResponse>(`/orders/user/${userId}`);
 }
