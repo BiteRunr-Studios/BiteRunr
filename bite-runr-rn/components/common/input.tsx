@@ -86,6 +86,7 @@ export function Input({
                                 name={rightIcon}
                                 size={24}
                                 color={rightIconColor}
+                                pointerEvents="none"
                             />
                         </Pressable>
                     ) : (

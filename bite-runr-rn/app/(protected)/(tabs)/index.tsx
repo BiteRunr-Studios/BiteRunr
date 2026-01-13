@@ -13,12 +13,7 @@ export default function HomeTab() {
     });
 
     return (
-        <PageWithHeader
-            title="Account"
-            logoSource={require("@/assets/images/app-logo.png")}
-            onLogoPress={() => Alert.alert("Logo pressed")}
-            onBellPress={() => Alert.alert("Notifications")}
-        >
+        <PageWithHeader title="Account">
             <ScrollView className="flex-1 px-6 py-0">
                 {isPending && (
                     <View className="mt-6">
@@ -74,8 +69,8 @@ export default function HomeTab() {
                                         {order_users.map((ou) => (
                                             <View key={ou.id} className="py-1">
                                                 <Text className="text-foreground">
-                                                    {ou.user.first_name}{" "}
-                                                    {ou.user.last_name} —{" "}
+                                                    {ou.user?.first_name}{" "}
+                                                    {ou.user?.last_name} —{" "}
                                                     {ou.status}
                                                 </Text>
                                                 <Text className="text-muted-foreground">
