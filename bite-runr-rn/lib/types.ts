@@ -50,3 +50,9 @@ export type UserProfileType = {
         updated_at: string;
     } | null;
 };
+
+export type ProfileType = {
+    first_name: string;
+    last_name: string;
+    avatar_url: string | null;
+};

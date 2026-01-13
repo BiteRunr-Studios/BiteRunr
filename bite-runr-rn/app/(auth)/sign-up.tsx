@@ -3,97 +3,55 @@ import { OAuthButton } from "@/components/auth/oauth-button";
 import { Button } from "@/components/common/button";
 import Icon from "@/components/common/icon";
 import { Input } from "@/components/common/input";
-import {
-    createFormHandlers,
-    FormState,
-    validateField,
-} from "@/lib/auth-helpers";
 import { NAV_THEME } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import { AuthContext } from "@/lib/supabase-auth-context";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { router } from "expo-router";
 import { useContext, useState } from "react";
+import { useForm } from "react-hook-form";
 import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+type SignupFormData = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+};
 
 export default function SignUpScreen() {
     const { setPendingAuth } = useContext(AuthContext);
     const { colorScheme } = useColorScheme();
-    const [form, setForm] = useState<FormState>({
-        firstName: {
-            label: "First name",
-            value: "",
-            error: null,
-            touched: false,
-        },
-        lastName: {
-            label: "Last name",
-            value: "",
-            error: null,
-            touched: false,
-        },
-        email: { label: "Email", value: "", error: null, touched: false },
-        password: {
-            label: "Password",
-            value: "",
-            error: null,
-            touched: false,
-            show: false,
+    const { control, handleSubmit, setError } = useForm<SignupFormData>({
+        defaultValues: {
+            firstName: "",
+            lastName: "",
+            email: "",
+            password: "",
         },
     });
+    const [showPassword, setShowPassword] = useState(false);
 
-    const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
 
-    async function onSignUpWithEmail() {
+    async function onSignUpWithEmail(data: SignupFormData) {
+        if (loading) return;
+
         setLoading(true);
 
-        // Validate all fields
-        setForm((prev) => {
-            const next: FormState = { ...prev };
-            (Object.keys(prev) as Array<keyof FormState>).forEach((k) => {
-                const field = prev[k];
-                if (field) {
-                    // Add this check
-                    next[k] = {
-                        ...field,
-                        touched: true,
-                        error: validateField(k, field.value, prev),
-                    };
-                }
-            });
-            return next;
-        });
-
-        // Check for validation errors
-        const formHasErrors = (
-            Object.keys(form) as Array<keyof FormState>
-        ).some((k) => validateField(k, form[k]!.value, form) !== null);
-
-        if (formHasErrors) {
-            setLoading(false);
-            return;
-        }
-
         // find user by email (make api endpoint)
-        const existingUser = await findUserByEmail(
-            form.email!.value.toLowerCase()
-        );
+        const existingUser = await findUserByEmail(data.email.toLowerCase());
 
         // if user exists, then look if email is confirmed
         if (existingUser) {
             //  if email is confirmed, then return as an error message on the email field, "This email is already taken"
             if (existingUser.email_confirmed_at) {
                 // Set error for a specific field (e.g., email)
-                setForm((prev) => ({
-                    ...prev,
-                    email: {
-                        ...prev.email!,
-                        touched: true,
-                        error: "This email is already taken",
-                    },
-                }));
+                setError("email", {
+                    type: "manual",
+                    message: "This email is already taken",
+                });
                 setLoading(false);
                 return;
             }
@@ -104,8 +62,8 @@ export default function SignUpScreen() {
                 email: existingUser.email,
             });
             setPendingAuth({
-                email: form.email!.value,
-                password: form.password!.value,
+                email: data.email,
+                password: data.password,
             });
             router.push("/(auth)/confirm-sign-up");
             setLoading(false);
@@ -114,42 +72,36 @@ export default function SignUpScreen() {
 
         // if user does not exist
         //  call the supabase auth sdk signUp method
-        const { data, error } = await supabase.auth.signUp({
-            email: form.email!.value,
-            password: form.password!.value,
-        });
+        const { data: authData, error: authError } = await supabase.auth.signUp(
+            {
+                email: data.email,
+                password: data.password,
+            }
+        );
 
         // if errors, then return errorMessage
-        if (error) {
-            setForm((prev) => ({
-                ...prev,
-                email: {
-                    ...prev.email!,
-                    touched: true,
-                    error: error.message,
-                },
-            }));
+        if (authError) {
+            setError("email", {
+                type: "manual",
+                message: authError.message,
+            });
             setLoading(false);
             return;
         }
 
         // if no errors, then create the userProfile
         const newUserProfile = {
-            id: data.user!.id,
-            first_name: form.firstName!.value,
-            last_name: form.lastName!.value,
+            id: authData.user!.id,
+            first_name: data.firstName,
+            last_name: data.lastName,
             avatar_url: null,
         };
         const newlyCreatedUserProfile = await createUserProfile(newUserProfile);
         if (!newlyCreatedUserProfile) {
-            setForm((prev) => ({
-                ...prev,
-                email: {
-                    ...prev.email!,
-                    touched: true,
-                    error: "An error occured while creating profile",
-                },
-            }));
+            setError("email", {
+                type: "manual",
+                message: "An error occured while creating profile",
+            });
             setLoading(false);
             return;
         }
@@ -162,15 +114,15 @@ export default function SignUpScreen() {
 
         //  show the user the confirm-sign-up.tsx page
         setPendingAuth({
-            email: form.email!.value,
-            password: form.password!.value,
+            email: data.email,
+            password: data.password,
         });
         router.push("/(auth)/confirm-sign-up");
         setLoading(false);
     }
 
     return (
-        <SafeAreaView className="flex-1 px-4 justify-center transition-all duration-200">
+        <SafeAreaView className="flex-1 px-6 justify-center transition-all duration-200">
             <View className="mt-10"></View>
             {/* Title */}
             <Text className="text-3xl font-bold text-foreground mb-2">
@@ -186,28 +138,26 @@ export default function SignUpScreen() {
                 {/* First Name Field */}
                 <View className="flex-1">
                     <Input
-                        value={form.firstName!.value}
+                        name="firstName"
+                        control={control}
                         placeholder="First Name"
                         leftIcon="IdCard"
                         autoCapitalize="words"
                         returnKeyType="next"
-                        errorMessage={form.firstName!.error}
-                        onChangeText={(v) => onChange("firstName", v)}
-                        onBlur={() => onBlur("firstName")}
+                        rules={{ required: "First name is required" }}
                     />
                 </View>
 
                 {/* Last Name Field */}
                 <View className="flex-1">
                     <Input
-                        value={form.lastName!.value}
+                        name="lastName"
+                        control={control}
                         placeholder="Last Name"
                         leftIcon="IdCard"
                         autoCapitalize="words"
                         returnKeyType="next"
-                        errorMessage={form.lastName!.error}
-                        onChangeText={(v) => onChange("lastName", v)}
-                        onBlur={() => onBlur("lastName")}
+                        rules={{ required: "Last name is required" }}
                     />
                 </View>
             </View>
@@ -216,39 +166,42 @@ export default function SignUpScreen() {
 
             {/* Email Field*/}
             <Input
-                value={form.email!.value}
+                name="email"
+                control={control}
                 placeholder="Email"
                 leftIcon="Mail"
                 autoCapitalize="none"
                 returnKeyType="next"
-                errorMessage={form.email!.error}
-                onChangeText={(v) => onChange("email", v)}
-                onBlur={() => onBlur("email")}
+                rules={{
+                    required: "Email is required",
+                    pattern: {
+                        value: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[A-Za-z]{2,}$/,
+                        message: "Email is invalid",
+                    },
+                }}
             />
 
             <View className="mt-2" />
 
             {/* Password Field*/}
             <Input
-                value={form.password!.value}
+                name="password"
+                control={control}
                 placeholder="Password"
                 leftIcon="Lock"
-                rightIcon={form.password!.show ? "EyeClosed" : "Eye"}
-                onRightIconPress={() => {
-                    setForm((prev) => ({
-                        ...prev,
-                        password: {
-                            ...prev.password!,
-                            show: !prev.password!.show,
-                        },
-                    }));
-                }}
+                rightIcon={showPassword ? "EyeClosed" : "Eye"}
+                onRightIconPress={() => setShowPassword((prev) => !prev)}
                 autoCapitalize="none"
                 returnKeyType="default"
-                errorMessage={form.password!.error}
-                onChangeText={(v) => onChange("password", v)}
-                onBlur={() => onBlur("password")}
-                secureTextEntry={!form.password!.show}
+                secureTextEntry={!showPassword}
+                rules={{
+                    required: "Password is required",
+                    pattern: {
+                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                        message:
+                            "Password must have uppercase, lowercase, and number",
+                    },
+                }}
             />
 
             <View className="mt-4" />
@@ -258,7 +211,7 @@ export default function SignUpScreen() {
                 variant="full"
                 label="Continue"
                 loading={loading}
-                onPress={onSignUpWithEmail}
+                onPress={handleSubmit(onSignUpWithEmail)}
             />
 
             <View className="mt-8" />

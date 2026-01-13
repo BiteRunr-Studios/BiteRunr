@@ -2,30 +2,30 @@ import { findUserByEmail } from "@/api/profile/profile";
 import { Button } from "@/components/common/button";
 import Icon from "@/components/common/icon";
 import { Input } from "@/components/common/input";
-import {
-    createFormHandlers,
-    FormState,
-    validateField,
-} from "@/lib/auth-helpers";
 import { NAV_THEME } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState, useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
 import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+type ForgotPasswordFormData = {
+    email: string;
+};
+
 export default function ForgotPasswordScreen() {
     const { colorScheme } = useColorScheme();
-    const { email } = useLocalSearchParams<{
-        email: string;
-    }>();
 
-    const [form, setForm] = useState<FormState>({
-        email: { label: "Email", value: email, error: null, touched: false },
-    });
+    const { email } = useLocalSearchParams<ForgotPasswordFormData>();
+    const { control, handleSubmit, getValues, setError } =
+        useForm<ForgotPasswordFormData>({
+            defaultValues: {
+                email: email,
+            },
+        });
 
-    const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
     const [cooldownSeconds, setCooldownSeconds] = useState(0);
     const timerRef = useRef<number | null>(null);
@@ -44,69 +44,34 @@ export default function ForgotPasswordScreen() {
         };
     }, [cooldownSeconds]);
 
-    async function sendResetPasswordLink() {
+    async function sendResetPasswordLink(data: ForgotPasswordFormData) {
+        if (loading) return;
+
         setLoading(true);
 
-        // Validate all fields
-        setForm((prev) => {
-            const next: FormState = { ...prev };
-            (Object.keys(prev) as Array<keyof FormState>).forEach((k) => {
-                const field = prev[k];
-                if (field) {
-                    // Add this check
-                    next[k] = {
-                        ...field,
-                        touched: true,
-                        error: validateField(k, field.value, prev),
-                    };
-                }
-            });
-            return next;
-        });
-
-        // Check for validation errors
-        const formHasErrors = (
-            Object.keys(form) as Array<keyof FormState>
-        ).some((k) => validateField(k, form[k]!.value, form) !== null);
-
-        if (formHasErrors) {
-            setLoading(false);
-            return;
-        }
-
-        const existingUser = await findUserByEmail(
-            form.email!.value.toLowerCase()
-        );
+        const existingUser = await findUserByEmail(data.email.toLowerCase());
 
         if (!existingUser) {
-            setForm((prev) => ({
-                ...prev,
-                email: {
-                    ...prev.email!,
-                    touched: true,
-                    error: "An account does not exist for this email",
-                },
-            }));
+            setError("email", {
+                type: "manual",
+                message: "An account does not exist for this email",
+            });
             setLoading(false);
             return;
         }
 
         const { error } = await supabase.auth.resetPasswordForEmail(
-            form.email!.value.toLowerCase(),
+            data.email.toLowerCase(),
             {
                 redirectTo: "biterunr://(auth)reset-password",
             }
         );
 
         if (error) {
-            setForm((prev) => ({
-                ...prev,
-                email: {
-                    ...prev.email!,
-                    touched: true,
-                    error: error.message,
-                },
-            }));
+            setError("email", {
+                type: "manual",
+                message: error.message,
+            });
             setLoading(false);
             return;
         }
@@ -117,7 +82,7 @@ export default function ForgotPasswordScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 px-4 items-start">
+        <SafeAreaView className="flex-1 px-6 items-start">
             {/* Back Button w/ Icon */}
             <Pressable
                 onPress={() => router.back()}
@@ -146,14 +111,19 @@ export default function ForgotPasswordScreen() {
 
             {/* Email Field*/}
             <Input
-                value={form.email!.value}
+                name="email"
+                control={control}
                 placeholder="Email"
                 leftIcon="Mail"
                 autoCapitalize="none"
-                errorMessage={form.email!.error}
                 returnKeyType="next"
-                onChangeText={(v) => onChange("email", v)}
-                onBlur={() => onBlur("email")}
+                rules={{
+                    required: "Email is required",
+                    pattern: {
+                        value: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[A-Za-z]{2,}$/,
+                        message: "Email is invalid",
+                    },
+                }}
             />
 
             <View className="flex-1" />
@@ -171,7 +141,7 @@ export default function ForgotPasswordScreen() {
                 }
                 loading={loading}
                 disabled={cooldownSeconds > 0}
-                onPress={sendResetPasswordLink}
+                onPress={handleSubmit(sendResetPasswordLink)}
             />
         </SafeAreaView>
     );

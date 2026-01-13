@@ -27,16 +27,19 @@ export default function ProfileLayout() {
                         <Icon
                             name="ArrowLeft"
                             size={20}
-                            color={NAV_THEME[colorScheme].foreground}
+                            color={NAV_THEME[colorScheme].mutedForeground}
                         />
                     </Pressable>
                 ),
             }}
         >
             <Stack.Screen
-                name="personal-information"
+                name="edit"
                 options={{
-                    title: "Personal Information",
+                    title: "Edit Profile",
+                    headerTitleStyle: {
+                        color: NAV_THEME[colorScheme].mutedForeground,
+                    },
                 }}
             />
         </Stack>

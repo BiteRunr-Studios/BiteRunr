@@ -1,5 +1,6 @@
-import { UserProfileType } from "@/lib/types";
+import { ProfileType, UserProfileType } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
 
 export async function fetchCurrentUser(): Promise<UserProfileType | null> {
     const { data: userData, error: userErr } = await supabase.auth.getUser();
@@ -52,6 +53,27 @@ export async function createUserProfile(
             "Content-Type": "application/json",
         },
         body: JSON.stringify(user),
+    });
+
+    if (!response.ok) {
+        return null;
+    }
+
+    return (await response.json()) as UserProfileType;
+}
+
+export async function updateUserProfile(
+    profile: ProfileType,
+    id: string
+): Promise<UserProfileType | null> {
+    const url = `https://biterunrapi-4bmpv.kinsta.app/users/${id}`;
+    const response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(profile),
     });
 
     if (!response.ok) {

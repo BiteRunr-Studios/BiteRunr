@@ -2,11 +2,6 @@ import { OAuthButton } from "@/components/auth/oauth-button";
 import { Button } from "@/components/common/button";
 import Icon from "@/components/common/icon";
 import { Input } from "@/components/common/input";
-import {
-    createFormHandlers,
-    FormState,
-    validateField,
-} from "@/lib/auth-helpers";
 import { NAV_THEME } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import { AuthContext } from "@/lib/supabase-auth-context";
@@ -15,94 +10,69 @@ import { router } from "expo-router";
 import { useContext, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useForm } from "react-hook-form";
+
+type SigninFormData = {
+    email: string;
+    password: string;
+};
 
 export default function SignInScreen() {
     const { setPendingAuth } = useContext(AuthContext);
     const { colorScheme } = useColorScheme();
-    const [form, setForm] = useState<FormState>({
-        email: { label: "Email", value: "", error: null, touched: false },
-        password: {
-            label: "Password",
-            value: "",
-            error: null,
-            touched: false,
-            show: false,
-        },
-    });
+    const { control, handleSubmit, getValues, setError } =
+        useForm<SigninFormData>({
+            defaultValues: {
+                email: "",
+                password: "",
+            },
+        });
+    const [showPassword, setShowPassword] = useState(false);
 
-    const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
 
-    async function onSignInWithEmail() {
+    async function onSignInWithEmail(data: SigninFormData) {
+        if (loading) return;
+
         setLoading(true);
 
-        // Validate all fields
-        setForm((prev) => {
-            const next: FormState = { ...prev };
-            (Object.keys(prev) as Array<keyof FormState>).forEach((k) => {
-                const field = prev[k];
-                if (field) {
-                    // Add this check
-                    next[k] = {
-                        ...field,
-                        touched: true,
-                        error: validateField(k, field.value, prev),
-                    };
-                }
+        const { data: authData, error: authError } =
+            await supabase.auth.signInWithPassword({
+                email: data.email,
+                password: data.password,
             });
-            return next;
-        });
 
-        // Check for validation errors
-        const formHasErrors = (
-            Object.keys(form) as Array<keyof FormState>
-        ).some((k) => validateField(k, form[k]!.value, form) !== null);
-
-        if (formHasErrors) {
-            setLoading(false);
-            return;
-        }
-
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: form.email!.value,
-            password: form.password!.value,
-        });
-
-        if (error) {
-            const errorMessage = error.message.toLowerCase();
+        if (authError) {
+            const errorMessage = authError.message.toLowerCase();
 
             if (errorMessage.includes("email not confirmed")) {
                 supabase.auth.resend({
                     type: "signup",
-                    email: form.email!.value,
+                    email: data.email,
                 });
                 setPendingAuth({
-                    email: form.email!.value,
-                    password: form.password!.value,
+                    email: data.email,
+                    password: data.password,
                 });
                 router.push("/(auth)/confirm-sign-up");
             } else {
-                setForm((prev) => ({
-                    ...prev,
-                    email: {
-                        ...prev.email!,
-                        touched: true,
-                        error: errorMessage,
-                    },
-                }));
+                setError("email", {
+                    type: "manual",
+                    message: errorMessage,
+                });
             }
 
             setLoading(false);
             return;
         }
 
-        if (data?.session) router.replace("/(protected)/(tabs)");
+        if (authData?.session) router.replace("/(protected)/(tabs)");
 
         setLoading(false);
     }
 
     return (
-        <SafeAreaView className="flex-1 px-4 justify-center transition-all duration-200">
+        <SafeAreaView className="flex-1 px-6 justify-center transition-all duration-200">
             <View className="mt-10"></View>
             {/* Title */}
             <Text className="text-3xl font-bold text-foreground mb-2">
@@ -116,14 +86,19 @@ export default function SignInScreen() {
 
             {/* Email Field*/}
             <Input
-                value={form.email!.value}
+                name="email"
+                control={control}
                 placeholder="Email"
                 leftIcon="Mail"
                 autoCapitalize="none"
                 returnKeyType="next"
-                errorMessage={form.email!.error}
-                onChangeText={(v) => onChange("email", v)}
-                onBlur={() => onBlur("email")}
+                rules={{
+                    required: "Email is required",
+                    pattern: {
+                        value: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[A-Za-z]{2,}$/,
+                        message: "Email is invalid",
+                    },
+                }}
             />
 
             <View className="mt-2" />
@@ -134,7 +109,7 @@ export default function SignInScreen() {
                     router.push({
                         pathname: "/forgot-password",
                         params: {
-                            email: form.email!.value.toLocaleLowerCase(),
+                            email: getValues("email"),
                         },
                     })
                 }
@@ -146,25 +121,16 @@ export default function SignInScreen() {
 
             {/* Password Field*/}
             <Input
-                value={form.password!.value}
+                name="password"
+                control={control}
                 placeholder="Password"
                 leftIcon="Lock"
-                rightIcon={form.password!.show ? "EyeClosed" : "Eye"}
-                onRightIconPress={() => {
-                    setForm((prev) => ({
-                        ...prev,
-                        password: {
-                            ...prev.password!,
-                            show: !prev.password!.show,
-                        },
-                    }));
-                }}
+                rightIcon={showPassword ? "EyeClosed" : "Eye"}
+                onRightIconPress={() => setShowPassword((prev) => !prev)}
                 autoCapitalize="none"
                 returnKeyType="default"
-                errorMessage={form.password!.error}
-                onChangeText={(v) => onChange("password", v)}
-                onBlur={() => onBlur("password")}
-                secureTextEntry={!form.password!.show}
+                secureTextEntry={!showPassword}
+                rules={{ required: "Password is required" }}
             />
 
             <View className="mt-4" />
@@ -174,7 +140,7 @@ export default function SignInScreen() {
                 variant="full"
                 label="Continue"
                 loading={loading}
-                onPress={onSignInWithEmail}
+                onPress={handleSubmit(onSignInWithEmail)}
             />
 
             <View className="mt-8" />

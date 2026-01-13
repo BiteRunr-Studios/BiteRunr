@@ -17,7 +17,7 @@ export function Header({ onLogoPress, onBellPress, logoSource }: HeaderProps) {
     return (
         <SafeAreaView
             edges={["top"]}
-            className="bg-background px-4 flex-row items-center justify-between min-h-20"
+            className="bg-background px-6 flex-row items-center justify-between min-h-20"
         >
             <Pressable onPress={onLogoPress} className="flex-row items-center">
                 <Image

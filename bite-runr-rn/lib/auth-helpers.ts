@@ -1,93 +1,23 @@
 import * as QueryParams from "expo-auth-session/build/QueryParams";
 import { makeRedirectUri } from "expo-auth-session";
 import { supabase } from "@/lib/supabase";
+import { UserIdentity } from "@supabase/supabase-js";
 
-export type FieldState = {
-    label: string;
-    value: string;
-    error: string | null;
-    touched: boolean;
-    show?: boolean;
-};
+export const PROVIDER_LOGOS = {
+    google: "logo-google",
+    github: "logo-github",
+} as const;
 
-export type FormState = {
-    firstName?: FieldState;
-    lastName?: FieldState;
-    email?: FieldState;
-    password?: FieldState;
-    confirmPassword?: FieldState;
-    newPassword?: FieldState;
-    confirmNewPassword?: FieldState;
-};
-
-export function createFormHandlers(
-    form: FormState,
-    setForm: React.Dispatch<React.SetStateAction<FormState>>,
-    setHasChanged?: React.Dispatch<React.SetStateAction<boolean>>
-) {
-    function onChange<K extends keyof FormState>(key: K, value: string) {
-        setForm((prev) => {
-            const next = { ...prev };
-            next[key] = {
-                ...prev[key]!,
-                value,
-                // only validate once touched
-                error: prev[key]!.touched
-                    ? validateField(key, value, prev)
-                    : prev[key]!.error,
-            };
-
-            if (form && setHasChanged) {
-                const hasChanged = Object.keys(next).some((k) => {
-                    const formKey = k as keyof FormState;
-                    return next[formKey]?.value !== form[formKey]?.value;
-                });
-                setHasChanged(hasChanged);
-            }
-
-            return next;
-        });
-    }
-
-    function onBlur<K extends keyof FormState>(key: K) {
-        // mark touched and validate
-        setForm((prev) => {
-            const next = { ...prev };
-            const field = prev[key];
-            if (field) {
-                next[key] = {
-                    ...field,
-                    touched: true,
-                    error: validateField(key, field.value, prev),
-                };
-            }
-            return next;
-        });
-    }
-
-    return { onChange, onBlur };
+export function getProviderLogos(identities: UserIdentity[]): string[] {
+    return identities
+        .filter((id) => id.provider in PROVIDER_LOGOS)
+        .map(
+            (id) => PROVIDER_LOGOS[id.provider as keyof typeof PROVIDER_LOGOS]
+        );
 }
 
-export function validateField(
-    key: keyof FormState,
-    value: string,
-    form: FormState
-): string | null {
-    const field = form[key];
-    if (!field) return null;
-    if (key !== "newPassword" && key !== "confirmNewPassword" && !value.trim())
-        return `${field.label} is required`;
-    if (key === "email" && !validateEmail(value)) return "Email is invalid";
-    if (key === "confirmPassword" && form["password"]!.value !== field.value)
-        return "Confirm password does not match password";
-    return null;
-}
-
-export function validateEmail(email: string) {
-    const emailRegex =
-        /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[A-Za-z]{2,}$/;
-
-    return emailRegex.test(email.trim());
+export function hasOAuthProvider(identities: UserIdentity[]): boolean {
+    return getProviderLogos(identities).length > 0;
 }
 
 export const redirectTo = makeRedirectUri({

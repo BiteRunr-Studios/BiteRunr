@@ -90,7 +90,7 @@ export default function ConfirmSignUpScreen() {
     };
 
     return (
-        <SafeAreaView className="flex-1 px-4 justify-center items-center">
+        <SafeAreaView className="flex-1 px-6 justify-center items-center">
             <View className="flex-1" />
             {/* Email Icon */}
             <Image

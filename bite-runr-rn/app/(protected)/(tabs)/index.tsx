@@ -11,7 +11,7 @@ export default function HomeTab() {
     });
 
     return (
-        <ScrollView className="flex-1 px-6 py-0">
+        <ScrollView className="flex-1 px-6">
             {isPending && (
                 <View className="mt-6">
                     <ActivityIndicator />

@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Text, FlatList, ScrollView } from "react-native";
+import { Text, FlatList, ScrollView, View } from "react-native";
 import { ListItem } from "@/components/profile/list-item";
 import { AuthContext } from "@/lib/supabase-auth-context";
 import { router } from "expo-router";
@@ -9,7 +9,6 @@ import ProfileHeader from "@/components/profile/profile-header";
 type Item = {
     key: string;
     title: string;
-    subtitle: string;
     icon: IconName;
     href?: string;
 };
@@ -18,30 +17,20 @@ const profileSettingsItems: Item[] = [
     {
         key: "friends",
         title: "Friends",
-        subtitle: "View, make & manage friends",
         icon: "UsersRound",
         href: "profile/friends",
     },
     {
-        key: "payments",
-        title: "Payments",
-        subtitle: "View & claim owed amounts",
+        key: "wallet-&-payments",
+        title: "Wallet & Payments",
         icon: "CreditCard",
-        href: "profile/payments",
+        href: "profile/wallet-and-payments",
     },
     {
-        key: "wallet",
-        title: "Wallet",
-        subtitle: "View & change payment method",
-        icon: "Wallet",
-        href: "profile/wallet",
-    },
-    {
-        key: "settings",
-        title: "Settings",
-        subtitle: "Set & configure profile preferences",
-        icon: "Settings",
-        href: "profile/settings",
+        key: "login-&-security",
+        title: "Passwords & Security",
+        icon: "Shield",
+        href: "profile/passwords-and-security",
     },
 ];
 
@@ -49,32 +38,19 @@ const settingsItems: Item[] = [
     {
         key: "support",
         title: "Support",
-        subtitle: "Report an issue with the app",
         icon: "Headset",
         href: "profile/support",
     },
     {
         key: "about",
         title: "About",
-        subtitle: "Release notes & about us",
         icon: "Info",
         href: "profile/about",
     },
-];
-
-const sessionItems: Item[] = [
     {
         key: "logout",
         title: "Logout",
-        subtitle: "Leave & come back later",
-        icon: "LogOut",
-    },
-    {
-        key: "delete",
-        title: "Delete Profile",
-        subtitle: "Permanently delete profile",
-        icon: "Trash2",
-        href: "profile/delete",
+        icon: "DoorOpen",
     },
 ];
 
@@ -82,26 +58,19 @@ export default function ProfileScreen() {
     const { userProfile, signOut } = useContext(AuthContext);
 
     return (
-        <ScrollView className="px-4 pt-2">
+        <ScrollView className="px-6 pt-2">
             <ProfileHeader
                 user={userProfile}
-                onPress={() =>
-                    router.push("/(protected)/profile/personal-information")
-                }
+                onPress={() => router.push("/(protected)/profile/edit")}
             />
 
-            <Text className="ml-1 text-foreground/50 my-3">
-                Profile Settings
-            </Text>
             <FlatList
-                className="mb-3 bg-[#fdfdfd] dark:bg-[#020202] border border-primary/30 rounded-2xl"
                 data={profileSettingsItems}
                 keyExtractor={(item) => item.key}
                 renderItem={({ item }) => (
                     <ListItem
                         iconName={item.icon}
                         title={item.title}
-                        subtitle={item.subtitle}
                         onPress={() => router.push(item.href)}
                         id={item.key}
                     />
@@ -109,33 +78,15 @@ export default function ProfileScreen() {
                 scrollEnabled={false}
             />
 
-            <Text className="ml-1 text-foreground/50 my-3">Help & Support</Text>
+            <View className="my-3 border-b border-muted/50" />
+
             <FlatList
-                className="mb-3 bg-[#fdfdfd] dark:bg-[#020202] border border-primary/30 rounded-2xl"
                 data={settingsItems}
                 keyExtractor={(item) => item.key}
                 renderItem={({ item }) => (
                     <ListItem
                         iconName={item.icon}
                         title={item.title}
-                        subtitle={item.subtitle}
-                        onPress={() => router.push(item.href)}
-                        id={item.key}
-                    />
-                )}
-                scrollEnabled={false}
-            />
-
-            <Text className="ml-1 text-foreground/50 my-3">Session</Text>
-            <FlatList
-                className="mb-6 bg-[#fdfdfd] dark:bg-[#020202] border border-primary/30 rounded-2xl"
-                data={sessionItems}
-                keyExtractor={(item) => item.key}
-                renderItem={({ item }) => (
-                    <ListItem
-                        iconName={item.icon}
-                        title={item.title}
-                        subtitle={item.subtitle}
                         onPress={() => {
                             if (item.key == "logout") {
                                 signOut();

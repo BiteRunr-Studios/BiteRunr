@@ -11,20 +11,20 @@ type ProfileHeaderProps = {
 
 export default function ProfileHeader({
     onPress,
-    avatarSize = 55,
+    avatarSize = 50,
     user,
     ctaLabel = "Edit",
 }: ProfileHeaderProps) {
     return (
         <Pressable
             onPress={onPress}
-            className="bg-[#FDFDFD] dark:bg-[#020202] border border-primary/30 px-4 py-5 rounded-2xl flex-row items-center justify-between gap-2 mb-5"
+            className="bg-muted/30 p-5 rounded-2xl flex-row items-center justify-between gap-2 mb-5"
         >
-            <View className="flex-1 flex-row items-center justify-center gap-2">
+            <View className="flex-1 flex-row items-center gap-2">
                 <Avatar size={avatarSize} />
                 <View className="flex-1 gap-1">
                     <Text
-                        className="text-xl leading-none text-foreground font-semibold"
+                        className="text-xl leading-none text-muted-foreground font-semibold"
                         numberOfLines={1}
                         ellipsizeMode="tail"
                     >
@@ -40,7 +40,7 @@ export default function ProfileHeader({
                 </View>
             </View>
 
-            <View className="flex-row rounded-xl bg-primary/30 items-center justify-center px-4 py-2">
+            <View className="flex-row rounded-full bg-primary/30 items-center justify-center px-4 py-2">
                 <Text className="text-primary font-bold">{ctaLabel}</Text>
             </View>
         </Pressable>

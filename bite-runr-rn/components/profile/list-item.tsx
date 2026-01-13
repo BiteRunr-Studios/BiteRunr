@@ -7,7 +7,6 @@ import { useColorScheme } from "@/lib/use-color-scheme";
 type ListItemProps = {
     iconName: IconName;
     title: string;
-    subtitle: string;
     onPress?: () => void;
     id?: string;
 };
@@ -15,7 +14,6 @@ type ListItemProps = {
 export const ListItem: React.FC<ListItemProps> = ({
     iconName,
     title,
-    subtitle,
     onPress,
     id,
 }) => {
@@ -23,41 +21,29 @@ export const ListItem: React.FC<ListItemProps> = ({
     return (
         <Pressable
             id={id}
-            className="flex-row items-center justify-between py-5 px-4"
+            className="flex-row items-center justify-between py-5"
             onPress={onPress}
         >
-            <View className="flex-1 flex-row items-center gap-3 justify-center">
-                <View className="w-10 h-10 rounded-xl bg-primary/30 items-center justify-center">
-                    <Icon
-                        name={iconName}
-                        size={20}
-                        color={NAV_THEME[colorScheme].primary}
-                    />
-                </View>
-                <View className="flex-1 items-start justify-center gap-1">
-                    <Text
-                        className="leading-none text-foreground text-lg font-semibold"
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                    >
-                        {title}
-                    </Text>
-                    <Text
-                        className="leading-none text-muted-foreground/60"
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                    >
-                        {subtitle}
-                    </Text>
-                </View>
-            </View>
-            <View className="flex-0 bg-muted rounded-full p-0.5">
+            <View className="flex-1 flex-row items-center gap-3">
                 <Icon
-                    name="ChevronRight"
-                    size={16}
+                    name={iconName}
+                    size={20}
                     color={NAV_THEME[colorScheme].mutedForeground}
                 />
+                <Text
+                    className="text-muted-foreground text-lg"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                >
+                    {title}
+                </Text>
             </View>
+            <Icon
+                className="flex-0"
+                name="ChevronRight"
+                size={16}
+                color={NAV_THEME[colorScheme].mutedForeground}
+            />
         </Pressable>
     );
 };

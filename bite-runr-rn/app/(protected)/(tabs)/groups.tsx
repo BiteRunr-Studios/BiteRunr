@@ -3,7 +3,7 @@ import { ScrollView, Text, View } from "react-native";
 
 export default function GroupsTab() {
     return (
-        <ScrollView className="p-4">
+        <ScrollView className="px-6">
             <View className="py-2">
                 <Text className="text-3xl font-bold text-foreground mb-2">
                     Groups

@@ -2,28 +2,35 @@ import { AuthContext } from "@/lib/supabase-auth-context";
 import { useContext, useEffect, useRef, useState } from "react";
 import { Animated, View } from "react-native";
 import Skeleton from "@/components/common/skeleton";
+import { NAV_THEME } from "@/lib/constants";
+import { useColorScheme } from "@/lib/use-color-scheme";
 
 type AvatarProps = {
     size?: number;
     color?: string;
+    previewUri?: string;
 };
 
-export default function Avatar({ size = 24, color }: AvatarProps) {
+export default function Avatar({ size = 24, color, previewUri }: AvatarProps) {
+    const { colorScheme } = useColorScheme();
     const { userProfile } = useContext(AuthContext);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const fadeAnimation = useRef(new Animated.Value(0)).current;
 
-    useEffect(
-        () =>
-            setAvatarUrl(
-                userProfile?.profile?.avatar_url! ??
-                    `https://ui-avatars.com/api/?name=${
-                        userProfile?.profile?.first_name
-                    }+${userProfile?.profile?.last_name}&size=${size * 2}`
-            ),
-        [userProfile]
-    );
+    useEffect(() => {
+        if (previewUri) {
+            setAvatarUrl(previewUri);
+            return;
+        }
+
+        setAvatarUrl(
+            userProfile?.profile?.avatar_url! ??
+                `https://ui-avatars.com/api/?name=${
+                    userProfile?.profile?.first_name
+                }+${userProfile?.profile?.last_name}&size=${size * 2}`
+        );
+    }, [userProfile, previewUri, size]);
 
     useEffect(() => {
         if (avatarUrl) {
@@ -38,9 +45,9 @@ export default function Avatar({ size = 24, color }: AvatarProps) {
     }, [avatarUrl, fadeAnimation]);
 
     const borderClass =
-        color === "hsl(0 0% 50%)"
-            ? "border-[1.75px] border-[#808080]"
-            : color === "hsl(32 100% 50%)"
+        color === NAV_THEME[colorScheme].mutedForeground
+            ? "border-[1.75px] border-muted-foreground"
+            : color === NAV_THEME[colorScheme].primary
             ? "border-[1.75px] border-primary"
             : "";
 
@@ -71,7 +78,9 @@ export default function Avatar({ size = 24, color }: AvatarProps) {
                 <Animated.Image
                     width={size}
                     height={size}
-                    source={{ uri: avatarUrl }}
+                    source={{
+                        uri: avatarUrl,
+                    }}
                     className={`rounded-full ${borderClass}`}
                     resizeMode="cover"
                     style={{

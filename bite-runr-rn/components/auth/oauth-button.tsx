@@ -10,7 +10,11 @@ import { Flow } from "react-native-animated-spinkit";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { NAV_THEME } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
-import { createSessionFromUrl, redirectTo } from "@/lib/auth-helpers";
+import {
+    createSessionFromUrl,
+    PROVIDER_LOGOS,
+    redirectTo,
+} from "@/lib/auth-helpers";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { findUserByEmail, createUserProfile } from "@/api/profile/profile";
@@ -52,7 +56,7 @@ export function OAuthButton({
     const spinnerOpacity = useRef(new Animated.Value(0)).current;
 
     const scopes = provider === "github" ? "read:user user:email" : "";
-    const iconName = provider === "google" ? "logo-google" : "logo-github";
+    const iconName = PROVIDER_LOGOS[provider];
 
     const isDisabled = disabled || loading;
 

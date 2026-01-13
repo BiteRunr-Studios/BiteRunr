@@ -1,44 +1,35 @@
 import { Button } from "@/components/common/button";
 import { Input } from "@/components/common/input";
-import {
-    createFormHandlers,
-    FormState,
-    validateField,
-} from "@/lib/auth-helpers";
 import { supabase } from "@/lib/supabase";
 import { useState, useEffect } from "react";
 import { View, Text, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
+import { useForm } from "react-hook-form";
+
+type ConfirmPasswordFormData = {
+    password: string;
+    confirmPassword: string;
+};
 
 export default function ResetPasswordScreen() {
     const params = useLocalSearchParams();
-    const [form, setForm] = useState<FormState>({
-        password: {
-            label: "Password",
-            value: "",
-            error: null,
-            touched: false,
-            show: false,
-        },
-        confirmPassword: {
-            label: "Confirm Password",
-            value: "",
-            error: null,
-            touched: false,
-            show: false,
-        },
-    });
 
-    const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
     const [sessionHandled, setSessionHandled] = useState(false);
+    const { control, handleSubmit, getValues, setError } =
+        useForm<ConfirmPasswordFormData>({
+            defaultValues: {
+                password: "",
+                confirmPassword: "",
+            },
+        });
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     useEffect(() => {
         // Prevent running setup again if we already handled the session
-        if (sessionHandled) {
-            return;
-        }
+        if (sessionHandled) return;
 
         const setupRecoverySession = async () => {
             const fragment = params["#"] as string;
@@ -49,7 +40,7 @@ export default function ResetPasswordScreen() {
 
             setSessionHandled(true);
 
-            const { data, error } = await supabase.auth.setSession({
+            const { error } = await supabase.auth.setSession({
                 access_token: accessToken,
                 refresh_token: refreshToken,
             });
@@ -69,51 +60,22 @@ export default function ResetPasswordScreen() {
         setupRecoverySession();
     }, [params, sessionHandled]);
 
-    async function resetPassword() {
+    async function resetPassword(data: ConfirmPasswordFormData) {
+        if (loading) return;
+
         setLoading(true);
-
-        // Validate all fields
-        setForm((prev) => {
-            const next: FormState = { ...prev };
-            (Object.keys(prev) as Array<keyof FormState>).forEach((k) => {
-                const field = prev[k];
-                if (field) {
-                    // Add this check
-                    next[k] = {
-                        ...field,
-                        touched: true,
-                        error: validateField(k, field.value, prev),
-                    };
-                }
-            });
-            return next;
-        });
-
-        // Check for validation errors
-        const formHasErrors = (
-            Object.keys(form) as Array<keyof FormState>
-        ).some((k) => validateField(k, form[k]!.value, form) !== null);
-
-        if (formHasErrors) {
-            setLoading(false);
-            return;
-        }
 
         // updateUser operates on the currently authenticated user from the reset link
         // No need to provide email - just the new password
         const { error } = await supabase.auth.updateUser({
-            password: form.password!.value,
+            password: data.password,
         });
 
         if (error) {
-            setForm((prev) => ({
-                ...prev,
-                confirmPassword: {
-                    ...prev.confirmPassword!,
-                    touched: true,
-                    error: error.message,
-                },
-            }));
+            setError("confirmPassword", {
+                type: "manual",
+                message: error.message,
+            });
             setLoading(false);
             return;
         }
@@ -134,7 +96,7 @@ export default function ResetPasswordScreen() {
     }
 
     return (
-        <SafeAreaView className="flex-1 px-4 justify-center">
+        <SafeAreaView className="flex-1 px-6 justify-center">
             <View className="mt-10"></View>
 
             {/* Title */}
@@ -152,49 +114,43 @@ export default function ResetPasswordScreen() {
 
             {/* Password Field*/}
             <Input
-                value={form.password!.value}
-                placeholder={form.password!.label}
+                name="password"
+                control={control}
+                placeholder="New Password"
                 leftIcon="Lock"
-                rightIcon={form.password!.show ? "EyeClosed" : "Eye"}
-                onRightIconPress={() => {
-                    setForm((prev) => ({
-                        ...prev,
-                        password: {
-                            ...prev.password!,
-                            show: !prev.password!.show,
-                        },
-                    }));
-                }}
+                rightIcon={showPassword ? "EyeClosed" : "Eye"}
+                onRightIconPress={() => setShowPassword((prev) => !prev)}
                 autoCapitalize="none"
                 returnKeyType="default"
-                errorMessage={form.password!.error}
-                onChangeText={(v) => onChange("password", v)}
-                onBlur={() => onBlur("password")}
-                secureTextEntry={!form.password!.show}
+                secureTextEntry={!showPassword}
+                rules={{
+                    required: "New password is required",
+                    pattern: {
+                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                        message:
+                            "Password must have uppercase, lowercase, and number",
+                    },
+                }}
             />
 
             <View className="mt-2" />
 
             <Input
-                value={form.confirmPassword!.value}
-                placeholder={form.confirmPassword!.label}
+                name="confirmPassword"
+                control={control}
+                placeholder="Confirm New Password"
                 leftIcon="Lock"
-                rightIcon={form.confirmPassword!.show ? "EyeClosed" : "Eye"}
-                onRightIconPress={() => {
-                    setForm((prev) => ({
-                        ...prev,
-                        confirmPassword: {
-                            ...prev.confirmPassword!,
-                            show: !prev.confirmPassword!.show,
-                        },
-                    }));
-                }}
+                rightIcon={showConfirmPassword ? "EyeClosed" : "Eye"}
+                onRightIconPress={() => setShowConfirmPassword((prev) => !prev)}
                 autoCapitalize="none"
                 returnKeyType="default"
-                errorMessage={form.confirmPassword!.error}
-                onChangeText={(v) => onChange("confirmPassword", v)}
-                onBlur={() => onBlur("confirmPassword")}
-                secureTextEntry={!form.confirmPassword!.show}
+                secureTextEntry={!showConfirmPassword}
+                rules={{
+                    required: "New confirmed password is required",
+                    validate: (value) =>
+                        value === getValues("password") ||
+                        "Passwords do not match",
+                }}
             />
 
             <View className="flex-1" />
@@ -207,7 +163,7 @@ export default function ResetPasswordScreen() {
                 icon="RefreshCcwDot"
                 label={"Reset Password"}
                 loading={loading}
-                onPress={resetPassword}
+                onPress={handleSubmit(resetPassword)}
             />
         </SafeAreaView>
     );
