@@ -31,6 +31,7 @@ import Animated, {
     SharedValue,
     Extrapolation,
 } from "react-native-reanimated";
+import { Input } from "@/components/common/input";
 
 export default function SelectItems() {
     const { orderUserId, orderId } = useLocalSearchParams();
@@ -326,16 +327,16 @@ export default function SelectItems() {
                 </View>
 
                 {/* Main Content */}
-                <View className="px-4 pt-4 pb-3">
-                    <View className="flex-row items-center px-3 border rounded-lg border-input bg-background">
-                        <TextInput
-                            className="flex-1 py-2 text-foreground"
-                            placeholder="Search..."
-                            placeholderTextColor="hsl(215.4 16.3% 46.9%)"
-                            value={searchQuery}
-                            onChangeText={setSearchQuery}
-                        />
-                    </View>
+                <View className="px-4 pt-4 pb-2">
+                    <Input
+                        value={searchQuery}
+                        placeholder="Search"
+                        leftIcon="Search"
+                        autoCapitalize="none"
+                        returnKeyType="search"
+                        errorMessage=""
+                        onChangeText={setSearchQuery}
+                    />
                 </View>
                 <View className="flex-1 px-4 py-2 bg-background">
                     <ScrollView

@@ -8,6 +8,8 @@ import {
 } from "react-native";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { addItemToOrderUser } from "@/api/order/addItemToOrderUser";
+import { NAV_THEME } from "@/lib/constants";
+import { useColorScheme } from "@/lib/use-color-scheme";
 
 interface AddItemSheetProps {
     visible: boolean;
@@ -33,6 +35,7 @@ export function AddItemSheet({
     const actionSheetRef = useRef<ActionSheetRef>(null);
     const [quantity, setQuantity] = useState(1);
     const [comments, setComments] = useState("");
+    const { colorScheme } = useColorScheme();
 
     useEffect(() => {
         if (visible) {
@@ -81,7 +84,7 @@ export function AddItemSheet({
         <ActionSheet
             ref={actionSheetRef}
             containerStyle={{
-                backgroundColor: "hsl(0 0% 100%)",
+                backgroundColor: NAV_THEME[colorScheme].background,
                 borderTopLeftRadius: 24,
                 borderTopRightRadius: 24,
                 height: "75%",
