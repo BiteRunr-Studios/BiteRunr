@@ -1,4 +1,3 @@
-import { createUserProfile, findUserByEmail } from "@/api/profile/profile";
 import { OAuthButton } from "@/components/auth/oauth-button";
 import { Button } from "@/components/common/button";
 import Icon from "@/components/common/icon";
@@ -9,17 +8,17 @@ import {
     validateField,
 } from "@/lib/auth-helpers";
 import { NAV_THEME } from "@/lib/constants";
-import { supabase } from "@/lib/supabase";
-import { AuthContext } from "@/lib/supabase-auth-context";
+import { AuthContext } from "@/lib/convex-auth-context";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { router } from "expo-router";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignUpScreen() {
-    const { setPendingAuth } = useContext(AuthContext);
+    const { signIn, isLoggedIn } = useContext(AuthContext);
     const { colorScheme } = useColorScheme();
+    const [signUpAttempted, setSignUpAttempted] = useState(false);
     const [form, setForm] = useState<FormState>({
         firstName: {
             label: "First name",
@@ -46,6 +45,13 @@ export default function SignUpScreen() {
     const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
 
+    // Navigate to protected route once auth state confirms login after sign-up
+    useEffect(() => {
+        if (signUpAttempted && isLoggedIn) {
+            router.replace("/(protected)/(tabs)");
+        }
+    }, [signUpAttempted, isLoggedIn]);
+
     async function onSignUpWithEmail() {
         setLoading(true);
 
@@ -55,7 +61,6 @@ export default function SignUpScreen() {
             (Object.keys(prev) as Array<keyof FormState>).forEach((k) => {
                 const field = prev[k];
                 if (field) {
-                    // Add this check
                     next[k] = {
                         ...field,
                         touched: true,
@@ -76,97 +81,30 @@ export default function SignUpScreen() {
             return;
         }
 
-        // find user by email (make api endpoint)
-        const existingUser = await findUserByEmail(
-            form.email!.value.toLowerCase()
-        );
-
-        // if user exists, then look if email is confirmed
-        if (existingUser) {
-            //  if email is confirmed, then return as an error message on the email field, "This email is already taken"
-            if (existingUser.email_confirmed_at) {
-                // Set error for a specific field (e.g., email)
-                setForm((prev) => ({
-                    ...prev,
-                    email: {
-                        ...prev.email!,
-                        touched: true,
-                        error: "This email is already taken",
-                    },
-                }));
-                setLoading(false);
-                return;
-            }
-
-            //  if email is not confirmed, then resend the confirmation email, and show them the confirm-sign-up.tsx page.
-            supabase.auth.resend({
-                type: "signup",
-                email: existingUser.email,
-            });
-            setPendingAuth({
-                email: form.email!.value,
+        try {
+            await signIn("password", {
+                email: form.email!.value.toLowerCase(),
                 password: form.password!.value,
+                firstName: form.firstName!.value,
+                lastName: form.lastName!.value,
+                flow: "signUp",
             });
-            router.push("/(auth)/confirm-sign-up");
-            setLoading(false);
-            return;
-        }
+            // Mark sign-up as attempted - useEffect will handle navigation once auth state updates
+            setSignUpAttempted(true);
+        } catch (error: any) {
+            const errorMessage = error?.message ?? "Sign-up failed";
 
-        // if user does not exist
-        //  call the supabase auth sdk signUp method
-        const { data, error } = await supabase.auth.signUp({
-            email: form.email!.value,
-            password: form.password!.value,
-        });
-
-        // if errors, then return errorMessage
-        if (error) {
             setForm((prev) => ({
                 ...prev,
                 email: {
                     ...prev.email!,
                     touched: true,
-                    error: error.message,
+                    error: errorMessage,
                 },
             }));
             setLoading(false);
-            return;
         }
-
-        // if no errors, then create the userProfile
-        const newUserProfile = {
-            id: data.user!.id,
-            first_name: form.firstName!.value,
-            last_name: form.lastName!.value,
-            avatar_url: null,
-        };
-        const newlyCreatedUserProfile = await createUserProfile(newUserProfile);
-        if (!newlyCreatedUserProfile) {
-            setForm((prev) => ({
-                ...prev,
-                email: {
-                    ...prev.email!,
-                    touched: true,
-                    error: "An error occured while creating profile",
-                },
-            }));
-            setLoading(false);
-            return;
-        }
-
-        //  send the confirmation email
-        supabase.auth.resend({
-            type: "signup",
-            email: newlyCreatedUserProfile.email,
-        });
-
-        //  show the user the confirm-sign-up.tsx page
-        setPendingAuth({
-            email: form.email!.value,
-            password: form.password!.value,
-        });
-        router.push("/(auth)/confirm-sign-up");
-        setLoading(false);
+        // Don't set loading to false on success - keep loading while waiting for auth state
     }
 
     return (

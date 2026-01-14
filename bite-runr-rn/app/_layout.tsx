@@ -13,21 +13,31 @@ import {
 } from "@react-navigation/native";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "@/lib/supabase-auth-context";
+import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { AuthProvider } from "@/lib/convex-auth-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import "../global.css";
 
 const LIGHT_THEME: Theme = { ...DefaultTheme, colors: NAV_THEME.light };
 const DARK_THEME: Theme = { ...DarkTheme, colors: NAV_THEME.dark };
 
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            retry: 2,
-            staleTime: 60_000,
-        },
-    },
+const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
+    unsavedChangesWarning: false,
 });
+
+// Custom storage adapter for React Native using AsyncStorage
+const asyncStorageAdapter = {
+    getItem: async (key: string) => {
+        return await AsyncStorage.getItem(key);
+    },
+    setItem: async (key: string, value: string) => {
+        await AsyncStorage.setItem(key, value);
+    },
+    removeItem: async (key: string) => {
+        await AsyncStorage.removeItem(key);
+    },
+};
 
 export default function RootLayout() {
     const { colorScheme } = useColorScheme();
@@ -45,34 +55,36 @@ export default function RootLayout() {
     }, [colorScheme]);
 
     return (
-        <AuthProvider>
-            <QueryClientProvider client={queryClient}>
-                <ThemeProvider
-                    value={colorScheme == "dark" ? DARK_THEME : LIGHT_THEME}
-                >
-                    <SafeAreaProvider>
-                        <StatusBar style="auto" />
-                        <GestureHandlerRootView style={{ flex: 1 }}>
-                            <Stack screenOptions={{ headerShown: false }}>
-                                <Stack.Screen
-                                    name="(protected)"
-                                    options={{
-                                        headerShown: false,
-                                    }}
-                                />
-                                <Stack.Screen
-                                    name="(auth)"
-                                    options={{
-                                        headerShown: false,
-                                        animation: "slide_from_left",
-                                        animationTypeForReplace: "pop",
-                                    }}
-                                />
-                            </Stack>
-                        </GestureHandlerRootView>
-                    </SafeAreaProvider>
-                </ThemeProvider>
-            </QueryClientProvider>
-        </AuthProvider>
+        <ConvexProvider client={convex}>
+            <ConvexAuthProvider client={convex} storage={asyncStorageAdapter}>
+                <AuthProvider>
+                    <ThemeProvider
+                        value={colorScheme == "dark" ? DARK_THEME : LIGHT_THEME}
+                    >
+                        <SafeAreaProvider>
+                            <StatusBar style="auto" />
+                            <GestureHandlerRootView style={{ flex: 1 }}>
+                                <Stack screenOptions={{ headerShown: false }}>
+                                    <Stack.Screen
+                                        name="(protected)"
+                                        options={{
+                                            headerShown: false,
+                                        }}
+                                    />
+                                    <Stack.Screen
+                                        name="(auth)"
+                                        options={{
+                                            headerShown: false,
+                                            animation: "slide_from_left",
+                                            animationTypeForReplace: "pop",
+                                        }}
+                                    />
+                                </Stack>
+                            </GestureHandlerRootView>
+                        </SafeAreaProvider>
+                    </ThemeProvider>
+                </AuthProvider>
+            </ConvexAuthProvider>
+        </ConvexProvider>
     );
 }

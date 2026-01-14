@@ -1,3 +1,5 @@
+import { NAV_THEME } from "@/lib/constants";
+import { useColorScheme } from "@/lib/use-color-scheme";
 import React, { useState, useRef, useEffect } from "react";
 import {
     View,
@@ -37,6 +39,7 @@ export function MultiSelectSheet({
     const [searchQuery, setSearchQuery] = useState("");
     const [localSelectedIds, setLocalSelectedIds] =
         useState<string[]>(selectedIds);
+    const { colorScheme } = useColorScheme();
 
     useEffect(() => {
         if (visible) {
@@ -77,7 +80,7 @@ export function MultiSelectSheet({
         <ActionSheet
             ref={actionSheetRef}
             containerStyle={{
-                backgroundColor: "hsl(0 0% 100%)",
+                backgroundColor: NAV_THEME[colorScheme].background,
                 borderTopLeftRadius: 24,
                 borderTopRightRadius: 24,
                 height: "90%",

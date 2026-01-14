@@ -3,13 +3,14 @@ import {
     View,
     Text,
     TextInput,
-    Pressable,
     TouchableOpacity,
 } from "react-native";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
-import { addItemToOrderUser } from "@/api/order/addItemToOrderUser";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface AddItemSheetProps {
     visible: boolean;
@@ -37,6 +38,8 @@ export function AddItemSheet({
     const [comments, setComments] = useState("");
     const { colorScheme } = useColorScheme();
 
+    const addItem = useMutation(api.orderItems.add);
+
     useEffect(() => {
         if (visible) {
             actionSheetRef.current?.show();
@@ -47,11 +50,11 @@ export function AddItemSheet({
 
     const handleAdd = async () => {
         try {
-            await addItemToOrderUser({
-                order_location_id: orderLocationId,
-                order_user_id: orderUserId,
-                item_id: itemId,
-                comments: comments || null,
+            await addItem({
+                orderLocationId: orderLocationId as Id<"orderLocations">,
+                orderUserId: orderUserId as Id<"orderUsers">,
+                itemId: itemId as Id<"items">,
+                comments: comments || undefined,
                 quantity,
             });
             // Reset state
@@ -61,7 +64,6 @@ export function AddItemSheet({
             onAdd();
         } catch (error) {
             console.error("Error adding item:", error);
-            // Optionally show an error message to the user
         }
     };
 

@@ -8,8 +8,7 @@ import {
     validateField,
 } from "@/lib/auth-helpers";
 import { NAV_THEME } from "@/lib/constants";
-import { supabase } from "@/lib/supabase";
-import { AuthContext } from "@/lib/supabase-auth-context";
+import { AuthContext } from "@/lib/convex-auth-context";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { router } from "expo-router";
 import { useContext, useState } from "react";
@@ -17,7 +16,7 @@ import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignInScreen() {
-    const { setPendingAuth } = useContext(AuthContext);
+    const { signIn, setPendingAuth } = useContext(AuthContext);
     const { colorScheme } = useColorScheme();
     const [form, setForm] = useState<FormState>({
         email: { label: "Email", value: "", error: null, touched: false },
@@ -42,7 +41,6 @@ export default function SignInScreen() {
             (Object.keys(prev) as Array<keyof FormState>).forEach((k) => {
                 const field = prev[k];
                 if (field) {
-                    // Add this check
                     next[k] = {
                         ...field,
                         touched: true,
@@ -63,42 +61,27 @@ export default function SignInScreen() {
             return;
         }
 
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: form.email!.value,
-            password: form.password!.value,
-        });
+        try {
+            await signIn("password", {
+                email: form.email!.value.toLowerCase(),
+                password: form.password!.value,
+                flow: "signIn",
+            });
+            router.replace("/(protected)/(tabs)");
+        } catch (error: any) {
+            const errorMessage = error?.message?.toLowerCase() ?? "sign-in failed";
 
-        if (error) {
-            const errorMessage = error.message.toLowerCase();
-
-            if (errorMessage.includes("email not confirmed")) {
-                supabase.auth.resend({
-                    type: "signup",
-                    email: form.email!.value,
-                });
-                setPendingAuth({
-                    email: form.email!.value,
-                    password: form.password!.value,
-                });
-                router.push("/(auth)/confirm-sign-up");
-            } else {
-                setForm((prev) => ({
-                    ...prev,
-                    email: {
-                        ...prev.email!,
-                        touched: true,
-                        error: errorMessage,
-                    },
-                }));
-            }
-
+            setForm((prev) => ({
+                ...prev,
+                email: {
+                    ...prev.email!,
+                    touched: true,
+                    error: errorMessage,
+                },
+            }));
+        } finally {
             setLoading(false);
-            return;
         }
-
-        if (data?.session) router.replace("/(protected)/(tabs)");
-
-        setLoading(false);
     }
 
     return (

@@ -1,15 +1,3 @@
-import { getOrderLocationsForItemSelection } from "@/api/order/orderLocations";
-import { getOrderUserLocationItems } from "@/api/order/orderUserLocationItems";
-import { setOrderUserStatus } from "@/api/order/setOrderUserStatus";
-import { searchItems } from "@/api/order/searchItems";
-import { deleteOrderItem } from "@/api/order/deleteOrderItem";
-import {
-    SelectItemsOrderLocationDTO,
-    SelectItemsOrderUserLocationItemDTO,
-    SelectItemsItemDTO,
-} from "@/lib/types";
-import { useIsFocused } from "@react-navigation/native";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState, useCallback } from "react";
 import {
@@ -17,7 +5,6 @@ import {
     Text,
     ScrollView,
     Pressable,
-    TextInput,
     TouchableOpacity,
     Alert,
 } from "react-native";
@@ -32,12 +19,36 @@ import Animated, {
     Extrapolation,
 } from "react-native-reanimated";
 import { Input } from "@/components/common/input";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+
+type OrderLocation = {
+    locationId: Id<"locations">;
+    orderLocationId: Id<"orderLocations">;
+    locationName: string;
+};
+
+type OrderUserLocationItem = {
+    id: Id<"orderItems">;
+    orderLocationId: Id<"orderLocations">;
+    orderUserId: Id<"orderUsers">;
+    itemId: Id<"items">;
+    comments: string | undefined;
+    quantity: number;
+    createdAt: number;
+    item: {
+        id: Id<"items">;
+        name: string;
+        locationId: Id<"locations">;
+        createdAt: number;
+    } | null;
+};
 
 export default function SelectItems() {
     const { orderUserId, orderId } = useLocalSearchParams();
-    const queryClient = useQueryClient();
     const [selectedLocation, setSelectedLocation] =
-        useState<SelectItemsOrderLocationDTO | null>(null);
+        useState<OrderLocation | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
     const [addSheetVisible, setAddSheetVisible] = useState(false);
@@ -47,8 +58,7 @@ export default function SelectItems() {
         id: string;
     } | null>(null);
     const [selectedOrderUserLocationItem, setSelectedOrderUserLocationItem] =
-        useState<SelectItemsOrderUserLocationItemDTO | null>(null);
-    const isFocused = useIsFocused();
+        useState<OrderUserLocationItem | null>(null);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -58,73 +68,59 @@ export default function SelectItems() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const {
-        data: orderLocations,
-        isPending: isOrderLocationsPending,
-        isError: isOrderLocationsError,
-        error: orderLocationsError,
-    } = useQuery<SelectItemsOrderLocationDTO[]>({
-        queryKey: ["orderLocations", orderId],
-        queryFn: () => getOrderLocationsForItemSelection(orderId as string),
-        enabled: isFocused,
-    });
+    // Queries
+    const orderLocations = useQuery(
+        api.orderLocations.listForOrder,
+        orderId ? { orderId: orderId as Id<"orders"> } : "skip"
+    );
+    const isOrderLocationsPending = orderLocations === undefined;
 
-    const {
-        data: orderUserLocationItems,
-        isPending: isItemsPending,
-        isError: isItemsError,
-        error: itemsError,
-    } = useQuery<SelectItemsOrderUserLocationItemDTO[]>({
-        queryKey: [
-            "orderUserLocationItems",
-            orderUserId,
-            selectedLocation?.location_id,
-        ],
-        queryFn: () =>
-            getOrderUserLocationItems(
-                orderUserId as string,
-                selectedLocation?.order_location_id as string
-            ),
-        enabled:
-            !!selectedLocation &&
-            !isOrderLocationsPending &&
-            isFocused &&
-            !searchQuery,
-    });
+    const orderUserLocationItems = useQuery(
+        api.orderItems.listForUserLocation,
+        orderUserId && selectedLocation && !searchQuery
+            ? {
+                  orderUserId: orderUserId as Id<"orderUsers">,
+                  orderLocationId: selectedLocation.orderLocationId,
+              }
+            : "skip"
+    );
+    const isItemsPending = orderUserLocationItems === undefined;
 
-    const { data: searchResults, isPending: isSearchPending } = useQuery<
-        SelectItemsItemDTO[]
-    >({
-        queryKey: [
-            "searchItems",
-            selectedLocation?.location_id,
-            debouncedSearchQuery,
-        ],
-        queryFn: () =>
-            searchItems(
-                selectedLocation?.location_id as string,
-                debouncedSearchQuery
-            ),
-        enabled:
-            !!selectedLocation &&
-            !isOrderLocationsPending &&
-            isFocused &&
-            debouncedSearchQuery.length > 0,
-    });
+    const searchResults = useQuery(
+        api.items.search,
+        selectedLocation && debouncedSearchQuery.length > 0
+            ? {
+                  locationId: selectedLocation.locationId,
+                  query: debouncedSearchQuery,
+              }
+            : "skip"
+    );
+    const isSearchPending = searchResults === undefined;
+
+    // Mutations
+    const setStatus = useMutation(api.orderUsers.setStatus);
+    const removeItem = useMutation(api.orderItems.remove);
 
     useEffect(() => {
         if (
             orderLocations &&
             orderLocations.length > 0 &&
-            !selectedLocation?.location_id
+            !selectedLocation?.locationId
         ) {
             setSelectedLocation(orderLocations[0]);
         }
-    }, [orderLocations, selectedLocation?.location_id]);
+    }, [orderLocations, selectedLocation?.locationId]);
 
-    function handleDone() {
-        setOrderUserStatus(orderId as string, { status: "done" });
-        router.dismiss();
+    async function handleDone() {
+        try {
+            await setStatus({
+                orderId: orderId as Id<"orders">,
+                status: "done",
+            });
+            router.dismiss();
+        } catch (error) {
+            console.error("Failed to set status:", error);
+        }
     }
 
     function handleSearchItemPress(item: { name: string; id: string }) {
@@ -133,34 +129,20 @@ export default function SelectItems() {
     }
 
     function handleExistingItemPress(
-        orderUserLocationItem: SelectItemsOrderUserLocationItemDTO
+        orderUserLocationItem: OrderUserLocationItem
     ) {
         setSelectedOrderUserLocationItem(orderUserLocationItem);
         setEditSheetVisible(true);
     }
 
     function handleAddItem() {
-        // Refetch the order user location items after adding
-        queryClient.invalidateQueries({
-            queryKey: [
-                "orderUserLocationItems",
-                orderUserId,
-                selectedLocation?.location_id,
-            ],
-        });
+        // Convex will automatically update the UI
         setSearchQuery("");
         setAddSheetVisible(false);
     }
 
     function handleUpdateItem() {
-        // Refetch the order user location items after updating
-        queryClient.invalidateQueries({
-            queryKey: [
-                "orderUserLocationItems",
-                orderUserId,
-                selectedLocation?.location_id,
-            ],
-        });
+        // Convex will automatically update the UI
         setEditSheetVisible(false);
     }
 
@@ -176,14 +158,8 @@ export default function SelectItems() {
 
     async function handleDeleteItem(orderItemId: string) {
         try {
-            await deleteOrderItem(orderItemId);
-            // Refetch the order user location items after deleting
-            queryClient.invalidateQueries({
-                queryKey: [
-                    "orderUserLocationItems",
-                    orderUserId,
-                    selectedLocation?.location_id,
-                ],
+            await removeItem({
+                orderItemId: orderItemId as Id<"orderItems">,
             });
         } catch (error) {
             console.error("Error deleting item:", error);
@@ -304,22 +280,22 @@ export default function SelectItems() {
                         contentContainerStyle={{ gap: 8 }}>
                         {orderLocations?.map((item) => (
                             <Pressable
-                                key={item.location_id}
+                                key={item.locationId}
                                 onPress={() => setSelectedLocation(item)}
                                 className={`flex-row items-center justify-center px-8 py-2 rounded-full ${
-                                    selectedLocation?.location_id ===
-                                    item.location_id
+                                    selectedLocation?.locationId ===
+                                    item.locationId
                                         ? "bg-primary"
                                         : "bg-muted"
                                 }`}>
                                 <Text
                                     className={`text ${
-                                        selectedLocation?.location_id ===
-                                        item.location_id
+                                        selectedLocation?.locationId ===
+                                        item.locationId
                                             ? "text-white"
                                             : "text-muted-foreground"
                                     }`}>
-                                    {item.location_name}
+                                    {item.locationName}
                                 </Text>
                             </Pressable>
                         ))}
@@ -352,7 +328,7 @@ export default function SelectItems() {
                                         onPress={() =>
                                             handleSearchItemPress({
                                                 name: item.name,
-                                                id: item.id,
+                                                id: item._id,
                                             })
                                         }
                                         className="flex-row justify-between w-full gap-2 p-4 border rounded-2xl border-muted bg-card active:opacity-70">
@@ -365,7 +341,7 @@ export default function SelectItems() {
                                                 <Text className="text-muted-foreground">
                                                     From{" "}
                                                     {
-                                                        selectedLocation?.location_name
+                                                        selectedLocation?.locationName
                                                     }
                                                 </Text>
                                             </View>
@@ -385,7 +361,8 @@ export default function SelectItems() {
                                         key={idx}
                                         renderRightActions={renderRightActions(
                                             orderUserLocationItem.id,
-                                            orderUserLocationItem.item.name
+                                            orderUserLocationItem.item?.name ??
+                                                ""
                                         )}>
                                         <Pressable
                                             onPress={() =>
@@ -400,13 +377,13 @@ export default function SelectItems() {
                                                     <Text className="text-lg text-white">
                                                         {
                                                             orderUserLocationItem
-                                                                .item.name
+                                                                .item?.name
                                                         }
                                                     </Text>
                                                     <Text className="text-muted-foreground">
                                                         From{" "}
                                                         {
-                                                            selectedLocation?.location_name
+                                                            selectedLocation?.locationName
                                                         }
                                                     </Text>
                                                 </View>
@@ -447,10 +424,10 @@ export default function SelectItems() {
                 onClose={handleCloseAddSheet}
                 onAdd={handleAddItem}
                 itemName={selectedItem?.name || ""}
-                locationName={selectedLocation?.location_name || ""}
+                locationName={selectedLocation?.locationName || ""}
                 itemId={selectedItem?.id || ""}
                 orderUserId={orderUserId as string}
-                orderLocationId={selectedLocation?.order_location_id || ""}
+                orderLocationId={selectedLocation?.orderLocationId || ""}
             />
 
             {/* Edit Item Sheet */}
@@ -458,8 +435,8 @@ export default function SelectItems() {
                 visible={editSheetVisible}
                 onClose={handleCloseEditSheet}
                 onUpdate={handleUpdateItem}
-                itemName={selectedOrderUserLocationItem?.item.name || ""}
-                locationName={selectedLocation?.location_name || ""}
+                itemName={selectedOrderUserLocationItem?.item?.name || ""}
+                locationName={selectedLocation?.locationName || ""}
                 orderItemId={selectedOrderUserLocationItem?.id || ""}
                 initialQuantity={selectedOrderUserLocationItem?.quantity || 1}
                 initialComments={

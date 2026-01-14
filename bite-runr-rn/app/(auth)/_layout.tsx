@@ -1,7 +1,20 @@
-import React from "react";
-import { Stack } from "expo-router";
+import React, { useContext } from "react";
+import { Redirect, Stack } from "expo-router";
+import { AuthContext } from "@/lib/convex-auth-context";
 
 export default function AuthLayout() {
+    const { isReady, isLoggedIn, isLoading } = useContext(AuthContext);
+
+    // Wait for auth to be ready
+    if (!isReady || isLoading) {
+        return null;
+    }
+
+    // Redirect to protected area if already logged in
+    if (isLoggedIn) {
+        return <Redirect href="/(protected)/(tabs)" />;
+    }
+
     return (
         <Stack
             screenOptions={{ headerTitleAlign: "center", headerShown: false }}

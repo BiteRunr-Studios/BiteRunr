@@ -1,4 +1,4 @@
-import { AuthContext } from "@/lib/supabase-auth-context";
+import { AuthContext } from "@/lib/convex-auth-context";
 import { Redirect, Stack } from "expo-router";
 import { useContext } from "react";
 
@@ -9,7 +9,8 @@ export const unstable_settings = {
 export default function ProtectedLayout() {
   const authState = useContext(AuthContext);
 
-  if (!authState.isReady) {
+  // Wait for auth to be ready and not in the middle of signing in
+  if (!authState.isReady || authState.isLoading) {
     return null;
   }
 
@@ -21,6 +22,12 @@ export default function ProtectedLayout() {
     <Stack>
       <Stack.Screen
         name="(tabs)"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="order"
         options={{
           headerShown: false,
         }}

@@ -5,14 +5,12 @@ import {
     FormState,
     validateField,
 } from "@/lib/auth-helpers";
-import { supabase } from "@/lib/supabase";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { View, Text, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 
 export default function ResetPasswordScreen() {
-    const params = useLocalSearchParams();
     const [form, setForm] = useState<FormState>({
         password: {
             label: "Password",
@@ -32,42 +30,6 @@ export default function ResetPasswordScreen() {
 
     const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
-    const [sessionHandled, setSessionHandled] = useState(false);
-
-    useEffect(() => {
-        // Prevent running setup again if we already handled the session
-        if (sessionHandled) {
-            return;
-        }
-
-        const setupRecoverySession = async () => {
-            const fragment = params["#"] as string;
-
-            const fragmentParams = new URLSearchParams(fragment);
-            const accessToken = fragmentParams.get("access_token")!;
-            const refreshToken = fragmentParams.get("refresh_token")!;
-
-            setSessionHandled(true);
-
-            const { data, error } = await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken,
-            });
-
-            if (error) {
-                Alert.alert(
-                    "Invalid Reset Link",
-                    "This password reset link is invalid or has expired. Please request a new one."
-                );
-                router.replace("/(auth)/sign-in");
-                return;
-            }
-
-            setSessionHandled(true);
-        };
-
-        setupRecoverySession();
-    }, [params, sessionHandled]);
 
     async function resetPassword() {
         setLoading(true);
@@ -78,7 +40,6 @@ export default function ResetPasswordScreen() {
             (Object.keys(prev) as Array<keyof FormState>).forEach((k) => {
                 const field = prev[k];
                 if (field) {
-                    // Add this check
                     next[k] = {
                         ...field,
                         touched: true,
@@ -99,38 +60,14 @@ export default function ResetPasswordScreen() {
             return;
         }
 
-        // updateUser operates on the currently authenticated user from the reset link
-        // No need to provide email - just the new password
-        const { error } = await supabase.auth.updateUser({
-            password: form.password!.value,
-        });
-
-        if (error) {
-            setForm((prev) => ({
-                ...prev,
-                confirmPassword: {
-                    ...prev.confirmPassword!,
-                    touched: true,
-                    error: error.message,
-                },
-            }));
-            setLoading(false);
-            return;
-        }
-
-        // Password reset successful - sign out to clear the temporary session
-        await supabase.auth.signOut();
+        // Note: Password reset with Convex Auth requires custom implementation
+        Alert.alert(
+            "Coming Soon",
+            "Password reset functionality will be available soon."
+        );
 
         setLoading(false);
-
-        // Navigate to sign-in and show success message
         router.replace("/(auth)/sign-in");
-
-        // Show alert after a brief delay to ensure navigation completes
-        Alert.alert(
-            "Password Reset Successful",
-            "Your password has been updated. You can now sign in with your new password."
-        );
     }
 
     return (

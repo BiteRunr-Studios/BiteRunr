@@ -1,4 +1,3 @@
-import { findUserByEmail } from "@/api/profile/profile";
 import { Button } from "@/components/common/button";
 import Icon from "@/components/common/icon";
 import { Input } from "@/components/common/input";
@@ -8,12 +7,13 @@ import {
     validateField,
 } from "@/lib/auth-helpers";
 import { NAV_THEME } from "@/lib/constants";
-import { supabase } from "@/lib/supabase";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState, useEffect, useRef } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export default function ForgotPasswordScreen() {
     const { colorScheme } = useColorScheme();
@@ -22,13 +22,19 @@ export default function ForgotPasswordScreen() {
     }>();
 
     const [form, setForm] = useState<FormState>({
-        email: { label: "Email", value: email, error: null, touched: false },
+        email: { label: "Email", value: email ?? "", error: null, touched: false },
     });
 
     const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
     const [cooldownSeconds, setCooldownSeconds] = useState(0);
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Check if user exists
+    const existingUser = useQuery(
+        api.users.findByEmail,
+        form.email?.value ? { email: form.email.value.toLowerCase() } : "skip"
+    );
 
     useEffect(() => {
         if (cooldownSeconds > 0) {
@@ -53,7 +59,6 @@ export default function ForgotPasswordScreen() {
             (Object.keys(prev) as Array<keyof FormState>).forEach((k) => {
                 const field = prev[k];
                 if (field) {
-                    // Add this check
                     next[k] = {
                         ...field,
                         touched: true,
@@ -74,10 +79,6 @@ export default function ForgotPasswordScreen() {
             return;
         }
 
-        const existingUser = await findUserByEmail(
-            form.email!.value.toLowerCase()
-        );
-
         if (!existingUser) {
             setForm((prev) => ({
                 ...prev,
@@ -91,25 +92,12 @@ export default function ForgotPasswordScreen() {
             return;
         }
 
-        const { error } = await supabase.auth.resetPasswordForEmail(
-            form.email!.value.toLowerCase(),
-            {
-                redirectTo: "biterunr://(auth)reset-password",
-            }
+        // Note: Password reset with Convex Auth requires custom implementation
+        // For now, show a message that this feature is coming soon
+        Alert.alert(
+            "Coming Soon",
+            "Password reset functionality will be available soon. Please contact support if you need assistance."
         );
-
-        if (error) {
-            setForm((prev) => ({
-                ...prev,
-                email: {
-                    ...prev.email!,
-                    touched: true,
-                    error: error.message,
-                },
-            }));
-            setLoading(false);
-            return;
-        }
 
         // Start 60-second cooldown
         setCooldownSeconds(60);
