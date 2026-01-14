@@ -7,7 +7,7 @@
         "dev": "npm run sync-styles && expo start --clear",
         "android": "npm run sync-styles && expo run:android",
         "ios": "npm run sync-styles && expo run:ios",
-        "phone": "npm run sync-styles && expo run:ios --device",
+        "phone": "npm run sync-styles && expo run:ios --device \"${IPHONE:-}\"",
         "prebuild": "npm run sync-styles && expo prebuild",
         "web": "npm run sync-styles && expo start --web"
     },
