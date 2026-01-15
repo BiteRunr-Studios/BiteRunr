@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import ReAnimated, {
     useSharedValue,
@@ -103,12 +103,8 @@ export default function SpecificOrder() {
             return "disabled";
         }
 
-        const allDone = data.orderUsers.every(
-            (user) => user.status === "done"
-        );
-        const someDone = data.orderUsers.some(
-            (user) => user.status === "done"
-        );
+        const allDone = data.orderUsers.every((user) => user.status === "done");
+        const someDone = data.orderUsers.some((user) => user.status === "done");
 
         if (allDone) {
             return "readyToRun";
@@ -154,7 +150,6 @@ export default function SpecificOrder() {
                                 orderId: orderId as Id<"orders">,
                                 status: "cancelled",
                             });
-                            router.dismiss();
                         } catch (error) {
                             console.error("Failed to cancel order:", error);
                             Alert.alert(

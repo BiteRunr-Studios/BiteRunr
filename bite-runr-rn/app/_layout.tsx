@@ -22,8 +22,28 @@ import "../global.css";
 const LIGHT_THEME: Theme = { ...DefaultTheme, colors: NAV_THEME.light };
 const DARK_THEME: Theme = { ...DarkTheme, colors: NAV_THEME.dark };
 
+// Custom logger that filters out auth-related errors (they're handled in-app)
+const convexLogger = {
+    log: console.log,
+    warn: console.warn,
+    error: (message: string, ...args: unknown[]) => {
+        // Filter out auth server errors - these are handled in the UI
+        const msgStr = String(message).toLowerCase();
+        if (
+            msgStr.includes("auth") ||
+            msgStr.includes("invalid secret") ||
+            msgStr.includes("invalid password")
+        ) {
+            return; // Suppress auth errors (handled in UI)
+        }
+        console.error(message, ...args);
+    },
+    logVerbose: console.log,
+};
+
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
     unsavedChangesWarning: false,
+    logger: convexLogger,
 });
 
 // Custom storage adapter for React Native using AsyncStorage

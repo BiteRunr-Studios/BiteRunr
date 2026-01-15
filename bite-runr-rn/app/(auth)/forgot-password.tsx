@@ -5,18 +5,21 @@ import {
     createFormHandlers,
     FormState,
     validateField,
+    getAuthErrorMessage,
 } from "@/lib/auth-helpers";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
+import { AuthContext } from "@/lib/convex-auth-context";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState, useEffect, useRef } from "react";
-import { View, Text, Pressable, Alert } from "react-native";
+import { useState, useEffect, useRef, useContext } from "react";
+import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 export default function ForgotPasswordScreen() {
     const { colorScheme } = useColorScheme();
+    const { sendPasswordResetCode } = useContext(AuthContext);
     const { email } = useLocalSearchParams<{
         email: string;
     }>();
@@ -92,16 +95,23 @@ export default function ForgotPasswordScreen() {
             return;
         }
 
-        // Note: Password reset with Convex Auth requires custom implementation
-        // For now, show a message that this feature is coming soon
-        Alert.alert(
-            "Coming Soon",
-            "Password reset functionality will be available soon. Please contact support if you need assistance."
-        );
-
-        // Start 60-second cooldown
-        setCooldownSeconds(60);
-        setLoading(false);
+        try {
+            await sendPasswordResetCode(form.email!.value.toLowerCase());
+            // Start 60-second cooldown
+            setCooldownSeconds(60);
+        } catch (error: unknown) {
+            const { message } = getAuthErrorMessage(error, "forgotPassword");
+            setForm((prev) => ({
+                ...prev,
+                email: {
+                    ...prev.email!,
+                    touched: true,
+                    error: message,
+                },
+            }));
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (

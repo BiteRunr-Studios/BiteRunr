@@ -1,19 +1,37 @@
 import { Button } from "@/components/common/button";
+import Icon from "@/components/common/icon";
 import { Input } from "@/components/common/input";
 import {
     createFormHandlers,
     FormState,
     validateField,
+    getAuthErrorMessage,
 } from "@/lib/auth-helpers";
-import { useState } from "react";
-import { View, Text, Alert } from "react-native";
+import { NAV_THEME } from "@/lib/constants";
+import { useColorScheme } from "@/lib/use-color-scheme";
+import { AuthContext } from "@/lib/convex-auth-context";
+import { useContext, useState, useEffect } from "react";
+import { View, Text, Alert, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { Redirect, router, useLocalSearchParams } from "expo-router";
 
 export default function ResetPasswordScreen() {
+    const { colorScheme } = useColorScheme();
+    const { resetPassword, pendingPasswordReset, sendPasswordResetCode } =
+        useContext(AuthContext);
+    const { email: emailParam } = useLocalSearchParams<{ email: string }>();
+
+    // Use email from params or from pending password reset state
+    const email = emailParam || pendingPasswordReset?.email;
+
+    const [code, setCode] = useState("");
+    const [codeError, setCodeError] = useState<string | null>(null);
+    const [resending, setResending] = useState(false);
+    const [resendCooldown, setResendCooldown] = useState(0);
+
     const [form, setForm] = useState<FormState>({
         password: {
-            label: "Password",
+            label: "New Password",
             value: "",
             error: null,
             touched: false,
@@ -31,8 +49,48 @@ export default function ResetPasswordScreen() {
     const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
 
-    async function resetPassword() {
+    // Cooldown timer for resend button
+    useEffect(() => {
+        if (resendCooldown > 0) {
+            const timer = setTimeout(
+                () => setResendCooldown(resendCooldown - 1),
+                1000
+            );
+            return () => clearTimeout(timer);
+        }
+    }, [resendCooldown]);
+
+    // If no email, redirect back to forgot password
+    if (!email) {
+        return <Redirect href="/(auth)/forgot-password" />;
+    }
+
+    const handleResend = async () => {
+        if (resendCooldown > 0) return;
+
+        setResending(true);
+        setCodeError(null);
+
+        try {
+            await sendPasswordResetCode(email);
+            setResendCooldown(60);
+        } catch (err: unknown) {
+            const { message } = getAuthErrorMessage(err, "forgotPassword");
+            setCodeError(message);
+        } finally {
+            setResending(false);
+        }
+    };
+
+    async function handleResetPassword() {
+        // Validate code
+        if (code.length !== 6) {
+            setCodeError("Please enter a 6-digit code");
+            return;
+        }
+
         setLoading(true);
+        setCodeError(null);
 
         // Validate all fields
         setForm((prev) => {
@@ -60,19 +118,40 @@ export default function ResetPasswordScreen() {
             return;
         }
 
-        // Note: Password reset with Convex Auth requires custom implementation
-        Alert.alert(
-            "Coming Soon",
-            "Password reset functionality will be available soon."
-        );
-
-        setLoading(false);
-        router.replace("/(auth)/sign-in");
+        try {
+            await resetPassword(code, form.password!.value);
+            Alert.alert(
+                "Password Reset",
+                "Your password has been reset successfully. Please sign in with your new password.",
+                [
+                    {
+                        text: "OK",
+                        onPress: () => router.replace("/(auth)/sign-in"),
+                    },
+                ]
+            );
+        } catch (error: unknown) {
+            const { message } = getAuthErrorMessage(error, "resetPassword");
+            setCodeError(message);
+        } finally {
+            setLoading(false);
+        }
     }
 
     return (
         <SafeAreaView className="flex-1 px-6 justify-center">
-            <View className="mt-10"></View>
+            {/* Back Button w/ Icon */}
+            <Pressable
+                onPress={() => router.back()}
+                className="w-fit flex-row items-center gap-2 mt-8 mb-6"
+            >
+                <Icon
+                    name="ArrowLeft"
+                    size={20}
+                    color={NAV_THEME[colorScheme].text}
+                />
+                <Text className="text-foreground text-lg">Back</Text>
+            </Pressable>
 
             {/* Title */}
             <Text className="text-3xl font-bold text-foreground mb-2">
@@ -81,11 +160,54 @@ export default function ResetPasswordScreen() {
 
             {/* Description */}
             <Text className="text-lg text-muted-foreground">
-                Type in your new password and you should be good to go! This
-                password should be different from the previous password.
+                We sent a 6-digit code to{" "}
+                <Text className="font-semibold text-foreground">{email}</Text>.
+                Enter the code and your new password below.
             </Text>
 
             <View className="mt-8" />
+
+            {/* OTP Code Field */}
+            <Input
+                value={code}
+                onChangeText={(text) => {
+                    const digits = text.replace(/\D/g, "").slice(0, 6);
+                    setCode(digits);
+                    setCodeError(null);
+                }}
+                placeholder="Enter 6-digit code"
+                leftIcon="KeyRound"
+                keyboardType="number-pad"
+                maxLength={6}
+                errorMessage={codeError}
+            />
+
+            {/* Resend Code */}
+            <View className="flex-row items-center mt-2 mb-4 gap-1">
+                <Text className="text-muted-foreground">
+                    Didn't receive the code?
+                </Text>
+                <Pressable
+                    onPress={handleResend}
+                    disabled={resending || resendCooldown > 0}
+                >
+                    <Text
+                        className={`font-semibold ${
+                            resendCooldown > 0
+                                ? "text-muted-foreground"
+                                : "text-primary"
+                        }`}
+                    >
+                        {resending
+                            ? "Sending..."
+                            : resendCooldown > 0
+                              ? `Resend in ${resendCooldown}s`
+                              : "Resend"}
+                    </Text>
+                </Pressable>
+            </View>
+
+            <View className="mt-2" />
 
             {/* Password Field*/}
             <Input
@@ -144,7 +266,7 @@ export default function ResetPasswordScreen() {
                 icon="RefreshCcwDot"
                 label={"Reset Password"}
                 loading={loading}
-                onPress={resetPassword}
+                onPress={handleResetPassword}
             />
         </SafeAreaView>
     );

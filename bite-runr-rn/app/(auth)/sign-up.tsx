@@ -6,19 +6,19 @@ import {
     createFormHandlers,
     FormState,
     validateField,
+    getAuthErrorMessage,
 } from "@/lib/auth-helpers";
 import { NAV_THEME } from "@/lib/constants";
 import { AuthContext } from "@/lib/convex-auth-context";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { router } from "expo-router";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignUpScreen() {
-    const { signIn, isLoggedIn } = useContext(AuthContext);
+    const { signUp } = useContext(AuthContext);
     const { colorScheme } = useColorScheme();
-    const [signUpAttempted, setSignUpAttempted] = useState(false);
     const [form, setForm] = useState<FormState>({
         firstName: {
             label: "First name",
@@ -44,13 +44,6 @@ export default function SignUpScreen() {
 
     const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
-
-    // Navigate to protected route once auth state confirms login after sign-up
-    useEffect(() => {
-        if (signUpAttempted && isLoggedIn) {
-            router.replace("/(protected)/(tabs)");
-        }
-    }, [signUpAttempted, isLoggedIn]);
 
     async function onSignUpWithEmail() {
         setLoading(true);
@@ -82,29 +75,40 @@ export default function SignUpScreen() {
         }
 
         try {
-            await signIn("password", {
+            await signUp({
                 email: form.email!.value.toLowerCase(),
                 password: form.password!.value,
                 firstName: form.firstName!.value,
                 lastName: form.lastName!.value,
-                flow: "signUp",
             });
-            // Mark sign-up as attempted - useEffect will handle navigation once auth state updates
-            setSignUpAttempted(true);
-        } catch (error: any) {
-            const errorMessage = error?.message ?? "Sign-up failed";
+            // Navigation is handled by the signUp function in auth context
+        } catch (error: unknown) {
+            const { message, field } = getAuthErrorMessage(error, "signUp");
 
-            setForm((prev) => ({
-                ...prev,
-                email: {
-                    ...prev.email!,
-                    touched: true,
-                    error: errorMessage,
-                },
-            }));
+            setForm((prev) => {
+                if (field === "password") {
+                    return {
+                        ...prev,
+                        password: {
+                            ...prev.password!,
+                            touched: true,
+                            error: message,
+                        },
+                    };
+                }
+                // Default to showing error on email field
+                return {
+                    ...prev,
+                    email: {
+                        ...prev.email!,
+                        touched: true,
+                        error: message,
+                    },
+                };
+            });
+        } finally {
             setLoading(false);
         }
-        // Don't set loading to false on success - keep loading while waiting for auth state
     }
 
     return (

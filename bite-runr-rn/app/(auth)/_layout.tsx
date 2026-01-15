@@ -3,7 +3,7 @@ import { Redirect, Stack } from "expo-router";
 import { AuthContext } from "@/lib/convex-auth-context";
 
 export default function AuthLayout() {
-    const { isReady, isLoggedIn, isLoading } = useContext(AuthContext);
+    const { isReady, isLoggedIn, isLoading, isSigningUp } = useContext(AuthContext);
 
     // Wait for auth to be ready
     if (!isReady || isLoading) {
@@ -11,7 +11,8 @@ export default function AuthLayout() {
     }
 
     // Redirect to protected area if already logged in
-    if (isLoggedIn) {
+    // Don't redirect during sign-up flow (brief moment between account creation and sign out)
+    if (isLoggedIn && !isSigningUp) {
         return <Redirect href="/(protected)/(tabs)" />;
     }
 

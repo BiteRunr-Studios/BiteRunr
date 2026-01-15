@@ -3,6 +3,8 @@ import Google from "@auth/core/providers/google";
 import { Password } from "@convex-dev/auth/providers/Password";
 import { convexAuth } from "@convex-dev/auth/server";
 import { DataModel } from "./_generated/dataModel";
+import { ResendOTP } from "./ResendOTP";
+import { ResendPasswordReset } from "./ResendPasswordReset";
 
 const CustomPassword = Password<DataModel>({
   profile(params) {
@@ -12,6 +14,10 @@ const CustomPassword = Password<DataModel>({
       lastName: params.lastName as string,
     };
   },
+  // Require email verification before completing sign-up
+  verify: ResendOTP,
+  // Enable password reset via email
+  reset: ResendPasswordReset,
 });
 
 export const { auth, signIn, signOut, store } = convexAuth({

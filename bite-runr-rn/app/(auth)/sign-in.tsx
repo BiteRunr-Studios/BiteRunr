@@ -6,6 +6,7 @@ import {
     createFormHandlers,
     FormState,
     validateField,
+    getAuthErrorMessage,
 } from "@/lib/auth-helpers";
 import { NAV_THEME } from "@/lib/constants";
 import { AuthContext } from "@/lib/convex-auth-context";
@@ -68,17 +69,47 @@ export default function SignInScreen() {
                 flow: "signIn",
             });
             router.replace("/(protected)/(tabs)");
-        } catch (error: any) {
-            const errorMessage = error?.message?.toLowerCase() ?? "sign-in failed";
+        } catch (error: unknown) {
+            // Debug: log the raw error to understand what Convex returns
+            console.log("Sign-in error:", error);
+            console.log("Error message:", error instanceof Error ? error.message : String(error));
 
-            setForm((prev) => ({
-                ...prev,
-                email: {
-                    ...prev.email!,
-                    touched: true,
-                    error: errorMessage,
-                },
-            }));
+            const { message, field, requiresVerification } = getAuthErrorMessage(error, "signIn");
+
+            // If email is not verified, redirect to verification flow
+            if (requiresVerification) {
+                setPendingAuth({
+                    email: form.email!.value.toLowerCase(),
+                    password: form.password!.value,
+                });
+                router.push("/(auth)/confirm-sign-up");
+                return;
+            }
+
+            // Always show an error message
+            const errorToShow = message || "Sign in failed. Please try again.";
+
+            setForm((prev) => {
+                if (field === "password") {
+                    return {
+                        ...prev,
+                        password: {
+                            ...prev.password!,
+                            touched: true,
+                            error: errorToShow,
+                        },
+                    };
+                }
+                // Default to showing error on email field
+                return {
+                    ...prev,
+                    email: {
+                        ...prev.email!,
+                        touched: true,
+                        error: errorToShow,
+                    },
+                };
+            });
         } finally {
             setLoading(false);
         }
