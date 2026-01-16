@@ -22,10 +22,7 @@ export function HeaderBar() {
                     className="px-3 py-2 rounded-lg active:opacity-80"
                     accessibilityRole="button"
                     accessibilityLabel="Notifications">
-                    <TabBarIcon
-                        name="notifications"
-                        color="hsl(215.4 16.3% 46.9%)"
-                    />
+                    <TabBarIcon name="Bell" color="hsl(215.4 16.3% 46.9%)" />
                 </Pressable>
             </View>
         </View>

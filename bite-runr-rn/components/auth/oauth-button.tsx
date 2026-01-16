@@ -11,8 +11,8 @@ import { Alert, Pressable, Text, Animated } from "react-native";
 import { Flow } from "react-native-animated-spinkit";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { NAV_THEME } from "@/lib/constants";
-import { TabBarIcon } from "@/components/layout/tabbar-icon";
 import { AuthContext } from "@/lib/convex-auth-context";
+import { Ionicons } from "@expo/vector-icons";
 
 type OAuthProvider = "github" | "google";
 
@@ -92,21 +92,23 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
                 "w-full flex-row items-center h-[55px] justify-center gap-2 rounded-2xl p-4 border border-muted active:opacity-80"
             }
             accessibilityRole="button"
-            accessibilityLabel={label ?? defaultLabel}
-        >
+            accessibilityLabel={label ?? defaultLabel}>
             <Animated.View
                 style={{
                     width: spinnerWidth,
                     opacity: spinnerOpacity,
                     overflow: "hidden",
-                }}
-            >
+                }}>
                 {loading && (
                     <Flow color={NAV_THEME[colorScheme].text} size={22} />
                 )}
             </Animated.View>
 
-            <TabBarIcon name={iconName} color={NAV_THEME[colorScheme].text} />
+            <Ionicons
+                name={iconName}
+                color={NAV_THEME[colorScheme].text}
+                size={24}
+            />
 
             <Text className={"text-foreground font-semibold text-lg"}>
                 {label ?? defaultLabel}

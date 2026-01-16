@@ -10,11 +10,12 @@ import {
     ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import Icon from "@/components/common/icon";
+import { Input } from "@/components/common/input";
 
 type Tab = "friends" | "requests" | "search";
 
@@ -28,11 +29,7 @@ export default function FriendsScreen() {
                 <Pressable
                     onPress={() => router.back()}
                     className="p-2 -ml-2 rounded-full active:opacity-70">
-                    <Ionicons
-                        name="chevron-back"
-                        size={24}
-                        color="#f97316"
-                    />
+                    <Icon name="ChevronLeft" size={24} color="#f97316" />
                 </Pressable>
                 <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
                     Friends
@@ -79,7 +76,8 @@ function TabButton({
     showBadge?: boolean;
 }) {
     const pendingCount = useQuery(api.friends.pendingRequestCount);
-    const hasPending = showBadge && typeof pendingCount === "number" && pendingCount > 0;
+    const hasPending =
+        showBadge && typeof pendingCount === "number" && pendingCount > 0;
 
     return (
         <Pressable
@@ -151,7 +149,7 @@ function FriendsList() {
     if (!friends || friends.length === 0) {
         return (
             <View className="items-center justify-center flex-1 px-6">
-                <Ionicons name="people-outline" size={64} color="#666" />
+                <Icon name="User" size={64} color="#666" />
                 <Text className="mt-4 text-lg font-medium text-center text-foreground">
                     No friends yet
                 </Text>
@@ -227,7 +225,7 @@ function FriendRequests() {
     if (!requests || requests.length === 0) {
         return (
             <View className="items-center justify-center flex-1 px-6">
-                <Ionicons name="mail-outline" size={64} color="#666" />
+                <Icon name="Mail" size={64} color="#666" />
                 <Text className="mt-4 text-lg font-medium text-center text-foreground">
                     No pending requests
                 </Text>
@@ -284,33 +282,23 @@ function SearchUsers() {
     return (
         <View className="flex-1 px-4">
             {/* Search Input */}
-            <View className="flex-row items-center px-4 mb-4 border rounded-xl border-muted bg-background">
-                <Ionicons
-                    name="search"
-                    size={20}
-                    color="#666"
-                    style={{ marginRight: 8 }}
-                />
-                <TextInput
-                    className="flex-1 py-3 text-foreground"
-                    placeholder="Search by name or email..."
-                    placeholderTextColor="#666"
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                />
-                {searchQuery.length > 0 && (
-                    <Pressable onPress={() => setSearchQuery("")}>
-                        <Ionicons name="close-circle" size={20} color="#666" />
-                    </Pressable>
-                )}
-            </View>
+            <Input
+                placeholder="Search by name or email..."
+                value={searchQuery}
+                leftIcon="Search"
+                errorMessage=""
+                rightIcon="CircleX"
+                onRightIconPress={() => setSearchQuery("")}
+                rightIconColor="#666"
+                onChangeText={setSearchQuery}
+                autoCapitalize="none"
+                autoCorrect={false}
+            />
 
             {/* Search Results */}
             {searchQuery.length < 2 && (
                 <View className="items-center justify-center flex-1">
-                    <Ionicons name="search-outline" size={64} color="#666" />
+                    <Icon name="Search" size={64} color="#666" />
                     <Text className="mt-4 text-center text-muted-foreground">
                         Enter at least 2 characters to search
                     </Text>
@@ -327,11 +315,7 @@ function SearchUsers() {
                 searchResults &&
                 searchResults.length === 0 && (
                     <View className="items-center justify-center flex-1">
-                        <Ionicons
-                            name="person-outline"
-                            size={64}
-                            color="#666"
-                        />
+                        <Icon name="User" size={64} color="#666" />
                         <Text className="mt-4 text-lg font-medium text-center text-foreground">
                             No users found
                         </Text>
@@ -396,7 +380,7 @@ function FriendCard({
                 {isRemoving ? (
                     <ActivityIndicator size="small" color="#ef4444" />
                 ) : (
-                    <Ionicons name="person-remove" size={20} color="#ef4444" />
+                    <Icon name="UserMinus" size={20} color="#ef4444" />
                 )}
             </Pressable>
         </View>

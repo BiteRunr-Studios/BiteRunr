@@ -8,12 +8,14 @@ import {
     Pressable,
     FlatList,
     ActivityIndicator,
+    Image,
 } from "react-native";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 
 export interface SelectableItem {
     id: string;
     displayName: string;
+    avatarUrl?: string | null;
 }
 
 interface MultiSelectSheetProps {
@@ -132,9 +134,23 @@ export function MultiSelectSheet({
                                     onPress={() => toggleSelection(item.id)}
                                     className="px-4 py-4 border-b border-border">
                                     <View className="flex-row items-center justify-between">
-                                        <Text className="text-base text-foreground">
-                                            {item.displayName}
-                                        </Text>
+                                        <View className="flex-row items-center flex-1">
+                                            {item.avatarUrl ? (
+                                                <Image
+                                                    source={{ uri: item.avatarUrl }}
+                                                    className="w-10 h-10 mr-3 rounded-full"
+                                                />
+                                            ) : item.avatarUrl === null ? (
+                                                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-muted">
+                                                    <Text className="text-lg font-semibold text-muted-foreground">
+                                                        {item.displayName.charAt(0).toUpperCase()}
+                                                    </Text>
+                                                </View>
+                                            ) : null}
+                                            <Text className="text-base text-foreground">
+                                                {item.displayName}
+                                            </Text>
+                                        </View>
                                         {isSelected && (
                                             <View className="items-center justify-center w-6 h-6 rounded-full bg-primary">
                                                 <Text className="font-bold text-white">

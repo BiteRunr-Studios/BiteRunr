@@ -74,3 +74,48 @@ export const updateProfile = mutation({
     return userId;
   },
 });
+
+// Generate an upload URL for avatar images
+export const generateAvatarUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
+// Update user avatar from uploaded file
+export const updateAvatar = mutation({
+  args: {
+    storageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    // Get the URL for the uploaded file
+    const avatarUrl = await ctx.storage.getUrl(args.storageId);
+    if (!avatarUrl) throw new Error("Failed to get avatar URL");
+
+    // Update the user's avatar URL
+    await ctx.db.patch(userId, { avatarUrl });
+
+    return { avatarUrl };
+  },
+});
+
+// Remove user avatar
+export const removeAvatar = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    // Set avatar URL to undefined to remove it
+    await ctx.db.patch(userId, { avatarUrl: undefined });
+
+    return { success: true };
+  },
+});

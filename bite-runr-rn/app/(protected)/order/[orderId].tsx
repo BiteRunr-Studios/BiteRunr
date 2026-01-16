@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     Animated,
     Alert,
+    Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
@@ -187,25 +188,22 @@ export default function SpecificOrder() {
     return (
         <>
             <SafeAreaView edges={["top"]}></SafeAreaView>
-            <View className="flex flex-row items-center justify-between px-6 py-4">
-                <TouchableOpacity
-                    className="flex-row items-center justify-center gap-2"
-                    onPress={() => router.dismiss()}>
-                    <Icon
-                        name="ArrowLeft"
-                        color={NAV_THEME[colorScheme].primary}
-                        size={22}
-                    />
-                    <Text
-                        className="text-lg font-semibold text-center"
-                        style={{ color: NAV_THEME[colorScheme].primary }}>
-                        Back
-                    </Text>
-                </TouchableOpacity>
+            {/* Header */}
+            <View className="flex-row items-center justify-between px-4 py-3 my-4 border-b border-border">
+                <Pressable
+                    onPress={() => router.back()}
+                    className="p-2 -ml-2 rounded-full active:opacity-70">
+                    <Icon name="ChevronLeft" size={24} color="#f97316" />
+                </Pressable>
+                <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
+                    Order
+                </Text>
                 <TouchableOpacity onPress={handleCancelOrder}>
                     <Text
                         className="text-lg font-semibold text-center"
-                        style={{ color: NAV_THEME[colorScheme].notification }}>
+                        style={{
+                            color: NAV_THEME[colorScheme].notification,
+                        }}>
                         Cancel Order
                     </Text>
                 </TouchableOpacity>
