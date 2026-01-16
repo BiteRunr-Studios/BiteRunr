@@ -1,6 +1,4 @@
-import * as QueryParams from "expo-auth-session/build/QueryParams";
 import { makeRedirectUri } from "expo-auth-session";
-import { supabase } from "@/lib/supabase";
 
 export type FieldState = {
     label: string;
@@ -82,16 +80,191 @@ export const redirectTo = makeRedirectUri({
     path: "auth/callback",
 });
 
-export async function createSessionFromUrl(url: string) {
-    const { params, errorCode } = QueryParams.getQueryParams(url);
-    if (errorCode) throw new Error(errorCode);
-    const { access_token, refresh_token } = params;
-    if (!access_token || !refresh_token) return;
-    const { error } = await supabase.auth.setSession({
-        access_token,
-        refresh_token,
-    });
-    if (error) throw error;
+/**
+ * Maps backend auth error messages to user-friendly messages.
+ * Returns an object with the error message and which field it should be displayed on.
+ */
+export type AuthErrorResult = {
+    message: string;
+    field: "email" | "password" | "code" | "general";
+    requiresVerification?: boolean;
+};
+
+export function getAuthErrorMessage(
+    error: unknown,
+    context: "signIn" | "signUp" | "verify" | "resetPassword" | "forgotPassword"
+): AuthErrorResult {
+    // Extract error message from various error formats
+    let errorMessage = "";
+    if (error instanceof Error) {
+        errorMessage = error.message;
+    } else if (typeof error === "string") {
+        errorMessage = error;
+    } else if (error && typeof error === "object") {
+        // Handle Convex error format and other object shapes
+        const errObj = error as Record<string, unknown>;
+        if (typeof errObj.message === "string") {
+            errorMessage = errObj.message;
+        } else if (errObj.data && typeof (errObj.data as Record<string, unknown>).message === "string") {
+            errorMessage = (errObj.data as Record<string, unknown>).message as string;
+        } else {
+            errorMessage = JSON.stringify(error);
+        }
+    }
+    const lowerMessage = errorMessage.toLowerCase();
+
+    // Sign In errors - use generic message to prevent account enumeration
+    if (context === "signIn") {
+        if (
+            lowerMessage.includes("invalid password") ||
+            lowerMessage.includes("wrong password") ||
+            lowerMessage.includes("incorrect password") ||
+            lowerMessage.includes("invalid secret") ||
+            (lowerMessage.includes("password") && lowerMessage.includes("invalid")) ||
+            (lowerMessage.includes("secret") && lowerMessage.includes("invalid")) ||
+            lowerMessage.includes("user not found") ||
+            lowerMessage.includes("no user") ||
+            lowerMessage.includes("account not found") ||
+            lowerMessage.includes("could not find") ||
+            lowerMessage.includes("couldn't find")
+        ) {
+            // Generic message prevents attackers from determining if email exists
+            return {
+                message: "Invalid email or password.",
+                field: "general",
+            };
+        }
+        if (
+            lowerMessage.includes("not verified") ||
+            lowerMessage.includes("email verification") ||
+            lowerMessage.includes("verify your email") ||
+            lowerMessage.includes("email not verified")
+        ) {
+            return {
+                message: "Please verify your email before signing in.",
+                field: "email",
+                requiresVerification: true,
+            };
+        }
+        if (
+            lowerMessage.includes("too many") ||
+            lowerMessage.includes("rate limit")
+        ) {
+            return {
+                message: "Too many attempts. Please try again later.",
+                field: "general",
+            };
+        }
+        if (lowerMessage.includes("invalid credentials")) {
+            return {
+                message: "Invalid email or password.",
+                field: "general",
+            };
+        }
+    }
+
+    // Sign Up errors
+    if (context === "signUp") {
+        if (
+            lowerMessage.includes("already exists") ||
+            lowerMessage.includes("already registered") ||
+            lowerMessage.includes("email in use") ||
+            lowerMessage.includes("account already")
+        ) {
+            return {
+                message: "An account with this email already exists.",
+                field: "email",
+            };
+        }
+        if (
+            lowerMessage.includes("weak password") ||
+            lowerMessage.includes("password too short") ||
+            lowerMessage.includes("password requirements")
+        ) {
+            return {
+                message: "Password is too weak. Use at least 8 characters.",
+                field: "password",
+            };
+        }
+    }
+
+    // Email verification errors
+    if (context === "verify") {
+        if (
+            lowerMessage.includes("invalid code") ||
+            lowerMessage.includes("incorrect code") ||
+            lowerMessage.includes("wrong code")
+        ) {
+            return {
+                message: "Invalid verification code. Please check and try again.",
+                field: "code",
+            };
+        }
+        if (
+            lowerMessage.includes("expired") ||
+            lowerMessage.includes("code has expired")
+        ) {
+            return {
+                message: "This code has expired. Please request a new one.",
+                field: "code",
+            };
+        }
+        if (
+            lowerMessage.includes("too many") ||
+            lowerMessage.includes("rate limit")
+        ) {
+            return {
+                message: "Too many attempts. Please wait before trying again.",
+                field: "code",
+            };
+        }
+    }
+
+    // Password reset errors
+    if (context === "resetPassword") {
+        if (
+            lowerMessage.includes("invalid code") ||
+            lowerMessage.includes("incorrect code") ||
+            lowerMessage.includes("wrong code")
+        ) {
+            return {
+                message: "Invalid reset code. Please check and try again.",
+                field: "code",
+            };
+        }
+        if (
+            lowerMessage.includes("expired") ||
+            lowerMessage.includes("code has expired")
+        ) {
+            return {
+                message: "This code has expired. Please request a new one.",
+                field: "code",
+            };
+        }
+    }
+
+    // Forgot password errors - use generic message to prevent account enumeration
+    // Note: Ideally, the backend should always return success for forgot password
+    // to prevent enumeration, but we handle it here as a fallback
+    if (context === "forgotPassword") {
+        if (
+            lowerMessage.includes("user not found") ||
+            lowerMessage.includes("no user") ||
+            lowerMessage.includes("account not found")
+        ) {
+            // Don't reveal whether account exists - show generic success-like message
+            return {
+                message: "If an account exists with this email, you will receive a reset code.",
+                field: "general",
+            };
+        }
+    }
+
+    // Default fallback
+    return {
+        message: errorMessage || "Something went wrong. Please try again.",
+        field: "general",
+    };
 }
 
 export function splitName(fullName: string | null | undefined): {

@@ -1,69 +1,56 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiFetch } from "../api";
-import { CreateOrderRequest, Friend, Location, Order } from "../types";
-import { supabase } from "../supabase";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+import { useState } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 export function useLocations() {
-    return useQuery({
-        queryKey: ["locations"],
-        queryFn: async () => {
-            return apiFetch<Location[]>(`${API_URL}/locations`);
-        },
-    });
+    const data = useQuery(api.locations.list);
+    return {
+        data: data?.map((loc) => ({
+            id: loc._id,
+            name: loc.name,
+            address: loc.address,
+        })) ?? [],
+        isLoading: data === undefined,
+    };
 }
 
 export function useFriends() {
-    return useQuery({
-        queryKey: ["friends"],
-        queryFn: async () => {
-            const { data } = await supabase.auth.getUser();
-            if (!data.user?.id) throw new Error("No authenticated user");
-
-            return apiFetch<Friend[]>(
-                `${API_URL}/users/${data.user.id}/friends`
-            );
-        },
-    });
+    const data = useQuery(api.friends.list);
+    return {
+        data: data?.map((friend) => ({
+            id: friend.id,
+            first_name: friend.firstName,
+            last_name: friend.lastName,
+            avatar_url: friend.avatarUrl,
+        })) ?? [],
+        isLoading: data === undefined,
+    };
 }
 
 export function useCreateOrder() {
-    const queryClient = useQueryClient();
+    const createOrder = useMutation(api.orders.create);
+    const [isPending, setIsPending] = useState(false);
 
-    return useMutation({
-        mutationFn: async (orderData: {
+    return {
+        mutateAsync: async (orderData: {
             name: string;
             comments: string | null;
             locationIds: string[];
             friendIds: string[];
         }) => {
-            const { data } = await supabase.auth.getUser();
-            if (!data.user?.id) throw new Error("No authenticated user");
-
-            const requestBody: CreateOrderRequest = {
-                name: orderData.name,
-                comments: orderData.comments,
-                status: "active",
-                paused: false,
-                creator_id: data.user.id,
-                order_locations: orderData.locationIds.map((locationId) => ({
-                    order_id: "",
-                    location_id: locationId,
-                })),
-                order_users: orderData.friendIds.map((friendId) => ({
-                    order_id: "",
-                    user_id: friendId,
-                })),
-            };
-
-            return apiFetch<Order>(`${API_URL}/orders`, {
-                method: "POST",
-                body: requestBody,
-            });
+            setIsPending(true);
+            try {
+                return await createOrder({
+                    name: orderData.name,
+                    comments: orderData.comments ?? undefined,
+                    locationIds: orderData.locationIds as Id<"locations">[],
+                    friendIds: orderData.friendIds as Id<"users">[],
+                });
+            } finally {
+                setIsPending(false);
+            }
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["orders"] });
-        },
-    });
+        isPending,
+    };
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Image, Pressable } from "react-native";
+import { View, Image, Pressable, Alert } from "react-native";
 import { TabBarIcon } from "@/components/layout/tabbar-icon";
 import { router } from "expo-router";
 
@@ -18,14 +18,11 @@ export function HeaderBar() {
                 </Pressable>
 
                 <Pressable
-                    onPress={() => router.navigate("/notifications")}
+                    onPress={() => Alert.alert("Notifications", "Coming soon!")}
                     className="px-3 py-2 rounded-lg active:opacity-80"
                     accessibilityRole="button"
                     accessibilityLabel="Notifications">
-                    <TabBarIcon
-                        name="notifications"
-                        color="hsl(215.4 16.3% 46.9%)"
-                    />
+                    <TabBarIcon name="Bell" color="hsl(215.4 16.3% 46.9%)" />
                 </Pressable>
             </View>
         </View>

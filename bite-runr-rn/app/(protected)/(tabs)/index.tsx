@@ -1,41 +1,29 @@
 // HomeTab.tsx
 import React from "react";
-import { Alert, ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { PageWithHeader } from "@/components/layout/page-with-header";
-import { useQuery } from "@tanstack/react-query";
-import { getUserOrdersDetails } from "@/api/home/orders";
-import { UserOrderDetails } from "@/lib/types";
+import { ErrorBoundary } from "@/components/common/error-boundary";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export default function HomeTab() {
-    const { data, isPending, isError, error } = useQuery<UserOrderDetails[]>({
-        queryKey: ["userOrdersDetails"],
-        queryFn: getUserOrdersDetails,
-    });
+    const data = useQuery(api.orders.getWithDetails);
+    const isPending = data === undefined;
 
     return (
         <PageWithHeader title="Account">
-            <ScrollView className="flex-1 px-6 py-0">
+            <ErrorBoundary>
+                <ScrollView className="flex-1 px-6 py-0">
                 {isPending && (
                     <View className="mt-6">
                         <ActivityIndicator />
                         <Text className="mt-2 text-muted-foreground">
-                            Loading orders…
+                            Loading orders...
                         </Text>
                     </View>
                 )}
 
-                {isError && (
-                    <View className="mt-6">
-                        <Text className="font-semibold text-red-600">
-                            Failed to load orders
-                        </Text>
-                        <Text className="text-muted-foreground">
-                            {(error as Error)?.message ?? "Unknown error"}
-                        </Text>
-                    </View>
-                )}
-
-                {!isPending && !isError && (!data || data.length === 0) && (
+                {!isPending && (!data || data.length === 0) && (
                     <View className="mt-6">
                         <Text className="text-muted-foreground">
                             No orders found.
@@ -43,7 +31,7 @@ export default function HomeTab() {
                     </View>
                 )}
 
-                {!isPending && !isError && data && (
+                {!isPending && data && data.length > 0 && (
                     <View className="mt-6">
                         <Text className="mb-2 text-xl font-semibold">
                             Your Orders
@@ -52,9 +40,9 @@ export default function HomeTab() {
                         {data.map(
                             ({
                                 order,
-                                order_users,
-                                items_count,
-                                people_count,
+                                orderUsers,
+                                itemsCount,
+                                peopleCount,
                             }) => (
                                 <View key={order.id} className="mb-4">
                                     <Text className="text-lg text-foreground">
@@ -62,19 +50,19 @@ export default function HomeTab() {
                                     </Text>
                                     <Text className="text-muted-foreground">
                                         Status: {order.status} • Items:{" "}
-                                        {items_count} • People: {people_count}
+                                        {itemsCount} • People: {peopleCount}
                                     </Text>
 
                                     <View className="mt-2">
-                                        {order_users.map((ou) => (
+                                        {orderUsers.map((ou) => (
                                             <View key={ou.id} className="py-1">
                                                 <Text className="text-foreground">
-                                                    {ou.user?.first_name}{" "}
-                                                    {ou.user?.last_name} —{" "}
+                                                    {ou.user?.firstName}{" "}
+                                                    {ou.user?.lastName} —{" "}
                                                     {ou.status}
                                                 </Text>
                                                 <Text className="text-muted-foreground">
-                                                    Owes ${ou.amount_owed}
+                                                    Owes ${(ou.amountOwed / 100).toFixed(2)}
                                                 </Text>
                                             </View>
                                         ))}
@@ -85,6 +73,7 @@ export default function HomeTab() {
                     </View>
                 )}
             </ScrollView>
+            </ErrorBoundary>
         </PageWithHeader>
     );
 }

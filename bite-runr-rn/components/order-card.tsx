@@ -1,23 +1,49 @@
 import { NAV_THEME } from "@/lib/constants";
-import { Order, OrderStatus } from "@/lib/types";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { View, Text, Image } from "react-native";
 import Icon from "./common/icon";
 
-export function OrderCard(order: Order) {
-    const isCancelled = order.status === OrderStatus.Cancelled;
-    const isActive = order.status === OrderStatus.Active;
+type OrderStatus = "created" | "active" | "completed" | "cancelled";
+
+interface OrderUser {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    avatarUrl?: string | null;
+}
+
+interface OrderCardProps {
+    id: string;
+    name: string;
+    comments?: string | null;
+    status: OrderStatus;
+    paused: boolean;
+    createdAt: number | Date;
+    orderUsers?: OrderUser[];
+}
+
+export function OrderCard({
+    name,
+    comments,
+    status,
+    createdAt,
+    orderUsers,
+}: OrderCardProps) {
+    const isCancelled = status === "cancelled";
+    const isActive = status === "active";
     const { colorScheme } = useColorScheme();
+
+    const createdDate = typeof createdAt === "number" ? new Date(createdAt) : createdAt;
 
     return (
         <View className="flex-col w-full gap-2 p-4 border rounded-2xl border-muted bg-card">
             <View className="flex-row justify-between">
                 <Text className="text-lg text-muted-foreground">
-                    {`${new Date(order.created_at).toLocaleDateString("en-US", {
+                    {`${createdDate.toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
-                    })} · ${new Date(order.created_at).toLocaleTimeString(
+                    })} · ${createdDate.toLocaleTimeString(
                         "en-US",
                         {
                             hour: "numeric",
@@ -61,52 +87,56 @@ export function OrderCard(order: Order) {
                 </View>
 
                 <Text className="w-full text-3xl font-semibold truncate text-foreground">
-                    {order.name}
+                    {name}
                 </Text>
             </View>
-            <Text className="text-sm text-muted-foreground" numberOfLines={2}>
-                {order.comments}
-            </Text>
-            <View className="flex-row items-center">
-                {order.orderUsers
-                    ?.slice(0, order.orderUsers?.length > 4 ? 3 : 4)
-                    .map((order_user, idx) => (
-                        <View
-                            key={idx}
-                            style={{
-                                marginLeft: idx > 0 ? -18 : 0,
-                                backgroundColor:
-                                    NAV_THEME[colorScheme].background,
-                            }}
-                            className="border-2 rounded-full border-card">
-                            <Image
+            {comments && (
+                <Text className="text-sm text-muted-foreground" numberOfLines={2}>
+                    {comments}
+                </Text>
+            )}
+            {orderUsers && orderUsers.length > 0 && (
+                <View className="flex-row items-center">
+                    {orderUsers
+                        .slice(0, orderUsers.length > 4 ? 3 : 4)
+                        .map((orderUser, idx) => (
+                            <View
+                                key={orderUser.id}
                                 style={{
-                                    width: 36,
-                                    height: 36,
+                                    marginLeft: idx > 0 ? -18 : 0,
+                                    backgroundColor:
+                                        NAV_THEME[colorScheme].background,
                                 }}
-                                className="rounded-full"
-                                source={{
-                                    uri:
-                                        order_user.user?.avatar_url ??
-                                        `https://ui-avatars.com/api/?name=${order_user.user?.first_name}+${order_user.user?.last_name}&background=FFE7CC&color=000`,
-                                }}
-                            />
+                                className="border-2 rounded-full border-card">
+                                <Image
+                                    style={{
+                                        width: 36,
+                                        height: 36,
+                                    }}
+                                    className="rounded-full"
+                                    source={{
+                                        uri:
+                                            orderUser.avatarUrl ??
+                                            `https://ui-avatars.com/api/?name=${orderUser.firstName ?? ""}+${orderUser.lastName ?? ""}&background=FFE7CC&color=000`,
+                                    }}
+                                />
+                            </View>
+                        ))}
+                    {orderUsers.length > 4 && (
+                        <View
+                            style={{
+                                marginLeft: -18,
+                                width: 36,
+                                height: 36,
+                            }}
+                            className="flex items-center justify-center border-2 rounded-full border-card bg-primary">
+                            <Text className="text-xs font-semibold text-foreground">
+                                +{orderUsers.length - 3}
+                            </Text>
                         </View>
-                    ))}
-                {order.orderUsers && order.orderUsers.length > 4 && (
-                    <View
-                        style={{
-                            marginLeft: -18,
-                            width: 36,
-                            height: 36,
-                        }}
-                        className="flex items-center justify-center border-2 rounded-full border-card bg-primary">
-                        <Text className="text-xs font-semibold text-foreground">
-                            +{order.orderUsers.length - 3}
-                        </Text>
-                    </View>
-                )}
-            </View>
+                    )}
+                </View>
+            )}
         </View>
     );
 }

@@ -10,7 +10,7 @@ import {
     KeyboardAvoidingView,
     Platform,
 } from "react-native";
-import { PageWithHeader } from "@/components/layout/page-with-header";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
     MultiSelectSheet,
     SelectableItem,
@@ -21,6 +21,9 @@ import {
     useCreateOrder,
 } from "@/lib/hooks/use-order-api";
 import { router } from "expo-router";
+import Icon from "@/components/common/icon";
+import { NAV_THEME } from "@/lib/constants";
+import { useColorScheme } from "@/lib/use-color-scheme";
 
 interface FieldErrors {
     name?: string;
@@ -29,6 +32,7 @@ interface FieldErrors {
 }
 
 export default function CreateOrder() {
+    const { colorScheme } = useColorScheme();
     const [name, setName] = useState("");
     const [comments, setComments] = useState("");
     const [selectedLocationIds, setSelectedLocationIds] = useState<string[]>(
@@ -53,6 +57,7 @@ export default function CreateOrder() {
     const friendItems: SelectableItem[] = friends.map((friend) => ({
         id: friend.id,
         displayName: `${friend.first_name} ${friend.last_name}`,
+        avatarUrl: friend.avatar_url,
     }));
 
     const selectedLocationsText =
@@ -131,7 +136,23 @@ export default function CreateOrder() {
     };
 
     return (
-        <PageWithHeader title="Create Order">
+        <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
+            {/* Header */}
+            <View className="flex-row items-center px-4 py-3 border-b border-border">
+                <Pressable
+                    onPress={() => router.back()}
+                    className="p-2 -ml-2 rounded-full active:opacity-70">
+                    <Icon
+                        name="ChevronLeft"
+                        size={24}
+                        color={NAV_THEME[colorScheme].primary}
+                    />
+                </Pressable>
+                <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
+                    Create Order
+                </Text>
+            </View>
+
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
                 className="flex-1">
@@ -310,6 +331,6 @@ export default function CreateOrder() {
                 title="Select Friends"
                 isLoading={isLoadingFriends}
             />
-        </PageWithHeader>
+        </SafeAreaView>
     );
 }
