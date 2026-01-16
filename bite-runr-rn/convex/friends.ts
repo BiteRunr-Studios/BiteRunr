@@ -157,3 +157,114 @@ export const rejectRequest = mutation({
     return true;
   },
 });
+
+// Search users by name or email (excludes current user, existing friends, and pending requests)
+export const searchUsers = query({
+  args: { query: v.string() },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return [];
+
+    const searchQuery = args.query.toLowerCase().trim();
+    if (searchQuery.length < 2) return [];
+
+    // Get all users
+    const allUsers = await ctx.db.query("users").collect();
+
+    // Get current user's friends
+    const friendships = await ctx.db
+      .query("friends")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+    const friendIds = new Set(friendships.map((f) => f.friendId));
+
+    // Get pending requests (both sent and received)
+    const sentRequests = await ctx.db
+      .query("friendRequests")
+      .withIndex("by_senderId", (q) => q.eq("senderId", userId))
+      .filter((q) => q.eq(q.field("status"), "pending"))
+      .collect();
+    const receivedRequests = await ctx.db
+      .query("friendRequests")
+      .withIndex("by_receiverId", (q) => q.eq("receiverId", userId))
+      .filter((q) => q.eq(q.field("status"), "pending"))
+      .collect();
+
+    const pendingUserIds = new Set([
+      ...sentRequests.map((r) => r.receiverId),
+      ...receivedRequests.map((r) => r.senderId),
+    ]);
+
+    // Filter and search
+    const results = allUsers
+      .filter((user) => {
+        // Exclude self
+        if (user._id === userId) return false;
+        // Exclude existing friends
+        if (friendIds.has(user._id)) return false;
+        // Exclude users with pending requests
+        if (pendingUserIds.has(user._id)) return false;
+
+        // Search by name or email
+        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+        const email = user.email.toLowerCase();
+        return fullName.includes(searchQuery) || email.includes(searchQuery);
+      })
+      .slice(0, 20); // Limit results
+
+    return results.map((user) => ({
+      id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      avatarUrl: user.avatarUrl,
+    }));
+  },
+});
+
+// Remove a friend (unfriend)
+export const removeFriend = mutation({
+  args: { friendId: v.id("users") },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    // Find and delete both friendship records (bidirectional)
+    const friendship1 = await ctx.db
+      .query("friends")
+      .withIndex("by_userId_friendId", (q) =>
+        q.eq("userId", userId).eq("friendId", args.friendId)
+      )
+      .first();
+
+    const friendship2 = await ctx.db
+      .query("friends")
+      .withIndex("by_userId_friendId", (q) =>
+        q.eq("userId", args.friendId).eq("friendId", userId)
+      )
+      .first();
+
+    if (friendship1) await ctx.db.delete(friendship1._id);
+    if (friendship2) await ctx.db.delete(friendship2._id);
+
+    return true;
+  },
+});
+
+// Get count of pending friend requests
+export const pendingRequestCount = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return 0;
+
+    const requests = await ctx.db
+      .query("friendRequests")
+      .withIndex("by_receiverId_status", (q) =>
+        q.eq("receiverId", userId).eq("status", "pending")
+      )
+      .collect();
+
+    return requests.length;
+  },
+});

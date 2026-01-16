@@ -32,6 +32,12 @@ export default function ProtectedLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="account"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 }

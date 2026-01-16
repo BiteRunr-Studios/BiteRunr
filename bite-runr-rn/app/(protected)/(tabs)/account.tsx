@@ -21,6 +21,7 @@ import Animated, {
 import { AuthContext } from "@/lib/convex-auth-context";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { router } from "expo-router";
 
 type Item = {
     key: string;
@@ -159,6 +160,7 @@ export default function AccountTab() {
                                 title={item.title}
                                 subtitle={item.subtitle}
                                 testID={`listitem-${item.key}`}
+                                onPress={() => router.push(item.href as any)}
                             />
                         )}
                         contentContainerStyle={{ gap: 12 }}
