@@ -3,13 +3,14 @@ import {
     View,
     Text,
     TextInput,
-    Pressable,
     TouchableOpacity,
 } from "react-native";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
-import { updateOrderItem } from "@/api/order/updateOrderItem";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface EditItemSheetProps {
     visible: boolean;
@@ -37,6 +38,8 @@ export function EditItemSheet({
     const [comments, setComments] = useState(initialComments || "");
     const { colorScheme } = useColorScheme();
 
+    const updateItem = useMutation(api.orderItems.update);
+
     useEffect(() => {
         if (visible) {
             // Reset to initial values when sheet opens
@@ -50,16 +53,15 @@ export function EditItemSheet({
 
     const handleUpdate = async () => {
         try {
-            await updateOrderItem({
-                order_item_id: orderItemId,
-                comments: comments || null,
+            await updateItem({
+                orderItemId: orderItemId as Id<"orderItems">,
+                comments: comments || undefined,
                 quantity,
             });
             actionSheetRef.current?.hide();
             onUpdate();
         } catch (error) {
             console.error("Error updating item:", error);
-            // Optionally show an error message to the user
         }
     };
 

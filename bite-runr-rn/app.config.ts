@@ -55,7 +55,16 @@ const config: ExpoConfig = {
         output: "static",
         favicon: "./assets/images/favicon.png",
     },
-    plugins: ["expo-router"],
+    plugins: [
+        "expo-router",
+        [
+            "expo-image-picker",
+            {
+                photosPermission:
+                    "Allow $(PRODUCT_NAME) to access your photos to set your profile picture.",
+            },
+        ],
+    ],
     experiments: {
         typedRoutes: true,
         reactCompiler: true,

@@ -6,17 +6,11 @@ import {
     TouchableOpacity,
     Animated,
     Alert,
+    Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AwaitingOrdersDTO, OrderStatus } from "@/lib/types";
-import { useQuery } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
-import { getOrder } from "@/api/order/single";
-import { useIsFocused } from "@react-navigation/native";
-import { supabase } from "@/lib/supabase";
-import { useState, useEffect, useRef } from "react";
-import { setOrderUserStatus } from "@/api/order/setOrderUserStatus";
-import { updateOrderItem } from "@/api/order/updateOrder";
+import { useEffect, useRef } from "react";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import ReAnimated, {
     useSharedValue,
@@ -28,14 +22,15 @@ import ReAnimated, {
 } from "react-native-reanimated";
 import { NAV_THEME } from "@/lib/constants";
 import Icon from "@/components/common/icon";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 type ButtonState = "readyToRun" | "enabled" | "disabled";
 
 export default function SpecificOrder() {
     const { orderId } = useLocalSearchParams();
-    const isFocused = useIsFocused();
     const { colorScheme } = useColorScheme();
-    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const buttonOpacity = useRef(new Animated.Value(0)).current;
     const buttonTranslateY = useRef(new Animated.Value(20)).current;
 
@@ -57,35 +52,35 @@ export default function SpecificOrder() {
         transform: [{ scale: 0.8 + breatheValue.value * 0.2 }],
     }));
 
-    const { data, isPending, isError, error } = useQuery<AwaitingOrdersDTO>({
-        queryKey: ["order", orderId],
-        queryFn: () => getOrder(orderId as string),
-        enabled: isFocused,
-        refetchInterval: isFocused ? 2_500 : false,
-    });
+    // Get current user
+    const currentUser = useQuery(api.users.getCurrentUser);
+    const currentUserId = currentUser?._id;
 
-    const prevStatusRef = useRef<OrderStatus | null>(null);
+    // Get order data
+    const data = useQuery(
+        api.orders.get,
+        orderId ? { orderId: orderId as Id<"orders"> } : "skip"
+    );
+    const isPending = data === undefined;
+
+    // Mutations
+    const setStatus = useMutation(api.orderUsers.setStatus);
+    const updateOrder = useMutation(api.orders.update);
+
+    const prevStatusRef = useRef<string | null>(null);
 
     useEffect(() => {
         if (
-            data?.order.status === OrderStatus.Cancelled &&
+            data?.order.status === "cancelled" &&
             prevStatusRef.current !== null &&
-            prevStatusRef.current !== OrderStatus.Cancelled
+            prevStatusRef.current !== "cancelled"
         ) {
             router.dismissAll();
         }
         prevStatusRef.current = data?.order.status ?? null;
     }, [data?.order.status]);
 
-    useEffect(() => {
-        async function getCurrentUser() {
-            const { data: userData } = await supabase.auth.getUser();
-            setCurrentUserId(userData?.user?.id ?? null);
-        }
-        getCurrentUser();
-    }, []);
-
-    const isCreator = currentUserId === data?.order.creator_id;
+    const isCreator = currentUserId === data?.order.creatorId;
 
     useEffect(() => {
         if (isCreator) {
@@ -105,16 +100,12 @@ export default function SpecificOrder() {
     }, [isCreator, buttonOpacity, buttonTranslateY]);
 
     const getButtonState = (): ButtonState => {
-        if (!data?.order_users || data.order_users.length === 0) {
+        if (!data?.orderUsers || data.orderUsers.length === 0) {
             return "disabled";
         }
 
-        const allDone = data.order_users.every(
-            (user) => user.status === "done"
-        );
-        const someDone = data.order_users.some(
-            (user) => user.status === "done"
-        );
+        const allDone = data.orderUsers.every((user) => user.status === "done");
+        const someDone = data.orderUsers.some((user) => user.status === "done");
 
         if (allDone) {
             return "readyToRun";
@@ -125,13 +116,27 @@ export default function SpecificOrder() {
         }
     };
 
-    function handleSelectItems() {
-        setOrderUserStatus(orderId as string, { status: "ordering" });
-        router.push(
-            `/order/items?orderUserId=${
-                data?.order_users.find((x) => x.user_id === currentUserId)?.id
-            }&orderId=${orderId}`
+    async function handleSelectItems() {
+        const orderUser = data?.orderUsers.find(
+            (x) => x.userId === currentUserId
         );
+
+        if (!orderUser) {
+            Alert.alert("Error", "Unable to find your order participation.");
+            return;
+        }
+
+        try {
+            await setStatus({
+                orderId: orderId as Id<"orders">,
+                status: "ordering",
+            });
+            router.push(
+                `/order/items?orderUserId=${orderUser.id}&orderId=${orderId}`
+            );
+        } catch (error) {
+            console.error("Failed to set status:", error);
+        }
     }
 
     function handleCancelOrder() {
@@ -148,15 +153,10 @@ export default function SpecificOrder() {
                     style: "destructive",
                     onPress: async () => {
                         try {
-                            await updateOrderItem({
-                                id: orderId as string,
-                                name: null,
-                                creator_id: null,
-                                comments: null,
-                                status: OrderStatus.Cancelled,
-                                paused: null,
+                            await updateOrder({
+                                orderId: orderId as Id<"orders">,
+                                status: "cancelled",
                             });
-                            router.dismiss();
                         } catch (error) {
                             console.error("Failed to cancel order:", error);
                             Alert.alert(
@@ -177,48 +177,43 @@ export default function SpecificOrder() {
 
     if (isPending) {
         return (
-            <>
-                <View className="items-center justify-center flex-1 px-6">
-                    <Text className="text-foreground">Loading...</Text>
-                </View>
-            </>
+            <View className="items-center justify-center flex-1 px-6">
+                <Text className="text-foreground">Loading...</Text>
+            </View>
         );
     }
 
-    if (isError) {
+    if (!data) {
         return (
-            <>
-                <View className="items-center justify-center flex-1 px-6">
-                    <Text className="text-destructive">
-                        Error: {error?.message ?? "Failed to load order"}
-                    </Text>
-                </View>
-            </>
+            <View className="items-center justify-center flex-1 px-6">
+                <Text className="text-destructive">Order not found</Text>
+            </View>
         );
     }
 
     return (
         <>
             <SafeAreaView edges={["top"]}></SafeAreaView>
-            <View className="flex flex-row items-center justify-between px-6 py-4">
-                <TouchableOpacity
-                    className="flex-row items-center justify-center gap-2"
-                    onPress={() => router.dismiss()}>
+            {/* Header */}
+            <View className="flex-row items-center justify-between px-4 py-3 my-4 border-b border-border">
+                <Pressable
+                    onPress={() => router.back()}
+                    className="p-2 -ml-2 rounded-full active:opacity-70">
                     <Icon
-                        name="ArrowLeft"
+                        name="ChevronLeft"
+                        size={24}
                         color={NAV_THEME[colorScheme].primary}
-                        size={22}
                     />
-                    <Text
-                        className="text-lg font-semibold text-center"
-                        style={{ color: NAV_THEME[colorScheme].primary }}>
-                        Back
-                    </Text>
-                </TouchableOpacity>
+                </Pressable>
+                <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
+                    Order
+                </Text>
                 <TouchableOpacity onPress={handleCancelOrder}>
                     <Text
                         className="text-lg font-semibold text-center"
-                        style={{ color: NAV_THEME[colorScheme].notification }}>
+                        style={{
+                            color: NAV_THEME[colorScheme].notification,
+                        }}>
                         Cancel Order
                     </Text>
                 </TouchableOpacity>
@@ -228,7 +223,7 @@ export default function SpecificOrder() {
                     <View className="flex-row justify-between">
                         <Text className="text-lg text-muted-foreground">
                             {`Started on ${new Date(
-                                data?.order.created_at
+                                data.order.createdAt
                             ).toLocaleDateString("en-US", {
                                 month: "long",
                                 day: "numeric",
@@ -244,13 +239,13 @@ export default function SpecificOrder() {
                         </View>
                     </View>
                     <Text className="text-3xl font-semibold text-foreground">
-                        {data?.order.name}
+                        {data.order.name}
                     </Text>
                 </View>
                 <ScrollView className="flex-1">
                     {/* Participants */}
                     <View>
-                        {data?.order_users.map((orderUser) => (
+                        {data.orderUsers.map((orderUser) => (
                             <View key={orderUser.id} className="flex-row py-4">
                                 <View className="flex-row items-center flex-1 gap-2">
                                     <Image
@@ -258,14 +253,14 @@ export default function SpecificOrder() {
                                         className="rounded-full"
                                         source={{
                                             uri:
-                                                orderUser.user?.avatar_url ??
-                                                `https://ui-avatars.com/api/?name=${orderUser.user?.first_name}+${orderUser.user?.last_name}`,
+                                                orderUser.user?.avatarUrl ??
+                                                `https://ui-avatars.com/api/?name=${orderUser.user?.firstName}+${orderUser.user?.lastName}`,
                                         }}
                                     />
                                     <View className="flex-1">
                                         <Text className="text-foreground">
-                                            {orderUser.user?.first_name}{" "}
-                                            {orderUser.user?.last_name}
+                                            {orderUser.user?.firstName}{" "}
+                                            {orderUser.user?.lastName}
                                         </Text>
                                         <Text className="text-sm text-muted-foreground">
                                             {orderUser.status}
@@ -281,8 +276,8 @@ export default function SpecificOrder() {
             {/* Footer */}
             <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
                 <Text className="mb-3 text-sm text-center text-muted-foreground">
-                    {data?.count > 0
-                        ? `${data?.count} Items Added`
+                    {data.count > 0
+                        ? `${data.count} Items Added`
                         : "No Items Added"}
                 </Text>
                 <View className="flex-col gap-2">

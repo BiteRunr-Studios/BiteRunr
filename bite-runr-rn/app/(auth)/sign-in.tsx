@@ -6,10 +6,10 @@ import {
     createFormHandlers,
     FormState,
     validateField,
+    getAuthErrorMessage,
 } from "@/lib/auth-helpers";
 import { NAV_THEME } from "@/lib/constants";
-import { supabase } from "@/lib/supabase";
-import { AuthContext } from "@/lib/supabase-auth-context";
+import { AuthContext } from "@/lib/convex-auth-context";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { router } from "expo-router";
 import { useContext, useState } from "react";
@@ -17,7 +17,7 @@ import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignInScreen() {
-    const { setPendingAuth } = useContext(AuthContext);
+    const { signIn, setPendingAuth } = useContext(AuthContext);
     const { colorScheme } = useColorScheme();
     const [form, setForm] = useState<FormState>({
         email: { label: "Email", value: "", error: null, touched: false },
@@ -42,7 +42,6 @@ export default function SignInScreen() {
             (Object.keys(prev) as Array<keyof FormState>).forEach((k) => {
                 const field = prev[k];
                 if (field) {
-                    // Add this check
                     next[k] = {
                         ...field,
                         touched: true,
@@ -63,42 +62,57 @@ export default function SignInScreen() {
             return;
         }
 
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: form.email!.value,
-            password: form.password!.value,
-        });
+        try {
+            await signIn("password", {
+                email: form.email!.value.toLowerCase(),
+                password: form.password!.value,
+                flow: "signIn",
+            });
+            router.replace("/(protected)/(tabs)");
+        } catch (error: unknown) {
+            // Debug: log the raw error to understand what Convex returns
+            console.log("Sign-in error:", error);
+            console.log("Error message:", error instanceof Error ? error.message : String(error));
 
-        if (error) {
-            const errorMessage = error.message.toLowerCase();
+            const { message, field, requiresVerification } = getAuthErrorMessage(error, "signIn");
 
-            if (errorMessage.includes("email not confirmed")) {
-                supabase.auth.resend({
-                    type: "signup",
-                    email: form.email!.value,
-                });
+            // If email is not verified, redirect to verification flow
+            if (requiresVerification) {
                 setPendingAuth({
-                    email: form.email!.value,
+                    email: form.email!.value.toLowerCase(),
                     password: form.password!.value,
                 });
                 router.push("/(auth)/confirm-sign-up");
-            } else {
-                setForm((prev) => ({
+                return;
+            }
+
+            // Always show an error message
+            const errorToShow = message || "Sign in failed. Please try again.";
+
+            setForm((prev) => {
+                if (field === "password") {
+                    return {
+                        ...prev,
+                        password: {
+                            ...prev.password!,
+                            touched: true,
+                            error: errorToShow,
+                        },
+                    };
+                }
+                // Default to showing error on email field
+                return {
                     ...prev,
                     email: {
                         ...prev.email!,
                         touched: true,
-                        error: errorMessage,
+                        error: errorToShow,
                     },
-                }));
-            }
-
+                };
+            });
+        } finally {
             setLoading(false);
-            return;
         }
-
-        if (data?.session) router.replace("/(protected)/(tabs)");
-
-        setLoading(false);
     }
 
     return (

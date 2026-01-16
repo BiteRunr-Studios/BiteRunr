@@ -21,14 +21,13 @@ export default function TabLayout() {
                         ? NAV_THEME.dark.border
                         : NAV_THEME.light.border,
                 },
-            }}
-        >
+            }}>
             <Tabs.Screen
                 name="index"
                 options={{
                     title: "Home",
                     tabBarIcon: ({ color }) => (
-                        <TabBarIcon name="home" color={color} />
+                        <TabBarIcon name="House" color={color} />
                     ),
                 }}
             />
@@ -37,7 +36,7 @@ export default function TabLayout() {
                 options={{
                     title: "Groups",
                     tabBarIcon: ({ color }) => (
-                        <TabBarIcon name="bag-sharp" color={color} />
+                        <TabBarIcon name="Handbag" color={color} />
                     ),
                 }}
             />
@@ -46,7 +45,7 @@ export default function TabLayout() {
                 options={{
                     title: "Account",
                     tabBarIcon: ({ color }) => (
-                        <TabBarIcon name="person" color={color} />
+                        <TabBarIcon name="User" color={color} />
                     ),
                 }}
             />
