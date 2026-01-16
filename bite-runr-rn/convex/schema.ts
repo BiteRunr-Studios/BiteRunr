@@ -44,6 +44,10 @@ export default defineSchema({
       searchField: "firstName",
       filterFields: [],
     })
+    .searchIndex("search_lastName", {
+      searchField: "lastName",
+      filterFields: [],
+    })
     .searchIndex("search_email", {
       searchField: "email",
       filterFields: [],
@@ -102,7 +106,7 @@ export default defineSchema({
     orderId: v.id("orders"),
     status: orderUserStatusValidator,
     settlementStatus: settlementStatusValidator,
-    amountOwed: v.number(), // Amount in cents (integer) to avoid floating-point precision issues
+    amountOwed: v.int64(), // Amount in cents (integer) to avoid floating-point precision issues
   })
     .index("by_userId", ["userId"])
     .index("by_orderId", ["orderId"])

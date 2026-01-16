@@ -49,7 +49,7 @@ export const setStatus = mutation({
 export const updateAmountOwed = mutation({
   args: {
     orderUserId: v.id("orderUsers"),
-    amountOwed: v.number(), // Amount in cents (must be non-negative integer)
+    amountOwed: v.int64(), // Amount in cents (must be non-negative integer)
   },
   handler: async (ctx, args) => {
     const userId = await auth.getUserId(ctx);

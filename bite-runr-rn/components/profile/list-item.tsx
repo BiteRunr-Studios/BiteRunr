@@ -4,8 +4,6 @@ import Icon, { IconName } from "../common/icon";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 
-const { colorScheme } = useColorScheme();
-
 type ListItemProps = {
     iconName: IconName;
     iconColor?: string;
@@ -17,12 +15,14 @@ type ListItemProps = {
 
 export const ListItem: React.FC<ListItemProps> = ({
     iconName,
-    iconColor = NAV_THEME[colorScheme].primary,
+    iconColor,
     title,
     subtitle,
     onPress,
     testID,
 }) => {
+    const { colorScheme } = useColorScheme();
+    const resolvedIconColor = iconColor ?? NAV_THEME[colorScheme].primary;
     return (
         <Pressable
             testID={testID}
@@ -31,7 +31,7 @@ export const ListItem: React.FC<ListItemProps> = ({
             onPress={onPress}>
             <View className="flex-row items-center">
                 <View className="w-10 h-10 rounded-2xl bg-[#402500] items-center justify-center mr-3">
-                    <Icon name={iconName} size={20} color={iconColor} />
+                    <Icon name={iconName} size={20} color={resolvedIconColor} />
                 </View>
                 <View>
                     <Text className="text-base font-semibold text-foreground">

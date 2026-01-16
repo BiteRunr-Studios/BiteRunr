@@ -65,8 +65,8 @@ export const add = mutation({
     const userId = await auth.getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    if (args.quantity < 1) {
-      throw new Error("Quantity must be at least 1");
+    if (!Number.isInteger(args.quantity) || args.quantity < 1) {
+      throw new Error("Quantity must be a whole number of at least 1");
     }
 
     // Verify the orderUser belongs to the current user
@@ -115,8 +115,8 @@ export const update = mutation({
     const userId = await auth.getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    if (args.quantity < 1) {
-      throw new Error("Quantity must be at least 1");
+    if (!Number.isInteger(args.quantity) || args.quantity < 1) {
+      throw new Error("Quantity must be a whole number of at least 1");
     }
 
     const orderItem = await ctx.db.get(args.orderItemId);

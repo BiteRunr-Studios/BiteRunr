@@ -98,16 +98,16 @@ export const updateAvatar = mutation({
     const userId = await auth.getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
+    // Verify the new avatar URL is valid before deleting the old one
+    const avatarUrl = await ctx.storage.getUrl(args.storageId);
+    if (!avatarUrl) throw new Error("Failed to get avatar URL");
+
     // Get current user to check for existing avatar
     const user = await ctx.db.get(userId);
     if (user?.avatarStorageId) {
       // Delete the old avatar file from storage
       await ctx.storage.delete(user.avatarStorageId);
     }
-
-    // Get the URL for the uploaded file
-    const avatarUrl = await ctx.storage.getUrl(args.storageId);
-    if (!avatarUrl) throw new Error("Failed to get avatar URL");
 
     // Update the user's avatar URL and storage ID
     await ctx.db.patch(userId, {

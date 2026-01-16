@@ -196,10 +196,14 @@ export const searchUsers = query({
     if (searchQuery.length < 2) return [];
 
     // Use search indexes to find matching users (scalable approach)
-    const [nameResults, emailResults] = await Promise.all([
+    const [firstNameResults, lastNameResults, emailResults] = await Promise.all([
       ctx.db
         .query("users")
         .withSearchIndex("search_name", (q) => q.search("firstName", searchQuery))
+        .take(50),
+      ctx.db
+        .query("users")
+        .withSearchIndex("search_lastName", (q) => q.search("lastName", searchQuery))
         .take(50),
       ctx.db
         .query("users")
@@ -208,8 +212,8 @@ export const searchUsers = query({
     ]);
 
     // Merge and deduplicate results
-    const userMap = new Map<string, (typeof nameResults)[0]>();
-    for (const user of [...nameResults, ...emailResults]) {
+    const userMap = new Map<string, (typeof firstNameResults)[0]>();
+    for (const user of [...firstNameResults, ...lastNameResults, ...emailResults]) {
       userMap.set(user._id, user);
     }
     const candidateUsers = Array.from(userMap.values());
