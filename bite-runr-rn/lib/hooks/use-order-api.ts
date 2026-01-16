@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -29,6 +30,7 @@ export function useFriends() {
 
 export function useCreateOrder() {
     const createOrder = useMutation(api.orders.create);
+    const [isPending, setIsPending] = useState(false);
 
     return {
         mutateAsync: async (orderData: {
@@ -37,13 +39,18 @@ export function useCreateOrder() {
             locationIds: string[];
             friendIds: string[];
         }) => {
-            return await createOrder({
-                name: orderData.name,
-                comments: orderData.comments ?? undefined,
-                locationIds: orderData.locationIds as Id<"locations">[],
-                friendIds: orderData.friendIds as Id<"users">[],
-            });
+            setIsPending(true);
+            try {
+                return await createOrder({
+                    name: orderData.name,
+                    comments: orderData.comments ?? undefined,
+                    locationIds: orderData.locationIds as Id<"locations">[],
+                    friendIds: orderData.friendIds as Id<"users">[],
+                });
+            } finally {
+                setIsPending(false);
+            }
         },
-        isPending: false, // Convex mutations handle this differently
+        isPending,
     };
 }

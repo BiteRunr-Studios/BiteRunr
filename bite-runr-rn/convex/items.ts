@@ -50,6 +50,9 @@ export const listByLocation = query({
 export const get = query({
   args: { id: v.id("items") },
   handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return null;
+
     return await ctx.db.get(args.id);
   },
 });

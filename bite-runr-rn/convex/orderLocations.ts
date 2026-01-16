@@ -44,6 +44,22 @@ export const listForOrder = query({
 export const get = query({
   args: { id: v.id("orderLocations") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return null;
+
+    const orderLocation = await ctx.db.get(args.id);
+    if (!orderLocation) return null;
+
+    // Verify user is a participant in this order
+    const orderUser = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_userId_orderId", (q) =>
+        q.eq("userId", userId).eq("orderId", orderLocation.orderId)
+      )
+      .first();
+
+    if (!orderUser) return null;
+
+    return orderLocation;
   },
 });

@@ -12,6 +12,12 @@ export const listForUserLocation = query({
     const userId = await auth.getUserId(ctx);
     if (!userId) return [];
 
+    // Verify the orderUser belongs to the current user
+    const orderUser = await ctx.db.get(args.orderUserId);
+    if (!orderUser || orderUser.userId !== userId) {
+      return [];
+    }
+
     const orderItems = await ctx.db
       .query("orderItems")
       .withIndex("by_orderUserId", (q) => q.eq("orderUserId", args.orderUserId))
@@ -59,6 +65,10 @@ export const add = mutation({
     const userId = await auth.getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
+    if (args.quantity < 1) {
+      throw new Error("Quantity must be at least 1");
+    }
+
     // Verify the orderUser belongs to the current user
     const orderUser = await ctx.db.get(args.orderUserId);
     if (!orderUser || orderUser.userId !== userId) {
@@ -104,6 +114,10 @@ export const update = mutation({
   handler: async (ctx, args) => {
     const userId = await auth.getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+
+    if (args.quantity < 1) {
+      throw new Error("Quantity must be at least 1");
+    }
 
     const orderItem = await ctx.db.get(args.orderItemId);
     if (!orderItem) throw new Error("Order item not found");

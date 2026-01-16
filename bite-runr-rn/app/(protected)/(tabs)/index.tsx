@@ -2,6 +2,7 @@
 import React from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { PageWithHeader } from "@/components/layout/page-with-header";
+import { ErrorBoundary } from "@/components/common/error-boundary";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
@@ -11,7 +12,8 @@ export default function HomeTab() {
 
     return (
         <PageWithHeader title="Account">
-            <ScrollView className="flex-1 px-6 py-0">
+            <ErrorBoundary>
+                <ScrollView className="flex-1 px-6 py-0">
                 {isPending && (
                     <View className="mt-6">
                         <ActivityIndicator />
@@ -60,7 +62,7 @@ export default function HomeTab() {
                                                     {ou.status}
                                                 </Text>
                                                 <Text className="text-muted-foreground">
-                                                    Owes ${ou.amountOwed}
+                                                    Owes ${(ou.amountOwed / 100).toFixed(2)}
                                                 </Text>
                                             </View>
                                         ))}
@@ -71,6 +73,7 @@ export default function HomeTab() {
                     </View>
                 )}
             </ScrollView>
+            </ErrorBoundary>
         </PageWithHeader>
     );
 }

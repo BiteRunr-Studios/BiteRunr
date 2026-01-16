@@ -362,7 +362,7 @@ export default function SelectItems() {
                                         renderRightActions={renderRightActions(
                                             orderUserLocationItem.id,
                                             orderUserLocationItem.item?.name ??
-                                                ""
+                                                "this item"
                                         )}>
                                         <Pressable
                                             onPress={() =>

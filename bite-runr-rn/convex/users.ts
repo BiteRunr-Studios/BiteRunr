@@ -40,12 +40,15 @@ export const upsertProfile = mutation({
     const existingUser = await ctx.db.get(userId);
 
     if (existingUser) {
-      // Update existing user
-      await ctx.db.patch(userId, {
+      // Update existing user - only include avatarUrl if explicitly provided
+      const updates: Record<string, string> = {
         firstName: args.firstName,
         lastName: args.lastName,
-        avatarUrl: args.avatarUrl,
-      });
+      };
+      if (args.avatarUrl !== undefined) {
+        updates.avatarUrl = args.avatarUrl;
+      }
+      await ctx.db.patch(userId, updates);
       return userId;
     }
 
@@ -95,12 +98,22 @@ export const updateAvatar = mutation({
     const userId = await auth.getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
+    // Get current user to check for existing avatar
+    const user = await ctx.db.get(userId);
+    if (user?.avatarStorageId) {
+      // Delete the old avatar file from storage
+      await ctx.storage.delete(user.avatarStorageId);
+    }
+
     // Get the URL for the uploaded file
     const avatarUrl = await ctx.storage.getUrl(args.storageId);
     if (!avatarUrl) throw new Error("Failed to get avatar URL");
 
-    // Update the user's avatar URL
-    await ctx.db.patch(userId, { avatarUrl });
+    // Update the user's avatar URL and storage ID
+    await ctx.db.patch(userId, {
+      avatarUrl,
+      avatarStorageId: args.storageId,
+    });
 
     return { avatarUrl };
   },
@@ -113,8 +126,18 @@ export const removeAvatar = mutation({
     const userId = await auth.getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    // Set avatar URL to undefined to remove it
-    await ctx.db.patch(userId, { avatarUrl: undefined });
+    // Get current user to retrieve storage ID
+    const user = await ctx.db.get(userId);
+    if (user?.avatarStorageId) {
+      // Delete the avatar file from storage
+      await ctx.storage.delete(user.avatarStorageId);
+    }
+
+    // Clear both the URL and storage ID references
+    await ctx.db.patch(userId, {
+      avatarUrl: undefined,
+      avatarStorageId: undefined,
+    });
 
     return { success: true };
   },

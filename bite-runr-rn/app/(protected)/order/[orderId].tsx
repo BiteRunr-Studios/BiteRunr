@@ -117,16 +117,22 @@ export default function SpecificOrder() {
     };
 
     async function handleSelectItems() {
+        const orderUser = data?.orderUsers.find(
+            (x) => x.userId === currentUserId
+        );
+
+        if (!orderUser) {
+            Alert.alert("Error", "Unable to find your order participation.");
+            return;
+        }
+
         try {
             await setStatus({
                 orderId: orderId as Id<"orders">,
                 status: "ordering",
             });
-            const orderUser = data?.orderUsers.find(
-                (x) => x.userId === currentUserId
-            );
             router.push(
-                `/order/items?orderUserId=${orderUser?.id}&orderId=${orderId}`
+                `/order/items?orderUserId=${orderUser.id}&orderId=${orderId}`
             );
         } catch (error) {
             console.error("Failed to set status:", error);
@@ -193,7 +199,11 @@ export default function SpecificOrder() {
                 <Pressable
                     onPress={() => router.back()}
                     className="p-2 -ml-2 rounded-full active:opacity-70">
-                    <Icon name="ChevronLeft" size={24} color="#f97316" />
+                    <Icon
+                        name="ChevronLeft"
+                        size={24}
+                        color={NAV_THEME[colorScheme].primary}
+                    />
                 </Pressable>
                 <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
                     Order

@@ -16,7 +16,7 @@ import { useColorScheme } from "@/lib/use-color-scheme";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { AuthProvider } from "@/lib/convex-auth-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import "../global.css";
 
 const LIGHT_THEME: Theme = { ...DefaultTheme, colors: NAV_THEME.light };
@@ -29,12 +29,22 @@ const convexLogger = {
     error: (message: string, ...args: unknown[]) => {
         // Filter out auth server errors - these are handled in the UI
         const msgStr = String(message).toLowerCase();
-        if (
-            msgStr.includes("auth") ||
-            msgStr.includes("invalid secret") ||
-            msgStr.includes("invalid password")
-        ) {
-            return; // Suppress auth errors (handled in UI)
+        const isAuthError =
+            msgStr.includes("invalid password") ||
+            msgStr.includes("invalid credentials");
+        const isPossibleConfigError =
+            msgStr.includes("invalid secret") || msgStr.includes("auth");
+
+        if (isAuthError) {
+            // User auth errors are handled in UI - suppress completely
+            return;
+        }
+        if (isPossibleConfigError) {
+            // Log in development to help debug config issues, suppress in production
+            if (__DEV__) {
+                console.debug("[Auth Debug]", message, ...args);
+            }
+            return;
         }
         console.error(message, ...args);
     },
@@ -46,18 +56,21 @@ const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
     logger: convexLogger,
 });
 
-// Custom storage adapter for React Native using AsyncStorage
-const asyncStorageAdapter = {
-    getItem: async (key: string) => {
-        return await AsyncStorage.getItem(key);
-    },
-    setItem: async (key: string, value: string) => {
-        await AsyncStorage.setItem(key, value);
-    },
-    removeItem: async (key: string) => {
-        await AsyncStorage.removeItem(key);
-    },
-};
+// Secure storage adapter - uses encrypted storage on native, no persistence on web
+const secureStorageAdapter =
+    Platform.OS === "web"
+        ? undefined // Don't persist auth tokens on web (use in-memory)
+        : {
+              getItem: async (key: string) => {
+                  return await SecureStore.getItemAsync(key);
+              },
+              setItem: async (key: string, value: string) => {
+                  await SecureStore.setItemAsync(key, value);
+              },
+              removeItem: async (key: string) => {
+                  await SecureStore.deleteItemAsync(key);
+              },
+          };
 
 export default function RootLayout() {
     const { colorScheme } = useColorScheme();
@@ -76,7 +89,7 @@ export default function RootLayout() {
 
     return (
         <ConvexProvider client={convex}>
-            <ConvexAuthProvider client={convex} storage={asyncStorageAdapter}>
+            <ConvexAuthProvider client={convex} storage={secureStorageAdapter}>
                 <AuthProvider>
                     <ThemeProvider
                         value={colorScheme == "dark" ? DARK_THEME : LIGHT_THEME}

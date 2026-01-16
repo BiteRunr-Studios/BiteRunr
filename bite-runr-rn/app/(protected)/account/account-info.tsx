@@ -19,6 +19,8 @@ import { Button } from "@/components/common/button";
 import * as ImagePicker from "expo-image-picker";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
+import { NAV_THEME } from "@/lib/constants";
+import { useColorScheme } from "@/lib/use-color-scheme";
 
 export default function AccountInfoScreen() {
     const user = useQuery(api.users.getCurrentUser);
@@ -26,6 +28,8 @@ export default function AccountInfoScreen() {
     const generateUploadUrl = useMutation(api.users.generateAvatarUploadUrl);
     const updateAvatar = useMutation(api.users.updateAvatar);
     const removeAvatar = useMutation(api.users.removeAvatar);
+
+    const { colorScheme } = useColorScheme();
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -130,7 +134,11 @@ export default function AccountInfoScreen() {
                 throw new Error("Failed to upload image");
             }
 
-            const { storageId } = await uploadResponse.json();
+            const responseData = await uploadResponse.json();
+            if (!responseData.storageId) {
+                throw new Error("Invalid upload response: missing storageId");
+            }
+            const { storageId } = responseData;
 
             // Save the storage ID to the user's profile
             await updateAvatar({ storageId: storageId as Id<"_storage"> });
@@ -201,14 +209,21 @@ export default function AccountInfoScreen() {
                     <Pressable
                         onPress={() => router.back()}
                         className="p-2 -ml-2 rounded-full active:opacity-70">
-                        <Icon name="ChevronLeft" size={24} color="#f97316" />
+                        <Icon
+                            name="ChevronLeft"
+                            size={24}
+                            color={NAV_THEME[colorScheme].primary}
+                        />
                     </Pressable>
                     <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
                         Personal Information
                     </Text>
                 </View>
                 <View className="items-center justify-center flex-1">
-                    <ActivityIndicator size="large" color="#f97316" />
+                    <ActivityIndicator
+                        size="large"
+                        color={NAV_THEME[colorScheme].primary}
+                    />
                 </View>
             </SafeAreaView>
         );
@@ -221,7 +236,11 @@ export default function AccountInfoScreen() {
                     <Pressable
                         onPress={() => router.back()}
                         className="p-2 -ml-2 rounded-full active:opacity-70">
-                        <Icon name="ChevronLeft" size={24} color="#f97316" />
+                        <Icon
+                            name="ChevronLeft"
+                            size={24}
+                            color={NAV_THEME[colorScheme].primary}
+                        />
                     </Pressable>
                     <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
                         Personal Information
@@ -247,7 +266,11 @@ export default function AccountInfoScreen() {
                 <Pressable
                     onPress={() => router.back()}
                     className="p-2 -ml-2 rounded-full active:opacity-70">
-                    <Icon name="ChevronLeft" size={24} color="#f97316" />
+                    <Icon
+                        name="ChevronLeft"
+                        size={24}
+                        color={NAV_THEME[colorScheme].primary}
+                    />
                 </Pressable>
                 <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
                     Personal Information

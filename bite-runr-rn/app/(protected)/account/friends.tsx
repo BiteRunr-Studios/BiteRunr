@@ -16,11 +16,15 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { Input } from "@/components/common/input";
+import { NAV_THEME } from "@/lib/constants";
+import { useColorScheme } from "@/lib/use-color-scheme";
 
 type Tab = "friends" | "requests" | "search";
 
 export default function FriendsScreen() {
     const [activeTab, setActiveTab] = useState<Tab>("friends");
+
+    const { colorScheme } = useColorScheme();
 
     return (
         <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
@@ -29,7 +33,11 @@ export default function FriendsScreen() {
                 <Pressable
                     onPress={() => router.back()}
                     className="p-2 -ml-2 rounded-full active:opacity-70">
-                    <Icon name="ChevronLeft" size={24} color="#f97316" />
+                    <Icon
+                        name="ChevronLeft"
+                        size={24}
+                        color={NAV_THEME[colorScheme].primary}
+                    />
                 </Pressable>
                 <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
                     Friends
@@ -75,7 +83,11 @@ function TabButton({
     onPress: () => void;
     showBadge?: boolean;
 }) {
-    const pendingCount = useQuery(api.friends.pendingRequestCount);
+    // Only query pending count when badge is needed to avoid unnecessary requests
+    const pendingCount = useQuery(
+        api.friends.pendingRequestCount,
+        showBadge ? {} : "skip"
+    );
     const hasPending =
         showBadge && typeof pendingCount === "number" && pendingCount > 0;
 
@@ -109,6 +121,8 @@ function FriendsList() {
     const removeFriend = useMutation(api.friends.removeFriend);
     const [removingId, setRemovingId] = useState<string | null>(null);
 
+    const { colorScheme } = useColorScheme();
+
     const isLoading = friends === undefined;
 
     const handleRemoveFriend = (friendId: Id<"users">, friendName: string) => {
@@ -141,7 +155,10 @@ function FriendsList() {
     if (isLoading) {
         return (
             <View className="items-center justify-center flex-1">
-                <ActivityIndicator size="large" color="#f97316" />
+                <ActivityIndicator
+                    size="large"
+                    color={NAV_THEME[colorScheme].primary}
+                />
             </View>
         );
     }
@@ -190,6 +207,8 @@ function FriendRequests() {
     const rejectRequest = useMutation(api.friends.rejectRequest);
     const [processingId, setProcessingId] = useState<string | null>(null);
 
+    const { colorScheme } = useColorScheme();
+
     const isLoading = requests === undefined;
 
     const handleAccept = async (requestId: Id<"friendRequests">) => {
@@ -217,7 +236,10 @@ function FriendRequests() {
     if (isLoading) {
         return (
             <View className="items-center justify-center flex-1">
-                <ActivityIndicator size="large" color="#f97316" />
+                <ActivityIndicator
+                    size="large"
+                    color={NAV_THEME[colorScheme].primary}
+                />
             </View>
         );
     }
@@ -262,6 +284,8 @@ function SearchUsers() {
     const sendRequest = useMutation(api.friends.sendRequest);
     const [sendingTo, setSendingTo] = useState<string | null>(null);
 
+    const { colorScheme } = useColorScheme();
+
     const isSearching = searchQuery.length >= 2 && searchResults === undefined;
 
     const handleSendRequest = async (userId: Id<"users">, userName: string) => {
@@ -287,7 +311,7 @@ function SearchUsers() {
                 value={searchQuery}
                 leftIcon="Search"
                 errorMessage=""
-                rightIcon="CircleX"
+                rightIcon={searchQuery.length > 0 ? "CircleX" : undefined}
                 onRightIconPress={() => setSearchQuery("")}
                 rightIconColor="#666"
                 onChangeText={setSearchQuery}
@@ -307,7 +331,10 @@ function SearchUsers() {
 
             {isSearching && (
                 <View className="items-center justify-center flex-1">
-                    <ActivityIndicator size="large" color="#f97316" />
+                    <ActivityIndicator
+                        size="large"
+                        color={NAV_THEME[colorScheme].primary}
+                    />
                 </View>
             )}
 

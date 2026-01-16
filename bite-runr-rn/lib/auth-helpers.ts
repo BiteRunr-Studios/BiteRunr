@@ -113,7 +113,7 @@ export function getAuthErrorMessage(
     }
     const lowerMessage = errorMessage.toLowerCase();
 
-    // Sign In errors
+    // Sign In errors - use generic message to prevent account enumeration
     if (context === "signIn") {
         if (
             lowerMessage.includes("invalid password") ||
@@ -121,23 +121,17 @@ export function getAuthErrorMessage(
             lowerMessage.includes("incorrect password") ||
             lowerMessage.includes("invalid secret") ||
             (lowerMessage.includes("password") && lowerMessage.includes("invalid")) ||
-            (lowerMessage.includes("secret") && lowerMessage.includes("invalid"))
-        ) {
-            return {
-                message: "Incorrect password. Please try again.",
-                field: "password",
-            };
-        }
-        if (
+            (lowerMessage.includes("secret") && lowerMessage.includes("invalid")) ||
             lowerMessage.includes("user not found") ||
             lowerMessage.includes("no user") ||
             lowerMessage.includes("account not found") ||
             lowerMessage.includes("could not find") ||
             lowerMessage.includes("couldn't find")
         ) {
+            // Generic message prevents attackers from determining if email exists
             return {
-                message: "No account found with this email address.",
-                field: "email",
+                message: "Invalid email or password.",
+                field: "general",
             };
         }
         if (
@@ -249,16 +243,19 @@ export function getAuthErrorMessage(
         }
     }
 
-    // Forgot password errors
+    // Forgot password errors - use generic message to prevent account enumeration
+    // Note: Ideally, the backend should always return success for forgot password
+    // to prevent enumeration, but we handle it here as a fallback
     if (context === "forgotPassword") {
         if (
             lowerMessage.includes("user not found") ||
             lowerMessage.includes("no user") ||
             lowerMessage.includes("account not found")
         ) {
+            // Don't reveal whether account exists - show generic success-like message
             return {
-                message: "No account found with this email address.",
-                field: "email",
+                message: "If an account exists with this email, you will receive a reset code.",
+                field: "general",
             };
         }
     }

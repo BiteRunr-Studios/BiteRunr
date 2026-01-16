@@ -22,6 +22,8 @@ import {
 } from "@/lib/hooks/use-order-api";
 import { router } from "expo-router";
 import Icon from "@/components/common/icon";
+import { NAV_THEME } from "@/lib/constants";
+import { useColorScheme } from "@/lib/use-color-scheme";
 
 interface FieldErrors {
     name?: string;
@@ -30,6 +32,7 @@ interface FieldErrors {
 }
 
 export default function CreateOrder() {
+    const { colorScheme } = useColorScheme();
     const [name, setName] = useState("");
     const [comments, setComments] = useState("");
     const [selectedLocationIds, setSelectedLocationIds] = useState<string[]>(
@@ -139,7 +142,11 @@ export default function CreateOrder() {
                 <Pressable
                     onPress={() => router.back()}
                     className="p-2 -ml-2 rounded-full active:opacity-70">
-                    <Icon name="ChevronLeft" size={24} color="#f97316" />
+                    <Icon
+                        name="ChevronLeft"
+                        size={24}
+                        color={NAV_THEME[colorScheme].primary}
+                    />
                 </Pressable>
                 <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
                     Create Order

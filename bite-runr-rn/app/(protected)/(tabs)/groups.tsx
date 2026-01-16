@@ -7,6 +7,7 @@ import {
     View,
 } from "react-native";
 import { PageWithHeader } from "@/components/layout/page-with-header";
+import { ErrorBoundary } from "@/components/common/error-boundary";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
 import { OrderCard } from "@/components/order-card";
 import { Link, router } from "expo-router";
@@ -24,7 +25,7 @@ export default function GroupsTab() {
 
     // Get orders with user details for avatars
     const data = useQuery(api.orders.getWithDetails);
-    const isPending = data === undefined;
+    const isPending = data === undefined || currentUser === undefined;
 
     const filteredOrders = data?.filter((item) => {
         if (!userId) return false;
@@ -54,7 +55,8 @@ export default function GroupsTab() {
 
     return (
         <PageWithHeader title="Groups">
-            <View className="flex-1 px-6">
+            <ErrorBoundary>
+                <View className="flex-1 px-6">
                 <View className="flex-1 py-2">
                     <SegmentedControl
                         values={["Created by me", "Invited to"]}
@@ -142,6 +144,7 @@ export default function GroupsTab() {
                     </ScrollView>
                 </View>
             </View>
+            </ErrorBoundary>
         </PageWithHeader>
     );
 }

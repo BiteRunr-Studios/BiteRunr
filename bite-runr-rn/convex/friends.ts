@@ -81,7 +81,7 @@ export const sendRequest = mutation({
       throw new Error("Cannot send friend request to yourself");
     }
 
-    // Check if request already exists
+    // Check if request already exists (sender -> receiver)
     const existingRequest = await ctx.db
       .query("friendRequests")
       .withIndex("by_senderId_receiverId", (q) =>
@@ -91,6 +91,32 @@ export const sendRequest = mutation({
 
     if (existingRequest) {
       throw new Error("Friend request already sent");
+    }
+
+    // Check if reverse request exists (receiver -> sender)
+    // If so, auto-accept since both users want to be friends
+    const reverseRequest = await ctx.db
+      .query("friendRequests")
+      .withIndex("by_senderId_receiverId", (q) =>
+        q.eq("senderId", args.receiverId).eq("receiverId", userId)
+      )
+      .first();
+
+    if (reverseRequest && reverseRequest.status === "pending") {
+      // Auto-accept the existing request
+      await ctx.db.patch(reverseRequest._id, { status: "accepted" });
+
+      // Create bidirectional friendship
+      await ctx.db.insert("friends", {
+        userId: reverseRequest.senderId,
+        friendId: reverseRequest.receiverId,
+      });
+      await ctx.db.insert("friends", {
+        userId: reverseRequest.receiverId,
+        friendId: reverseRequest.senderId,
+      });
+
+      return reverseRequest._id;
     }
 
     // Check if already friends
@@ -152,6 +178,7 @@ export const rejectRequest = mutation({
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
     if (request.receiverId !== userId) throw new Error("Not authorized");
+    if (request.status !== "pending") throw new Error("Request already processed");
 
     await ctx.db.patch(args.requestId, { status: "rejected" });
     return true;
@@ -165,11 +192,27 @@ export const searchUsers = query({
     const userId = await auth.getUserId(ctx);
     if (!userId) return [];
 
-    const searchQuery = args.query.toLowerCase().trim();
+    const searchQuery = args.query.trim();
     if (searchQuery.length < 2) return [];
 
-    // Get all users
-    const allUsers = await ctx.db.query("users").collect();
+    // Use search indexes to find matching users (scalable approach)
+    const [nameResults, emailResults] = await Promise.all([
+      ctx.db
+        .query("users")
+        .withSearchIndex("search_name", (q) => q.search("firstName", searchQuery))
+        .take(50),
+      ctx.db
+        .query("users")
+        .withSearchIndex("search_email", (q) => q.search("email", searchQuery))
+        .take(50),
+    ]);
+
+    // Merge and deduplicate results
+    const userMap = new Map<string, (typeof nameResults)[0]>();
+    for (const user of [...nameResults, ...emailResults]) {
+      userMap.set(user._id, user);
+    }
+    const candidateUsers = Array.from(userMap.values());
 
     // Get current user's friends
     const friendships = await ctx.db
@@ -179,24 +222,26 @@ export const searchUsers = query({
     const friendIds = new Set(friendships.map((f) => f.friendId));
 
     // Get pending requests (both sent and received)
-    const sentRequests = await ctx.db
-      .query("friendRequests")
-      .withIndex("by_senderId", (q) => q.eq("senderId", userId))
-      .filter((q) => q.eq(q.field("status"), "pending"))
-      .collect();
-    const receivedRequests = await ctx.db
-      .query("friendRequests")
-      .withIndex("by_receiverId", (q) => q.eq("receiverId", userId))
-      .filter((q) => q.eq(q.field("status"), "pending"))
-      .collect();
+    const [sentRequests, receivedRequests] = await Promise.all([
+      ctx.db
+        .query("friendRequests")
+        .withIndex("by_senderId", (q) => q.eq("senderId", userId))
+        .filter((q) => q.eq(q.field("status"), "pending"))
+        .collect(),
+      ctx.db
+        .query("friendRequests")
+        .withIndex("by_receiverId", (q) => q.eq("receiverId", userId))
+        .filter((q) => q.eq(q.field("status"), "pending"))
+        .collect(),
+    ]);
 
     const pendingUserIds = new Set([
       ...sentRequests.map((r) => r.receiverId),
       ...receivedRequests.map((r) => r.senderId),
     ]);
 
-    // Filter and search
-    const results = allUsers
+    // Filter out self, friends, and pending requests
+    const results = candidateUsers
       .filter((user) => {
         // Exclude self
         if (user._id === userId) return false;
@@ -204,13 +249,9 @@ export const searchUsers = query({
         if (friendIds.has(user._id)) return false;
         // Exclude users with pending requests
         if (pendingUserIds.has(user._id)) return false;
-
-        // Search by name or email
-        const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-        const email = user.email.toLowerCase();
-        return fullName.includes(searchQuery) || email.includes(searchQuery);
+        return true;
       })
-      .slice(0, 20); // Limit results
+      .slice(0, 20); // Limit final results
 
     return results.map((user) => ({
       id: user._id,

@@ -78,7 +78,7 @@ export const getWithDetails = query({
               orderId: ou.orderId,
               status: ou.status,
               settlementStatus: ou.settlementStatus,
-              amountOwed: ou.amountOwed.toString(),
+              amountOwed: ou.amountOwed,
               createdAt: ou._creationTime,
               user: user
                 ? {

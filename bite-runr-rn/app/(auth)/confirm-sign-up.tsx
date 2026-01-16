@@ -30,6 +30,8 @@ export default function ConfirmSignUpScreen() {
     const [loading, setLoading] = useState(false);
     const [resending, setResending] = useState(false);
     const [resendCooldown, setResendCooldown] = useState(0);
+    const [showResendPassword, setShowResendPassword] = useState(false);
+    const [resendPassword, setResendPassword] = useState("");
     // Wait for context to stabilize before checking redirect
     const [isReady, setIsReady] = useState(false);
 
@@ -87,15 +89,26 @@ export default function ConfirmSignUpScreen() {
         }
     };
 
-    const handleResend = async () => {
+    const handleResendClick = () => {
         if (resendCooldown > 0) return;
+        setShowResendPassword(true);
+        setError(null);
+    };
+
+    const handleResendSubmit = async () => {
+        if (!resendPassword) {
+            setError("Please enter your password");
+            return;
+        }
 
         setResending(true);
         setError(null);
 
         try {
-            await resendVerificationCode();
+            await resendVerificationCode(resendPassword);
             setResendCooldown(60); // 60 second cooldown
+            setShowResendPassword(false);
+            setResendPassword("");
         } catch (err: unknown) {
             const { message } = getAuthErrorMessage(err, "verify");
             setError(message);
@@ -169,29 +182,65 @@ export default function ConfirmSignUpScreen() {
                     />
 
                     {/* Resend Code */}
-                    <View className="flex-row items-center justify-center mt-6 gap-1">
-                        <Text className="text-muted-foreground">
-                            Didn't receive the code?
-                        </Text>
-                        <Pressable
-                            onPress={handleResend}
-                            disabled={resending || resendCooldown > 0}
-                        >
-                            <Text
-                                className={`font-semibold ${
-                                    resendCooldown > 0
-                                        ? "text-muted-foreground"
-                                        : "text-primary"
-                                }`}
-                            >
-                                {resending
-                                    ? "Sending..."
-                                    : resendCooldown > 0
-                                      ? `Resend in ${resendCooldown}s`
-                                      : "Resend"}
+                    {showResendPassword ? (
+                        <View className="w-full mt-6">
+                            <Text className="text-muted-foreground text-center mb-2">
+                                Enter your password to resend the code
                             </Text>
-                        </Pressable>
-                    </View>
+                            <Input
+                                value={resendPassword}
+                                onChangeText={setResendPassword}
+                                placeholder="Password"
+                                leftIcon="Lock"
+                                secureTextEntry
+                                errorMessage=""
+                            />
+                            <View className="flex-row gap-2 mt-2">
+                                <Pressable
+                                    onPress={() => {
+                                        setShowResendPassword(false);
+                                        setResendPassword("");
+                                    }}
+                                    className="flex-1 py-2"
+                                >
+                                    <Text className="text-muted-foreground text-center">
+                                        Cancel
+                                    </Text>
+                                </Pressable>
+                                <Pressable
+                                    onPress={handleResendSubmit}
+                                    disabled={resending}
+                                    className="flex-1 py-2"
+                                >
+                                    <Text className="text-primary font-semibold text-center">
+                                        {resending ? "Sending..." : "Resend"}
+                                    </Text>
+                                </Pressable>
+                            </View>
+                        </View>
+                    ) : (
+                        <View className="flex-row items-center justify-center mt-6 gap-1">
+                            <Text className="text-muted-foreground">
+                                Didn't receive the code?
+                            </Text>
+                            <Pressable
+                                onPress={handleResendClick}
+                                disabled={resendCooldown > 0}
+                            >
+                                <Text
+                                    className={`font-semibold ${
+                                        resendCooldown > 0
+                                            ? "text-muted-foreground"
+                                            : "text-primary"
+                                    }`}
+                                >
+                                    {resendCooldown > 0
+                                        ? `Resend in ${resendCooldown}s`
+                                        : "Resend"}
+                                </Text>
+                            </Pressable>
+                        </View>
+                    )}
 
                     <View className="flex-1" />
 

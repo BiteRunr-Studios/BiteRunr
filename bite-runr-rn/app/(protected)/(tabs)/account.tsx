@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { PageWithHeader } from "@/components/layout/page-with-header";
 import { ListItem } from "@/components/profile/list-item";
+import { ErrorBoundary } from "@/components/common/error-boundary";
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -100,7 +101,8 @@ export default function AccountTab() {
             logoSource={require("@/assets/images/app-logo.png")}
             onLogoPress={() => Alert.alert("Logo pressed")}
             onBellPress={() => Alert.alert("Notifications")}>
-            <ScrollView
+            <ErrorBoundary>
+                <ScrollView
                 className="flex-1"
                 contentContainerStyle={{ padding: 12 }}
                 refreshControl={
@@ -178,6 +180,7 @@ export default function AccountTab() {
                     </Pressable>
                 </View>
             </ScrollView>
+            </ErrorBoundary>
         </PageWithHeader>
     );
 }

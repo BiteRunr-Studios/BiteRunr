@@ -44,6 +44,13 @@ export const { auth, signIn, signOut, store } = convexAuth({
         lastName?: string;
       };
 
+      // Require email from OAuth provider
+      if (!profile.email) {
+        throw new Error(
+          "Email is required. Please ensure your OAuth provider shares your email address."
+        );
+      }
+
       // Split full name into first/last if needed
       let firstName = profile.firstName ?? "";
       let lastName = profile.lastName ?? "";
@@ -56,7 +63,7 @@ export const { auth, signIn, signOut, store } = convexAuth({
 
       // Create the user with our schema
       const userId = await ctx.db.insert("users", {
-        email: profile.email ?? "",
+        email: profile.email,
         firstName,
         lastName,
         avatarUrl: profile.image,
@@ -76,8 +83,13 @@ export const { auth, signIn, signOut, store } = convexAuth({
         return redirectTo;
       }
       // Allow redirects to convex.site domain (mobile callback)
-      if (redirectTo.includes(".convex.site")) {
-        return redirectTo;
+      try {
+        const url = new URL(redirectTo);
+        if (url.hostname.endsWith(".convex.site")) {
+          return redirectTo;
+        }
+      } catch {
+        // Invalid URL, fall through to default
       }
       // Default to site URL
       return siteUrl ?? redirectTo;

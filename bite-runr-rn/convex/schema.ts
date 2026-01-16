@@ -37,7 +37,17 @@ export default defineSchema({
     firstName: v.string(),
     lastName: v.string(),
     avatarUrl: v.optional(v.string()),
-  }).index("email", ["email"]),
+    avatarStorageId: v.optional(v.id("_storage")),
+  })
+    .index("email", ["email"])
+    .searchIndex("search_name", {
+      searchField: "firstName",
+      filterFields: [],
+    })
+    .searchIndex("search_email", {
+      searchField: "email",
+      filterFields: [],
+    }),
 
   // Friends relationship
   friends: defineTable({
@@ -92,7 +102,7 @@ export default defineSchema({
     orderId: v.id("orders"),
     status: orderUserStatusValidator,
     settlementStatus: settlementStatusValidator,
-    amountOwed: v.number(), // Store as cents or use float
+    amountOwed: v.number(), // Amount in cents (integer) to avoid floating-point precision issues
   })
     .index("by_userId", ["userId"])
     .index("by_orderId", ["orderId"])

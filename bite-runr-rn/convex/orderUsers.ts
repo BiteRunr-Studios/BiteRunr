@@ -45,15 +45,20 @@ export const setStatus = mutation({
   },
 });
 
-// Update amount owed for an order user
+// Update amount owed for an order user (amount in cents)
 export const updateAmountOwed = mutation({
   args: {
     orderUserId: v.id("orderUsers"),
-    amountOwed: v.number(),
+    amountOwed: v.number(), // Amount in cents (must be non-negative integer)
   },
   handler: async (ctx, args) => {
     const userId = await auth.getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+
+    // Validate amountOwed is a non-negative integer (cents)
+    if (args.amountOwed < 0 || !Number.isInteger(args.amountOwed)) {
+      throw new Error("Amount owed must be a non-negative integer (cents)");
+    }
 
     const orderUser = await ctx.db.get(args.orderUserId);
     if (!orderUser) throw new Error("Order user not found");

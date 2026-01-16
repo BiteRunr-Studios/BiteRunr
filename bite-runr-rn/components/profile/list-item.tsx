@@ -1,6 +1,10 @@
 import React from "react";
 import { Pressable, View, Text } from "react-native";
 import Icon, { IconName } from "../common/icon";
+import { NAV_THEME } from "@/lib/constants";
+import { useColorScheme } from "@/lib/use-color-scheme";
+
+const { colorScheme } = useColorScheme();
 
 type ListItemProps = {
     iconName: IconName;
@@ -13,7 +17,7 @@ type ListItemProps = {
 
 export const ListItem: React.FC<ListItemProps> = ({
     iconName,
-    iconColor = "#f97316",
+    iconColor = NAV_THEME[colorScheme].primary,
     title,
     subtitle,
     onPress,

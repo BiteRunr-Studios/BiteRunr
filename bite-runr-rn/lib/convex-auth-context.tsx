@@ -18,7 +18,6 @@ SplashScreen.preventAutoHideAsync();
 
 type PendingAuth = {
     email: string;
-    password: string;
     firstName?: string;
     lastName?: string;
 };
@@ -49,7 +48,7 @@ type AuthState = {
         lastName: string;
     }) => Promise<void>;
     verifyEmail: (code: string) => Promise<void>;
-    resendVerificationCode: () => Promise<void>;
+    resendVerificationCode: (password: string) => Promise<void>;
     sendPasswordResetCode: (email: string) => Promise<void>;
     resetPassword: (code: string, newPassword: string) => Promise<void>;
     signOut: () => Promise<void>;
@@ -128,11 +127,19 @@ export function AuthProvider({ children }: PropsWithChildren) {
                 } else if (provider === "github" || provider === "google") {
                     // For React Native, use an intermediate web page that captures
                     // the auth code and redirects to the app scheme
-                    const convexSiteUrl =
-                        process.env.EXPO_PUBLIC_CONVEX_URL?.replace(
-                            ".cloud",
-                            ".site"
+                    const convexCloudUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
+                    if (
+                        Platform.OS !== "web" &&
+                        (!convexCloudUrl || !convexCloudUrl.includes(".cloud"))
+                    ) {
+                        throw new Error(
+                            "EXPO_PUBLIC_CONVEX_URL must be set and contain '.cloud' for native OAuth"
                         );
+                    }
+                    const convexSiteUrl = convexCloudUrl?.replace(
+                        ".cloud",
+                        ".site"
+                    );
                     const redirectUri = Platform.select({
                         // Use intermediate page for mobile to capture the code
                         native: `${convexSiteUrl}/mobile-callback`,
@@ -164,7 +171,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
                                 // Complete the OAuth flow with the code
                                 await convexSignIn(provider, { code });
                             } else {
-                                console.log("No code found in callback URL");
+                                throw new Error(
+                                    "Authentication failed: no authorization code received"
+                                );
                             }
                         } else if (result.type === "cancel") {
                             throw new Error("Authentication was cancelled");
@@ -196,10 +205,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
                     lastName: params.lastName,
                 });
 
-                // Store pending auth for the verification page
+                // Store pending auth for the verification page (no password for security)
                 setPendingAuth({
                     email: params.email,
-                    password: params.password,
                     firstName: params.firstName,
                     lastName: params.lastName,
                 });
@@ -232,22 +240,25 @@ export function AuthProvider({ children }: PropsWithChildren) {
         [convexSignIn, pendingAuth]
     );
 
-    const resendVerificationCode = useCallback(async () => {
-        if (!pendingAuth) {
-            throw new Error("No pending email verification");
-        }
+    const resendVerificationCode = useCallback(
+        async (password: string) => {
+            if (!pendingAuth) {
+                throw new Error("No pending email verification");
+            }
 
-        // Re-trigger the sign-up flow to resend the OTP
-        const params: Record<string, string> = {
-            flow: "signUp",
-            email: pendingAuth.email,
-            password: pendingAuth.password,
-        };
-        if (pendingAuth.firstName) params.firstName = pendingAuth.firstName;
-        if (pendingAuth.lastName) params.lastName = pendingAuth.lastName;
+            // Re-trigger the sign-up flow to resend the OTP
+            const params: Record<string, string> = {
+                flow: "signUp",
+                email: pendingAuth.email,
+                password,
+            };
+            if (pendingAuth.firstName) params.firstName = pendingAuth.firstName;
+            if (pendingAuth.lastName) params.lastName = pendingAuth.lastName;
 
-        await convexSignIn("password", params);
-    }, [convexSignIn, pendingAuth]);
+            await convexSignIn("password", params);
+        },
+        [convexSignIn, pendingAuth]
+    );
 
     const sendPasswordResetCode = useCallback(
         async (email: string) => {
