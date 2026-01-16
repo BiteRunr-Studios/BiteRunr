@@ -62,7 +62,7 @@ export default function HomeTab() {
                                                     {ou.status}
                                                 </Text>
                                                 <Text className="text-muted-foreground">
-                                                    Owes ${(ou.amountOwed / 100).toFixed(2)}
+                                                    Owes ${(Number(ou.amountOwed) / 100).toFixed(2)}
                                                 </Text>
                                             </View>
                                         ))}
