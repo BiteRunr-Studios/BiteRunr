@@ -55,9 +55,9 @@ export const updateAmountOwed = mutation({
     const userId = await auth.getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    // Validate amountOwed is a non-negative integer (cents)
-    if (args.amountOwed < 0 || !Number.isInteger(args.amountOwed)) {
-      throw new Error("Amount owed must be a non-negative integer (cents)");
+    // Validate amountOwed is non-negative (bigints are always integers)
+    if (args.amountOwed < 0n) {
+      throw new Error("Amount owed must be non-negative (cents)");
     }
 
     const orderUser = await ctx.db.get(args.orderUserId);
