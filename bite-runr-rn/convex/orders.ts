@@ -242,7 +242,7 @@ export const create = mutation({
       orderId,
       status: "ordering",
       settlementStatus: "unpaid",
-      amountOwed: 0,
+      amountOwed: 0n,
     });
 
     // Add friends as order users
@@ -252,7 +252,7 @@ export const create = mutation({
         orderId,
         status: "ordering",
         settlementStatus: "unpaid",
-        amountOwed: 0,
+        amountOwed: 0n,
       });
     }
 
