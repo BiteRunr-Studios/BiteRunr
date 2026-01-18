@@ -195,8 +195,7 @@ export default function HomeTab() {
 
                                     <View className="gap-3">
                                         {pastOrders.map((order) => (
-                                            <Pressable
-                                                key={order.id}>
+                                                <View key={order.id}>
                                                 <View className="p-4 border rounded-2xl border-border bg-card">
                                                     <View className="flex-row items-start justify-between">
                                                         <View className="flex-1">
@@ -294,7 +293,7 @@ export default function HomeTab() {
                                                         </View>
                                                     </View>
                                                 </View>
-                                            </Pressable>
+                                            </View>
                                         ))}
                                     </View>
                                 </View>
