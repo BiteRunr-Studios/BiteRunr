@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 import { auth } from "./auth";
 import { orderStatusValidator } from "./schema";
 
@@ -489,10 +490,7 @@ export const getFrequentItems = query({
     // Enrich with item and location details
     const enrichedItems = await Promise.all(
       sortedItems.map(async (itemData) => {
-        const item = await ctx.db
-          .query("items")
-          .filter((q) => q.eq(q.field("_id"), itemData.itemId))
-          .first();
+        const item = await ctx.db.get(itemData.itemId as Id<"items">);
         if (!item) return null;
 
         const location = await ctx.db.get(item.locationId);
