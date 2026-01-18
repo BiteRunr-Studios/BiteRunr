@@ -80,7 +80,6 @@ export default function SignInScreen() {
             if (requiresVerification) {
                 setPendingAuth({
                     email: form.email!.value.toLowerCase(),
-                    password: form.password!.value,
                 });
                 router.push("/(auth)/confirm-sign-up");
                 return;

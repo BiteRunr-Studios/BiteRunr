@@ -13,7 +13,7 @@ type IconProps = {
 
 const Icon: React.FC<IconProps> = ({ name, color, size, ...svgProps }) => {
     const LucideIcon = icons[name];
-    return <LucideIcon color={color} size={size} {...svgProps} />;
+    return <LucideIcon color={color} size={size} pointerEvents="none" {...svgProps} />;
 };
 
 export default Icon;

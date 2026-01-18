@@ -49,8 +49,7 @@ export function Input({
                 style={{
                     flexDirection: "row",
                     alignItems: "center",
-                }}
-            >
+                }}>
                 {leftIcon ? (
                     <Icon
                         name={leftIcon}
@@ -80,13 +79,11 @@ export function Input({
                             onPress={onRightIconPress}
                             accessibilityRole="button"
                             accessibilityLabel="Action"
-                            hitSlop={8}
-                        >
+                            hitSlop={8}>
                             <Icon
                                 name={rightIcon}
                                 size={24}
                                 color={rightIconColor}
-                                pointerEvents="none"
                             />
                         </Pressable>
                     ) : (
@@ -105,8 +102,7 @@ export function Input({
                     errorMessage
                         ? "opacity-100 translate-y-0 max-h-8"
                         : "opacity-0 -translate-y-1 max-h-0"
-                }`}
-            >
+                }`}>
                 <Icon name="CircleAlert" color="red" size={16} />
                 <Text className="text-sm font-medium text-red-500">
                     {errorMessage}
