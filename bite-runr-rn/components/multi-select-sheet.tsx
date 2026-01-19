@@ -137,13 +137,17 @@ export function MultiSelectSheet({
                                         <View className="flex-row items-center flex-1">
                                             {item.avatarUrl ? (
                                                 <Image
-                                                    source={{ uri: item.avatarUrl }}
+                                                    source={{
+                                                        uri: item.avatarUrl,
+                                                    }}
                                                     className="w-10 h-10 mr-3 rounded-full"
                                                 />
                                             ) : item.avatarUrl === null ? (
                                                 <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-muted">
                                                     <Text className="text-lg font-semibold text-muted-foreground">
-                                                        {item.displayName.charAt(0).toUpperCase()}
+                                                        {item.displayName
+                                                            .charAt(0)
+                                                            .toUpperCase()}
                                                     </Text>
                                                 </View>
                                             ) : null}
