@@ -26,7 +26,7 @@ export const ListItem: React.FC<ListItemProps> = ({
     return (
         <Pressable
             testID={testID}
-            className="flex-row items-center justify-between px-4 py-3 border border-black rounded-xl dark:border-muted-foreground"
+            className="flex-row items-center justify-between px-4 py-3 border rounded-xl border-border"
             android_ripple={{ color: "#2a2a2d" }}
             onPress={onPress}>
             <View className="flex-row items-center">

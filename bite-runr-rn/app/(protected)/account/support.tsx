@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { View, Text, Pressable, Linking, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import Icon, { IconName } from "@/components/common/icon";
+import Icon from "@/components/common/icon";
+import { ListItem } from "@/components/profile/list-item";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 
@@ -18,10 +19,9 @@ function FAQItem({ question, answer }: FAQItemProps) {
     return (
         <Pressable
             onPress={() => setIsExpanded(!isExpanded)}
-            className="bg-muted/30 rounded-2xl mb-3 overflow-hidden active:opacity-80"
-        >
+            className="mb-3 overflow-hidden border rounded-2xl active:opacity-80 border-border">
             <View className="flex-row items-center justify-between p-4">
-                <Text className="text-foreground font-medium flex-1 pr-2">
+                <Text className="flex-1 pr-2 font-medium text-foreground">
                     {question}
                 </Text>
                 <Icon
@@ -32,44 +32,11 @@ function FAQItem({ question, answer }: FAQItemProps) {
             </View>
             {isExpanded && (
                 <View className="px-4 pb-4 -mt-1">
-                    <Text className="text-muted-foreground leading-5">
+                    <Text className="leading-5 text-muted-foreground">
                         {answer}
                     </Text>
                 </View>
             )}
-        </Pressable>
-    );
-}
-
-type HelpTopicProps = {
-    icon: IconName;
-    title: string;
-    description: string;
-    onPress: () => void;
-};
-
-function HelpTopic({ icon, title, description, onPress }: HelpTopicProps) {
-    const { colorScheme } = useColorScheme();
-
-    return (
-        <Pressable
-            onPress={onPress}
-            className="flex-row items-center p-4 bg-muted/30 rounded-2xl mb-3 active:opacity-70"
-        >
-            <View className="items-center justify-center w-10 h-10 rounded-full bg-primary/10 mr-3">
-                <Icon
-                    name={icon}
-                    size={20}
-                    color={NAV_THEME[colorScheme].primary}
-                />
-            </View>
-            <View className="flex-1">
-                <Text className="text-foreground font-medium">{title}</Text>
-                <Text className="text-muted-foreground text-sm">
-                    {description}
-                </Text>
-            </View>
-            <Icon name="ChevronRight" size={20} color="#666" />
         </Pressable>
     );
 }
@@ -82,11 +49,15 @@ export default function SupportScreen() {
     };
 
     const handleReportBug = () => {
-        Linking.openURL("mailto:biterunr@gmail.com?subject=BiteRunr%20Bug%20Report");
+        Linking.openURL(
+            "mailto:biterunr@gmail.com?subject=BiteRunr%20Bug%20Report"
+        );
     };
 
     const handleFeatureRequest = () => {
-        Linking.openURL("mailto:biterunr@gmail.com?subject=BiteRunr%20Feature%20Request");
+        Linking.openURL(
+            "mailto:biterunr@gmail.com?subject=BiteRunr%20Feature%20Request"
+        );
     };
 
     const faqs: FAQItemProps[] = [
@@ -118,8 +89,7 @@ export default function SupportScreen() {
             <View className="flex-row items-center px-4 py-3 border-b border-border">
                 <Pressable
                     onPress={() => router.back()}
-                    className="p-2 -ml-2 rounded-full active:opacity-70"
-                >
+                    className="p-2 -ml-2 rounded-full active:opacity-70">
                     <Icon
                         name="ChevronLeft"
                         size={24}
@@ -133,56 +103,57 @@ export default function SupportScreen() {
 
             <ScrollView
                 className="flex-1"
-                contentContainerStyle={{ padding: 16 }}
-            >
+                contentContainerStyle={{ padding: 16 }}>
                 {/* Support Header */}
-                <View className="items-center mb-6 mt-2">
-                    <View className="items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4">
+                <View className="items-center mt-2 mb-6">
+                    <View className="items-center justify-center w-20 h-20 mb-4 rounded-full bg-primary/10">
                         <Icon
                             name="LifeBuoy"
                             size={40}
                             color={NAV_THEME[colorScheme].primary}
                         />
                     </View>
-                    <Text className="text-2xl font-bold text-foreground text-center">
+                    <Text className="text-2xl font-bold text-center text-foreground">
                         How can we help?
                     </Text>
-                    <Text className="text-muted-foreground text-center mt-2">
+                    <Text className="mt-2 text-center text-muted-foreground">
                         Find answers below or reach out to our team.
                     </Text>
                 </View>
 
                 {/* Contact Options */}
                 <View className="mb-6">
-                    <Text className="text-lg font-semibold text-foreground mb-3">
+                    <Text className="mb-3 text-lg font-semibold text-foreground">
                         Contact Us
                     </Text>
 
-                    <HelpTopic
-                        icon="Mail"
-                        title="Email Support"
-                        description="Get help from our team"
-                        onPress={handleEmailSupport}
-                    />
+                    <View className="gap-3">
+                        <ListItem
+                            iconName="Mail"
+                            title="Email Support"
+                            subtitle="Get help from our team"
+                            onPress={handleEmailSupport}
+                        />
 
-                    <HelpTopic
-                        icon="Bug"
-                        title="Report a Bug"
-                        description="Let us know if something's broken"
-                        onPress={handleReportBug}
-                    />
+                        <ListItem
+                            iconName="Bug"
+                            title="Report a Bug"
+                            subtitle="Let us know if something's broken"
+                            onPress={handleReportBug}
+                        />
 
-                    <HelpTopic
-                        icon="Lightbulb"
-                        title="Request a Feature"
-                        description="Tell us what you'd like to see"
-                        onPress={handleFeatureRequest}
-                    />
+                        <ListItem
+                            iconName="Lightbulb"
+                            title="Request a Feature"
+                            subtitle="Tell us what you'd like to see"
+                            onPress={handleFeatureRequest}
+                        />
+                    </View>
                 </View>
 
                 {/* FAQs */}
                 <View className="mb-6">
-                    <Text className="text-lg font-semibold text-foreground mb-3">
+                    <Text className="mb-3 text-lg font-semibold text-foreground">
                         Frequently Asked Questions
                     </Text>
 
@@ -197,11 +168,11 @@ export default function SupportScreen() {
 
                 {/* Email Footer */}
                 <View className="items-center pt-4 border-t border-border">
-                    <Text className="text-muted-foreground text-sm">
+                    <Text className="text-sm text-muted-foreground">
                         You can also reach us directly at
                     </Text>
                     <Pressable onPress={handleEmailSupport}>
-                        <Text className="text-primary font-semibold mt-1">
+                        <Text className="mt-1 font-semibold text-primary">
                             biterunr@gmail.com
                         </Text>
                     </Pressable>
