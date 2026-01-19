@@ -21,12 +21,6 @@ export const settlementStatusValidator = v.union(
   v.literal("confirmed")
 );
 
-export const friendRequestStatusValidator = v.union(
-  v.literal("pending"),
-  v.literal("accepted"),
-  v.literal("rejected")
-);
-
 export default defineSchema({
   // Auth tables from @convex-dev/auth
   ...authTables,
@@ -62,16 +56,14 @@ export default defineSchema({
     .index("by_friendId", ["friendId"])
     .index("by_userId_friendId", ["userId", "friendId"]),
 
-  // Friend requests
+  // Friend requests (pending only - rows are deleted on accept/decline)
   friendRequests: defineTable({
     senderId: v.id("users"),
     receiverId: v.id("users"),
-    status: friendRequestStatusValidator,
   })
     .index("by_senderId", ["senderId"])
     .index("by_receiverId", ["receiverId"])
-    .index("by_senderId_receiverId", ["senderId", "receiverId"])
-    .index("by_receiverId_status", ["receiverId", "status"]),
+    .index("by_senderId_receiverId", ["senderId", "receiverId"]),
 
   // Locations (restaurants, etc.)
   locations: defineTable({

@@ -9,7 +9,7 @@ export const list = query({
     const userId = await auth.getUserId(ctx);
     if (!userId) return [];
 
-    return await ctx.db.query("locations").collect();
+    return await ctx.db.query("locations").withIndex("by_name").collect();
   },
 });
 

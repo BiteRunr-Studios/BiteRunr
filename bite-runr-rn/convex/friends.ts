@@ -41,9 +41,7 @@ export const listPendingRequests = query({
 
     const requests = await ctx.db
       .query("friendRequests")
-      .withIndex("by_receiverId_status", (q) =>
-        q.eq("receiverId", userId).eq("status", "pending")
-      )
+      .withIndex("by_receiverId", (q) => q.eq("receiverId", userId))
       .collect();
 
     // Get sender details
@@ -60,7 +58,6 @@ export const listPendingRequests = query({
                 avatarUrl: sender.avatarUrl,
               }
             : null,
-          status: r.status,
           createdAt: r._creationTime,
         };
       })
@@ -102,9 +99,9 @@ export const sendRequest = mutation({
       )
       .first();
 
-    if (reverseRequest && reverseRequest.status === "pending") {
-      // Auto-accept the existing request
-      await ctx.db.patch(reverseRequest._id, { status: "accepted" });
+    if (reverseRequest) {
+      // Auto-accept: delete the request and create friendship
+      await ctx.db.delete(reverseRequest._id);
 
       // Create bidirectional friendship
       await ctx.db.insert("friends", {
@@ -134,7 +131,6 @@ export const sendRequest = mutation({
     return await ctx.db.insert("friendRequests", {
       senderId: userId,
       receiverId: args.receiverId,
-      status: "pending",
     });
   },
 });
@@ -149,10 +145,9 @@ export const acceptRequest = mutation({
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
     if (request.receiverId !== userId) throw new Error("Not authorized");
-    if (request.status !== "pending") throw new Error("Request already processed");
 
-    // Update request status
-    await ctx.db.patch(args.requestId, { status: "accepted" });
+    // Delete the request
+    await ctx.db.delete(args.requestId);
 
     // Create bidirectional friendship
     await ctx.db.insert("friends", {
@@ -178,9 +173,8 @@ export const rejectRequest = mutation({
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
     if (request.receiverId !== userId) throw new Error("Not authorized");
-    if (request.status !== "pending") throw new Error("Request already processed");
 
-    await ctx.db.patch(args.requestId, { status: "rejected" });
+    await ctx.db.delete(args.requestId);
     return true;
   },
 });
@@ -230,12 +224,10 @@ export const searchUsers = query({
       ctx.db
         .query("friendRequests")
         .withIndex("by_senderId", (q) => q.eq("senderId", userId))
-        .filter((q) => q.eq(q.field("status"), "pending"))
         .collect(),
       ctx.db
         .query("friendRequests")
         .withIndex("by_receiverId", (q) => q.eq("receiverId", userId))
-        .filter((q) => q.eq(q.field("status"), "pending"))
         .collect(),
     ]);
 
@@ -292,6 +284,24 @@ export const removeFriend = mutation({
     if (friendship1) await ctx.db.delete(friendship1._id);
     if (friendship2) await ctx.db.delete(friendship2._id);
 
+    // Also delete any friend request records between these users
+    const friendRequest1 = await ctx.db
+      .query("friendRequests")
+      .withIndex("by_senderId_receiverId", (q) =>
+        q.eq("senderId", userId).eq("receiverId", args.friendId)
+      )
+      .first();
+
+    const friendRequest2 = await ctx.db
+      .query("friendRequests")
+      .withIndex("by_senderId_receiverId", (q) =>
+        q.eq("senderId", args.friendId).eq("receiverId", userId)
+      )
+      .first();
+
+    if (friendRequest1) await ctx.db.delete(friendRequest1._id);
+    if (friendRequest2) await ctx.db.delete(friendRequest2._id);
+
     return true;
   },
 });
@@ -305,9 +315,7 @@ export const pendingRequestCount = query({
 
     const requests = await ctx.db
       .query("friendRequests")
-      .withIndex("by_receiverId_status", (q) =>
-        q.eq("receiverId", userId).eq("status", "pending")
-      )
+      .withIndex("by_receiverId", (q) => q.eq("receiverId", userId))
       .collect();
 
     return requests.length;

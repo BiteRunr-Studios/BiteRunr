@@ -124,7 +124,9 @@ export const getWithDetails = query({
       })
     );
 
-    return results.filter((r) => r !== null);
+    return results
+      .filter((r) => r !== null)
+      .sort((a, b) => b.order.createdAt - a.order.createdAt);
   },
 });
 
