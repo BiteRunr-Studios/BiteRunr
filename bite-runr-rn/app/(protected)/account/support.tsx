@@ -78,15 +78,15 @@ export default function SupportScreen() {
     const { colorScheme } = useColorScheme();
 
     const handleEmailSupport = () => {
-        Linking.openURL("mailto:biterunr@gmail.com?subject=BiteRunr Support");
+        Linking.openURL("mailto:biterunr@gmail.com?subject=BiteRunr%20Support");
     };
 
     const handleReportBug = () => {
-        Linking.openURL("mailto:biterunr@gmail.com?subject=BiteRunr Bug Report");
+        Linking.openURL("mailto:biterunr@gmail.com?subject=BiteRunr%20Bug%20Report");
     };
 
     const handleFeatureRequest = () => {
-        Linking.openURL("mailto:biterunr@gmail.com?subject=BiteRunr Feature Request");
+        Linking.openURL("mailto:biterunr@gmail.com?subject=BiteRunr%20Feature%20Request");
     };
 
     const faqs: FAQItemProps[] = [
