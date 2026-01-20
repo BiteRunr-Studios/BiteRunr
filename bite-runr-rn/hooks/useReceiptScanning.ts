@@ -88,6 +88,11 @@ export function useReceiptScanning(
 
   const startScan = useCallback(
     async (source: "camera" | "library") => {
+      // Prevent starting a new scan while one is already in progress
+      if (state !== "idle" && state !== "error") {
+        return;
+      }
+
       if (!orderLocationId) {
         setError("No location selected");
         return;
@@ -212,7 +217,7 @@ export function useReceiptScanning(
         setState("error");
       }
     },
-    [orderLocationId, orderItems, generateUploadUrl, parseReceipt, reset]
+    [state, orderLocationId, orderItems, generateUploadUrl, parseReceipt, reset]
   );
 
   const updateMatch = useCallback(

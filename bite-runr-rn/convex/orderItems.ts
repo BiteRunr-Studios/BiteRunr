@@ -75,9 +75,12 @@ export const add = mutation({
       throw new Error("Not authorized");
     }
 
-    // Check if order is paused (run has started)
+    // Check if order exists and is paused (run has started)
     const order = await ctx.db.get(orderUser.orderId);
-    if (order?.paused) {
+    if (!order) {
+      throw new Error("Order not found");
+    }
+    if (order.paused) {
       throw new Error("Cannot add items - the run has already started");
     }
 
@@ -134,9 +137,12 @@ export const update = mutation({
       throw new Error("Not authorized");
     }
 
-    // Check if order is paused (run has started)
+    // Check if order exists and is paused (run has started)
     const order = await ctx.db.get(orderUser.orderId);
-    if (order?.paused) {
+    if (!order) {
+      throw new Error("Order not found");
+    }
+    if (order.paused) {
       throw new Error("Cannot update items - the run has already started");
     }
 
@@ -281,9 +287,12 @@ export const remove = mutation({
       throw new Error("Not authorized");
     }
 
-    // Check if order is paused (run has started)
+    // Check if order exists and is paused (run has started)
     const order = await ctx.db.get(orderUser.orderId);
-    if (order?.paused) {
+    if (!order) {
+      throw new Error("Order not found");
+    }
+    if (order.paused) {
       throw new Error("Cannot remove items - the run has already started");
     }
 

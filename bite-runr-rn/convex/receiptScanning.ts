@@ -102,6 +102,14 @@ export const parseReceipt = action({
     totalInCents?: number;
     error?: string;
   }> => {
+    // Verify authentication and authorization by checking access to the order location
+    const orderItems = await ctx.runQuery(api.receiptScanning.getOrderItemsForLocation, {
+      orderLocationId: args.orderLocationId,
+    });
+    if (orderItems === null) {
+      return { success: false, error: "Not authenticated or not authorized" };
+    }
+
     // Get the image URL from storage
     const imageUrl = await ctx.storage.getUrl(args.storageId);
     if (!imageUrl) {

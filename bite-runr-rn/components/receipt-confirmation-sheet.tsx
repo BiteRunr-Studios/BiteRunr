@@ -72,8 +72,15 @@ function MatchItem({
   };
 
   const handlePriceChange = (text: string) => {
-    // Allow only numbers and decimal point
-    const cleaned = text.replace(/[^0-9.]/g, "");
+    // Allow only numbers and a single decimal point
+    let cleaned = text.replace(/[^0-9.]/g, "");
+    // Remove extra decimal points (keep only the first one)
+    const decimalIndex = cleaned.indexOf(".");
+    if (decimalIndex !== -1) {
+      cleaned =
+        cleaned.slice(0, decimalIndex + 1) +
+        cleaned.slice(decimalIndex + 1).replace(/\./g, "");
+    }
     setManualPrice(cleaned);
 
     // Convert to cents
