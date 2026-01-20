@@ -120,6 +120,7 @@ export default defineSchema({
     itemId: v.id("items"),
     comments: v.optional(v.string()),
     quantity: v.number(),
+    priceInCents: v.optional(v.int64()), // Price per item in cents (set from receipt scanning)
   })
     .index("by_orderLocationId", ["orderLocationId"])
     .index("by_orderUserId", ["orderUserId"])

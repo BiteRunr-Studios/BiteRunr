@@ -175,6 +175,44 @@ export default function SpecificOrder() {
         buttonState === "readyToRun" ? "Start Run" : "Start Run Anyway";
     const isButtonDisabled = buttonState === "disabled";
 
+    async function handleStartRun() {
+        const startRun = async () => {
+            try {
+                await updateOrder({
+                    orderId: orderId as Id<"orders">,
+                    paused: true,
+                });
+                // Navigate to order summary page
+                router.push(`/order/summary?orderId=${orderId}`);
+            } catch (error) {
+                console.error("Failed to start run:", error);
+                Alert.alert("Error", "Failed to start run. Please try again.");
+            }
+        };
+
+        if (buttonState === "enabled") {
+            // Not all users are done, show confirmation
+            Alert.alert(
+                "Start Run Anyway?",
+                "Not all participants have finished ordering. Starting now will lock the order and prevent anyone from adding more items. Are you sure?",
+                [
+                    {
+                        text: "No",
+                        style: "cancel",
+                    },
+                    {
+                        text: "Yes, Start Run",
+                        style: "default",
+                        onPress: startRun,
+                    },
+                ]
+            );
+        } else {
+            // All users are done, start directly
+            await startRun();
+        }
+    }
+
     if (isPending) {
         return (
             <View className="items-center justify-center flex-1 px-6">
@@ -230,12 +268,14 @@ export default function SpecificOrder() {
                                 year: "numeric",
                             })}`}
                         </Text>
-                        <View className="flex-row items-center justify-center gap-2 px-2 py-1 rounded-full h-max w-max bg-primary">
+                        <View className={`flex-row items-center justify-center gap-2 px-2 py-1 rounded-full h-max w-max ${data.order.paused ? "bg-orange-500" : "bg-primary"}`}>
                             <ReAnimated.View
                                 style={breatheStyle}
                                 className="w-4 h-4 bg-white rounded-full"
                             />
-                            <Text className="text-sm text-white">Active</Text>
+                            <Text className="text-sm text-white">
+                                {data.order.paused ? "Run In Progress" : "Active"}
+                            </Text>
                         </View>
                     </View>
                     <Text className="text-3xl font-semibold text-foreground">
@@ -275,45 +315,73 @@ export default function SpecificOrder() {
 
             {/* Footer */}
             <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
-                <Text className="mb-3 text-sm text-center text-muted-foreground">
-                    {data.count > 0
-                        ? `${data.count} Items Added`
-                        : "No Items Added"}
-                </Text>
-                <View className="flex-col gap-2">
-                    <TouchableOpacity
-                        className="w-full py-3 rounded-lg bg-primary"
-                        onPress={handleSelectItems}>
-                        <Text className="text-sm font-semibold text-center text-foreground">
-                            Select Items
+                {data.order.paused && !isCreator ? (
+                    <View className="items-center py-4">
+                        <Text className="text-lg font-semibold text-center text-primary">
+                            Your order is being picked up
                         </Text>
-                    </TouchableOpacity>
-                    {isCreator && (
-                        <Animated.View
-                            style={{
-                                opacity: buttonOpacity,
-                                transform: [{ translateY: buttonTranslateY }],
-                            }}>
-                            <TouchableOpacity
-                                className={`w-full py-3 border rounded-lg ${
-                                    isButtonDisabled
-                                        ? "border-muted bg-muted"
-                                        : "border-primary bg-primary/10"
-                                }`}
-                                onPress={() => console.log("Start Run pressed")}
-                                disabled={isButtonDisabled}>
-                                <Text
-                                    className={`text-sm font-semibold text-center ${
-                                        isButtonDisabled
-                                            ? "text-muted-foreground"
-                                            : "text-primary"
-                                    }`}>
-                                    {buttonText}
-                                </Text>
-                            </TouchableOpacity>
-                        </Animated.View>
-                    )}
-                </View>
+                        <Text className="mt-1 text-sm text-center text-muted-foreground">
+                            Sit tight! You'll be notified when it's ready.
+                        </Text>
+                    </View>
+                ) : (
+                    <>
+                        <Text className="mb-3 text-sm text-center text-muted-foreground">
+                            {data.count > 0
+                                ? `${data.count} Items Added`
+                                : "No Items Added"}
+                        </Text>
+                        {data.order.paused && (
+                            <Text className="mb-3 text-sm text-center text-orange-500">
+                                The run has started. No more items can be added.
+                            </Text>
+                        )}
+                        <View className="flex-col gap-2">
+                            {data.order.paused && isCreator ? (
+                                <TouchableOpacity
+                                    className="w-full py-3 rounded-lg bg-primary"
+                                    onPress={() => router.push(`/order/summary?orderId=${orderId}`)}>
+                                    <Text className="text-sm font-semibold text-center text-foreground">
+                                        View Order Summary
+                                    </Text>
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity
+                                    className="w-full py-3 rounded-lg bg-primary"
+                                    onPress={handleSelectItems}>
+                                    <Text className="text-sm font-semibold text-center text-foreground">
+                                        Select Items
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+                            {isCreator && !data.order.paused && (
+                                <Animated.View
+                                    style={{
+                                        opacity: buttonOpacity,
+                                        transform: [{ translateY: buttonTranslateY }],
+                                    }}>
+                                    <TouchableOpacity
+                                        className={`w-full py-3 border rounded-lg ${
+                                            isButtonDisabled
+                                                ? "border-muted bg-muted"
+                                                : "border-primary bg-primary/10"
+                                        }`}
+                                        onPress={handleStartRun}
+                                        disabled={isButtonDisabled}>
+                                        <Text
+                                            className={`text-sm font-semibold text-center ${
+                                                isButtonDisabled
+                                                    ? "text-muted-foreground"
+                                                    : "text-primary"
+                                            }`}>
+                                            {buttonText}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </Animated.View>
+                            )}
+                        </View>
+                    </>
+                )}
             </View>
         </>
     );

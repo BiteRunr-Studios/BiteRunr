@@ -75,6 +75,12 @@ export const add = mutation({
       throw new Error("Not authorized");
     }
 
+    // Check if order is paused (run has started)
+    const order = await ctx.db.get(orderUser.orderId);
+    if (order?.paused) {
+      throw new Error("Cannot add items - the run has already started");
+    }
+
     // Check if item already exists with same comments
     const existing = await ctx.db
       .query("orderItems")
@@ -128,12 +134,134 @@ export const update = mutation({
       throw new Error("Not authorized");
     }
 
+    // Check if order is paused (run has started)
+    const order = await ctx.db.get(orderUser.orderId);
+    if (order?.paused) {
+      throw new Error("Cannot update items - the run has already started");
+    }
+
     await ctx.db.patch(args.orderItemId, {
       quantity: args.quantity,
       comments: args.comments,
     });
 
     return args.orderItemId;
+  },
+});
+
+// Get order summary for creator (all items grouped by user and location)
+export const getOrderSummary = query({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) return null;
+
+    // Verify user is the order creator
+    const order = await ctx.db.get(args.orderId);
+    if (!order || order.creatorId !== userId) {
+      return null;
+    }
+
+    // Get all order users
+    const orderUsers = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
+      .collect();
+
+    // Get all order locations for this order
+    const orderLocations = await ctx.db
+      .query("orderLocations")
+      .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
+      .collect();
+
+    // Build location info with order location IDs
+    const locations: Array<{
+      orderLocationId: string;
+      locationId: string;
+      name: string;
+    }> = [];
+    const locationLookup: Map<string, { id: string; name: string; orderLocationId: string }> = new Map();
+
+    for (const ol of orderLocations) {
+      const location = await ctx.db.get(ol.locationId);
+      if (location) {
+        const locInfo = {
+          id: location._id,
+          name: location.name,
+          orderLocationId: ol._id,
+        };
+        locationLookup.set(ol._id, locInfo);
+        locations.push({
+          orderLocationId: ol._id,
+          locationId: location._id,
+          name: location.name,
+        });
+      }
+    }
+
+    // Build user lookup
+    const userLookup: Map<string, { firstName: string; lastName: string; avatarUrl?: string }> = new Map();
+    for (const ou of orderUsers) {
+      const user = await ctx.db.get(ou.userId);
+      if (user) {
+        userLookup.set(ou._id, {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatarUrl: user.avatarUrl,
+        });
+      }
+    }
+
+    // Get all order items and group by location
+    const locationSummaries = await Promise.all(
+      orderLocations.map(async (orderLocation) => {
+        const locationInfo = locationLookup.get(orderLocation._id);
+
+        // Get all items for this location
+        const orderItems = await ctx.db
+          .query("orderItems")
+          .withIndex("by_orderLocationId", (q) => q.eq("orderLocationId", orderLocation._id))
+          .collect();
+
+        // Enrich items with user and item details
+        const items = await Promise.all(
+          orderItems.map(async (oi) => {
+            const item = await ctx.db.get(oi.itemId);
+            const userInfo = userLookup.get(oi.orderUserId);
+
+            return {
+              id: oi._id,
+              itemName: item?.name ?? "Unknown Item",
+              quantity: oi.quantity,
+              comments: oi.comments,
+              user: userInfo ?? null,
+            };
+          })
+        );
+
+        return {
+          orderLocationId: orderLocation._id,
+          locationId: orderLocation.locationId,
+          locationName: locationInfo?.name ?? "Unknown Location",
+          items,
+          itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
+        };
+      })
+    );
+
+    return {
+      order: {
+        id: order._id,
+        name: order.name,
+        comments: order.comments,
+        paused: order.paused,
+        createdAt: order._creationTime,
+      },
+      locations,
+      locationSummaries,
+      totalItems: locationSummaries.reduce((sum, ls) => sum + ls.itemCount, 0),
+      totalPeople: orderUsers.length,
+    };
   },
 });
 
@@ -151,6 +279,12 @@ export const remove = mutation({
     const orderUser = await ctx.db.get(orderItem.orderUserId);
     if (!orderUser || orderUser.userId !== userId) {
       throw new Error("Not authorized");
+    }
+
+    // Check if order is paused (run has started)
+    const order = await ctx.db.get(orderUser.orderId);
+    if (order?.paused) {
+      throw new Error("Cannot remove items - the run has already started");
     }
 
     await ctx.db.delete(args.orderItemId);
