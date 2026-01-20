@@ -108,18 +108,31 @@ export function OrderCard({
                                         NAV_THEME[colorScheme].background,
                                 }}
                                 className="border-2 rounded-full border-card">
-                                <Image
-                                    style={{
-                                        width: 36,
-                                        height: 36,
-                                    }}
-                                    className="rounded-full"
-                                    source={{
-                                        uri:
-                                            orderUser.avatarUrl ??
-                                            `https://ui-avatars.com/api/?name=${orderUser.firstName ?? ""}+${orderUser.lastName ?? ""}&background=FFE7CC&color=000`,
-                                    }}
-                                />
+                                {orderUser.avatarUrl ? (
+                                    <Image
+                                        style={{
+                                            width: 36,
+                                            height: 36,
+                                        }}
+                                        className="rounded-full"
+                                        source={{
+                                            uri: orderUser.avatarUrl,
+                                        }}
+                                    />
+                                ) : (
+                                    <View
+                                        style={{
+                                            width: 36,
+                                            height: 36,
+                                        }}
+                                        className="items-center justify-center rounded-full bg-muted">
+                                        <Text
+                                            style={{ fontSize: 14 }}
+                                            className="font-semibold text-muted-foreground">
+                                            {`${(orderUser.firstName || "").charAt(0)}${(orderUser.lastName || "").charAt(0)}`.toUpperCase() || "U"}
+                                        </Text>
+                                    </View>
+                                )}
                             </View>
                         ))}
                     {orderUsers.length > 4 && (

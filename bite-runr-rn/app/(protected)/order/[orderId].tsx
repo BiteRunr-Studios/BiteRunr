@@ -292,15 +292,25 @@ export default function SpecificOrder() {
                         {data.orderUsers.map((orderUser) => (
                             <View key={orderUser.id} className="flex-row py-4">
                                 <View className="flex-row items-center flex-1 gap-2">
-                                    <Image
-                                        style={{ width: 36, height: 36 }}
-                                        className="rounded-full"
-                                        source={{
-                                            uri:
-                                                orderUser.user?.avatarUrl ??
-                                                `https://ui-avatars.com/api/?name=${orderUser.user?.firstName}+${orderUser.user?.lastName}`,
-                                        }}
-                                    />
+                                    {orderUser.user?.avatarUrl ? (
+                                        <Image
+                                            style={{ width: 36, height: 36 }}
+                                            className="rounded-full"
+                                            source={{
+                                                uri: orderUser.user.avatarUrl,
+                                            }}
+                                        />
+                                    ) : (
+                                        <View
+                                            style={{ width: 36, height: 36 }}
+                                            className="items-center justify-center rounded-full bg-muted">
+                                            <Text
+                                                style={{ fontSize: 14 }}
+                                                className="font-semibold text-muted-foreground">
+                                                {`${(orderUser.user?.firstName || "").charAt(0)}${(orderUser.user?.lastName || "").charAt(0)}`.toUpperCase() || "U"}
+                                            </Text>
+                                        </View>
+                                    )}
                                     <View className="flex-1">
                                         <Text className="text-foreground">
                                             {orderUser.user?.firstName}{" "}

@@ -123,10 +123,10 @@ export default function AccountTab() {
                             />
                         ) : (
                             <View className="items-center justify-center w-24 h-24 rounded-full bg-muted">
-                                <Text className="font-semibold text-muted-foreground">
-                                    {(fullName || user.email || "U")
-                                        .slice(0, 2)
-                                        .toUpperCase()}
+                                <Text
+                                    style={{ fontSize: 32 }}
+                                    className="font-semibold text-muted-foreground">
+                                    {`${(user.firstName || "").charAt(0)}${(user.lastName || "").charAt(0)}`.toUpperCase() || "U"}
                                 </Text>
                             </View>
                         )}
