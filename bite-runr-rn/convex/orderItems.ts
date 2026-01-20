@@ -155,7 +155,7 @@ export const update = mutation({
   },
 });
 
-// Get order summary for creator (all items grouped by user and location)
+// Get order summary for creator (all items grouped by item ID, with comments as sub-items)
 export const getOrderSummary = query({
   args: { orderId: v.id("orders") },
   handler: async (ctx, args) => {
@@ -168,7 +168,7 @@ export const getOrderSummary = query({
       return null;
     }
 
-    // Get all order users
+    // Get all order users (for counting total people)
     const orderUsers = await ctx.db
       .query("orderUsers")
       .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
@@ -205,20 +205,7 @@ export const getOrderSummary = query({
       }
     }
 
-    // Build user lookup
-    const userLookup: Map<string, { firstName: string; lastName: string; avatarUrl?: string }> = new Map();
-    for (const ou of orderUsers) {
-      const user = await ctx.db.get(ou.userId);
-      if (user) {
-        userLookup.set(ou._id, {
-          firstName: user.firstName,
-          lastName: user.lastName,
-          avatarUrl: user.avatarUrl,
-        });
-      }
-    }
-
-    // Get all order items and group by location
+    // Get all order items and group by location, then by itemId
     const locationSummaries = await Promise.all(
       orderLocations.map(async (orderLocation) => {
         const locationInfo = locationLookup.get(orderLocation._id);
@@ -229,28 +216,59 @@ export const getOrderSummary = query({
           .withIndex("by_orderLocationId", (q) => q.eq("orderLocationId", orderLocation._id))
           .collect();
 
-        // Enrich items with user and item details
-        const items = await Promise.all(
-          orderItems.map(async (oi) => {
-            const item = await ctx.db.get(oi.itemId);
-            const userInfo = userLookup.get(oi.orderUserId);
+        // Group items by itemId
+        const itemGroups: Map<string, {
+          itemId: string;
+          itemName: string;
+          baseQuantity: number;
+          subItems: Array<{ comment: string; quantity: number }>;
+        }> = new Map();
 
-            return {
-              id: oi._id,
-              itemName: item?.name ?? "Unknown Item",
+        for (const oi of orderItems) {
+          const item = await ctx.db.get(oi.itemId);
+          const itemName = item?.name ?? "Unknown Item";
+
+          if (!itemGroups.has(oi.itemId)) {
+            itemGroups.set(oi.itemId, {
+              itemId: oi.itemId,
+              itemName,
+              baseQuantity: 0,
+              subItems: [],
+            });
+          }
+
+          const group = itemGroups.get(oi.itemId)!;
+
+          if (oi.comments && oi.comments.trim()) {
+            // Item has comments - add as sub-item
+            group.subItems.push({
+              comment: oi.comments,
               quantity: oi.quantity,
-              comments: oi.comments,
-              user: userInfo ?? null,
-            };
-          })
-        );
+            });
+          } else {
+            // Item without comments - add to base quantity
+            group.baseQuantity += oi.quantity;
+          }
+        }
+
+        // Convert map to array and calculate total quantities
+        const items = Array.from(itemGroups.values()).map((group) => ({
+          itemId: group.itemId,
+          itemName: group.itemName,
+          baseQuantity: group.baseQuantity,
+          totalQuantity: group.baseQuantity + group.subItems.reduce((sum, si) => sum + si.quantity, 0),
+          subItems: group.subItems,
+        }));
+
+        // Sort by item name
+        items.sort((a, b) => a.itemName.localeCompare(b.itemName));
 
         return {
           orderLocationId: orderLocation._id,
           locationId: orderLocation.locationId,
           locationName: locationInfo?.name ?? "Unknown Location",
           items,
-          itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
+          itemCount: items.reduce((sum, item) => sum + item.totalQuantity, 0),
         };
       })
     );

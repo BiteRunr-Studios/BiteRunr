@@ -41,10 +41,13 @@ export default function SpecificOrder() {
                 duration: 2000,
                 easing: Easing.inOut(Easing.ease),
             }),
-            withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) })
+            withTiming(1, {
+                duration: 2000,
+                easing: Easing.inOut(Easing.ease),
+            }),
         ),
         -1,
-        false
+        false,
     );
 
     const breatheStyle = useAnimatedStyle(() => ({
@@ -59,7 +62,7 @@ export default function SpecificOrder() {
     // Get order data
     const data = useQuery(
         api.orders.get,
-        orderId ? { orderId: orderId as Id<"orders"> } : "skip"
+        orderId ? { orderId: orderId as Id<"orders"> } : "skip",
     );
     const isPending = data === undefined;
 
@@ -118,7 +121,7 @@ export default function SpecificOrder() {
 
     async function handleSelectItems() {
         const orderUser = data?.orderUsers.find(
-            (x) => x.userId === currentUserId
+            (x) => x.userId === currentUserId,
         );
 
         if (!orderUser) {
@@ -132,7 +135,7 @@ export default function SpecificOrder() {
                 status: "ordering",
             });
             router.push(
-                `/order/items?orderUserId=${orderUser.id}&orderId=${orderId}`
+                `/order/items?orderUserId=${orderUser.id}&orderId=${orderId}`,
             );
         } catch (error) {
             console.error("Failed to set status:", error);
@@ -161,12 +164,12 @@ export default function SpecificOrder() {
                             console.error("Failed to cancel order:", error);
                             Alert.alert(
                                 "Error",
-                                "Failed to cancel order. Please try again."
+                                "Failed to cancel order. Please try again.",
                             );
                         }
                     },
                 },
-            ]
+            ],
         );
     }
 
@@ -205,7 +208,7 @@ export default function SpecificOrder() {
                         style: "default",
                         onPress: startRun,
                     },
-                ]
+                ],
             );
         } else {
             // All users are done, start directly
@@ -261,20 +264,21 @@ export default function SpecificOrder() {
                     <View className="flex-row justify-between">
                         <Text className="text-lg text-muted-foreground">
                             {`Started on ${new Date(
-                                data.order.createdAt
+                                data.order.createdAt,
                             ).toLocaleDateString("en-US", {
                                 month: "long",
                                 day: "numeric",
                                 year: "numeric",
                             })}`}
                         </Text>
-                        <View className={`flex-row items-center justify-center gap-2 px-2 py-1 rounded-full h-max w-max ${data.order.paused ? "bg-orange-500" : "bg-primary"}`}>
+                        <View
+                            className={`flex-row items-center justify-center gap-2 px-2 py-1 rounded-full h-max w-max ${data.order.paused ? "bg-orange-500" : "bg-primary"}`}>
                             <ReAnimated.View
                                 style={breatheStyle}
                                 className="w-4 h-4 bg-white rounded-full"
                             />
                             <Text className="text-sm text-white">
-                                {data.order.paused ? "Run In Progress" : "Active"}
+                                {data.order.paused ? "Paused" : "Active"}
                             </Text>
                         </View>
                     </View>
@@ -340,7 +344,11 @@ export default function SpecificOrder() {
                             {data.order.paused && isCreator ? (
                                 <TouchableOpacity
                                     className="w-full py-3 rounded-lg bg-primary"
-                                    onPress={() => router.push(`/order/summary?orderId=${orderId}`)}>
+                                    onPress={() =>
+                                        router.push(
+                                            `/order/summary?orderId=${orderId}`,
+                                        )
+                                    }>
                                     <Text className="text-sm font-semibold text-center text-foreground">
                                         View Order Summary
                                     </Text>
@@ -358,7 +366,9 @@ export default function SpecificOrder() {
                                 <Animated.View
                                     style={{
                                         opacity: buttonOpacity,
-                                        transform: [{ translateY: buttonTranslateY }],
+                                        transform: [
+                                            { translateY: buttonTranslateY },
+                                        ],
                                     }}>
                                     <TouchableOpacity
                                         className={`w-full py-3 border rounded-lg ${
