@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, action, internalMutation, query } from "./_generated/server";
 import { internal, api } from "./_generated/api";
-import { auth } from "./auth";
+import { getUserId } from "./authHelper";
 import { receiptParserAgent } from "./receiptAgent";
 import { Id } from "./_generated/dataModel";
 
@@ -25,7 +25,7 @@ export const receiptMatchValidator = v.object({
 export const generateReceiptUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     return await ctx.storage.generateUploadUrl();
@@ -38,7 +38,7 @@ export const getOrderItemsForLocation = query({
     orderLocationId: v.id("orderLocations"),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return null;
 
     // Get the order location to verify access
@@ -182,7 +182,7 @@ export const confirmReceiptMatches = mutation({
     orderId: v.id("orders"),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     // Verify user is the order creator
@@ -252,7 +252,7 @@ export const clearLocationPrices = mutation({
     orderLocationId: v.id("orderLocations"),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     // Get the order location

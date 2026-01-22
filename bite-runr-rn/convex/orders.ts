@@ -1,14 +1,14 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
-import { auth } from "./auth";
+import { getUserId } from "./authHelper";
 import { orderStatusValidator } from "./schema";
 
 // List all orders for the current user (as creator or participant)
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     // Get orders where user is a participant
@@ -49,7 +49,7 @@ export const list = query({
 export const getWithDetails = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     // Get orders where user is a participant
@@ -134,7 +134,7 @@ export const getWithDetails = query({
 export const get = query({
   args: { orderId: v.id("orders") },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return null;
 
     const order = await ctx.db.get(args.orderId);
@@ -219,7 +219,7 @@ export const create = mutation({
     friendIds: v.array(v.id("users")),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     // Create the order
@@ -273,7 +273,7 @@ export const update = mutation({
     paused: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     const order = await ctx.db.get(args.orderId);
@@ -299,7 +299,7 @@ export const update = mutation({
 export const cancel = mutation({
   args: { orderId: v.id("orders") },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     const order = await ctx.db.get(args.orderId);
@@ -319,7 +319,7 @@ export const cancel = mutation({
 export const getActiveOrders = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     const userOrderUsers = await ctx.db
@@ -372,7 +372,7 @@ export const getActiveOrders = query({
 export const getPastOrders = query({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     const limit = args.limit ?? 5;
@@ -448,7 +448,7 @@ export const getPastOrders = query({
 export const getFrequentItems = query({
   args: { limit: v.optional(v.number()) },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     const limit = args.limit ?? 6;

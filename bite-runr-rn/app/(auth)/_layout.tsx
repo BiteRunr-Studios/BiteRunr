@@ -30,23 +30,11 @@ export default function AuthLayout() {
             <Stack.Screen
                 name="confirm-sign-up"
                 options={{
-                    title: "Confirm Sign Up",
+                    title: "Verify Email",
                     presentation: "fullScreenModal",
                     animation: "slide_from_bottom",
                     headerShown: false,
                     gestureEnabled: true,
-                }}
-            />
-            <Stack.Screen
-                name="forgot-password"
-                options={{
-                    title: "Forgot Password",
-                }}
-            />
-            <Stack.Screen
-                name="reset-password"
-                options={{
-                    title: "Reset Password",
                 }}
             />
         </Stack>

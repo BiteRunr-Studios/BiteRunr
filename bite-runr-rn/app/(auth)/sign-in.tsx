@@ -17,17 +17,10 @@ import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignInScreen() {
-    const { signIn, setPendingAuth } = useContext(AuthContext);
+    const { sendOTP, setPendingAuth } = useContext(AuthContext);
     const { colorScheme } = useColorScheme();
     const [form, setForm] = useState<FormState>({
         email: { label: "Email", value: "", error: null, touched: false },
-        password: {
-            label: "Password",
-            value: "",
-            error: null,
-            touched: false,
-            show: false,
-        },
     });
 
     const { onChange, onBlur } = createFormHandlers(form, setForm);
@@ -63,52 +56,22 @@ export default function SignInScreen() {
         }
 
         try {
-            await signIn("password", {
-                email: form.email!.value.toLowerCase(),
-                password: form.password!.value,
-                flow: "signIn",
-            });
-            router.replace("/(protected)/(tabs)");
+            const email = form.email!.value.toLowerCase();
+            await sendOTP(email, "sign-in");
+
+            // Store pending auth and navigate to OTP verification
+            setPendingAuth({ email });
+            router.push("/(auth)/confirm-sign-up");
         } catch (error: unknown) {
-            // Debug: log the raw error to understand what Convex returns
-            console.log("Sign-in error:", error);
-            console.log("Error message:", error instanceof Error ? error.message : String(error));
-
-            const { message, field, requiresVerification } = getAuthErrorMessage(error, "signIn");
-
-            // If email is not verified, redirect to verification flow
-            if (requiresVerification) {
-                setPendingAuth({
-                    email: form.email!.value.toLowerCase(),
-                });
-                router.push("/(auth)/confirm-sign-up");
-                return;
-            }
-
-            // Always show an error message
-            const errorToShow = message || "Sign in failed. Please try again.";
-
-            setForm((prev) => {
-                if (field === "password") {
-                    return {
-                        ...prev,
-                        password: {
-                            ...prev.password!,
-                            touched: true,
-                            error: errorToShow,
-                        },
-                    };
-                }
-                // Default to showing error on email field
-                return {
-                    ...prev,
-                    email: {
-                        ...prev.email!,
-                        touched: true,
-                        error: errorToShow,
-                    },
-                };
-            });
+            const { message } = getAuthErrorMessage(error, "signIn");
+            setForm((prev) => ({
+                ...prev,
+                email: {
+                    ...prev.email!,
+                    touched: true,
+                    error: message,
+                },
+            }));
         } finally {
             setLoading(false);
         }
@@ -139,53 +102,12 @@ export default function SignInScreen() {
                 onBlur={() => onBlur("email")}
             />
 
-            <View className="mt-2" />
-
-            <Pressable
-                className="mb-2 w-fit ml-auto"
-                onPress={() =>
-                    router.push({
-                        pathname: "/forgot-password",
-                        params: {
-                            email: form.email!.value.toLocaleLowerCase(),
-                        },
-                    })
-                }
-            >
-                <Text className="text-muted-foreground underline">
-                    Forgot password?
-                </Text>
-            </Pressable>
-
-            {/* Password Field*/}
-            <Input
-                value={form.password!.value}
-                placeholder="Password"
-                leftIcon="Lock"
-                rightIcon={form.password!.show ? "EyeClosed" : "Eye"}
-                onRightIconPress={() => {
-                    setForm((prev) => ({
-                        ...prev,
-                        password: {
-                            ...prev.password!,
-                            show: !prev.password!.show,
-                        },
-                    }));
-                }}
-                autoCapitalize="none"
-                returnKeyType="default"
-                errorMessage={form.password!.error}
-                onChangeText={(v) => onChange("password", v)}
-                onBlur={() => onBlur("password")}
-                secureTextEntry={!form.password!.show}
-            />
-
             <View className="mt-4" />
 
             {/* Submit Button */}
             <Button
                 variant="full"
-                label="Continue"
+                label="Continue with Email"
                 loading={loading}
                 onPress={onSignInWithEmail}
             />

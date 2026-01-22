@@ -1,12 +1,12 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
-import { auth } from "./auth";
+import { getUserId } from "./authHelper";
 
 // List all friends for the current user
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     const friendships = await ctx.db
@@ -36,7 +36,7 @@ export const list = query({
 export const listPendingRequests = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     const requests = await ctx.db
@@ -71,7 +71,7 @@ export const listPendingRequests = query({
 export const sendRequest = mutation({
   args: { receiverId: v.id("users") },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     if (userId === args.receiverId) {
@@ -139,7 +139,7 @@ export const sendRequest = mutation({
 export const acceptRequest = mutation({
   args: { requestId: v.id("friendRequests") },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     const request = await ctx.db.get(args.requestId);
@@ -167,7 +167,7 @@ export const acceptRequest = mutation({
 export const rejectRequest = mutation({
   args: { requestId: v.id("friendRequests") },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     const request = await ctx.db.get(args.requestId);
@@ -183,7 +183,7 @@ export const rejectRequest = mutation({
 export const searchUsers = query({
   args: { query: v.string() },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     const searchQuery = args.query.trim();
@@ -263,7 +263,7 @@ export const searchUsers = query({
 export const removeFriend = mutation({
   args: { friendId: v.id("users") },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     // Find and delete both friendship records (bidirectional)
@@ -310,7 +310,7 @@ export const removeFriend = mutation({
 export const pendingRequestCount = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return 0;
 
     const requests = await ctx.db

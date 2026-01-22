@@ -33,13 +33,6 @@ export default function SignUpScreen() {
             touched: false,
         },
         email: { label: "Email", value: "", error: null, touched: false },
-        password: {
-            label: "Password",
-            value: "",
-            error: null,
-            touched: false,
-            show: false,
-        },
     });
 
     const { onChange, onBlur } = createFormHandlers(form, setForm);
@@ -77,7 +70,6 @@ export default function SignUpScreen() {
         try {
             await signUp({
                 email: form.email!.value.toLowerCase(),
-                password: form.password!.value,
                 firstName: form.firstName!.value,
                 lastName: form.lastName!.value,
             });
@@ -86,16 +78,6 @@ export default function SignUpScreen() {
             const { message, field } = getAuthErrorMessage(error, "signUp");
 
             setForm((prev) => {
-                if (field === "password") {
-                    return {
-                        ...prev,
-                        password: {
-                            ...prev.password!,
-                            touched: true,
-                            error: message,
-                        },
-                    };
-                }
                 // Default to showing error on email field
                 return {
                     ...prev,
@@ -166,31 +148,6 @@ export default function SignUpScreen() {
                 errorMessage={form.email!.error}
                 onChangeText={(v) => onChange("email", v)}
                 onBlur={() => onBlur("email")}
-            />
-
-            <View className="mt-2" />
-
-            {/* Password Field*/}
-            <Input
-                value={form.password!.value}
-                placeholder="Password"
-                leftIcon="Lock"
-                rightIcon={form.password!.show ? "EyeClosed" : "Eye"}
-                onRightIconPress={() => {
-                    setForm((prev) => ({
-                        ...prev,
-                        password: {
-                            ...prev.password!,
-                            show: !prev.password!.show,
-                        },
-                    }));
-                }}
-                autoCapitalize="none"
-                returnKeyType="default"
-                errorMessage={form.password!.error}
-                onChangeText={(v) => onChange("password", v)}
-                onBlur={() => onBlur("password")}
-                secureTextEntry={!form.password!.show}
             />
 
             <View className="mt-4" />

@@ -1,6 +1,5 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { authTables } from "@convex-dev/auth/server";
 
 // Enum validators
 export const orderStatusValidator = v.union(
@@ -22,10 +21,8 @@ export const settlementStatusValidator = v.union(
 );
 
 export default defineSchema({
-  // Auth tables from @convex-dev/auth
-  ...authTables,
-
-  // User profiles - managed by @convex-dev/auth
+  // Users table - managed by Better Auth component but we define the schema for our code
+  // Better Auth adds the core fields, we add our custom fields
   users: defineTable({
     email: v.string(),
     firstName: v.string(),
@@ -34,18 +31,9 @@ export default defineSchema({
     avatarStorageId: v.optional(v.id("_storage")),
   })
     .index("email", ["email"])
-    .searchIndex("search_name", {
-      searchField: "firstName",
-      filterFields: [],
-    })
-    .searchIndex("search_lastName", {
-      searchField: "lastName",
-      filterFields: [],
-    })
-    .searchIndex("search_email", {
-      searchField: "email",
-      filterFields: [],
-    }),
+    .searchIndex("search_name", { searchField: "firstName" })
+    .searchIndex("search_lastName", { searchField: "lastName" })
+    .searchIndex("search_email", { searchField: "email" }),
 
   // Friends relationship
   friends: defineTable({
@@ -98,7 +86,7 @@ export default defineSchema({
     orderId: v.id("orders"),
     status: orderUserStatusValidator,
     settlementStatus: settlementStatusValidator,
-    amountOwed: v.int64(), // Amount in cents (integer) to avoid floating-point precision issues
+    amountOwed: v.int64(),
   })
     .index("by_userId", ["userId"])
     .index("by_orderId", ["orderId"])
@@ -120,7 +108,7 @@ export default defineSchema({
     itemId: v.id("items"),
     comments: v.optional(v.string()),
     quantity: v.number(),
-    priceInCents: v.optional(v.int64()), // Price per item in cents (set from receipt scanning)
+    priceInCents: v.optional(v.int64()),
   })
     .index("by_orderLocationId", ["orderLocationId"])
     .index("by_orderUserId", ["orderUserId"])

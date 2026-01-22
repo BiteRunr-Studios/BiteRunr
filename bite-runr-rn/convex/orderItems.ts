@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
-import { auth } from "./auth";
+import { getUserId } from "./authHelper";
 
 // List items for a specific user at a specific location in an order
 export const listForUserLocation = query({
@@ -9,7 +9,7 @@ export const listForUserLocation = query({
     orderLocationId: v.id("orderLocations"),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     // Verify the orderUser belongs to the current user
@@ -62,7 +62,7 @@ export const add = mutation({
     quantity: v.number(),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     if (!Number.isInteger(args.quantity) || args.quantity < 1) {
@@ -121,7 +121,7 @@ export const update = mutation({
     comments: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     if (!Number.isInteger(args.quantity) || args.quantity < 1) {
@@ -159,7 +159,7 @@ export const update = mutation({
 export const getOrderSummary = query({
   args: { orderId: v.id("orders") },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return null;
 
     // Verify user is the order creator
@@ -293,7 +293,7 @@ export const getOrderSummary = query({
 export const remove = mutation({
   args: { orderItemId: v.id("orderItems") },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     const orderItem = await ctx.db.get(args.orderItemId);

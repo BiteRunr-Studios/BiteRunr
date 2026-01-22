@@ -30,7 +30,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
     className,
 }) => {
     const { colorScheme } = useColorScheme();
-    const { signIn } = useContext(AuthContext);
+    const { signInWithOAuth } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
 
     const defaultLabel = useMemo(() => {
@@ -70,7 +70,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
         if (isDisabled) return;
         try {
             setLoading(true);
-            await signIn(provider);
+            await signInWithOAuth(provider);
             // Navigation is handled by auth state change in the protected layout
         } catch (e: any) {
             const msg = e?.message ?? "Something went wrong.";
@@ -81,7 +81,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
         } finally {
             setLoading(false);
         }
-    }, [provider, disabled, loading, signIn]);
+    }, [provider, disabled, loading, signInWithOAuth]);
 
     return (
         <Pressable

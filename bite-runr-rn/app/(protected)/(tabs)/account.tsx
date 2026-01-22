@@ -55,6 +55,13 @@ const items: Item[] = [
         href: "/account/payments",
     },
     {
+        key: "locations",
+        title: "Locations",
+        subtitle: "View & add locations",
+        icon: "MapPinned",
+        href: "/account/locations",
+    },
+    {
         key: "support",
         title: "Support",
         subtitle: "Report an issue with the app",
@@ -103,83 +110,86 @@ export default function AccountTab() {
             onBellPress={() => Alert.alert("Notifications")}>
             <ErrorBoundary>
                 <ScrollView
-                className="flex-1"
-                contentContainerStyle={{ padding: 12 }}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={isRefreshing}
-                        onRefresh={onRefresh}
-                    />
-                }>
-                {isLoading && <ProfileSkeleton />}
+                    className="flex-1"
+                    contentContainerStyle={{ padding: 12 }}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={isRefreshing}
+                            onRefresh={onRefresh}
+                        />
+                    }>
+                    {isLoading && <ProfileSkeleton />}
 
-                {!isLoading && user && (
-                    <View className="items-center mb-3">
-                        {user.avatarUrl ? (
-                            <Image
-                                source={{ uri: user.avatarUrl }}
-                                className="w-32 h-32 rounded-full"
-                                resizeMode="cover"
-                            />
-                        ) : (
-                            <View className="items-center justify-center w-24 h-24 rounded-full bg-muted">
-                                <Text
-                                    style={{ fontSize: 32 }}
-                                    className="font-semibold text-muted-foreground">
-                                    {`${(user.firstName || "").charAt(0)}${(user.lastName || "").charAt(0)}`.toUpperCase() || "U"}
-                                </Text>
-                            </View>
-                        )}
+                    {!isLoading && user && (
+                        <View className="items-center mb-3">
+                            {user.avatarUrl ? (
+                                <Image
+                                    source={{ uri: user.avatarUrl }}
+                                    className="w-32 h-32 rounded-full"
+                                    resizeMode="cover"
+                                />
+                            ) : (
+                                <View className="items-center justify-center w-24 h-24 rounded-full bg-muted">
+                                    <Text
+                                        style={{ fontSize: 32 }}
+                                        className="font-semibold text-muted-foreground">
+                                        {`${(user.firstName || "").charAt(0)}${(user.lastName || "").charAt(0)}`.toUpperCase() ||
+                                            "U"}
+                                    </Text>
+                                </View>
+                            )}
 
-                        <Text className="mt-3 text-lg font-semibold text-center text-foreground">
-                            {fullName || "Unknown User"}
-                        </Text>
-                        <Text className="text-center text-muted-foreground">
-                            {user.email}
-                        </Text>
+                            <Text className="mt-3 text-lg font-semibold text-center text-foreground">
+                                {fullName || "Unknown User"}
+                            </Text>
+                            <Text className="text-center text-muted-foreground">
+                                {user.email}
+                            </Text>
+                        </View>
+                    )}
+
+                    {!isLoading && !user && (
+                        <View className="p-3 mb-4 rounded-lg bg-muted">
+                            <Text className="text-foreground">
+                                You're not signed in. Please sign in to see your
+                                profile.
+                            </Text>
+                        </View>
+                    )}
+
+                    <View className="gap-y-3">
+                        <FlatList
+                            data={items}
+                            keyExtractor={(item) => item.key}
+                            ItemSeparatorComponent={() => (
+                                <View className="h-[1px] bg-transparent" />
+                            )}
+                            renderItem={({ item }) => (
+                                <ListItem
+                                    iconName={item.icon}
+                                    title={item.title}
+                                    subtitle={item.subtitle}
+                                    testID={`listitem-${item.key}`}
+                                    onPress={() =>
+                                        router.push(item.href as any)
+                                    }
+                                />
+                            )}
+                            contentContainerStyle={{ gap: 12 }}
+                            scrollEnabled={false}
+                        />
                     </View>
-                )}
 
-                {!isLoading && !user && (
-                    <View className="p-3 mb-4 rounded-lg bg-muted">
-                        <Text className="text-foreground">
-                            You're not signed in. Please sign in to see your
-                            profile.
-                        </Text>
+                    <View className="mt-2">
+                        <Pressable
+                            onPress={onSignOut}
+                            className="px-4 py-3 border rounded-lg border-destructive active:opacity-80">
+                            <Text className="font-semibold text-center text-destructive">
+                                Sign out
+                            </Text>
+                        </Pressable>
                     </View>
-                )}
-
-                <View className="gap-y-3">
-                    <FlatList
-                        data={items}
-                        keyExtractor={(item) => item.key}
-                        ItemSeparatorComponent={() => (
-                            <View className="h-[1px] bg-transparent" />
-                        )}
-                        renderItem={({ item }) => (
-                            <ListItem
-                                iconName={item.icon}
-                                title={item.title}
-                                subtitle={item.subtitle}
-                                testID={`listitem-${item.key}`}
-                                onPress={() => router.push(item.href as any)}
-                            />
-                        )}
-                        contentContainerStyle={{ gap: 12 }}
-                        scrollEnabled={false}
-                    />
-                </View>
-
-                <View className="mt-2">
-                    <Pressable
-                        onPress={onSignOut}
-                        className="px-4 py-3 border rounded-lg border-destructive active:opacity-80">
-                        <Text className="font-semibold text-center text-destructive">
-                            Sign out
-                        </Text>
-                    </Pressable>
-                </View>
-            </ScrollView>
+                </ScrollView>
             </ErrorBoundary>
         </PageWithHeader>
     );
@@ -195,7 +205,7 @@ function ProfileSkeleton() {
                 easing: Easing.inOut(Easing.ease),
             }),
             -1,
-            true
+            true,
         );
     }, [sweep]);
 

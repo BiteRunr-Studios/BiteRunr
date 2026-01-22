@@ -21,8 +21,8 @@ export default function ConfirmSignUpScreen() {
         isLoggedIn,
         pendingAuth,
         setPendingAuth,
-        verifyEmail,
-        resendVerificationCode,
+        verifyOTP,
+        sendOTP,
     } = useContext(AuthContext);
 
     const [code, setCode] = useState("");
@@ -30,8 +30,6 @@ export default function ConfirmSignUpScreen() {
     const [loading, setLoading] = useState(false);
     const [resending, setResending] = useState(false);
     const [resendCooldown, setResendCooldown] = useState(0);
-    const [showResendPassword, setShowResendPassword] = useState(false);
-    const [resendPassword, setResendPassword] = useState("");
     // Wait for context to stabilize before checking redirect
     const [isReady, setIsReady] = useState(false);
 
@@ -79,7 +77,7 @@ export default function ConfirmSignUpScreen() {
         setError(null);
 
         try {
-            await verifyEmail(code);
+            await verifyOTP(pendingAuth.email, code);
             // Navigation is handled by the useEffect watching isLoggedIn
         } catch (err: unknown) {
             const { message } = getAuthErrorMessage(err, "verify");
@@ -89,26 +87,17 @@ export default function ConfirmSignUpScreen() {
         }
     };
 
-    const handleResendClick = () => {
+    const handleResend = async () => {
         if (resendCooldown > 0) return;
-        setShowResendPassword(true);
-        setError(null);
-    };
-
-    const handleResendSubmit = async () => {
-        if (!resendPassword) {
-            setError("Please enter your password");
-            return;
-        }
 
         setResending(true);
         setError(null);
 
         try {
-            await resendVerificationCode(resendPassword);
+            // Determine if this is a sign-up or sign-in based on pending auth
+            const otpType = pendingAuth.firstName ? "sign-up" : "sign-in";
+            await sendOTP(pendingAuth.email, otpType);
             setResendCooldown(60); // 60 second cooldown
-            setShowResendPassword(false);
-            setResendPassword("");
         } catch (err: unknown) {
             const { message } = getAuthErrorMessage(err, "verify");
             setError(message);
@@ -141,7 +130,7 @@ export default function ConfirmSignUpScreen() {
 
                     {/* Title */}
                     <Text className="text-3xl font-bold text-foreground mb-4 text-center">
-                        Verify Your Email
+                        {pendingAuth.firstName ? "Verify Your Email" : "Enter Your Code"}
                     </Text>
 
                     {/* Description */}
@@ -176,71 +165,35 @@ export default function ConfirmSignUpScreen() {
                     {/* Verify Button */}
                     <Button
                         variant="full"
-                        label="Verify Email"
+                        label={pendingAuth.firstName ? "Verify Email" : "Sign In"}
                         loading={loading}
                         onPress={handleVerify}
                     />
 
                     {/* Resend Code */}
-                    {showResendPassword ? (
-                        <View className="w-full mt-6">
-                            <Text className="text-muted-foreground text-center mb-2">
-                                Enter your password to resend the code
-                            </Text>
-                            <Input
-                                value={resendPassword}
-                                onChangeText={setResendPassword}
-                                placeholder="Password"
-                                leftIcon="Lock"
-                                secureTextEntry
-                                errorMessage=""
-                            />
-                            <View className="flex-row gap-2 mt-2">
-                                <Pressable
-                                    onPress={() => {
-                                        setShowResendPassword(false);
-                                        setResendPassword("");
-                                    }}
-                                    className="flex-1 py-2"
-                                >
-                                    <Text className="text-muted-foreground text-center">
-                                        Cancel
-                                    </Text>
-                                </Pressable>
-                                <Pressable
-                                    onPress={handleResendSubmit}
-                                    disabled={resending}
-                                    className="flex-1 py-2"
-                                >
-                                    <Text className="text-primary font-semibold text-center">
-                                        {resending ? "Sending..." : "Resend"}
-                                    </Text>
-                                </Pressable>
-                            </View>
-                        </View>
-                    ) : (
-                        <View className="flex-row items-center justify-center mt-6 gap-1">
-                            <Text className="text-muted-foreground">
-                                Didn't receive the code?
-                            </Text>
-                            <Pressable
-                                onPress={handleResendClick}
-                                disabled={resendCooldown > 0}
+                    <View className="flex-row items-center justify-center mt-6 gap-1">
+                        <Text className="text-muted-foreground">
+                            Didn't receive the code?
+                        </Text>
+                        <Pressable
+                            onPress={handleResend}
+                            disabled={resendCooldown > 0 || resending}
+                        >
+                            <Text
+                                className={`font-semibold ${
+                                    resendCooldown > 0
+                                        ? "text-muted-foreground"
+                                        : "text-primary"
+                                }`}
                             >
-                                <Text
-                                    className={`font-semibold ${
-                                        resendCooldown > 0
-                                            ? "text-muted-foreground"
-                                            : "text-primary"
-                                    }`}
-                                >
-                                    {resendCooldown > 0
-                                        ? `Resend in ${resendCooldown}s`
-                                        : "Resend"}
-                                </Text>
-                            </Pressable>
-                        </View>
-                    )}
+                                {resending
+                                    ? "Sending..."
+                                    : resendCooldown > 0
+                                      ? `Resend in ${resendCooldown}s`
+                                      : "Resend"}
+                            </Text>
+                        </Pressable>
+                    </View>
 
                     <View className="flex-1" />
 

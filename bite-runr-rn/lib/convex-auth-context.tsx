@@ -7,8 +7,7 @@ import {
     useCallback,
 } from "react";
 import { Platform } from "react-native";
-import { useConvexAuth } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
+import { authClient } from "./auth-client";
 import * as WebBrowser from "expo-web-browser";
 
 // Required for web browser auth sessions
@@ -22,39 +21,34 @@ type PendingAuth = {
     lastName?: string;
 };
 
-type PendingPasswordReset = {
-    email: string;
-};
-
 type AuthState = {
     isReady: boolean;
     isLoggedIn: boolean;
     isLoading: boolean;
     isSigningUp: boolean;
-    signIn: (
-        provider: "password" | "github" | "google",
-        params?: {
-            email?: string;
-            password?: string;
-            firstName?: string;
-            lastName?: string;
-            flow?: "signIn" | "signUp";
-        }
-    ) => Promise<void>;
+    user: {
+        id: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        avatarUrl?: string | null;
+        avatarStorageId?: string | null;
+    } | null;
+    // Email OTP flows
+    sendOTP: (email: string, type: "sign-in" | "sign-up") => Promise<void>;
+    verifyOTP: (email: string, otp: string) => Promise<void>;
     signUp: (params: {
         email: string;
-        password: string;
         firstName: string;
         lastName: string;
     }) => Promise<void>;
-    verifyEmail: (code: string) => Promise<void>;
-    resendVerificationCode: (password: string) => Promise<void>;
-    sendPasswordResetCode: (email: string) => Promise<void>;
-    resetPassword: (code: string, newPassword: string) => Promise<void>;
+    // OAuth
+    signInWithOAuth: (provider: "github" | "google") => Promise<void>;
+    // Sign out
     signOut: () => Promise<void>;
+    // Pending auth state
     pendingAuth: PendingAuth | null;
     setPendingAuth: (auth: PendingAuth | null) => void;
-    pendingPasswordReset: PendingPasswordReset | null;
 };
 
 export const AuthContext = createContext<AuthState>({
@@ -62,35 +56,30 @@ export const AuthContext = createContext<AuthState>({
     isLoggedIn: false,
     isLoading: false,
     isSigningUp: false,
-    signIn: async () => {},
+    user: null,
+    sendOTP: async () => {},
+    verifyOTP: async () => {},
     signUp: async () => {},
-    verifyEmail: async () => {},
-    resendVerificationCode: async () => {},
-    sendPasswordResetCode: async () => {},
-    resetPassword: async () => {},
+    signInWithOAuth: async () => {},
     signOut: async () => {},
     pendingAuth: null,
     setPendingAuth: () => {},
-    pendingPasswordReset: null,
 });
 
 export function AuthProvider({ children }: PropsWithChildren) {
-    const { isAuthenticated, isLoading: convexLoading } = useConvexAuth();
-    const { signIn: convexSignIn, signOut: convexSignOut } = useAuthActions();
+    const { data: session, isPending } = authClient.useSession();
     const [isReady, setIsReady] = useState(false);
     const [pendingAuth, setPendingAuth] = useState<PendingAuth | null>(null);
-    const [pendingPasswordReset, setPendingPasswordReset] =
-        useState<PendingPasswordReset | null>(null);
-    const [isSigningIn, setIsSigningIn] = useState(false);
     const [isSigningUp, setIsSigningUp] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
-    // Wait for Convex auth to initialize
+    // Wait for session to load
     useEffect(() => {
-        if (!convexLoading) {
+        if (!isPending) {
             setIsReady(true);
         }
-    }, [convexLoading]);
+    }, [isPending]);
 
     // Hide splash screen when ready
     useEffect(() => {
@@ -99,113 +88,65 @@ export function AuthProvider({ children }: PropsWithChildren) {
         }
     }, [isReady]);
 
-    const signIn = useCallback(
-        async (
-            provider: "password" | "github" | "google",
-            params?: {
-                email?: string;
-                password?: string;
-                firstName?: string;
-                lastName?: string;
-                flow?: "signIn" | "signUp";
-            }
-        ) => {
-            setIsSigningIn(true);
+    const sendOTP = useCallback(
+        async (email: string, type: "sign-in" | "sign-up") => {
+            setIsLoading(true);
             try {
-                if (provider === "password") {
-                    const signInParams: Record<string, string> = {
-                        flow: params?.flow ?? "signIn",
-                    };
-                    if (params?.email) signInParams.email = params.email;
-                    if (params?.password)
-                        signInParams.password = params.password;
-                    if (params?.firstName)
-                        signInParams.firstName = params.firstName;
-                    if (params?.lastName)
-                        signInParams.lastName = params.lastName;
-                    await convexSignIn("password", signInParams);
-                } else if (provider === "github" || provider === "google") {
-                    // For React Native, use an intermediate web page that captures
-                    // the auth code and redirects to the app scheme
-                    const convexCloudUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
-                    if (
-                        Platform.OS !== "web" &&
-                        (!convexCloudUrl || !convexCloudUrl.includes(".cloud"))
-                    ) {
-                        throw new Error(
-                            "EXPO_PUBLIC_CONVEX_URL must be set and contain '.cloud' for native OAuth"
-                        );
-                    }
-                    const convexSiteUrl = convexCloudUrl?.replace(
-                        ".cloud",
-                        ".site"
-                    );
-                    const redirectUri = Platform.select({
-                        // Use intermediate page for mobile to capture the code
-                        native: `${convexSiteUrl}/mobile-callback`,
-                        default: window.location.origin + "/",
-                    });
-                    // The app scheme URL that the intermediate page will redirect to
-                    const appSchemeUrl = "biterunr://oauth";
-
-                    // Get the authorization URL from Convex Auth
-                    const { redirect } = await convexSignIn(provider, {
-                        redirectTo: redirectUri,
-                    });
-
-                    if (redirect) {
-                        // Open the OAuth provider in a web browser
-                        // Listen for the app scheme URL (the intermediate page redirects to this)
-                        const result = await WebBrowser.openAuthSessionAsync(
-                            redirect.toString(),
-                            appSchemeUrl
-                        );
-
-                        if (result.type === "success" && result.url) {
-                            // Parse the callback URL and extract all params
-                            const url = new URL(result.url);
-
-                            const code = url.searchParams.get("code");
-
-                            if (code) {
-                                // Complete the OAuth flow with the code
-                                await convexSignIn(provider, { code });
-                            } else {
-                                throw new Error(
-                                    "Authentication failed: no authorization code received"
-                                );
-                            }
-                        } else if (result.type === "cancel") {
-                            throw new Error("Authentication was cancelled");
-                        }
-                    }
+                // Better Auth uses "email-verification" for sign-up flows
+                const otpType = type === "sign-up" ? "email-verification" : type;
+                const result = await authClient.emailOtp.sendVerificationOtp({
+                    email,
+                    type: otpType as "sign-in" | "email-verification" | "forget-password",
+                });
+                if (result.error) {
+                    throw new Error(result.error.message ?? "Failed to send OTP");
                 }
             } finally {
-                setIsSigningIn(false);
+                setIsLoading(false);
             }
         },
-        [convexSignIn]
+        []
+    );
+
+    const verifyOTP = useCallback(
+        async (email: string, otp: string) => {
+            setIsLoading(true);
+            try {
+                const result = await authClient.emailOtp.verifyEmail({
+                    email,
+                    otp,
+                });
+                if (result.error) {
+                    throw new Error(result.error.message ?? "Failed to verify OTP");
+                }
+                // Clear pending auth after successful verification
+                setPendingAuth(null);
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        []
     );
 
     const signUp = useCallback(
         async (params: {
             email: string;
-            password: string;
             firstName: string;
             lastName: string;
         }) => {
             setIsSigningUp(true);
+            setIsLoading(true);
             try {
-                // Start sign-up flow - sends OTP email (doesn't authenticate yet)
-                await convexSignIn("password", {
-                    flow: "signUp",
+                // Send OTP for email verification (sign-up)
+                const result = await authClient.emailOtp.sendVerificationOtp({
                     email: params.email,
-                    password: params.password,
-                    firstName: params.firstName,
-                    lastName: params.lastName,
+                    type: "email-verification",
                 });
+                if (result.error) {
+                    throw new Error(result.error.message ?? "Failed to send verification code");
+                }
 
-                // Store pending auth for the verification page (no password for security)
+                // Store pending auth for the verification page
                 setPendingAuth({
                     email: params.email,
                     firstName: params.firstName,
@@ -216,114 +157,112 @@ export function AuthProvider({ children }: PropsWithChildren) {
                 router.push("/(auth)/confirm-sign-up");
             } finally {
                 setIsSigningUp(false);
+                setIsLoading(false);
             }
         },
-        [convexSignIn, router]
+        [router]
     );
 
-    const verifyEmail = useCallback(
-        async (code: string) => {
-            if (!pendingAuth?.email) {
-                throw new Error("No pending email verification");
+    const signInWithOAuth = useCallback(
+        async (provider: "github" | "google") => {
+            setIsLoading(true);
+            try {
+                // Get the Convex site URL
+                const convexCloudUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
+                if (
+                    Platform.OS !== "web" &&
+                    (!convexCloudUrl || !convexCloudUrl.includes(".cloud"))
+                ) {
+                    throw new Error(
+                        "EXPO_PUBLIC_CONVEX_URL must be set and contain '.cloud' for native OAuth"
+                    );
+                }
+                const convexSiteUrl = convexCloudUrl?.replace(".cloud", ".site");
+                const redirectUri = Platform.select({
+                    native: `${convexSiteUrl}/mobile-callback`,
+                    default: window.location.origin + "/",
+                });
+                const appSchemeUrl = "biterunr://oauth";
+
+                // Use Better Auth's social sign-in
+                const result = await authClient.signIn.social({
+                    provider,
+                    callbackURL: redirectUri,
+                });
+
+                if (result.error) {
+                    throw new Error(result.error.message ?? "OAuth sign-in failed");
+                }
+
+                if (result.data?.url) {
+                    // Open the OAuth provider in a web browser
+                    const browserResult = await WebBrowser.openAuthSessionAsync(
+                        result.data.url,
+                        appSchemeUrl
+                    );
+
+                    if (browserResult.type === "success" && browserResult.url) {
+                        // Parse the callback URL
+                        const url = new URL(browserResult.url);
+                        const code = url.searchParams.get("code");
+
+                        if (code) {
+                            // Complete the OAuth flow
+                            // Better Auth handles this automatically through the callback
+                        } else {
+                            throw new Error(
+                                "Authentication failed: no authorization code received"
+                            );
+                        }
+                    } else if (browserResult.type === "cancel") {
+                        throw new Error("Authentication was cancelled");
+                    }
+                }
+            } finally {
+                setIsLoading(false);
             }
-
-            // Complete email verification with the OTP code
-            await convexSignIn("password", {
-                flow: "email-verification",
-                email: pendingAuth.email,
-                code,
-            });
-
-            // Clear pending auth after successful verification
-            setPendingAuth(null);
         },
-        [convexSignIn, pendingAuth]
-    );
-
-    const resendVerificationCode = useCallback(
-        async (password: string) => {
-            if (!pendingAuth) {
-                throw new Error("No pending email verification");
-            }
-
-            // Re-trigger the sign-up flow to resend the OTP
-            const params: Record<string, string> = {
-                flow: "signUp",
-                email: pendingAuth.email,
-                password,
-            };
-            if (pendingAuth.firstName) params.firstName = pendingAuth.firstName;
-            if (pendingAuth.lastName) params.lastName = pendingAuth.lastName;
-
-            await convexSignIn("password", params);
-        },
-        [convexSignIn, pendingAuth]
-    );
-
-    const sendPasswordResetCode = useCallback(
-        async (email: string) => {
-            // Initiate password reset flow - sends reset code email
-            await convexSignIn("password", {
-                flow: "reset",
-                email,
-            });
-
-            // Store pending password reset for the reset page
-            setPendingPasswordReset({ email });
-
-            // Navigate to reset password page
-            router.push({
-                pathname: "/(auth)/reset-password",
-                params: { email },
-            });
-        },
-        [convexSignIn, router]
-    );
-
-    const resetPassword = useCallback(
-        async (code: string, newPassword: string) => {
-            if (!pendingPasswordReset?.email) {
-                throw new Error("No pending password reset");
-            }
-
-            // Complete password reset with the OTP code and new password
-            await convexSignIn("password", {
-                flow: "reset-verification",
-                email: pendingPasswordReset.email,
-                code,
-                newPassword,
-            });
-
-            // Clear pending password reset after successful reset
-            setPendingPasswordReset(null);
-        },
-        [convexSignIn, pendingPasswordReset]
+        []
     );
 
     const signOut = useCallback(async () => {
-        await convexSignOut();
-        setPendingAuth(null);
-        setPendingPasswordReset(null);
-        router.dismissTo("/(auth)/sign-in");
-    }, [convexSignOut, router]);
+        setIsLoading(true);
+        try {
+            await authClient.signOut();
+            setPendingAuth(null);
+            router.dismissTo("/(auth)/sign-in");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [router]);
+
+    // Map session user to our user type
+    const user = session?.user
+        ? {
+              id: session.user.id,
+              email: session.user.email,
+              firstName: (session.user as { firstName?: string }).firstName ?? "",
+              lastName: (session.user as { lastName?: string }).lastName ?? "",
+              avatarUrl: (session.user as { avatarUrl?: string | null }).avatarUrl,
+              avatarStorageId: (session.user as { avatarStorageId?: string | null }).avatarStorageId,
+          }
+        : null;
 
     return (
         <AuthContext.Provider
             value={{
                 isReady,
-                isLoggedIn: isAuthenticated,
-                isLoading: convexLoading || isSigningIn,
+                isLoggedIn: !!session?.user,
+                isLoading: isPending || isLoading,
                 isSigningUp,
-                signIn,
+                user,
+                sendOTP,
+                verifyOTP,
                 signUp,
-                verifyEmail,
-                resendVerificationCode,
-                sendPasswordResetCode,
-                resetPassword,
+                signInWithOAuth,
                 signOut,
                 pendingAuth,
                 setPendingAuth,
-                pendingPasswordReset,
             }}>
             {children}
         </AuthContext.Provider>

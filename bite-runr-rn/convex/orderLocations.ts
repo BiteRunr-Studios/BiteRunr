@@ -1,12 +1,12 @@
 import { v } from "convex/values";
 import { query } from "./_generated/server";
-import { auth } from "./auth";
+import { getUserId } from "./authHelper";
 
 // List all locations for an order (for item selection)
 export const listForOrder = query({
   args: { orderId: v.id("orders") },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     // Verify user is a participant
@@ -44,7 +44,7 @@ export const listForOrder = query({
 export const get = query({
   args: { id: v.id("orderLocations") },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return null;
 
     const orderLocation = await ctx.db.get(args.id);
