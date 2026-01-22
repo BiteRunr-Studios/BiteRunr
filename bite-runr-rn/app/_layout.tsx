@@ -13,8 +13,10 @@ import {
 } from "@react-navigation/native";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexReactClient } from "convex/react";
+import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { AuthProvider } from "@/lib/convex-auth-context";
+import { authClient } from "@/lib/auth-client";
 import "../global.css";
 
 const LIGHT_THEME: Theme = { ...DefaultTheme, colors: NAV_THEME.light };
@@ -70,7 +72,7 @@ export default function RootLayout() {
     }, [colorScheme]);
 
     return (
-        <ConvexProvider client={convex}>
+        <ConvexBetterAuthProvider client={convex} authClient={authClient}>
             <AuthProvider>
                 <ThemeProvider
                     value={colorScheme == "dark" ? DARK_THEME : LIGHT_THEME}
@@ -98,6 +100,6 @@ export default function RootLayout() {
                     </SafeAreaProvider>
                 </ThemeProvider>
             </AuthProvider>
-        </ConvexProvider>
+        </ConvexBetterAuthProvider>
     );
 }

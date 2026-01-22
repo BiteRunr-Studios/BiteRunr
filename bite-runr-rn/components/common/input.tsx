@@ -1,5 +1,5 @@
 // Input.tsx
-import React from "react";
+import React, { forwardRef } from "react";
 import { TextInput, Text, View, TextInputProps, Pressable } from "react-native";
 import { NAV_THEME } from "@/lib/constants";
 import Icon, { IconName } from "@/components/common/icon";
@@ -23,21 +23,24 @@ type InputProps = {
     "value" | "onChangeText" | "placeholder" | "autoCorrect" | "secureTextEntry"
 >;
 
-export function Input({
-    value,
-    onChangeText,
-    placeholder,
-    leftIcon,
-    rightIcon,
-    rightIconColor = NAV_THEME.light.primary,
-    onRightIconPress,
-    errorMessage = "",
-    className = "flex-row items-center h-[55px] px-4 gap-3 rounded-2xl border transition-all duration-200",
-    inputClassName = "text-lg h-full font-regular text-vertical text-foreground focus:outline-none placeholder:text-muted-foreground flex-1",
-    autoCorrect = false,
-    secureTextEntry = false,
-    ...textInputProps
-}: InputProps) {
+export const Input = forwardRef<TextInput, InputProps>(function Input(
+    {
+        value,
+        onChangeText,
+        placeholder,
+        leftIcon,
+        rightIcon,
+        rightIconColor = NAV_THEME.light.primary,
+        onRightIconPress,
+        errorMessage = "",
+        className = "flex-row items-center h-[55px] px-4 gap-3 rounded-2xl border transition-all duration-200",
+        inputClassName = "text-lg h-full font-regular text-vertical text-foreground focus:outline-none placeholder:text-muted-foreground flex-1",
+        autoCorrect = false,
+        secureTextEntry = false,
+        ...textInputProps
+    },
+    ref
+) {
     const { colorScheme } = useColorScheme();
 
     return (
@@ -58,6 +61,7 @@ export function Input({
                     />
                 ) : null}
                 <TextInput
+                    ref={ref}
                     value={value}
                     onChangeText={onChangeText}
                     placeholder={placeholder}
@@ -110,4 +114,4 @@ export function Input({
             </View>
         </>
     );
-}
+});

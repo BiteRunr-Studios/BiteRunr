@@ -1,270 +1,105 @@
-import { SplashScreen, useRouter } from "expo-router";
-import {
+import React, {
     createContext,
-    PropsWithChildren,
+    useContext,
     useEffect,
     useState,
     useCallback,
+    useMemo,
+    useRef,
+    type ReactNode,
 } from "react";
-import { Platform } from "react-native";
 import { authClient } from "./auth-client";
-import * as WebBrowser from "expo-web-browser";
-
-// Required for web browser auth sessions
-WebBrowser.maybeCompleteAuthSession();
-
-SplashScreen.preventAutoHideAsync();
-
-type PendingAuth = {
-    email: string;
-    firstName?: string;
-    lastName?: string;
-};
+import type { Session, User } from "./auth-client";
 
 type AuthState = {
     isReady: boolean;
-    isLoggedIn: boolean;
     isLoading: boolean;
+    isLoggedIn: boolean;
     isSigningUp: boolean;
-    user: {
-        id: string;
-        email: string;
-        firstName: string;
-        lastName: string;
-        avatarUrl?: string | null;
-        avatarStorageId?: string | null;
-    } | null;
-    // Email OTP flows
-    sendOTP: (email: string, type: "sign-in" | "sign-up") => Promise<void>;
-    verifyOTP: (email: string, otp: string) => Promise<void>;
-    signUp: (params: {
-        email: string;
-        firstName: string;
-        lastName: string;
-    }) => Promise<void>;
-    // OAuth
-    signInWithOAuth: (provider: "github" | "google") => Promise<void>;
-    // Sign out
-    signOut: () => Promise<void>;
-    // Pending auth state
-    pendingAuth: PendingAuth | null;
-    setPendingAuth: (auth: PendingAuth | null) => void;
+    session: Session | null;
+    user: User | null;
 };
 
-export const AuthContext = createContext<AuthState>({
+type AuthContextType = AuthState & {
+    setIsSigningUp: (value: boolean) => void;
+    signOut: () => Promise<void>;
+    refreshSession: () => Promise<void>;
+};
+
+const defaultContext: AuthContextType = {
     isReady: false,
+    isLoading: true,
     isLoggedIn: false,
-    isLoading: false,
     isSigningUp: false,
+    session: null,
     user: null,
-    sendOTP: async () => {},
-    verifyOTP: async () => {},
-    signUp: async () => {},
-    signInWithOAuth: async () => {},
+    setIsSigningUp: () => {},
     signOut: async () => {},
-    pendingAuth: null,
-    setPendingAuth: () => {},
-});
+    refreshSession: async () => {},
+};
 
-export function AuthProvider({ children }: PropsWithChildren) {
-    const { data: session, isPending } = authClient.useSession();
-    const [isReady, setIsReady] = useState(false);
-    const [pendingAuth, setPendingAuth] = useState<PendingAuth | null>(null);
+export const AuthContext = createContext<AuthContextType>(defaultContext);
+
+export function useAuth() {
+    return useContext(AuthContext);
+}
+
+type AuthProviderProps = {
+    children: ReactNode;
+};
+
+export function AuthProvider({ children }: AuthProviderProps) {
     const [isSigningUp, setIsSigningUp] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const router = useRouter();
 
-    // Wait for session to load
+    // Track if initial load has completed - once true, never goes back to false
+    const hasInitialized = useRef(false);
+    const [isReady, setIsReady] = useState(false);
+
+    // Use Better Auth's useSession hook
+    // Note: Convex auth token is handled by ConvexBetterAuthProvider in _layout.tsx
+    const { data: sessionData, isPending } = authClient.useSession();
+
+    // Mark as ready once initial loading completes (only once)
     useEffect(() => {
-        if (!isPending) {
+        if (!isPending && !hasInitialized.current) {
+            hasInitialized.current = true;
             setIsReady(true);
         }
     }, [isPending]);
 
-    // Hide splash screen when ready
-    useEffect(() => {
-        if (isReady) {
-            SplashScreen.hideAsync();
-        }
-    }, [isReady]);
-
-    const sendOTP = useCallback(
-        async (email: string, type: "sign-in" | "sign-up") => {
-            setIsLoading(true);
-            try {
-                // Better Auth uses "email-verification" for sign-up flows
-                const otpType = type === "sign-up" ? "email-verification" : type;
-                const result = await authClient.emailOtp.sendVerificationOtp({
-                    email,
-                    type: otpType as "sign-in" | "email-verification" | "forget-password",
-                });
-                if (result.error) {
-                    throw new Error(result.error.message ?? "Failed to send OTP");
-                }
-            } finally {
-                setIsLoading(false);
-            }
-        },
-        []
-    );
-
-    const verifyOTP = useCallback(
-        async (email: string, otp: string) => {
-            setIsLoading(true);
-            try {
-                const result = await authClient.emailOtp.verifyEmail({
-                    email,
-                    otp,
-                });
-                if (result.error) {
-                    throw new Error(result.error.message ?? "Failed to verify OTP");
-                }
-                // Clear pending auth after successful verification
-                setPendingAuth(null);
-            } finally {
-                setIsLoading(false);
-            }
-        },
-        []
-    );
-
-    const signUp = useCallback(
-        async (params: {
-            email: string;
-            firstName: string;
-            lastName: string;
-        }) => {
-            setIsSigningUp(true);
-            setIsLoading(true);
-            try {
-                // Send OTP for email verification (sign-up)
-                const result = await authClient.emailOtp.sendVerificationOtp({
-                    email: params.email,
-                    type: "email-verification",
-                });
-                if (result.error) {
-                    throw new Error(result.error.message ?? "Failed to send verification code");
-                }
-
-                // Store pending auth for the verification page
-                setPendingAuth({
-                    email: params.email,
-                    firstName: params.firstName,
-                    lastName: params.lastName,
-                });
-
-                // Navigate to verification page
-                router.push("/(auth)/confirm-sign-up");
-            } finally {
-                setIsSigningUp(false);
-                setIsLoading(false);
-            }
-        },
-        [router]
-    );
-
-    const signInWithOAuth = useCallback(
-        async (provider: "github" | "google") => {
-            setIsLoading(true);
-            try {
-                // Get the Convex site URL
-                const convexCloudUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
-                if (
-                    Platform.OS !== "web" &&
-                    (!convexCloudUrl || !convexCloudUrl.includes(".cloud"))
-                ) {
-                    throw new Error(
-                        "EXPO_PUBLIC_CONVEX_URL must be set and contain '.cloud' for native OAuth"
-                    );
-                }
-                const convexSiteUrl = convexCloudUrl?.replace(".cloud", ".site");
-                const redirectUri = Platform.select({
-                    native: `${convexSiteUrl}/mobile-callback`,
-                    default: window.location.origin + "/",
-                });
-                const appSchemeUrl = "biterunr://oauth";
-
-                // Use Better Auth's social sign-in
-                const result = await authClient.signIn.social({
-                    provider,
-                    callbackURL: redirectUri,
-                });
-
-                if (result.error) {
-                    throw new Error(result.error.message ?? "OAuth sign-in failed");
-                }
-
-                if (result.data?.url) {
-                    // Open the OAuth provider in a web browser
-                    const browserResult = await WebBrowser.openAuthSessionAsync(
-                        result.data.url,
-                        appSchemeUrl
-                    );
-
-                    if (browserResult.type === "success" && browserResult.url) {
-                        // Parse the callback URL
-                        const url = new URL(browserResult.url);
-                        const code = url.searchParams.get("code");
-
-                        if (code) {
-                            // Complete the OAuth flow
-                            // Better Auth handles this automatically through the callback
-                        } else {
-                            throw new Error(
-                                "Authentication failed: no authorization code received"
-                            );
-                        }
-                    } else if (browserResult.type === "cancel") {
-                        throw new Error("Authentication was cancelled");
-                    }
-                }
-            } finally {
-                setIsLoading(false);
-            }
-        },
-        []
-    );
-
     const signOut = useCallback(async () => {
-        setIsLoading(true);
         try {
             await authClient.signOut();
-            setPendingAuth(null);
-            router.dismissTo("/(auth)/sign-in");
-        } finally {
-            setIsLoading(false);
+        } catch (err) {
+            console.error("Sign out error:", err);
+            throw err;
         }
-    }, [router]);
+    }, []);
 
-    // Map session user to our user type
-    const user = session?.user
-        ? {
-              id: session.user.id,
-              email: session.user.email,
-              firstName: (session.user as { firstName?: string }).firstName ?? "",
-              lastName: (session.user as { lastName?: string }).lastName ?? "",
-              avatarUrl: (session.user as { avatarUrl?: string | null }).avatarUrl,
-              avatarStorageId: (session.user as { avatarStorageId?: string | null }).avatarStorageId,
-          }
-        : null;
+    const refreshSession = useCallback(async () => {
+        // Force a session refresh by calling getSession
+        await authClient.getSession();
+    }, []);
+
+    // Only show loading for the initial load, not for subsequent refetches
+    const isInitialLoading = !hasInitialized.current && isPending;
+
+    const value = useMemo<AuthContextType>(
+        () => ({
+            isReady,
+            isLoading: isInitialLoading,
+            isLoggedIn: !!sessionData?.session,
+            isSigningUp,
+            session: sessionData ?? null,
+            user: sessionData?.user ?? null,
+            setIsSigningUp,
+            signOut,
+            refreshSession,
+        }),
+        [isReady, isInitialLoading, sessionData, isSigningUp, signOut, refreshSession]
+    );
 
     return (
-        <AuthContext.Provider
-            value={{
-                isReady,
-                isLoggedIn: !!session?.user,
-                isLoading: isPending || isLoading,
-                isSigningUp,
-                user,
-                sendOTP,
-                verifyOTP,
-                signUp,
-                signInWithOAuth,
-                signOut,
-                pendingAuth,
-                setPendingAuth,
-            }}>
-            {children}
-        </AuthContext.Provider>
+        <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
     );
 }

@@ -13,6 +13,7 @@ import type * as authHelper from "../authHelper.js";
 import type * as friends from "../friends.js";
 import type * as http from "../http.js";
 import type * as items from "../items.js";
+import type * as lib_utils from "../lib/utils.js";
 import type * as locations from "../locations.js";
 import type * as orderItems from "../orderItems.js";
 import type * as orderLocations from "../orderLocations.js";
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   friends: typeof friends;
   http: typeof http;
   items: typeof items;
+  "lib/utils": typeof lib_utils;
   locations: typeof locations;
   orderItems: typeof orderItems;
   orderLocations: typeof orderLocations;

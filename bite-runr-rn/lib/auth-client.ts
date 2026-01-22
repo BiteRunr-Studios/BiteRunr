@@ -1,6 +1,7 @@
 import { createAuthClient } from "better-auth/react";
 import { emailOTPClient } from "better-auth/client/plugins";
 import { expoClient } from "@better-auth/expo/client";
+import { convexClient } from "@convex-dev/better-auth/client/plugins";
 import * as SecureStore from "expo-secure-store";
 
 // Get the Convex site URL from environment
@@ -11,6 +12,7 @@ export const authClient = createAuthClient({
     baseURL: `${siteUrl}/api/auth`,
     plugins: [
         emailOTPClient(),
+        convexClient(),
         expoClient({
             scheme: "biterunr",
             storagePrefix: "biterunr-auth",

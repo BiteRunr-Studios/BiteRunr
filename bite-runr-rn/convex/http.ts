@@ -1,24 +1,18 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { auth } from "./auth";
+import { authComponent, createAuth } from "./auth";
 
 const http = httpRouter();
 
-// Mount Better Auth routes
-http.route({
-    path: "/api/auth/*",
-    method: "GET",
-    handler: httpAction(async (ctx, req) => {
-        return auth.handler(req);
-    }),
-});
-
-http.route({
-    path: "/api/auth/*",
-    method: "POST",
-    handler: httpAction(async (ctx, req) => {
-        return auth.handler(req);
-    }),
+// Mount Better Auth routes using the Convex adapter
+authComponent.registerRoutes(http, createAuth, {
+    cors: {
+        allowedOrigins: [
+            "biterunr://",
+            "exp://",
+            process.env.SITE_URL ?? "",
+        ],
+    },
 });
 
 // Mobile OAuth callback page - captures the auth code and redirects to the app

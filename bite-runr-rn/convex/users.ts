@@ -1,6 +1,44 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
-import { getUserId } from "./authHelper";
+import { getUserId, ensureUser } from "./authHelper";
+
+/**
+ * Sync/create the user in the app's users table after authentication.
+ * Call this after OAuth login to ensure the user exists in the app's database.
+ * Returns the user's data if successful, null if not authenticated.
+ */
+export const syncUser = mutation({
+    args: {},
+    returns: v.union(
+        v.object({
+            _id: v.id("users"),
+            _creationTime: v.number(),
+            email: v.string(),
+            firstName: v.string(),
+            lastName: v.string(),
+            avatarUrl: v.optional(v.string()),
+            avatarStorageId: v.optional(v.id("_storage")),
+        }),
+        v.null()
+    ),
+    handler: async (ctx) => {
+        const userId = await ensureUser(ctx);
+        if (!userId) return null;
+
+        const user = await ctx.db.get(userId);
+        if (!user) return null;
+
+        return {
+            _id: user._id,
+            _creationTime: user._creationTime,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            avatarUrl: user.avatarUrl,
+            avatarStorageId: user.avatarStorageId,
+        };
+    },
+});
 
 // Get the current authenticated user's profile
 export const getCurrentUser = query({
