@@ -150,16 +150,26 @@ export const get = query({
     const isParticipant = orderUsers.some((ou) => ou.userId === userId);
     if (!isParticipant) return null;
 
-    // Enrich order users with user profiles
+    // Enrich order users with user profiles and item counts
     const enrichedOrderUsers = await Promise.all(
       orderUsers.map(async (ou) => {
         const user = await ctx.db.get(ou.userId);
+
+        // Get item count for this user
+        const userItems = await ctx.db
+          .query("orderItems")
+          .withIndex("by_orderUserId", (q) => q.eq("orderUserId", ou._id))
+          .collect();
+        const itemCount = userItems.reduce((sum, item) => sum + item.quantity, 0);
+
         return {
           id: ou._id,
           userId: ou.userId,
           orderId: ou.orderId,
           status: ou.status,
           amountOwed: ou.amountOwed,
+          itemCount,
+          isCreator: ou.userId === order.creatorId,
           createdAt: ou._creationTime,
           user: user
             ? {
@@ -171,6 +181,15 @@ export const get = query({
         };
       })
     );
+
+    // Sort: creator first, then by name
+    enrichedOrderUsers.sort((a, b) => {
+      if (a.isCreator) return -1;
+      if (b.isCreator) return 1;
+      const nameA = `${a.user?.firstName || ""} ${a.user?.lastName || ""}`;
+      const nameB = `${b.user?.firstName || ""} ${b.user?.lastName || ""}`;
+      return nameA.localeCompare(nameB);
+    });
 
     // Get order locations
     const orderLocations = await ctx.db
@@ -188,9 +207,18 @@ export const get = query({
       totalItems += items.reduce((sum, item) => sum + item.quantity, 0);
     }
 
+    // Calculate completion stats
+    const doneCount = orderUsers.filter((ou) => ou.status === "done").length;
+    const totalCount = orderUsers.length;
+
     return {
       count: totalItems,
       orderUsers: enrichedOrderUsers,
+      completionStats: {
+        done: doneCount,
+        total: totalCount,
+        allDone: doneCount === totalCount,
+      },
       order: {
         id: order._id,
         name: order.name,

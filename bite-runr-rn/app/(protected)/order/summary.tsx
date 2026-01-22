@@ -215,66 +215,109 @@ export default function OrderSummary() {
                         contentContainerStyle={{ gap: 12, paddingBottom: 32 }}>
                         {currentLocationSummary &&
                         currentLocationSummary.items.length > 0 ? (
-                            currentLocationSummary.items.map((item) => (
-                                <View
-                                    key={item.itemId}
-                                    className="p-4 border rounded-2xl border-muted bg-card">
-                                    <View className="flex-row items-center justify-between">
-                                        <Text className="flex-1 text-base font-medium text-foreground">
-                                            {item.itemName}
-                                        </Text>
-                                        <View className="px-3 py-1 rounded-full bg-primary/20">
-                                            <Text className="text-sm font-semibold text-primary">
-                                                x{item.totalQuantity}
-                                            </Text>
+                            <>
+                                {currentLocationSummary.items.map((item) => (
+                                    <View
+                                        key={item.itemId}
+                                        className="p-4 border rounded-2xl border-muted bg-card">
+                                        <View className="flex-row items-center justify-between">
+                                            <View className="flex-1">
+                                                <Text className="text-base font-medium text-foreground">
+                                                    {item.itemName}
+                                                </Text>
+                                                {item.priceInCents !== null && (
+                                                    <Text className="text-sm text-muted-foreground">
+                                                        ${(item.priceInCents / 100).toFixed(2)} each
+                                                    </Text>
+                                                )}
+                                            </View>
+                                            <View className="px-3 py-1 rounded-full bg-primary/20">
+                                                <Text className="text-sm font-semibold text-primary">
+                                                    x{item.totalQuantity}
+                                                </Text>
+                                            </View>
                                         </View>
-                                    </View>
-                                    {item.subItems.length > 0 && (
-                                        <View className="pt-3 mt-3 border-t border-muted">
-                                            {item.baseQuantity > 0 && (
-                                                <View className="flex-row items-center justify-between mb-2">
-                                                    <Text className="text-sm text-muted-foreground">
-                                                        No modifications
-                                                    </Text>
-                                                    <Text className="text-sm text-muted-foreground">
-                                                        x{item.baseQuantity}
-                                                    </Text>
-                                                </View>
-                                            )}
-                                            {item.subItems.map(
-                                                (subItem, index) => (
-                                                    <View
-                                                        key={index}
-                                                        className="flex-row items-start justify-between mb-2 last:mb-0">
-                                                        <View className="flex-row items-start flex-1 gap-2">
-                                                            <Icon
-                                                                name="MessageSquare"
-                                                                size={14}
-                                                                color={
-                                                                    NAV_THEME[
-                                                                        colorScheme
-                                                                    ].border
-                                                                }
-                                                                style={{
-                                                                    marginTop: 2,
-                                                                }}
-                                                            />
-                                                            <Text className="flex-1 text-sm italic text-muted-foreground">
-                                                                "
-                                                                {subItem.comment}
-                                                                "
-                                                            </Text>
-                                                        </View>
-                                                        <Text className="ml-2 text-sm text-muted-foreground">
-                                                            x{subItem.quantity}
+                                        {item.subItems.length > 0 && (
+                                            <View className="pt-3 mt-3 border-t border-muted">
+                                                {item.baseQuantity > 0 && (
+                                                    <View className="flex-row items-center justify-between mb-2">
+                                                        <Text className="text-sm text-muted-foreground">
+                                                            No modifications
+                                                        </Text>
+                                                        <Text className="text-sm text-muted-foreground">
+                                                            x{item.baseQuantity}
                                                         </Text>
                                                     </View>
-                                                ),
-                                            )}
+                                                )}
+                                                {item.subItems.map(
+                                                    (subItem, index) => (
+                                                        <View
+                                                            key={index}
+                                                            className="flex-row items-start justify-between mb-2 last:mb-0">
+                                                            <View className="flex-row items-start flex-1 gap-2">
+                                                                <Icon
+                                                                    name="MessageSquare"
+                                                                    size={14}
+                                                                    color={
+                                                                        NAV_THEME[
+                                                                            colorScheme
+                                                                        ].border
+                                                                    }
+                                                                    style={{
+                                                                        marginTop: 2,
+                                                                    }}
+                                                                />
+                                                                <Text className="flex-1 text-sm italic text-muted-foreground">
+                                                                    "
+                                                                    {subItem.comment}
+                                                                    "
+                                                                </Text>
+                                                            </View>
+                                                            <Text className="ml-2 text-sm text-muted-foreground">
+                                                                x{subItem.quantity}
+                                                            </Text>
+                                                        </View>
+                                                    ),
+                                                )}
+                                            </View>
+                                        )}
+                                    </View>
+                                ))}
+
+                                {/* Price Breakdown */}
+                                {currentLocationSummary.subtotalInCents !== null && (
+                                    <View className="p-4 mt-2 border rounded-2xl border-primary/30 bg-primary/5">
+                                        <View className="flex-row items-center justify-between mb-2">
+                                            <Text className="text-sm text-muted-foreground">
+                                                Subtotal
+                                            </Text>
+                                            <Text className="text-sm text-foreground">
+                                                ${(currentLocationSummary.subtotalInCents / 100).toFixed(2)}
+                                            </Text>
                                         </View>
-                                    )}
-                                </View>
-                            ))
+                                        {currentLocationSummary.taxInCents !== null && (
+                                            <View className="flex-row items-center justify-between mb-2">
+                                                <Text className="text-sm text-muted-foreground">
+                                                    Tax
+                                                </Text>
+                                                <Text className="text-sm text-foreground">
+                                                    ${(currentLocationSummary.taxInCents / 100).toFixed(2)}
+                                                </Text>
+                                            </View>
+                                        )}
+                                        {currentLocationSummary.totalInCents !== null && (
+                                            <View className="flex-row items-center justify-between pt-2 border-t border-primary/20">
+                                                <Text className="text-base font-semibold text-foreground">
+                                                    Total
+                                                </Text>
+                                                <Text className="text-base font-semibold text-primary">
+                                                    ${(currentLocationSummary.totalInCents / 100).toFixed(2)}
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
+                                )}
+                            </>
                         ) : (
                             <View className="items-center justify-center py-12">
                                 <Text className="text-muted-foreground">

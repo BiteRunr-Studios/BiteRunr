@@ -180,6 +180,8 @@ export const confirmReceiptMatches = mutation({
       })
     ),
     orderId: v.id("orders"),
+    orderLocationId: v.id("orderLocations"),
+    receiptTotalInCents: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const userId = await auth.getUserId(ctx);
@@ -195,6 +197,13 @@ export const confirmReceiptMatches = mutation({
     for (const match of args.matches) {
       await ctx.db.patch(match.orderItemId, {
         priceInCents: BigInt(match.priceInCents),
+      });
+    }
+
+    // Save the receipt total to the order location (includes tax)
+    if (args.receiptTotalInCents !== undefined) {
+      await ctx.db.patch(args.orderLocationId, {
+        receiptTotalInCents: BigInt(args.receiptTotalInCents),
       });
     }
 

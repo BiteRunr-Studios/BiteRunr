@@ -253,8 +253,8 @@ export function useReceiptScanning(
   );
 
   const confirmMatches = useCallback(async () => {
-    if (!orderId) {
-      setError("No order selected");
+    if (!orderId || !orderLocationId) {
+      setError("No order or location selected");
       return;
     }
 
@@ -283,6 +283,8 @@ export function useReceiptScanning(
       await confirmReceiptMatches({
         matches: validMatches,
         orderId,
+        orderLocationId,
+        receiptTotalInCents: receiptTotal ?? undefined,
       });
 
       reset();
@@ -291,7 +293,7 @@ export function useReceiptScanning(
       setError(err instanceof Error ? err.message : "Failed to save matches");
       setState("error");
     }
-  }, [orderId, matchedItems, confirmReceiptMatches, reset]);
+  }, [orderId, orderLocationId, matchedItems, receiptTotal, confirmReceiptMatches, reset]);
 
   return {
     state,

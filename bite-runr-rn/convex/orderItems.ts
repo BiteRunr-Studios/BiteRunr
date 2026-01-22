@@ -216,23 +216,34 @@ export const getOrderSummary = query({
           .withIndex("by_orderLocationId", (q) => q.eq("orderLocationId", orderLocation._id))
           .collect();
 
-        // Group items by itemId
+        // Group items by itemId and calculate subtotal
         const itemGroups: Map<string, {
           itemId: string;
           itemName: string;
           baseQuantity: number;
-          subItems: Array<{ comment: string; quantity: number }>;
+          priceInCents: number | null;
+          subItems: Array<{ comment: string; quantity: number; priceInCents: number | null }>;
         }> = new Map();
+
+        let subtotalInCents = 0;
+        let hasPrices = false;
 
         for (const oi of orderItems) {
           const item = await ctx.db.get(oi.itemId);
           const itemName = item?.name ?? "Unknown Item";
+          const priceInCents = oi.priceInCents ? Number(oi.priceInCents) : null;
+
+          if (priceInCents !== null) {
+            subtotalInCents += priceInCents * oi.quantity;
+            hasPrices = true;
+          }
 
           if (!itemGroups.has(oi.itemId)) {
             itemGroups.set(oi.itemId, {
               itemId: oi.itemId,
               itemName,
               baseQuantity: 0,
+              priceInCents: null,
               subItems: [],
             });
           }
@@ -244,10 +255,12 @@ export const getOrderSummary = query({
             group.subItems.push({
               comment: oi.comments,
               quantity: oi.quantity,
+              priceInCents,
             });
           } else {
             // Item without comments - add to base quantity
             group.baseQuantity += oi.quantity;
+            group.priceInCents = priceInCents;
           }
         }
 
@@ -256,6 +269,7 @@ export const getOrderSummary = query({
           itemId: group.itemId,
           itemName: group.itemName,
           baseQuantity: group.baseQuantity,
+          priceInCents: group.priceInCents,
           totalQuantity: group.baseQuantity + group.subItems.reduce((sum, si) => sum + si.quantity, 0),
           subItems: group.subItems,
         }));
@@ -263,12 +277,26 @@ export const getOrderSummary = query({
         // Sort by item name
         items.sort((a, b) => a.itemName.localeCompare(b.itemName));
 
+        // Get receipt total for this location (includes tax)
+        const receiptTotalInCents = orderLocation.receiptTotalInCents
+          ? Number(orderLocation.receiptTotalInCents)
+          : null;
+
+        // Calculate tax (receipt total - item subtotal)
+        const taxInCents = receiptTotalInCents !== null && hasPrices
+          ? Math.max(0, receiptTotalInCents - subtotalInCents)
+          : null;
+
         return {
           orderLocationId: orderLocation._id,
           locationId: orderLocation.locationId,
           locationName: locationInfo?.name ?? "Unknown Location",
           items,
           itemCount: items.reduce((sum, item) => sum + item.totalQuantity, 0),
+          // Price breakdown
+          subtotalInCents: hasPrices ? subtotalInCents : null,
+          taxInCents,
+          totalInCents: receiptTotalInCents,
         };
       })
     );
