@@ -55,7 +55,7 @@ export default function SignUpScreen() {
     const handleSignUp = useCallback(async () => {
         const firstName = form.firstName?.value?.trim();
         const lastName = form.lastName?.value?.trim();
-        const email = form.email?.value?.trim();
+        const email = form.email?.value?.trim().toLowerCase();
         const password = form.password?.value;
 
         // Validate all fields

@@ -318,7 +318,7 @@ export function ReceiptConfirmationSheet({
           contentContainerStyle={{ paddingBottom: 24 }}>
           {matchedItems.map((item, index) => (
             <MatchItem
-              key={index}
+              key={item.id}
               item={item}
               index={index}
               orderItems={orderItems}

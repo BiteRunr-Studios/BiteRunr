@@ -12,6 +12,34 @@ const resend = new Resend(process.env.AUTH_RESEND_KEY);
 // Get base URL for OAuth callbacks
 const siteUrl = process.env.SITE_URL ?? "";
 
+// Check which OAuth providers have complete credentials
+const githubCredentials =
+    process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET
+        ? {
+              clientId: process.env.AUTH_GITHUB_ID,
+              clientSecret: process.env.AUTH_GITHUB_SECRET,
+              redirectURI: `${siteUrl}/api/auth/callback/github`,
+          }
+        : null;
+
+const googleCredentials =
+    process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
+        ? {
+              clientId: process.env.AUTH_GOOGLE_ID,
+              clientSecret: process.env.AUTH_GOOGLE_SECRET,
+              redirectURI: `${siteUrl}/api/auth/callback/google`,
+          }
+        : null;
+
+// Validate SITE_URL when OAuth providers are configured
+const hasOAuthProviders = githubCredentials || googleCredentials;
+if (!siteUrl && hasOAuthProviders) {
+    throw new Error(
+        "SITE_URL environment variable is required when OAuth providers are configured. " +
+            "OAuth redirect URIs require a full URL (e.g., https://example.com)."
+    );
+}
+
 // Create the Better Auth client for Convex
 export const authComponent = createClient(components.betterAuth);
 
@@ -96,20 +124,15 @@ export const createAuth = (ctx: any) => {
         account: {
             accountLinking: {
                 enabled: true,
-                trustedProviders: ["google", "github"],
+                trustedProviders: [
+                    ...(googleCredentials ? ["google" as const] : []),
+                    ...(githubCredentials ? ["github" as const] : []),
+                ],
             },
         },
         socialProviders: {
-            github: {
-                clientId: process.env.AUTH_GITHUB_ID ?? "",
-                clientSecret: process.env.AUTH_GITHUB_SECRET ?? "",
-                redirectURI: `${siteUrl}/api/auth/callback/github`,
-            },
-            google: {
-                clientId: process.env.AUTH_GOOGLE_ID ?? "",
-                clientSecret: process.env.AUTH_GOOGLE_SECRET ?? "",
-                redirectURI: `${siteUrl}/api/auth/callback/google`,
-            },
+            ...(githubCredentials && { github: githubCredentials }),
+            ...(googleCredentials && { google: googleCredentials }),
         },
     });
 };

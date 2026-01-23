@@ -5,7 +5,13 @@ import { convexClient } from "@convex-dev/better-auth/client/plugins";
 import * as SecureStore from "expo-secure-store";
 
 // Get the Convex site URL from environment
-const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL ?? "";
+const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
+if (!convexUrl) {
+    throw new Error(
+        "EXPO_PUBLIC_CONVEX_URL environment variable is required. " +
+            "Add it to your .env file (e.g., EXPO_PUBLIC_CONVEX_URL=https://your-app.convex.cloud)"
+    );
+}
 const siteUrl = convexUrl.replace(".cloud", ".site");
 
 export const authClient = createAuthClient({

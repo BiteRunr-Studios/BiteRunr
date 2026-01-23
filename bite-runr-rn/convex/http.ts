@@ -10,7 +10,7 @@ authComponent.registerRoutes(http, createAuth, {
         allowedOrigins: [
             "biterunr://",
             "exp://",
-            process.env.SITE_URL ?? "",
+            ...(process.env.SITE_URL ? [process.env.SITE_URL] : []),
         ],
     },
 });

@@ -21,6 +21,7 @@ export interface ParsedReceiptItem {
 }
 
 export interface MatchedItem {
+  id: string; // Stable unique identifier for React key
   receiptItem: ParsedReceiptItem;
   matchedOrderItemId: string | null;
   matchedItemName: string | null;
@@ -166,6 +167,9 @@ export function useReceiptScanning(
         }
 
         const { storageId } = await uploadResponse.json();
+        if (!storageId) {
+          throw new Error("Upload succeeded but no storage ID returned");
+        }
 
         // Parse the receipt
         setState("parsing");
@@ -199,8 +203,10 @@ export function useReceiptScanning(
           setMatchedItems(matches);
         } else {
           // No order items to match, just set the parsed items
+          const timestamp = Date.now();
           setMatchedItems(
-            parseResult.items.map((item) => ({
+            parseResult.items.map((item, index) => ({
+              id: `receipt-item-${index}-${timestamp}`,
               receiptItem: item,
               matchedOrderItemId: null,
               matchedItemName: null,

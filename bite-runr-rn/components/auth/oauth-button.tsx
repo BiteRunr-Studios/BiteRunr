@@ -13,7 +13,9 @@ type OAuthButtonProps = {
     label?: string;
     disabled?: boolean;
     className?: string;
-    onSuccess?: () => void;
+    // Note: No onSuccess callback because signIn.social() opens a browser and returns
+    // immediately. Actual OAuth completion happens via deep link callback, so consumers
+    // should use auth context/state changes to react to successful authentication.
     onError?: (error: Error) => void;
 };
 
@@ -22,7 +24,6 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
     label,
     disabled,
     className,
-    onSuccess,
     onError,
 }) => {
     const { colorScheme } = useColorScheme();

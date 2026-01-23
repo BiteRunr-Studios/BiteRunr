@@ -32,7 +32,7 @@ export default function VerifyOtpScreen() {
         type: "sign-up"; // Only used for sign-up email verification now
     }>();
 
-    const { email } = params;
+    const email = params.email?.toLowerCase();
 
     const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
     const [loading, setLoading] = useState(false);

@@ -33,7 +33,7 @@ export default function SignInScreen() {
     const syncUser = useMutation(api.users.syncUser);
 
     const handleEmailSignIn = useCallback(async () => {
-        const email = form.email?.value?.trim();
+        const email = form.email?.value?.trim().toLowerCase();
         const password = form.password?.value;
 
         // Validate fields

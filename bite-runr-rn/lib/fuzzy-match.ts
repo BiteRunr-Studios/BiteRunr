@@ -138,6 +138,7 @@ export function autoMatchReceiptItems(
     userName: string;
   }>
 ): Array<{
+  id: string;
   receiptItem: {
     name: string;
     quantity: number;
@@ -151,7 +152,7 @@ export function autoMatchReceiptItems(
   // Track which order items have been matched
   const matchedOrderItemIds = new Set<string>();
 
-  return receiptItems.map((receiptItem) => {
+  return receiptItems.map((receiptItem, index) => {
     // Find candidates that haven't been matched yet
     const availableCandidates = orderItems
       .filter((oi) => !matchedOrderItemIds.has(oi.id))
@@ -164,10 +165,14 @@ export function autoMatchReceiptItems(
 
     const match = findBestMatch(receiptItem.name, availableCandidates);
 
+    // Generate stable unique ID for this matched item
+    const id = `receipt-item-${index}-${Date.now()}`;
+
     if (match) {
       matchedOrderItemIds.add(match.candidateId);
       const matchedItem = orderItems.find((oi) => oi.id === match.candidateId);
       return {
+        id,
         receiptItem,
         matchedOrderItemId: match.candidateId,
         matchedItemName: match.candidateName,
@@ -177,6 +182,7 @@ export function autoMatchReceiptItems(
     }
 
     return {
+      id,
       receiptItem,
       matchedOrderItemId: null,
       matchedItemName: null,

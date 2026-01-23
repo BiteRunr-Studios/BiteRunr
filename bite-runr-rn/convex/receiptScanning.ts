@@ -192,7 +192,19 @@ export const confirmReceiptMatches = mutation({
     }
 
     // Update each matched order item with its price
+    // Verify each orderItemId belongs to this order to prevent IDOR attacks
     for (const match of args.matches) {
+      const orderItem = await ctx.db.get(match.orderItemId);
+      if (!orderItem) {
+        throw new Error(`Order item not found: ${match.orderItemId}`);
+      }
+
+      // Verify the order item belongs to this order via its orderLocation
+      const orderLocation = await ctx.db.get(orderItem.orderLocationId);
+      if (!orderLocation || orderLocation.orderId !== args.orderId) {
+        throw new Error("Order item does not belong to this order");
+      }
+
       await ctx.db.patch(match.orderItemId, {
         priceInCents: BigInt(match.priceInCents),
       });
