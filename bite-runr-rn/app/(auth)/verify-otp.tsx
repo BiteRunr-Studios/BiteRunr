@@ -17,6 +17,8 @@ import {
     TextInput,
     KeyboardAvoidingView,
     Platform,
+    Keyboard,
+    TouchableWithoutFeedback,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -164,25 +166,13 @@ export default function VerifyOtpScreen() {
         }
     }, [email, resendCooldown, resending]);
 
-    // Auto-submit when all digits are entered
-    useEffect(() => {
-        const otpCode = otp.join("");
-        if (otpCode.length === OTP_LENGTH && !loading) {
-            handleVerify();
-        }
-    }, [otp, loading, handleVerify]);
-
     return (
-        <SafeAreaView
-            edges={["top"]}
-            className="justify-center flex-1 px-4 transition-all duration-200">
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-                className="justify-center flex-1">
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <SafeAreaView className="flex-1 px-4 transition-all duration-200">
                 {/* Back button */}
                 <Pressable
                     onPress={() => router.back()}
-                    className="absolute left-0 flex-row items-center p-2 top-4">
+                    className="flex-row items-center p-2 self-start">
                     <Icon
                         name="ArrowLeft"
                         size={20}
@@ -191,9 +181,10 @@ export default function VerifyOtpScreen() {
                     <Text className="ml-1 text-foreground">Back</Text>
                 </Pressable>
 
-                <View className="mt-10"></View>
-
-                {/* Title */}
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    className="justify-center flex-1">
+                    {/* Title */}
                 <Text className="mb-2 text-3xl font-bold text-foreground">
                     Check your email
                 </Text>
@@ -276,7 +267,8 @@ export default function VerifyOtpScreen() {
                         </Text>
                     </Pressable>
                 </View>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
+        </TouchableWithoutFeedback>
     );
 }
