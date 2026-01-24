@@ -41,10 +41,13 @@ export default function SpecificOrder() {
                 duration: 2000,
                 easing: Easing.inOut(Easing.ease),
             }),
-            withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) })
+            withTiming(1, {
+                duration: 2000,
+                easing: Easing.inOut(Easing.ease),
+            }),
         ),
         -1,
-        false
+        false,
     );
 
     const breatheStyle = useAnimatedStyle(() => ({
@@ -59,7 +62,7 @@ export default function SpecificOrder() {
     // Get order data
     const data = useQuery(
         api.orders.get,
-        orderId ? { orderId: orderId as Id<"orders"> } : "skip"
+        orderId ? { orderId: orderId as Id<"orders"> } : "skip",
     );
     const isPending = data === undefined;
 
@@ -118,7 +121,7 @@ export default function SpecificOrder() {
 
     async function handleSelectItems() {
         const orderUser = data?.orderUsers.find(
-            (x) => x.userId === currentUserId
+            (x) => x.userId === currentUserId,
         );
 
         if (!orderUser) {
@@ -132,7 +135,7 @@ export default function SpecificOrder() {
                 status: "ordering",
             });
             router.push(
-                `/order/items?orderUserId=${orderUser.id}&orderId=${orderId}`
+                `/order/items?orderUserId=${orderUser.id}&orderId=${orderId}`,
             );
         } catch (error) {
             console.error("Failed to set status:", error);
@@ -161,12 +164,12 @@ export default function SpecificOrder() {
                             console.error("Failed to cancel order:", error);
                             Alert.alert(
                                 "Error",
-                                "Failed to cancel order. Please try again."
+                                "Failed to cancel order. Please try again.",
                             );
                         }
                     },
                 },
-            ]
+            ],
         );
     }
 
@@ -174,6 +177,44 @@ export default function SpecificOrder() {
     const buttonText =
         buttonState === "readyToRun" ? "Start Run" : "Start Run Anyway";
     const isButtonDisabled = buttonState === "disabled";
+
+    async function handleStartRun() {
+        const startRun = async () => {
+            try {
+                await updateOrder({
+                    orderId: orderId as Id<"orders">,
+                    paused: true,
+                });
+                // Navigate to order summary page
+                router.push(`/order/summary?orderId=${orderId}`);
+            } catch (error) {
+                console.error("Failed to start run:", error);
+                Alert.alert("Error", "Failed to start run. Please try again.");
+            }
+        };
+
+        if (buttonState === "enabled") {
+            // Not all users are done, show confirmation
+            Alert.alert(
+                "Start Run Anyway?",
+                "Not all participants have finished ordering. Starting now will lock the order and prevent anyone from adding more items. Are you sure?",
+                [
+                    {
+                        text: "No",
+                        style: "cancel",
+                    },
+                    {
+                        text: "Yes, Start Run",
+                        style: "default",
+                        onPress: startRun,
+                    },
+                ],
+            );
+        } else {
+            // All users are done, start directly
+            await startRun();
+        }
+    }
 
     if (isPending) {
         return (
@@ -191,11 +232,15 @@ export default function SpecificOrder() {
         );
     }
 
+    const progressPercent = data.completionStats && data.completionStats.total > 0
+        ? (data.completionStats.done / data.completionStats.total) * 100
+        : 0;
+
     return (
         <>
-            <SafeAreaView edges={["top"]}></SafeAreaView>
+            <SafeAreaView edges={["top"]} />
             {/* Header */}
-            <View className="flex-row items-center justify-between px-4 py-3 my-4 border-b border-border">
+            <View className="flex-row items-center justify-between px-4 py-3 border-b border-border">
                 <Pressable
                     onPress={() => router.back()}
                     className="p-2 -ml-2 rounded-full active:opacity-70">
@@ -206,114 +251,360 @@ export default function SpecificOrder() {
                     />
                 </Pressable>
                 <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
-                    Order
+                    Order Details
                 </Text>
-                <TouchableOpacity onPress={handleCancelOrder}>
-                    <Text
-                        className="text-lg font-semibold text-center"
-                        style={{
-                            color: NAV_THEME[colorScheme].notification,
-                        }}>
-                        Cancel Order
-                    </Text>
-                </TouchableOpacity>
-            </View>
-            <View className="flex-1 px-6">
-                <View className="flex-col w-full gap-2 p-4 mb-2 border rounded-2xl border-muted bg-card">
-                    <View className="flex-row justify-between">
-                        <Text className="text-lg text-muted-foreground">
-                            {`Started on ${new Date(
-                                data.order.createdAt
-                            ).toLocaleDateString("en-US", {
-                                month: "long",
-                                day: "numeric",
-                                year: "numeric",
-                            })}`}
+                {isCreator && (
+                    <TouchableOpacity
+                        onPress={handleCancelOrder}
+                        className="px-3 py-1.5 rounded-full bg-destructive/10">
+                        <Text className="text-sm font-medium text-destructive">
+                            Cancel
                         </Text>
-                        <View className="flex-row items-center justify-center gap-2 px-2 py-1 rounded-full h-max w-max bg-primary">
-                            <ReAnimated.View
-                                style={breatheStyle}
-                                className="w-4 h-4 bg-white rounded-full"
-                            />
-                            <Text className="text-sm text-white">Active</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
+
+            <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                {/* Order Info Card */}
+                <View className="mx-4 mt-4">
+                    <View className="p-5 border rounded-2xl border-muted bg-card">
+                        <View className="flex-row items-start justify-between mb-3">
+                            <View className="flex-1">
+                                <Text className="text-sm text-muted-foreground">
+                                    {new Date(
+                                        data.order.createdAt,
+                                    ).toLocaleDateString("en-US", {
+                                        weekday: "short",
+                                        month: "short",
+                                        day: "numeric",
+                                    })}
+                                </Text>
+                                <Text className="mt-1 text-2xl font-bold text-foreground">
+                                    {data.order.name}
+                                </Text>
+                            </View>
+                            <View
+                                className={`flex-row items-center gap-2 px-3 py-1.5 rounded-full ${
+                                    data.order.paused
+                                        ? "bg-orange-500/20"
+                                        : "bg-primary/20"
+                                }`}>
+                                <ReAnimated.View
+                                    style={breatheStyle}
+                                    className={`w-2 h-2 rounded-full ${
+                                        data.order.paused
+                                            ? "bg-orange-500"
+                                            : "bg-primary"
+                                    }`}
+                                />
+                                <Text
+                                    className={`text-sm font-medium ${
+                                        data.order.paused
+                                            ? "text-orange-500"
+                                            : "text-primary"
+                                    }`}>
+                                    {data.order.paused ? "In Progress" : "Ordering"}
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* Stats Row */}
+                        <View className="flex-row gap-4 pt-3 mt-1 border-t border-muted">
+                            <View className="flex-row items-center gap-2">
+                                <View className="items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                                    <Icon
+                                        name="Users"
+                                        size={16}
+                                        color={NAV_THEME[colorScheme].primary}
+                                    />
+                                </View>
+                                <Text className="text-sm text-muted-foreground">
+                                    <Text className="font-semibold text-foreground">
+                                        {data.orderUsers.length}
+                                    </Text>{" "}
+                                    {data.orderUsers.length === 1
+                                        ? "person"
+                                        : "people"}
+                                </Text>
+                            </View>
+                            <View className="flex-row items-center gap-2">
+                                <View className="items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                                    <Icon
+                                        name="ShoppingBag"
+                                        size={16}
+                                        color={NAV_THEME[colorScheme].primary}
+                                    />
+                                </View>
+                                <Text className="text-sm text-muted-foreground">
+                                    <Text className="font-semibold text-foreground">
+                                        {data.count}
+                                    </Text>{" "}
+                                    {data.count === 1 ? "item" : "items"}
+                                </Text>
+                            </View>
                         </View>
                     </View>
-                    <Text className="text-3xl font-semibold text-foreground">
-                        {data.order.name}
-                    </Text>
                 </View>
-                <ScrollView className="flex-1">
-                    {/* Participants */}
-                    <View>
-                        {data.orderUsers.map((orderUser) => (
-                            <View key={orderUser.id} className="flex-row py-4">
-                                <View className="flex-row items-center flex-1 gap-2">
-                                    <Image
-                                        style={{ width: 36, height: 36 }}
-                                        className="rounded-full"
-                                        source={{
-                                            uri:
-                                                orderUser.user?.avatarUrl ??
-                                                `https://ui-avatars.com/api/?name=${orderUser.user?.firstName}+${orderUser.user?.lastName}`,
-                                        }}
-                                    />
-                                    <View className="flex-1">
-                                        <Text className="text-foreground">
-                                            {orderUser.user?.firstName}{" "}
-                                            {orderUser.user?.lastName}
-                                        </Text>
-                                        <Text className="text-sm text-muted-foreground">
-                                            {orderUser.status}
-                                        </Text>
-                                    </View>
-                                </View>
+
+                {/* Progress Section */}
+                {!data.order.paused && (
+                    <View className="px-4 mt-6">
+                        <View className="flex-row items-center justify-between mb-3">
+                            <Text className="text-base font-semibold text-foreground">
+                                Order Progress
+                            </Text>
+                            <Text className="text-sm text-muted-foreground">
+                                {data.completionStats?.done} of{" "}
+                                {data.completionStats?.total} done
+                            </Text>
+                        </View>
+                        <View className="h-2 overflow-hidden rounded-full bg-muted">
+                            <View
+                                className={`h-full rounded-full ${
+                                    data.completionStats?.allDone
+                                        ? "bg-green-500"
+                                        : "bg-primary"
+                                }`}
+                                style={{ width: `${progressPercent}%` }}
+                            />
+                        </View>
+                        {data.completionStats?.allDone && (
+                            <View className="flex-row items-center gap-2 mt-2">
+                                <Icon
+                                    name="CircleCheck"
+                                    size={14}
+                                    color="#22c55e"
+                                />
+                                <Text className="text-sm text-green-500">
+                                    Everyone's done! Ready to start the run.
+                                </Text>
                             </View>
-                        ))}
+                        )}
                     </View>
-                </ScrollView>
-            </View>
+                )}
+
+                {/* Participants Section */}
+                <View className="px-4 mt-6 mb-4">
+                    <Text className="mb-3 text-base font-semibold text-foreground">
+                        Participants
+                    </Text>
+                    <View className="gap-3">
+                        {data.orderUsers.map((orderUser) => {
+                            const isCurrentUser =
+                                orderUser.userId === currentUserId;
+                            const isDone = orderUser.status === "done";
+
+                            return (
+                                <View
+                                    key={orderUser.id}
+                                    className={`flex-row items-center p-4 border rounded-xl ${
+                                        isCurrentUser
+                                            ? "border-primary/30 bg-primary/5"
+                                            : "border-muted bg-card"
+                                    }`}>
+                                    {/* Avatar */}
+                                    <View className="relative">
+                                        {orderUser.user?.avatarUrl ? (
+                                            <Image
+                                                style={{ width: 48, height: 48 }}
+                                                className="rounded-full"
+                                                source={{
+                                                    uri: orderUser.user
+                                                        .avatarUrl,
+                                                }}
+                                            />
+                                        ) : (
+                                            <View
+                                                style={{ width: 48, height: 48 }}
+                                                className="items-center justify-center rounded-full bg-muted">
+                                                <Text className="text-lg font-semibold text-muted-foreground">
+                                                    {`${(orderUser.user?.firstName || "").charAt(0)}${(orderUser.user?.lastName || "").charAt(0)}`.toUpperCase() ||
+                                                        "U"}
+                                                </Text>
+                                            </View>
+                                        )}
+                                        {/* Status indicator */}
+                                        <View
+                                            className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full items-center justify-center border-2 border-background ${
+                                                isDone
+                                                    ? "bg-green-500"
+                                                    : "bg-orange-400"
+                                            }`}>
+                                            <Icon
+                                                name={isDone ? "Check" : "Clock"}
+                                                size={10}
+                                                color="white"
+                                            />
+                                        </View>
+                                    </View>
+
+                                    {/* Info */}
+                                    <View className="flex-1 ml-3">
+                                        <View className="flex-row items-center gap-2">
+                                            <Text
+                                                className={`text-base font-medium ${
+                                                    isCurrentUser
+                                                        ? "text-primary"
+                                                        : "text-foreground"
+                                                }`}>
+                                                {orderUser.user?.firstName}{" "}
+                                                {orderUser.user?.lastName}
+                                                {isCurrentUser && " (You)"}
+                                            </Text>
+                                            {orderUser.isCreator && (
+                                                <View className="px-2 py-0.5 rounded-full bg-primary/20">
+                                                    <Text className="text-xs font-medium text-primary">
+                                                        Host
+                                                    </Text>
+                                                </View>
+                                            )}
+                                        </View>
+                                        <View className="flex-row items-center gap-2 mt-1">
+                                            <Text
+                                                className={`text-sm ${
+                                                    isDone
+                                                        ? "text-green-500"
+                                                        : "text-orange-400"
+                                                }`}>
+                                                {isDone
+                                                    ? "Done ordering"
+                                                    : "Still ordering"}
+                                            </Text>
+                                            <Text className="text-muted-foreground">
+                                                ·
+                                            </Text>
+                                            <Text className="text-sm text-muted-foreground">
+                                                {orderUser.itemCount}{" "}
+                                                {orderUser.itemCount === 1
+                                                    ? "item"
+                                                    : "items"}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    {/* Done badge */}
+                                    {isDone && (
+                                        <View className="items-center justify-center w-8 h-8 rounded-full bg-green-500/10">
+                                            <Icon
+                                                name="CircleCheck"
+                                                size={20}
+                                                color="#22c55e"
+                                            />
+                                        </View>
+                                    )}
+                                </View>
+                            );
+                        })}
+                    </View>
+                </View>
+            </ScrollView>
 
             {/* Footer */}
             <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
-                <Text className="mb-3 text-sm text-center text-muted-foreground">
-                    {data.count > 0
-                        ? `${data.count} Items Added`
-                        : "No Items Added"}
-                </Text>
-                <View className="flex-col gap-2">
-                    <TouchableOpacity
-                        className="w-full py-3 rounded-lg bg-primary"
-                        onPress={handleSelectItems}>
-                        <Text className="text-sm font-semibold text-center text-foreground">
-                            Select Items
+                {data.order.paused && !isCreator ? (
+                    <View className="items-center py-4">
+                        <View className="items-center justify-center w-12 h-12 mb-3 rounded-full bg-primary/10">
+                            <Icon
+                                name="Truck"
+                                size={24}
+                                color={NAV_THEME[colorScheme].primary}
+                            />
+                        </View>
+                        <Text className="text-lg font-semibold text-center text-foreground">
+                            Your order is being picked up
                         </Text>
-                    </TouchableOpacity>
-                    {isCreator && (
-                        <Animated.View
-                            style={{
-                                opacity: buttonOpacity,
-                                transform: [{ translateY: buttonTranslateY }],
-                            }}>
-                            <TouchableOpacity
-                                className={`w-full py-3 border rounded-lg ${
-                                    isButtonDisabled
-                                        ? "border-muted bg-muted"
-                                        : "border-primary bg-primary/10"
-                                }`}
-                                onPress={() => console.log("Start Run pressed")}
-                                disabled={isButtonDisabled}>
-                                <Text
-                                    className={`text-sm font-semibold text-center ${
-                                        isButtonDisabled
-                                            ? "text-muted-foreground"
-                                            : "text-primary"
-                                    }`}>
-                                    {buttonText}
+                        <Text className="mt-1 text-sm text-center text-muted-foreground">
+                            Sit tight! You'll be notified when it's ready.
+                        </Text>
+                    </View>
+                ) : (
+                    <>
+                        {data.order.paused && (
+                            <View className="flex-row items-center gap-2 p-3 mb-4 rounded-lg bg-orange-500/10">
+                                <Icon
+                                    name="CircleAlert"
+                                    size={18}
+                                    color="#f97316"
+                                />
+                                <Text className="flex-1 text-sm text-orange-500">
+                                    The run has started. No more items can be
+                                    added.
                                 </Text>
-                            </TouchableOpacity>
-                        </Animated.View>
-                    )}
-                </View>
+                            </View>
+                        )}
+                        <View className="flex-col gap-3">
+                            {data.order.paused && isCreator ? (
+                                <TouchableOpacity
+                                    className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
+                                    onPress={() =>
+                                        router.push(
+                                            `/order/summary?orderId=${orderId}`,
+                                        )
+                                    }>
+                                    <Icon name="ClipboardList" size={20} color="white" />
+                                    <Text className="text-base font-semibold text-white">
+                                        View Order Summary
+                                    </Text>
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity
+                                    className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
+                                    onPress={handleSelectItems}>
+                                    <Icon name="Plus" size={20} color="white" />
+                                    <Text className="text-base font-semibold text-white">
+                                        Select Items
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+                            {isCreator && !data.order.paused && (
+                                <Animated.View
+                                    style={{
+                                        opacity: buttonOpacity,
+                                        transform: [
+                                            { translateY: buttonTranslateY },
+                                        ],
+                                    }}>
+                                    <TouchableOpacity
+                                        className={`w-full py-4 border rounded-xl flex-row items-center justify-center gap-2 ${
+                                            isButtonDisabled
+                                                ? "border-muted bg-muted"
+                                                : buttonState === "readyToRun"
+                                                  ? "border-green-500 bg-green-500/10"
+                                                  : "border-primary bg-primary/10"
+                                        }`}
+                                        onPress={handleStartRun}
+                                        disabled={isButtonDisabled}>
+                                        <Icon
+                                            name="Play"
+                                            size={18}
+                                            color={
+                                                isButtonDisabled
+                                                    ? NAV_THEME[colorScheme]
+                                                          .border
+                                                    : buttonState ===
+                                                        "readyToRun"
+                                                      ? "#22c55e"
+                                                      : NAV_THEME[colorScheme]
+                                                            .primary
+                                            }
+                                        />
+                                        <Text
+                                            className={`text-base font-semibold ${
+                                                isButtonDisabled
+                                                    ? "text-muted-foreground"
+                                                    : buttonState ===
+                                                        "readyToRun"
+                                                      ? "text-green-500"
+                                                      : "text-primary"
+                                            }`}>
+                                            {buttonText}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </Animated.View>
+                            )}
+                        </View>
+                    </>
+                )}
             </View>
         </>
     );

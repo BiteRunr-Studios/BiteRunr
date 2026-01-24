@@ -144,10 +144,15 @@ export function MultiSelectSheet({
                                                 />
                                             ) : item.avatarUrl === null ? (
                                                 <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-muted">
-                                                    <Text className="text-lg font-semibold text-muted-foreground">
-                                                        {item.displayName
-                                                            .charAt(0)
-                                                            .toUpperCase()}
+                                                    <Text
+                                                        style={{ fontSize: 16 }}
+                                                        className="font-semibold text-muted-foreground">
+                                                        {(() => {
+                                                            const parts = item.displayName.trim().split(/\s+/);
+                                                            const first = parts[0] || "";
+                                                            const last = parts.length > 1 ? parts[parts.length - 1] : "";
+                                                            return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase() || "U";
+                                                        })()}
                                                     </Text>
                                                 </View>
                                             ) : null}

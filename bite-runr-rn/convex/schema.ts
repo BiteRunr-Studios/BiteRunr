@@ -109,6 +109,7 @@ export default defineSchema({
   orderLocations: defineTable({
     orderId: v.id("orders"),
     locationId: v.id("locations"),
+    receiptTotalInCents: v.optional(v.int64()), // Receipt total including tax (set from receipt scanning)
   })
     .index("by_orderId", ["orderId"])
     .index("by_locationId", ["locationId"]),
@@ -120,6 +121,7 @@ export default defineSchema({
     itemId: v.id("items"),
     comments: v.optional(v.string()),
     quantity: v.number(),
+    priceInCents: v.optional(v.int64()), // Price per item in cents (set from receipt scanning)
   })
     .index("by_orderLocationId", ["orderLocationId"])
     .index("by_orderUserId", ["orderUserId"])

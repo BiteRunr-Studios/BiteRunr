@@ -1,9 +1,15 @@
 import React, { useState } from "react";
-import { View, Text, Pressable, Linking, ScrollView } from "react-native";
+import {
+    View,
+    Text,
+    Pressable,
+    Linking,
+    ScrollView,
+    TouchableOpacity,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import Icon from "@/components/common/icon";
-import { ListItem } from "@/components/profile/list-item";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 
@@ -19,19 +25,24 @@ function FAQItem({ question, answer }: FAQItemProps) {
     return (
         <Pressable
             onPress={() => setIsExpanded(!isExpanded)}
-            className="mb-3 overflow-hidden border rounded-2xl active:opacity-80 border-border">
+            className="overflow-hidden border rounded-xl active:opacity-80 border-muted bg-card">
             <View className="flex-row items-center justify-between p-4">
-                <Text className="flex-1 pr-2 font-medium text-foreground">
-                    {question}
-                </Text>
+                <View className="flex-row items-center flex-1 gap-3">
+                    <View className="items-center justify-center w-8 h-8 rounded-lg bg-purple-500/10">
+                        <Icon name="MessageCircleQuestionMark" size={16} color="#a855f7" />
+                    </View>
+                    <Text className="flex-1 pr-2 font-medium text-foreground">
+                        {question}
+                    </Text>
+                </View>
                 <Icon
                     name={isExpanded ? "ChevronUp" : "ChevronDown"}
                     size={20}
-                    color={NAV_THEME[colorScheme].primary}
+                    color={NAV_THEME[colorScheme].border}
                 />
             </View>
             {isExpanded && (
-                <View className="px-4 pb-4 -mt-1">
+                <View className="px-4 pb-4 ml-11">
                     <Text className="leading-5 text-muted-foreground">
                         {answer}
                     </Text>
@@ -83,6 +94,33 @@ export default function SupportScreen() {
         },
     ];
 
+    const contactOptions = [
+        {
+            icon: "Mail" as const,
+            iconBg: "bg-blue-500/10",
+            iconColor: "#3b82f6",
+            title: "Email Support",
+            subtitle: "Get help from our team",
+            onPress: handleEmailSupport,
+        },
+        {
+            icon: "Bug" as const,
+            iconBg: "bg-red-500/10",
+            iconColor: "#ef4444",
+            title: "Report a Bug",
+            subtitle: "Let us know if something's broken",
+            onPress: handleReportBug,
+        },
+        {
+            icon: "Lightbulb" as const,
+            iconBg: "bg-yellow-500/10",
+            iconColor: "#eab308",
+            title: "Request a Feature",
+            subtitle: "Tell us what you'd like to see",
+            onPress: handleFeatureRequest,
+        },
+    ];
+
     return (
         <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
             {/* Header */}
@@ -103,12 +141,13 @@ export default function SupportScreen() {
 
             <ScrollView
                 className="flex-1"
-                contentContainerStyle={{ padding: 16 }}>
+                contentContainerStyle={{ padding: 16 }}
+                showsVerticalScrollIndicator={false}>
                 {/* Support Header */}
-                <View className="items-center mt-2 mb-6">
-                    <View className="items-center justify-center w-20 h-20 mb-4 rounded-full bg-primary/10">
+                <View className="items-center p-6 mb-6">
+                    <View className="items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-primary/10">
                         <Icon
-                            name="LifeBuoy"
+                            name="Headset"
                             size={40}
                             color={NAV_THEME[colorScheme].primary}
                         />
@@ -117,65 +156,92 @@ export default function SupportScreen() {
                         How can we help?
                     </Text>
                     <Text className="mt-2 text-center text-muted-foreground">
-                        Find answers below or reach out to our team.
+                        Find answers below or reach out to our team
                     </Text>
                 </View>
 
                 {/* Contact Options */}
                 <View className="mb-6">
-                    <Text className="mb-3 text-lg font-semibold text-foreground">
-                        Contact Us
-                    </Text>
+                    <View className="flex-row items-center gap-3 mb-4">
+                        <View className="items-center justify-center w-10 h-10 rounded-xl bg-blue-500/10">
+                            <Icon name="MessageCircle" size={20} color="#3b82f6" />
+                        </View>
+                        <Text className="text-lg font-semibold text-foreground">
+                            Contact Us
+                        </Text>
+                    </View>
 
                     <View className="gap-3">
-                        <ListItem
-                            iconName="Mail"
-                            title="Email Support"
-                            subtitle="Get help from our team"
-                            onPress={handleEmailSupport}
-                        />
-
-                        <ListItem
-                            iconName="Bug"
-                            title="Report a Bug"
-                            subtitle="Let us know if something's broken"
-                            onPress={handleReportBug}
-                        />
-
-                        <ListItem
-                            iconName="Lightbulb"
-                            title="Request a Feature"
-                            subtitle="Tell us what you'd like to see"
-                            onPress={handleFeatureRequest}
-                        />
+                        {contactOptions.map((option) => (
+                            <TouchableOpacity
+                                key={option.title}
+                                onPress={option.onPress}
+                                className="flex-row items-center p-4 border rounded-xl border-muted bg-card active:opacity-80">
+                                <View
+                                    className={`items-center justify-center w-12 h-12 rounded-xl ${option.iconBg}`}>
+                                    <Icon
+                                        name={option.icon}
+                                        size={24}
+                                        color={option.iconColor}
+                                    />
+                                </View>
+                                <View className="flex-1 ml-3">
+                                    <Text className="text-base font-semibold text-foreground">
+                                        {option.title}
+                                    </Text>
+                                    <Text className="mt-0.5 text-sm text-muted-foreground">
+                                        {option.subtitle}
+                                    </Text>
+                                </View>
+                                <Icon
+                                    name="ChevronRight"
+                                    size={20}
+                                    color={NAV_THEME[colorScheme].border}
+                                />
+                            </TouchableOpacity>
+                        ))}
                     </View>
                 </View>
 
                 {/* FAQs */}
                 <View className="mb-6">
-                    <Text className="mb-3 text-lg font-semibold text-foreground">
-                        Frequently Asked Questions
-                    </Text>
+                    <View className="flex-row items-center gap-3 mb-4">
+                        <View className="items-center justify-center w-10 h-10 rounded-xl bg-purple-500/10">
+                            <Icon name="BookOpen" size={20} color="#a855f7" />
+                        </View>
+                        <Text className="text-lg font-semibold text-foreground">
+                            Frequently Asked Questions
+                        </Text>
+                    </View>
 
-                    {faqs.map((faq, index) => (
-                        <FAQItem
-                            key={index}
-                            question={faq.question}
-                            answer={faq.answer}
-                        />
-                    ))}
+                    <View className="gap-3">
+                        {faqs.map((faq, index) => (
+                            <FAQItem
+                                key={index}
+                                question={faq.question}
+                                answer={faq.answer}
+                            />
+                        ))}
+                    </View>
                 </View>
 
                 {/* Email Footer */}
-                <View className="items-center pt-4 border-t border-border">
-                    <Text className="text-sm text-muted-foreground">
-                        You can also reach us directly at
-                    </Text>
-                    <Pressable onPress={handleEmailSupport}>
-                        <Text className="mt-1 font-semibold text-primary">
+                <View className="items-center p-4 bg-card">
+                    <View className="flex-row items-center gap-2">
+                        <Icon
+                            name="Mail"
+                            size={16}
+                            color={NAV_THEME[colorScheme].border}
+                        />
+                        <Text className="text-sm text-muted-foreground">
+                            You can also reach us directly at
+                        </Text>
+                    </View>
+                    <TouchableOpacity onPress={handleEmailSupport}>
+                        <Text className="mt-1 text-base font-semibold text-primary">
                             biterunr@gmail.com
                         </Text>
-                    </Pressable>
+                    </TouchableOpacity>
                 </View>
             </ScrollView>
         </SafeAreaView>
