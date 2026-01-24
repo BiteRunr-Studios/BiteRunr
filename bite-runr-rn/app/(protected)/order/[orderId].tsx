@@ -232,7 +232,7 @@ export default function SpecificOrder() {
         );
     }
 
-    const progressPercent = data.completionStats
+    const progressPercent = data.completionStats && data.completionStats.total > 0
         ? (data.completionStats.done / data.completionStats.total) * 100
         : 0;
 

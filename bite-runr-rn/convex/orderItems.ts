@@ -231,7 +231,7 @@ export const getOrderSummary = query({
         for (const oi of orderItems) {
           const item = await ctx.db.get(oi.itemId);
           const itemName = item?.name ?? "Unknown Item";
-          const priceInCents = oi.priceInCents ? Number(oi.priceInCents) : null;
+          const priceInCents = oi.priceInCents != null ? Number(oi.priceInCents) : null;
 
           if (priceInCents !== null) {
             subtotalInCents += priceInCents * oi.quantity;
@@ -278,7 +278,7 @@ export const getOrderSummary = query({
         items.sort((a, b) => a.itemName.localeCompare(b.itemName));
 
         // Get receipt total for this location (includes tax)
-        const receiptTotalInCents = orderLocation.receiptTotalInCents
+        const receiptTotalInCents = orderLocation.receiptTotalInCents != null
           ? Number(orderLocation.receiptTotalInCents)
           : null;
 

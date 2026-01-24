@@ -389,10 +389,10 @@ export default function AccountInfoScreen() {
                         onPress={handleSave}
                         disabled={!hasChanges || isSaving}
                         className={`flex-row items-center justify-center gap-2 py-4 mt-6 rounded-xl ${
-                            hasChanges ? "bg-primary" : "bg-muted"
+                            !hasChanges || isSaving ? "bg-muted opacity-60" : "bg-primary"
                         }`}>
                         {isSaving ? (
-                            <ActivityIndicator size="small" color="#fff" />
+                            <ActivityIndicator size="small" color="#6b7280" />
                         ) : (
                             <>
                                 <Icon

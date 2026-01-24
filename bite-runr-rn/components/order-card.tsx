@@ -9,6 +9,7 @@ import ReAnimated, {
     withSequence,
     withTiming,
     Easing,
+    cancelAnimation,
 } from "react-native-reanimated";
 import { useEffect } from "react";
 
@@ -68,6 +69,9 @@ export function OrderCard({
                 -1,
                 false
             );
+        } else {
+            cancelAnimation(breatheValue);
+            breatheValue.value = withTiming(1, { duration: 200 });
         }
     }, [isActive, paused, breatheValue]);
 

@@ -17,6 +17,11 @@ import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { useRouter } from "expo-router";
 
+// Constants for active orders carousel
+const CARD_WIDTH = 300;
+const CARD_GAP = 16;
+const CARD_SNAP_WIDTH = CARD_WIDTH + CARD_GAP;
+
 export default function HomeTab() {
     const activeOrders = useQuery(api.orders.getActiveOrders);
     const pastOrders = useQuery(api.orders.getPastOrders, { limit: 3 });
@@ -113,7 +118,7 @@ export default function HomeTab() {
                                         horizontal
                                         showsHorizontalScrollIndicator={false}
                                         decelerationRate="fast"
-                                        snapToOffsets={activeOrders.map((_, i) => i * 316)}
+                                        snapToOffsets={activeOrders.map((_, i) => i * CARD_SNAP_WIDTH)}
                                         snapToAlignment="start"
                                         className="-mx-4"
                                         contentContainerStyle={{ paddingHorizontal: 16 }}>
@@ -126,8 +131,8 @@ export default function HomeTab() {
                                                     )
                                                 }
                                                 style={{
-                                                    width: 300,
-                                                    marginRight: index < activeOrders.length - 1 ? 16 : 0
+                                                    width: CARD_WIDTH,
+                                                    marginRight: index < activeOrders.length - 1 ? CARD_GAP : 0
                                                 }}>
                                                 <OrderCard
                                                     id={order.id}

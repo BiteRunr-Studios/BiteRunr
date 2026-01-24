@@ -193,6 +193,12 @@ export const confirmReceiptMatches = mutation({
       throw new Error("Not authorized");
     }
 
+    // Verify orderLocationId belongs to this order
+    const orderLocation = await ctx.db.get(args.orderLocationId);
+    if (!orderLocation || orderLocation.orderId !== args.orderId) {
+      throw new Error("Invalid order location");
+    }
+
     // Update each matched order item with its price
     for (const match of args.matches) {
       await ctx.db.patch(match.orderItemId, {

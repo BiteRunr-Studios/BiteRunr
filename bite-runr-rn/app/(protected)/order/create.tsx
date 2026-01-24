@@ -9,6 +9,7 @@ import {
     ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
+    TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -156,157 +157,242 @@ export default function CreateOrder() {
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
                 className="flex-1">
-                <ScrollView className="flex-1 px-6 py-4">
-                    {/* Name Field */}
-                    <View className="mb-4">
-                        <Text className="mb-2 text-sm font-medium text-foreground">
-                            Order Name *
+                <ScrollView
+                    className="flex-1"
+                    contentContainerStyle={{ padding: 16 }}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}>
+                    {/* Header Card */}
+                    <View className="items-center p-6 mb-6 border rounded-2xl border-muted bg-card">
+                        <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-primary/10">
+                            <Icon
+                                name="ShoppingBag"
+                                size={32}
+                                color={NAV_THEME[colorScheme].primary}
+                            />
+                        </View>
+                        <Text className="text-lg font-semibold text-foreground">
+                            New Group Order
                         </Text>
-                        <View
-                            className={`flex-row items-center px-3 border rounded-lg bg-background ${
-                                fieldErrors.name
-                                    ? "border-red-500"
-                                    : "border-input"
-                            }`}>
-                            <TextInput
-                                className="flex-1 py-3 text-foreground"
-                                placeholder="Name"
-                                placeholderTextColor="hsl(215.4 16.3% 46.9%)"
-                                value={name}
-                                onChangeText={(text) => {
-                                    setName(text);
-                                    if (fieldErrors.name) {
+                        <Text className="mt-1 text-sm text-center text-muted-foreground">
+                            Set up your order details below
+                        </Text>
+                    </View>
+
+                    {/* Form Fields */}
+                    <View className="gap-4">
+                        {/* Name Field */}
+                        <View className="p-4 border rounded-xl border-muted bg-card">
+                            <View className="flex-row items-center gap-2 mb-3">
+                                <View className="items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10">
+                                    <Icon name="Tag" size={16} color="#3b82f6" />
+                                </View>
+                                <Text className="text-sm font-medium text-muted-foreground">
+                                    Order Name
+                                </Text>
+                                <Text className="text-sm text-red-500">*</Text>
+                            </View>
+                            <View
+                                className={`flex-row items-center px-4 border rounded-xl bg-background ${
+                                    fieldErrors.name
+                                        ? "border-red-500"
+                                        : "border-muted"
+                                }`}>
+                                <TextInput
+                                    className="flex-1 py-3.5 text-base text-foreground"
+                                    placeholder="e.g., Friday Lunch Run"
+                                    placeholderTextColor={NAV_THEME[colorScheme].border}
+                                    value={name}
+                                    onChangeText={(text) => {
+                                        setName(text);
+                                        if (fieldErrors.name) {
+                                            setFieldErrors((prev) => ({
+                                                ...prev,
+                                                name: undefined,
+                                            }));
+                                        }
+                                    }}
+                                />
+                            </View>
+                            {fieldErrors.name && (
+                                <View className="flex-row items-center gap-1 mt-2">
+                                    <Icon name="CircleAlert" size={12} color="#ef4444" />
+                                    <Text className="text-xs text-red-500">
+                                        {fieldErrors.name}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+
+                        {/* Locations Field */}
+                        <View className="p-4 border rounded-xl border-muted bg-card">
+                            <View className="flex-row items-center gap-2 mb-3">
+                                <View className="items-center justify-center w-8 h-8 rounded-lg bg-green-500/10">
+                                    <Icon name="MapPin" size={16} color="#22c55e" />
+                                </View>
+                                <Text className="text-sm font-medium text-muted-foreground">
+                                    Locations
+                                </Text>
+                                <Text className="text-sm text-red-500">*</Text>
+                            </View>
+                            <Pressable
+                                onPress={() => {
+                                    setShowLocationsSheet(true);
+                                    if (fieldErrors.order_locations) {
                                         setFieldErrors((prev) => ({
                                             ...prev,
-                                            name: undefined,
+                                            order_locations: undefined,
                                         }));
                                     }
                                 }}
-                            />
+                                className={`flex-row items-center justify-between px-4 py-3.5 border rounded-xl bg-background ${
+                                    fieldErrors.order_locations
+                                        ? "border-red-500"
+                                        : "border-muted"
+                                }`}>
+                                <Text
+                                    className={`text-base ${
+                                        selectedLocationIds.length > 0
+                                            ? "text-foreground"
+                                            : "text-muted-foreground"
+                                    }`}>
+                                    {selectedLocationIds.length > 0
+                                        ? selectedLocationsText
+                                        : "Select restaurants"}
+                                </Text>
+                                {selectedLocationIds.length > 0 ? (
+                                    <View className="px-2.5 py-1 rounded-full bg-green-500/10">
+                                        <Text className="text-xs font-semibold text-green-500">
+                                            {selectedLocationIds.length}
+                                        </Text>
+                                    </View>
+                                ) : (
+                                    <Icon
+                                        name="ChevronRight"
+                                        size={20}
+                                        color={NAV_THEME[colorScheme].border}
+                                    />
+                                )}
+                            </Pressable>
+                            {fieldErrors.order_locations && (
+                                <View className="flex-row items-center gap-1 mt-2">
+                                    <Icon name="CircleAlert" size={12} color="#ef4444" />
+                                    <Text className="text-xs text-red-500">
+                                        {fieldErrors.order_locations}
+                                    </Text>
+                                </View>
+                            )}
                         </View>
-                        {fieldErrors.name && (
-                            <Text className="mt-1 text-xs text-red-500">
-                                {fieldErrors.name}
-                            </Text>
-                        )}
-                    </View>
 
-                    {/* Locations Field */}
-                    <View className="mb-4">
-                        <Text className="mb-2 text-sm font-medium text-foreground">
-                            Locations *
-                        </Text>
-                        <Pressable
-                            onPress={() => {
-                                setShowLocationsSheet(true);
-                                if (fieldErrors.order_locations) {
-                                    setFieldErrors((prev) => ({
-                                        ...prev,
-                                        order_locations: undefined,
-                                    }));
-                                }
-                            }}
-                            className={`px-3 py-3 border rounded-lg bg-background ${
-                                fieldErrors.order_locations
-                                    ? "border-red-500"
-                                    : "border-input"
-                            }`}>
-                            <Text
-                                className={
-                                    selectedLocationIds.length > 0
-                                        ? "text-foreground"
-                                        : "text-muted-foreground"
-                                }>
-                                {selectedLocationIds.length > 0
-                                    ? selectedLocationsText
-                                    : "Select locations"}
-                            </Text>
-                        </Pressable>
-                        {fieldErrors.order_locations && (
-                            <Text className="mt-1 text-xs text-red-500">
-                                {fieldErrors.order_locations}
-                            </Text>
-                        )}
-                    </View>
+                        {/* Friends Field */}
+                        <View className="p-4 border rounded-xl border-muted bg-card">
+                            <View className="flex-row items-center gap-2 mb-3">
+                                <View className="items-center justify-center w-8 h-8 rounded-lg bg-purple-500/10">
+                                    <Icon name="Users" size={16} color="#a855f7" />
+                                </View>
+                                <Text className="text-sm font-medium text-muted-foreground">
+                                    Invite Friends
+                                </Text>
+                                <Text className="text-sm text-red-500">*</Text>
+                            </View>
+                            <Pressable
+                                onPress={() => {
+                                    setShowFriendsSheet(true);
+                                    if (fieldErrors.order_users) {
+                                        setFieldErrors((prev) => ({
+                                            ...prev,
+                                            order_users: undefined,
+                                        }));
+                                    }
+                                }}
+                                className={`flex-row items-center justify-between px-4 py-3.5 border rounded-xl bg-background ${
+                                    fieldErrors.order_users
+                                        ? "border-red-500"
+                                        : "border-muted"
+                                }`}>
+                                <Text
+                                    className={`text-base ${
+                                        selectedFriendIds.length > 0
+                                            ? "text-foreground"
+                                            : "text-muted-foreground"
+                                    }`}>
+                                    {selectedFriendIds.length > 0
+                                        ? selectedFriendsText
+                                        : "Select friends to invite"}
+                                </Text>
+                                {selectedFriendIds.length > 0 ? (
+                                    <View className="px-2.5 py-1 rounded-full bg-purple-500/10">
+                                        <Text className="text-xs font-semibold text-purple-500">
+                                            {selectedFriendIds.length}
+                                        </Text>
+                                    </View>
+                                ) : (
+                                    <Icon
+                                        name="ChevronRight"
+                                        size={20}
+                                        color={NAV_THEME[colorScheme].border}
+                                    />
+                                )}
+                            </Pressable>
+                            {fieldErrors.order_users && (
+                                <View className="flex-row items-center gap-1 mt-2">
+                                    <Icon name="CircleAlert" size={12} color="#ef4444" />
+                                    <Text className="text-xs text-red-500">
+                                        {fieldErrors.order_users}
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
 
-                    {/* Friends Field */}
-                    <View className="mb-4">
-                        <Text className="mb-2 text-sm font-medium text-foreground">
-                            Friends *
-                        </Text>
-                        <Pressable
-                            onPress={() => {
-                                setShowFriendsSheet(true);
-                                if (fieldErrors.order_users) {
-                                    setFieldErrors((prev) => ({
-                                        ...prev,
-                                        order_users: undefined,
-                                    }));
-                                }
-                            }}
-                            className={`px-3 py-3 border rounded-lg bg-background ${
-                                fieldErrors.order_users
-                                    ? "border-red-500"
-                                    : "border-input"
-                            }`}>
-                            <Text
-                                className={
-                                    selectedFriendIds.length > 0
-                                        ? "text-foreground"
-                                        : "text-muted-foreground"
-                                }>
-                                {selectedFriendIds.length > 0
-                                    ? selectedFriendsText
-                                    : "Select friends"}
-                            </Text>
-                        </Pressable>
-                        {fieldErrors.order_users && (
-                            <Text className="mt-1 text-xs text-red-500">
-                                {fieldErrors.order_users}
-                            </Text>
-                        )}
-                    </View>
-
-                    {/* Comments Field */}
-                    <View className="mb-6">
-                        <Text className="mb-2 text-sm font-medium text-foreground">
-                            Comments
-                        </Text>
-                        <View className="px-3 border rounded-lg border-input bg-background">
-                            <TextInput
-                                className="py-3 text-foreground"
-                                placeholder="Add any notes or comments..."
-                                placeholderTextColor="hsl(215.4 16.3% 46.9%)"
-                                value={comments}
-                                onChangeText={setComments}
-                                multiline
-                                numberOfLines={4}
-                                textAlignVertical="top"
-                            />
+                        {/* Comments Field */}
+                        <View className="p-4 border rounded-xl border-muted bg-card">
+                            <View className="flex-row items-center gap-2 mb-3">
+                                <View className="items-center justify-center w-8 h-8 rounded-lg bg-orange-500/10">
+                                    <Icon name="MessageSquare" size={16} color="#f97316" />
+                                </View>
+                                <Text className="text-sm font-medium text-muted-foreground">
+                                    Notes
+                                </Text>
+                                <Text className="text-xs text-muted-foreground">
+                                    (optional)
+                                </Text>
+                            </View>
+                            <View className="px-4 border rounded-xl border-muted bg-background">
+                                <TextInput
+                                    className="py-3.5 text-base text-foreground"
+                                    placeholder="Add any notes or special instructions..."
+                                    placeholderTextColor={NAV_THEME[colorScheme].border}
+                                    value={comments}
+                                    onChangeText={setComments}
+                                    multiline
+                                    numberOfLines={3}
+                                    textAlignVertical="top"
+                                    style={{ minHeight: 80 }}
+                                />
+                            </View>
                         </View>
                     </View>
 
                     {/* Submit Button */}
-                    <Pressable
+                    <TouchableOpacity
                         onPress={handleCreateOrder}
                         disabled={createOrderMutation.isPending}
-                        className={`rounded-lg px-4 py-3 ${
+                        className={`flex-row items-center justify-center gap-2 py-4 mt-6 rounded-xl ${
                             createOrderMutation.isPending
                                 ? "bg-primary/50"
                                 : "bg-primary"
                         }`}>
-                        <View className="flex-row items-center justify-center">
-                            {createOrderMutation.isPending && (
-                                <ActivityIndicator
-                                    color="#fff"
-                                    className="mr-2"
-                                />
-                            )}
-                            <Text className="font-semibold text-white">
-                                Create Order
-                            </Text>
-                        </View>
-                    </Pressable>
+                        {createOrderMutation.isPending ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <>
+                                <Icon name="Plus" size={20} color="white" />
+                                <Text className="text-base font-semibold text-white">
+                                    Create Order
+                                </Text>
+                            </>
+                        )}
+                    </TouchableOpacity>
                 </ScrollView>
             </KeyboardAvoidingView>
 
