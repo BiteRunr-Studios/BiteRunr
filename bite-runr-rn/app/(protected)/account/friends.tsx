@@ -5,9 +5,9 @@ import {
     ScrollView,
     Pressable,
     Image,
-    TextInput,
     Alert,
     ActivityIndicator,
+    TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -23,7 +23,6 @@ type Tab = "friends" | "requests" | "search";
 
 export default function FriendsScreen() {
     const [activeTab, setActiveTab] = useState<Tab>("friends");
-
     const { colorScheme } = useColorScheme();
 
     return (
@@ -48,17 +47,20 @@ export default function FriendsScreen() {
             <View className="flex-row gap-2 p-4">
                 <TabButton
                     label="My Friends"
+                    icon="Users"
                     isActive={activeTab === "friends"}
                     onPress={() => setActiveTab("friends")}
                 />
                 <TabButton
                     label="Requests"
+                    icon="Bell"
                     isActive={activeTab === "requests"}
                     onPress={() => setActiveTab("requests")}
                     showBadge
                 />
                 <TabButton
                     label="Search"
+                    icon="Search"
                     isActive={activeTab === "search"}
                     onPress={() => setActiveTab("search")}
                 />
@@ -74,16 +76,18 @@ export default function FriendsScreen() {
 
 function TabButton({
     label,
+    icon,
     isActive,
     onPress,
     showBadge,
 }: {
     label: string;
+    icon: "Users" | "Bell" | "Search";
     isActive: boolean;
     onPress: () => void;
     showBadge?: boolean;
 }) {
-    // Only query pending count when badge is needed to avoid unnecessary requests
+    const { colorScheme } = useColorScheme();
     const pendingCount = useQuery(
         api.friends.pendingRequestCount,
         showBadge ? {} : "skip"
@@ -94,19 +98,24 @@ function TabButton({
     return (
         <Pressable
             onPress={onPress}
-            className={`flex-1 py-2.5 px-3 rounded-xl items-center ${
+            className={`flex-1 py-3 rounded-xl items-center ${
                 isActive ? "bg-primary" : "bg-muted"
             }`}>
             <View className="flex-row items-center gap-1.5">
+                <Icon
+                    name={icon}
+                    size={16}
+                    color={isActive ? "white" : NAV_THEME[colorScheme].text}
+                />
                 <Text
-                    className={`font-medium ${
+                    className={`font-medium text-sm ${
                         isActive ? "text-white" : "text-foreground"
                     }`}>
                     {label}
                 </Text>
                 {hasPending && (
-                    <View className="items-center justify-center w-5 h-5 bg-red-500 rounded-full">
-                        <Text className="text-xs font-semibold text-white">
+                    <View className="items-center justify-center w-5 h-5 ml-1 bg-red-500 rounded-full">
+                        <Text className="text-xs font-bold text-white">
                             {pendingCount > 9 ? "9+" : pendingCount}
                         </Text>
                     </View>
@@ -120,7 +129,6 @@ function FriendsList() {
     const friends = useQuery(api.friends.list);
     const removeFriend = useMutation(api.friends.removeFriend);
     const [removingId, setRemovingId] = useState<string | null>(null);
-
     const { colorScheme } = useColorScheme();
 
     const isLoading = friends === undefined;
@@ -166,12 +174,15 @@ function FriendsList() {
     if (!friends || friends.length === 0) {
         return (
             <View className="items-center justify-center flex-1 px-6">
-                <Icon name="User" size={64} color="#666" />
-                <Text className="mt-4 text-lg font-medium text-center text-foreground">
+                <View className="items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-green-500/10">
+                    <Icon name="Users" size={40} color="#22c55e" />
+                </View>
+                <Text className="text-lg font-semibold text-foreground">
                     No friends yet
                 </Text>
                 <Text className="mt-2 text-center text-muted-foreground">
-                    Search for people to add them as friends
+                    Search for people to add them as friends and start ordering
+                    together
                 </Text>
             </View>
         );
@@ -181,22 +192,49 @@ function FriendsList() {
         <ScrollView
             className="flex-1 px-4"
             contentContainerStyle={{ paddingBottom: 20 }}>
-            {friends.map((friend) => (
-                <FriendCard
-                    key={friend.id}
-                    id={friend.id}
-                    firstName={friend.firstName}
-                    lastName={friend.lastName}
-                    avatarUrl={friend.avatarUrl}
-                    onRemove={() =>
-                        handleRemoveFriend(
-                            friend.id,
-                            `${friend.firstName} ${friend.lastName}`
-                        )
-                    }
-                    isRemoving={removingId === friend.id}
-                />
-            ))}
+            <View className="gap-3">
+                {friends.map((friend) => (
+                    <View
+                        key={friend.id}
+                        className="flex-row items-center p-4 border rounded-xl border-muted bg-card">
+                        <Avatar
+                            name={`${friend.firstName} ${friend.lastName}`}
+                            avatarUrl={friend.avatarUrl}
+                            size={52}
+                        />
+                        <View className="flex-1 ml-3">
+                            <Text className="text-base font-semibold text-foreground">
+                                {friend.firstName} {friend.lastName}
+                            </Text>
+                            <View className="flex-row items-center gap-1 mt-1">
+                                <Icon
+                                    name="UserCheck"
+                                    size={12}
+                                    color="#22c55e"
+                                />
+                                <Text className="text-sm text-green-500">
+                                    Friends
+                                </Text>
+                            </View>
+                        </View>
+                        <Pressable
+                            onPress={() =>
+                                handleRemoveFriend(
+                                    friend.id,
+                                    `${friend.firstName} ${friend.lastName}`
+                                )
+                            }
+                            disabled={removingId === friend.id}
+                            className="items-center justify-center w-10 h-10 rounded-xl bg-red-500/10 active:opacity-70">
+                            {removingId === friend.id ? (
+                                <ActivityIndicator size="small" color="#ef4444" />
+                            ) : (
+                                <Icon name="UserMinus" size={20} color="#ef4444" />
+                            )}
+                        </Pressable>
+                    </View>
+                ))}
+            </View>
         </ScrollView>
     );
 }
@@ -206,7 +244,6 @@ function FriendRequests() {
     const acceptRequest = useMutation(api.friends.acceptRequest);
     const rejectRequest = useMutation(api.friends.rejectRequest);
     const [processingId, setProcessingId] = useState<string | null>(null);
-
     const { colorScheme } = useColorScheme();
 
     const isLoading = requests === undefined;
@@ -247,8 +284,10 @@ function FriendRequests() {
     if (!requests || requests.length === 0) {
         return (
             <View className="items-center justify-center flex-1 px-6">
-                <Icon name="Mail" size={64} color="#666" />
-                <Text className="mt-4 text-lg font-medium text-center text-foreground">
+                <View className="items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-orange-500/10">
+                    <Icon name="Bell" size={40} color="#f97316" />
+                </View>
+                <Text className="text-lg font-semibold text-foreground">
                     No pending requests
                 </Text>
                 <Text className="mt-2 text-center text-muted-foreground">
@@ -262,15 +301,72 @@ function FriendRequests() {
         <ScrollView
             className="flex-1 px-4"
             contentContainerStyle={{ paddingBottom: 20 }}>
-            {requests.map((request) => (
-                <RequestCard
-                    key={request.id}
-                    request={request}
-                    onAccept={() => handleAccept(request.id)}
-                    onReject={() => handleReject(request.id)}
-                    isProcessing={processingId === request.id}
-                />
-            ))}
+            <View className="gap-3">
+                {requests.map((request) => {
+                    if (!request.sender) return null;
+
+                    const fullName = `${request.sender.firstName} ${request.sender.lastName}`;
+
+                    return (
+                        <View
+                            key={request.id}
+                            className="p-4 border rounded-xl border-muted bg-card">
+                            <View className="flex-row items-center">
+                                <View className="relative">
+                                    <Avatar
+                                        name={fullName}
+                                        avatarUrl={request.sender.avatarUrl}
+                                        size={52}
+                                    />
+                                    <View className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full items-center justify-center border-2 border-card bg-primary">
+                                        <Icon name="UserPlus" size={10} color="white" />
+                                    </View>
+                                </View>
+                                <View className="flex-1 ml-3">
+                                    <Text className="text-base font-semibold text-foreground">
+                                        {fullName}
+                                    </Text>
+                                    <Text className="mt-0.5 text-sm text-muted-foreground">
+                                        Wants to be your friend
+                                    </Text>
+                                </View>
+                            </View>
+                            <View className="flex-row gap-3 mt-4">
+                                <TouchableOpacity
+                                    onPress={() => handleReject(request.id)}
+                                    disabled={processingId === request.id}
+                                    className="flex-1 flex-row items-center justify-center gap-2 py-3 border rounded-xl border-muted active:opacity-70">
+                                    {processingId === request.id ? (
+                                        <ActivityIndicator size="small" color="#666" />
+                                    ) : (
+                                        <>
+                                            <Icon name="X" size={16} color="#666" />
+                                            <Text className="font-medium text-foreground">
+                                                Decline
+                                            </Text>
+                                        </>
+                                    )}
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => handleAccept(request.id)}
+                                    disabled={processingId === request.id}
+                                    className="flex-1 flex-row items-center justify-center gap-2 py-3 rounded-xl bg-primary active:opacity-70">
+                                    {processingId === request.id ? (
+                                        <ActivityIndicator size="small" color="#fff" />
+                                    ) : (
+                                        <>
+                                            <Icon name="Check" size={16} color="white" />
+                                            <Text className="font-medium text-white">
+                                                Accept
+                                            </Text>
+                                        </>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    );
+                })}
+            </View>
         </ScrollView>
     );
 }
@@ -283,7 +379,6 @@ function SearchUsers() {
     );
     const sendRequest = useMutation(api.friends.sendRequest);
     const [sendingTo, setSendingTo] = useState<string | null>(null);
-
     const { colorScheme } = useColorScheme();
 
     const isSearching = searchQuery.length >= 2 && searchResults === undefined;
@@ -322,8 +417,13 @@ function SearchUsers() {
             {/* Search Results */}
             {searchQuery.length < 2 && (
                 <View className="items-center justify-center flex-1">
-                    <Icon name="Search" size={64} color="#666" />
-                    <Text className="mt-4 text-center text-muted-foreground">
+                    <View className="items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-blue-500/10">
+                        <Icon name="Search" size={40} color="#3b82f6" />
+                    </View>
+                    <Text className="text-lg font-semibold text-foreground">
+                        Find Friends
+                    </Text>
+                    <Text className="mt-2 text-center text-muted-foreground">
                         Enter at least 2 characters to search
                     </Text>
                 </View>
@@ -342,8 +442,10 @@ function SearchUsers() {
                 searchResults &&
                 searchResults.length === 0 && (
                     <View className="items-center justify-center flex-1">
-                        <Icon name="User" size={64} color="#666" />
-                        <Text className="mt-4 text-lg font-medium text-center text-foreground">
+                        <View className="items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-purple-500/10">
+                            <Icon name="UserX" size={40} color="#a855f7" />
+                        </View>
+                        <Text className="text-lg font-semibold text-foreground">
                             No users found
                         </Text>
                         <Text className="mt-2 text-center text-muted-foreground">
@@ -354,172 +456,68 @@ function SearchUsers() {
 
             {searchResults && searchResults.length > 0 && (
                 <ScrollView
-                    className="flex-1"
+                    className="flex-1 mt-4"
                     contentContainerStyle={{ paddingBottom: 20 }}>
-                    {searchResults.map((user) => (
-                        <SearchResultCard
-                            key={user.id}
-                            user={user}
-                            onSendRequest={() =>
-                                handleSendRequest(
-                                    user.id,
-                                    `${user.firstName} ${user.lastName}`
-                                )
-                            }
-                            isSending={sendingTo === user.id}
-                        />
-                    ))}
+                    <View className="gap-3">
+                        {searchResults.map((user) => {
+                            const fullName = `${user.firstName} ${user.lastName}`;
+
+                            return (
+                                <View
+                                    key={user.id}
+                                    className="flex-row items-center p-4 border rounded-xl border-muted bg-card">
+                                    <Avatar
+                                        name={fullName}
+                                        avatarUrl={user.avatarUrl}
+                                        size={52}
+                                    />
+                                    <View className="flex-1 ml-3">
+                                        <Text className="text-base font-semibold text-foreground">
+                                            {fullName}
+                                        </Text>
+                                        <View className="flex-row items-center gap-1 mt-1">
+                                            <Icon
+                                                name="Mail"
+                                                size={12}
+                                                color={NAV_THEME[colorScheme].border}
+                                            />
+                                            <Text
+                                                className="text-sm text-muted-foreground"
+                                                numberOfLines={1}>
+                                                {user.email}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <TouchableOpacity
+                                        onPress={() =>
+                                            handleSendRequest(user.id, fullName)
+                                        }
+                                        disabled={sendingTo === user.id}
+                                        className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl bg-primary active:opacity-70">
+                                        {sendingTo === user.id ? (
+                                            <ActivityIndicator
+                                                size="small"
+                                                color="#fff"
+                                            />
+                                        ) : (
+                                            <>
+                                                <Icon
+                                                    name="UserPlus"
+                                                    size={16}
+                                                    color="white"
+                                                />
+                                                <Text className="font-semibold text-white">
+                                                    Add
+                                                </Text>
+                                            </>
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                            );
+                        })}
+                    </View>
                 </ScrollView>
             )}
-        </View>
-    );
-}
-
-function FriendCard({
-    id,
-    firstName,
-    lastName,
-    avatarUrl,
-    onRemove,
-    isRemoving,
-}: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    avatarUrl?: string;
-    onRemove: () => void;
-    isRemoving: boolean;
-}) {
-    const fullName = `${firstName} ${lastName}`;
-
-    return (
-        <View className="flex-row items-center p-3 mb-3 border rounded-xl border-muted">
-            <Avatar name={fullName} avatarUrl={avatarUrl} size={48} />
-            <View className="flex-1 ml-3">
-                <Text className="text-base font-semibold text-foreground">
-                    {fullName}
-                </Text>
-            </View>
-            <Pressable
-                onPress={onRemove}
-                disabled={isRemoving}
-                className="p-2 rounded-lg active:opacity-70">
-                {isRemoving ? (
-                    <ActivityIndicator size="small" color="#ef4444" />
-                ) : (
-                    <Icon name="UserMinus" size={20} color="#ef4444" />
-                )}
-            </Pressable>
-        </View>
-    );
-}
-
-function RequestCard({
-    request,
-    onAccept,
-    onReject,
-    isProcessing,
-}: {
-    request: {
-        id: Id<"friendRequests">;
-        sender: {
-            id: Id<"users">;
-            firstName: string;
-            lastName: string;
-            avatarUrl?: string;
-        } | null;
-    };
-    onAccept: () => void;
-    onReject: () => void;
-    isProcessing: boolean;
-}) {
-    if (!request.sender) return null;
-
-    const fullName = `${request.sender.firstName} ${request.sender.lastName}`;
-
-    return (
-        <View className="p-3 mb-3 border rounded-xl border-muted">
-            <View className="flex-row items-center">
-                <Avatar
-                    name={fullName}
-                    avatarUrl={request.sender.avatarUrl}
-                    size={48}
-                />
-                <View className="flex-1 ml-3">
-                    <Text className="text-base font-semibold text-foreground">
-                        {fullName}
-                    </Text>
-                    <Text className="text-sm text-muted-foreground">
-                        Sent you a friend request
-                    </Text>
-                </View>
-            </View>
-            <View className="flex-row gap-3 mt-3">
-                <Pressable
-                    onPress={onReject}
-                    disabled={isProcessing}
-                    className="flex-1 py-2.5 rounded-xl border border-muted items-center active:opacity-70">
-                    {isProcessing ? (
-                        <ActivityIndicator size="small" color="#666" />
-                    ) : (
-                        <Text className="font-medium text-foreground">
-                            Decline
-                        </Text>
-                    )}
-                </Pressable>
-                <Pressable
-                    onPress={onAccept}
-                    disabled={isProcessing}
-                    className="flex-1 py-2.5 rounded-xl bg-primary items-center active:opacity-70">
-                    {isProcessing ? (
-                        <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                        <Text className="font-medium text-white">Accept</Text>
-                    )}
-                </Pressable>
-            </View>
-        </View>
-    );
-}
-
-function SearchResultCard({
-    user,
-    onSendRequest,
-    isSending,
-}: {
-    user: {
-        id: Id<"users">;
-        firstName: string;
-        lastName: string;
-        email: string;
-        avatarUrl?: string;
-    };
-    onSendRequest: () => void;
-    isSending: boolean;
-}) {
-    const fullName = `${user.firstName} ${user.lastName}`;
-
-    return (
-        <View className="flex-row items-center p-3 mb-3 border rounded-xl border-muted">
-            <Avatar name={fullName} avatarUrl={user.avatarUrl} size={48} />
-            <View className="flex-1 ml-3">
-                <Text className="text-base font-semibold text-foreground">
-                    {fullName}
-                </Text>
-                <Text className="text-sm text-muted-foreground">
-                    {user.email}
-                </Text>
-            </View>
-            <Pressable
-                onPress={onSendRequest}
-                disabled={isSending}
-                className="px-4 py-2 rounded-xl bg-primary active:opacity-70">
-                {isSending ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                    <Text className="font-medium text-white">Add</Text>
-                )}
-            </Pressable>
         </View>
     );
 }
@@ -527,7 +525,7 @@ function SearchResultCard({
 function Avatar({
     name,
     avatarUrl,
-    size = 48,
+    size = 52,
 }: {
     name: string;
     avatarUrl?: string;
@@ -543,6 +541,13 @@ function Avatar({
         );
     }
 
+    const initials = name
+        .split(" ")
+        .map((n) => n.charAt(0))
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+
     return (
         <View
             style={{
@@ -554,7 +559,7 @@ function Avatar({
             <Text
                 className="font-semibold text-muted-foreground"
                 style={{ fontSize: size * 0.35 }}>
-                {name.slice(0, 2).toUpperCase()}
+                {initials || "U"}
             </Text>
         </View>
     );

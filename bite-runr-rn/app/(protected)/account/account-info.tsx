@@ -9,13 +9,13 @@ import {
     ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
+    TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Input } from "@/components/common/input";
-import { Button } from "@/components/common/button";
 import * as ImagePicker from "expo-image-picker";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
@@ -86,7 +86,6 @@ export default function AccountInfoScreen() {
     };
 
     const pickImage = async () => {
-        // Request permission
         const permissionResult =
             await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -98,7 +97,6 @@ export default function AccountInfoScreen() {
             return;
         }
 
-        // Launch image picker
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ["images"],
             allowsEditing: true,
@@ -114,14 +112,10 @@ export default function AccountInfoScreen() {
     const uploadAvatar = async (imageUri: string) => {
         setIsUploadingAvatar(true);
         try {
-            // Get upload URL from Convex
             const uploadUrl = await generateUploadUrl();
-
-            // Fetch the image and convert to blob
             const response = await fetch(imageUri);
             const blob = await response.blob();
 
-            // Upload to Convex storage
             const uploadResponse = await fetch(uploadUrl, {
                 method: "POST",
                 headers: {
@@ -140,9 +134,7 @@ export default function AccountInfoScreen() {
             }
             const { storageId } = responseData;
 
-            // Save the storage ID to the user's profile
             await updateAvatar({ storageId: storageId as Id<"_storage"> });
-
             Alert.alert("Success", "Your avatar has been updated");
         } catch (error: any) {
             console.error("Avatar upload error:", error);
@@ -247,8 +239,14 @@ export default function AccountInfoScreen() {
                     </Text>
                 </View>
                 <View className="items-center justify-center flex-1 px-6">
-                    <Icon name="User" size={64} color="#666" />
-                    <Text className="mt-4 text-lg font-medium text-center text-foreground">
+                    <View className="items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-muted">
+                        <Icon
+                            name="User"
+                            size={40}
+                            color={NAV_THEME[colorScheme].border}
+                        />
+                    </View>
+                    <Text className="text-lg font-semibold text-foreground">
                         Not signed in
                     </Text>
                     <Text className="mt-2 text-center text-muted-foreground">
@@ -283,9 +281,10 @@ export default function AccountInfoScreen() {
                 <ScrollView
                     className="flex-1"
                     contentContainerStyle={{ padding: 16 }}
-                    keyboardShouldPersistTaps="handled">
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}>
                     {/* Avatar Section */}
-                    <View className="items-center mb-6">
+                    <View className="items-center p-6 mb-6 border rounded-2xl border-muted bg-card">
                         <Pressable
                             onPress={showAvatarOptions}
                             disabled={isUploadingAvatar}
@@ -293,37 +292,30 @@ export default function AccountInfoScreen() {
                             {user.avatarUrl ? (
                                 <Image
                                     source={{ uri: user.avatarUrl }}
-                                    className="rounded-full w-28 h-28"
+                                    className="w-32 h-32 rounded-full"
                                     resizeMode="cover"
                                 />
                             ) : (
-                                <View className="items-center justify-center rounded-full w-28 h-28 bg-muted">
+                                <View className="items-center justify-center w-32 h-32 rounded-full bg-primary/10">
                                     <Text
-                                        style={{ fontSize: 36 }}
-                                        className="font-semibold text-muted-foreground">
+                                        style={{ fontSize: 48 }}
+                                        className="font-bold text-primary">
                                         {getInitials()}
                                     </Text>
                                 </View>
                             )}
 
                             {/* Camera overlay */}
-                            <View className="absolute bottom-0 right-0 items-center justify-center rounded-full w-9 h-9 bg-primary">
+                            <View className="absolute bottom-0 right-0 items-center justify-center border-4 rounded-full w-11 h-11 bg-primary border-card">
                                 {isUploadingAvatar ? (
-                                    <ActivityIndicator
-                                        size="small"
-                                        color="#fff"
-                                    />
+                                    <ActivityIndicator size="small" color="#fff" />
                                 ) : (
-                                    <Icon
-                                        name="Camera"
-                                        size={18}
-                                        color="#fff"
-                                    />
+                                    <Icon name="Camera" size={20} color="#fff" />
                                 )}
                             </View>
                         </Pressable>
 
-                        <Text className="mt-3 text-sm text-center text-muted-foreground">
+                        <Text className="mt-4 text-sm text-muted-foreground">
                             Tap to change your profile photo
                         </Text>
                     </View>
@@ -331,77 +323,115 @@ export default function AccountInfoScreen() {
                     {/* Form Fields */}
                     <View className="gap-4">
                         {/* First Name */}
-                        <View>
-                            <Text className="mb-2 text-sm font-medium text-muted-foreground">
-                                First Name
-                            </Text>
+                        <View className="p-4 border rounded-xl border-muted bg-card">
+                            <View className="flex-row items-center gap-2 mb-3">
+                                <View className="items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10">
+                                    <Icon name="User" size={16} color="#3b82f6" />
+                                </View>
+                                <Text className="text-sm font-medium text-muted-foreground">
+                                    First Name
+                                </Text>
+                            </View>
                             <Input
                                 value={firstName}
                                 onChangeText={setFirstName}
                                 placeholder="Enter your first name"
-                                leftIcon="User"
                                 errorMessage={null}
                                 autoCapitalize="words"
                             />
                         </View>
 
                         {/* Last Name */}
-                        <View>
-                            <Text className="mb-2 text-sm font-medium text-muted-foreground">
-                                Last Name
-                            </Text>
+                        <View className="p-4 border rounded-xl border-muted bg-card">
+                            <View className="flex-row items-center gap-2 mb-3">
+                                <View className="items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10">
+                                    <Icon name="User" size={16} color="#3b82f6" />
+                                </View>
+                                <Text className="text-sm font-medium text-muted-foreground">
+                                    Last Name
+                                </Text>
+                            </View>
                             <Input
                                 value={lastName}
                                 onChangeText={setLastName}
                                 placeholder="Enter your last name"
-                                leftIcon="User"
                                 errorMessage={null}
                                 autoCapitalize="words"
                             />
                         </View>
 
                         {/* Email (Read-only) */}
-                        <View>
-                            <Text className="mb-2 text-sm font-medium text-muted-foreground">
-                                Email Address
-                            </Text>
-                            <View className="flex-row items-center h-[55px] px-4 gap-3 rounded-2xl border border-muted bg-muted/30">
-                                <Icon name="Mail" size={18} color="#666" />
-                                <Text className="flex-1 text-lg text-foreground">
+                        <View className="p-4 border rounded-xl border-muted bg-card">
+                            <View className="flex-row items-center gap-2 mb-3">
+                                <View className="items-center justify-center w-8 h-8 rounded-lg bg-purple-500/10">
+                                    <Icon name="Mail" size={16} color="#a855f7" />
+                                </View>
+                                <Text className="text-sm font-medium text-muted-foreground">
+                                    Email Address
+                                </Text>
+                                <View className="flex-row items-center gap-1 px-2 py-0.5 ml-auto rounded-full bg-muted">
+                                    <Icon name="Lock" size={10} color="#6b7280" />
+                                    <Text className="text-xs text-muted-foreground">
+                                        Locked
+                                    </Text>
+                                </View>
+                            </View>
+                            <View className="flex-row items-center px-4 py-3.5 rounded-xl bg-muted/50">
+                                <Text className="flex-1 text-base text-foreground">
                                     {user.email}
                                 </Text>
-                                <Icon name="Lock" size={18} color="#666" />
                             </View>
-                            <Text className="mt-1 text-xs text-muted-foreground">
-                                Email cannot be changed
-                            </Text>
                         </View>
                     </View>
 
                     {/* Save Button */}
-                    <View className="mt-8">
-                        <Button
-                            label="Save Changes"
-                            onPress={handleSave}
-                            loading={isSaving}
-                            disabled={!hasChanges}
-                            icon="Check"
-                        />
-                    </View>
+                    <TouchableOpacity
+                        onPress={handleSave}
+                        disabled={!hasChanges || isSaving}
+                        className={`flex-row items-center justify-center gap-2 py-4 mt-6 rounded-xl ${
+                            !hasChanges || isSaving ? "bg-muted opacity-60" : "bg-primary"
+                        }`}>
+                        {isSaving ? (
+                            <ActivityIndicator size="small" color="#6b7280" />
+                        ) : (
+                            <>
+                                <Icon
+                                    name="Check"
+                                    size={20}
+                                    color={hasChanges ? "white" : "#6b7280"}
+                                />
+                                <Text
+                                    className={`font-semibold ${
+                                        hasChanges
+                                            ? "text-white"
+                                            : "text-muted-foreground"
+                                    }`}>
+                                    Save Changes
+                                </Text>
+                            </>
+                        )}
+                    </TouchableOpacity>
 
                     {/* Account Info */}
                     <View className="items-center mt-8">
-                        <Text className="text-xs text-muted-foreground">
-                            Member since{" "}
-                            {user._creationTime
-                                ? new Date(
-                                      user._creationTime
-                                  ).toLocaleDateString("en-US", {
-                                      month: "long",
-                                      year: "numeric",
-                                  })
-                                : "Unknown"}
-                        </Text>
+                        <View className="flex-row items-center gap-1.5">
+                            <Icon
+                                name="Calendar"
+                                size={14}
+                                color={NAV_THEME[colorScheme].border}
+                            />
+                            <Text className="text-sm text-muted-foreground">
+                                Member since{" "}
+                                {user._creationTime
+                                    ? new Date(
+                                          user._creationTime
+                                      ).toLocaleDateString("en-US", {
+                                          month: "long",
+                                          year: "numeric",
+                                      })
+                                    : "Unknown"}
+                            </Text>
+                        </View>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
