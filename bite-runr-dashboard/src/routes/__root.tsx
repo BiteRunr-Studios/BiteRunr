@@ -11,8 +11,11 @@ const themeScript = `
 (function() {
   const theme = localStorage.getItem('theme') || 'dark';
   const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  if (theme === 'dark' || (theme === 'system' && systemDark)) {
+  const shouldBeDark = theme === 'dark' || (theme === 'system' && systemDark);
+  if (shouldBeDark) {
     document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
   }
 })();
 `
@@ -55,24 +58,26 @@ function RootComponent() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <HeadContent />
       </head>
       <body>
         {children}
-        <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
+        {import.meta.env.DEV && (
+          <TanStackDevtools
+            config={{
+              position: 'bottom-right',
+            }}
+            plugins={[
+              {
+                name: 'Tanstack Router',
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+            ]}
+          />
+        )}
         <Scripts />
       </body>
     </html>

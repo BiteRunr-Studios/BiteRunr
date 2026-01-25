@@ -158,9 +158,13 @@ function LocationDetailPage() {
     });
   };
 
+  const allFilteredSelected = filteredItems?.every((item) =>
+    selectedItemIds.has(item._id)
+  );
+
   const toggleSelectAllItems = () => {
     if (!filteredItems) return;
-    if (selectedItemIds.size === filteredItems.length) {
+    if (allFilteredSelected) {
       setSelectedItemIds(new Set());
     } else {
       setSelectedItemIds(new Set(filteredItems.map((item) => item._id)));
@@ -378,10 +382,7 @@ function LocationDetailPage() {
                 {filteredItems && filteredItems.length > 0 && (
                   <div className="flex items-center gap-2">
                     <Checkbox
-                      checked={
-                        filteredItems.length > 0 &&
-                        selectedItemIds.size === filteredItems.length
-                      }
+                      checked={filteredItems.length > 0 && allFilteredSelected}
                       onCheckedChange={toggleSelectAllItems}
                     />
                     <span className="text-sm text-muted-foreground">

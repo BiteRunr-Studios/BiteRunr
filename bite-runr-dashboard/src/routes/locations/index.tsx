@@ -24,7 +24,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, Trash2, MapPin, Search, X } from 'lucide-react'
+import { Plus, Trash2, Search, X } from 'lucide-react'
 import { useState } from 'react'
 import type { Id } from '../../../convex/_generated/dataModel'
 
@@ -58,6 +58,8 @@ function LocationsPage() {
       await createLocation({ name: newName.trim() })
       setNewName('')
       setShowCreate(false)
+    } catch (error) {
+      console.error('Failed to create location:', error)
     } finally {
       setIsCreating(false)
     }
@@ -73,6 +75,8 @@ function LocationsPage() {
     try {
       await deleteLocations({ ids: Array.from(selectedIds) })
       setSelectedIds(new Set())
+    } catch (error) {
+      console.error('Failed to delete locations:', error)
     } finally {
       setIsDeleting(false)
     }
@@ -90,9 +94,13 @@ function LocationsPage() {
     })
   }
 
+  const allFilteredSelected = filteredLocations?.every((loc) =>
+    selectedIds.has(loc._id)
+  )
+
   const toggleSelectAll = () => {
     if (!filteredLocations) return
-    if (selectedIds.size === filteredLocations.length) {
+    if (allFilteredSelected) {
       setSelectedIds(new Set())
     } else {
       setSelectedIds(new Set(filteredLocations.map((loc) => loc._id)))
@@ -137,10 +145,7 @@ function LocationsPage() {
           {filteredLocations && filteredLocations.length > 0 && (
             <div className="flex items-center gap-2">
               <Checkbox
-                checked={
-                  filteredLocations.length > 0 &&
-                  selectedIds.size === filteredLocations.length
-                }
+                checked={filteredLocations.length > 0 && allFilteredSelected}
                 onCheckedChange={toggleSelectAll}
               />
               <span className="text-sm text-muted-foreground">Select all</span>
