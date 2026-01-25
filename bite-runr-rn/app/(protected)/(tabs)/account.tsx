@@ -39,15 +39,6 @@ type Item = {
 
 const items: Item[] = [
     {
-        key: "personal",
-        title: "Personal Information",
-        subtitle: "View & edit account details",
-        icon: "User",
-        iconBg: "bg-blue-500/10",
-        iconColor: "#3b82f6",
-        href: "/account/account-info",
-    },
-    {
         key: "friends",
         title: "Friends",
         subtitle: "View, make & manage friends",
@@ -112,7 +103,10 @@ export default function AccountTab() {
 
     const getInitials = () => {
         if (!user) return "U";
-        return `${(user.firstName || "").charAt(0)}${(user.lastName || "").charAt(0)}`.toUpperCase() || "U";
+        return (
+            `${(user.firstName || "").charAt(0)}${(user.lastName || "").charAt(0)}`.toUpperCase() ||
+            "U"
+        );
     };
 
     return (
@@ -138,7 +132,9 @@ export default function AccountTab() {
                         <>
                             {/* Profile Card */}
                             <Pressable
-                                onPress={() => router.push("/account/account-info")}
+                                onPress={() =>
+                                    router.push("/account/account-info")
+                                }
                                 className="p-5 mb-6 border rounded-2xl border-muted bg-card active:opacity-90">
                                 <View className="flex-row items-center">
                                     <View className="relative">
@@ -153,11 +149,12 @@ export default function AccountTab() {
                                                 <Text
                                                     style={{ fontSize: 28 }}
                                                     className="font-bold text-primary">
-                                                    {getInitials()}
+                                                    {`${(user.firstName || "").charAt(0)}${(user.lastName || "").charAt(0)}`.toUpperCase() ||
+                                                        "U"}
                                                 </Text>
                                             </View>
                                         )}
-                                        <View className="absolute bottom-0 right-0 items-center justify-center w-7 h-7 border-2 rounded-full bg-primary border-card">
+                                        <View className="absolute bottom-0 right-0 items-center justify-center border-2 rounded-full w-7 h-7 bg-primary border-card">
                                             <Icon
                                                 name="Pencil"
                                                 size={12}
@@ -173,7 +170,10 @@ export default function AccountTab() {
                                             <Icon
                                                 name="Mail"
                                                 size={14}
-                                                color={NAV_THEME[colorScheme].border}
+                                                color={
+                                                    NAV_THEME[colorScheme]
+                                                        .border
+                                                }
                                             />
                                             <Text
                                                 className="text-sm text-muted-foreground"
@@ -185,12 +185,15 @@ export default function AccountTab() {
                                             <Icon
                                                 name="Calendar"
                                                 size={14}
-                                                color={NAV_THEME[colorScheme].border}
+                                                color={
+                                                    NAV_THEME[colorScheme]
+                                                        .border
+                                                }
                                             />
                                             <Text className="text-sm text-muted-foreground">
                                                 Member since{" "}
                                                 {new Date(
-                                                    user._creationTime
+                                                    user._creationTime,
                                                 ).toLocaleDateString("en-US", {
                                                     month: "short",
                                                     year: "numeric",
@@ -211,7 +214,9 @@ export default function AccountTab() {
                                 {items.map((item) => (
                                     <Pressable
                                         key={item.key}
-                                        onPress={() => router.push(item.href as any)}
+                                        onPress={() =>
+                                            router.push(item.href as any)
+                                        }
                                         className="flex-row items-center p-4 border rounded-xl border-muted bg-card active:opacity-90">
                                         <View
                                             className={`items-center justify-center w-12 h-12 rounded-xl ${item.iconBg}`}>
@@ -232,7 +237,9 @@ export default function AccountTab() {
                                         <Icon
                                             name="ChevronRight"
                                             size={20}
-                                            color={NAV_THEME[colorScheme].border}
+                                            color={
+                                                NAV_THEME[colorScheme].border
+                                            }
                                         />
                                     </Pressable>
                                 ))}
@@ -283,7 +290,7 @@ function ProfileSkeleton() {
                 easing: Easing.inOut(Easing.ease),
             }),
             -1,
-            true
+            true,
         );
     }, [sweep]);
 

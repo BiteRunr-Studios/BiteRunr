@@ -1,12 +1,12 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
-import { auth } from "./auth";
+import { getUserId } from "./authHelper";
 
 // List all locations
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     return await ctx.db.query("locations").withIndex("by_name").collect();
@@ -28,7 +28,7 @@ export const create = mutation({
     address: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     return await ctx.db.insert("locations", {

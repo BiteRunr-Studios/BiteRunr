@@ -13,10 +13,10 @@ import {
 } from "@react-navigation/native";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
-import { ConvexProvider, ConvexReactClient } from "convex/react";
-import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { ConvexReactClient } from "convex/react";
+import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { AuthProvider } from "@/lib/convex-auth-context";
-import * as SecureStore from "expo-secure-store";
+import { authClient } from "@/lib/auth-client";
 import "../global.css";
 
 const LIGHT_THEME: Theme = { ...DefaultTheme, colors: NAV_THEME.light };
@@ -56,22 +56,6 @@ const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
     logger: convexLogger,
 });
 
-// Secure storage adapter - uses encrypted storage on native, no persistence on web
-const secureStorageAdapter =
-    Platform.OS === "web"
-        ? undefined // Don't persist auth tokens on web (use in-memory)
-        : {
-              getItem: async (key: string) => {
-                  return await SecureStore.getItemAsync(key);
-              },
-              setItem: async (key: string, value: string) => {
-                  await SecureStore.setItemAsync(key, value);
-              },
-              removeItem: async (key: string) => {
-                  await SecureStore.deleteItemAsync(key);
-              },
-          };
-
 export default function RootLayout() {
     const { colorScheme } = useColorScheme();
 
@@ -88,36 +72,34 @@ export default function RootLayout() {
     }, [colorScheme]);
 
     return (
-        <ConvexProvider client={convex}>
-            <ConvexAuthProvider client={convex} storage={secureStorageAdapter}>
-                <AuthProvider>
-                    <ThemeProvider
-                        value={colorScheme == "dark" ? DARK_THEME : LIGHT_THEME}
-                    >
-                        <SafeAreaProvider>
-                            <StatusBar style="auto" />
-                            <GestureHandlerRootView style={{ flex: 1 }}>
-                                <Stack screenOptions={{ headerShown: false }}>
-                                    <Stack.Screen
-                                        name="(protected)"
-                                        options={{
-                                            headerShown: false,
-                                        }}
-                                    />
-                                    <Stack.Screen
-                                        name="(auth)"
-                                        options={{
-                                            headerShown: false,
-                                            animation: "slide_from_left",
-                                            animationTypeForReplace: "pop",
-                                        }}
-                                    />
-                                </Stack>
-                            </GestureHandlerRootView>
-                        </SafeAreaProvider>
-                    </ThemeProvider>
-                </AuthProvider>
-            </ConvexAuthProvider>
-        </ConvexProvider>
+        <ConvexBetterAuthProvider client={convex} authClient={authClient}>
+            <AuthProvider>
+                <ThemeProvider
+                    value={colorScheme == "dark" ? DARK_THEME : LIGHT_THEME}
+                >
+                    <SafeAreaProvider>
+                        <StatusBar style="auto" />
+                        <GestureHandlerRootView style={{ flex: 1 }}>
+                            <Stack screenOptions={{ headerShown: false }}>
+                                <Stack.Screen
+                                    name="(protected)"
+                                    options={{
+                                        headerShown: false,
+                                    }}
+                                />
+                                <Stack.Screen
+                                    name="(auth)"
+                                    options={{
+                                        headerShown: false,
+                                        animation: "slide_from_left",
+                                        animationTypeForReplace: "pop",
+                                    }}
+                                />
+                            </Stack>
+                        </GestureHandlerRootView>
+                    </SafeAreaProvider>
+                </ThemeProvider>
+            </AuthProvider>
+        </ConvexBetterAuthProvider>
     );
 }

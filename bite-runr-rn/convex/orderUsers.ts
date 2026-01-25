@@ -1,13 +1,13 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
-import { auth } from "./auth";
+import { getUserId } from "./authHelper";
 import { orderUserStatusValidator } from "./schema";
 
 // Get the current user's orderUser for a specific order
 export const getForOrder = query({
   args: { orderId: v.id("orders") },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return null;
 
     return await ctx.db
@@ -26,7 +26,7 @@ export const setStatus = mutation({
     status: orderUserStatusValidator,
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     const orderUser = await ctx.db
@@ -52,7 +52,7 @@ export const updateAmountOwed = mutation({
     amountOwed: v.int64(), // Amount in cents (must be non-negative integer)
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     // Validate amountOwed is non-negative (bigints are always integers)

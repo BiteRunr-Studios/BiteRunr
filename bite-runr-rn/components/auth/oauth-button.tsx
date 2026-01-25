@@ -1,18 +1,10 @@
-// components/OAuthButton.tsx
-import React, {
-    useCallback,
-    useMemo,
-    useState,
-    useEffect,
-    useRef,
-    useContext,
-} from "react";
-import { Alert, Pressable, Text, Animated } from "react-native";
+import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import { Pressable, Text, Animated, Alert } from "react-native";
 import { Flow } from "react-native-animated-spinkit";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { NAV_THEME } from "@/lib/constants";
-import { AuthContext } from "@/lib/convex-auth-context";
 import { Ionicons } from "@expo/vector-icons";
+import { authClient } from "@/lib/auth-client";
 
 type OAuthProvider = "github" | "google";
 
@@ -21,6 +13,10 @@ type OAuthButtonProps = {
     label?: string;
     disabled?: boolean;
     className?: string;
+    // Note: No onSuccess callback because signIn.social() opens a browser and returns
+    // immediately. Actual OAuth completion happens via deep link callback, so consumers
+    // should use auth context/state changes to react to successful authentication.
+    onError?: (error: Error) => void;
 };
 
 export const OAuthButton: React.FC<OAuthButtonProps> = ({
@@ -28,9 +24,9 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
     label,
     disabled,
     className,
+    onError,
 }) => {
     const { colorScheme } = useColorScheme();
-    const { signIn } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
 
     const defaultLabel = useMemo(() => {
@@ -64,28 +60,38 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
                 useNativeDriver: false,
             }),
         ]).start();
-    }, [loading]);
+    }, [loading, spinnerWidth, spinnerOpacity]);
 
-    const startOAuth = useCallback(async () => {
+    const handleOAuthPress = useCallback(async () => {
         if (isDisabled) return;
+
+        setLoading(true);
         try {
-            setLoading(true);
-            await signIn(provider);
-            // Navigation is handled by auth state change in the protected layout
-        } catch (e: any) {
-            const msg = e?.message ?? "Something went wrong.";
-            // Don't show alert for user cancellation
-            if (!msg.includes("cancelled")) {
-                Alert.alert("Error", msg);
-            }
+            // signIn.social() opens browser and returns immediately
+            // The actual auth completion happens via deep link callback
+            // User sync will be handled by the protected layout
+            await authClient.signIn.social({
+                provider,
+                callbackURL: "/(protected)/(tabs)",
+            });
+            // Note: Code here runs BEFORE OAuth completes in the browser
+            // The session and user sync are handled when the app receives the callback
+        } catch (error) {
+            console.error(`${provider} OAuth error:`, error);
+            const err = error instanceof Error ? error : new Error(String(error));
+            onError?.(err);
+            Alert.alert(
+                "Sign In Failed",
+                `Unable to sign in with ${provider === "google" ? "Google" : "GitHub"}. Please try again.`
+            );
         } finally {
             setLoading(false);
         }
-    }, [provider, disabled, loading, signIn]);
+    }, [isDisabled, provider, onError]);
 
     return (
         <Pressable
-            onPress={startOAuth}
+            onPress={handleOAuthPress}
             disabled={isDisabled}
             className={
                 className ??

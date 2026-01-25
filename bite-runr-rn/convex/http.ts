@@ -1,31 +1,40 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { auth } from "./auth";
+import { authComponent, createAuth } from "./auth";
 
 const http = httpRouter();
 
-auth.addHttpRoutes(http);
+// Mount Better Auth routes using the Convex adapter
+authComponent.registerRoutes(http, createAuth, {
+    cors: {
+        allowedOrigins: [
+            "biterunr://",
+            "exp://",
+            ...(process.env.SITE_URL ? [process.env.SITE_URL] : []),
+        ],
+    },
+});
 
 // Mobile OAuth callback page - captures the auth code and redirects to the app
 http.route({
-  path: "/mobile-callback",
-  method: "GET",
-  handler: httpAction(async (_, request) => {
-    const url = new URL(request.url);
-    const code = url.searchParams.get("code");
-    const error = url.searchParams.get("error");
+    path: "/mobile-callback",
+    method: "GET",
+    handler: httpAction(async (_, request) => {
+        const url = new URL(request.url);
+        const code = url.searchParams.get("code");
+        const error = url.searchParams.get("error");
 
-    // Build the app redirect URL with the code
-    const appUrl = new URL("biterunr://oauth");
-    if (code) {
-      appUrl.searchParams.set("code", code);
-    }
-    if (error) {
-      appUrl.searchParams.set("error", error);
-    }
+        // Build the app redirect URL with the code
+        const appUrl = new URL("biterunr://oauth");
+        if (code) {
+            appUrl.searchParams.set("code", code);
+        }
+        if (error) {
+            appUrl.searchParams.set("error", error);
+        }
 
-    // Return an HTML page that redirects to the app
-    const html = `
+        // Return an HTML page that redirects to the app
+        const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -76,11 +85,11 @@ http.route({
 </body>
 </html>`;
 
-    return new Response(html, {
-      status: 200,
-      headers: { "Content-Type": "text/html" },
-    });
-  }),
+        return new Response(html, {
+            status: 200,
+            headers: { "Content-Type": "text/html" },
+        });
+    }),
 });
 
 export default http;

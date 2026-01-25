@@ -227,7 +227,12 @@ export default function OrderSummary() {
                                                 </Text>
                                                 {item.priceInCents !== null && (
                                                     <Text className="text-sm text-muted-foreground">
-                                                        ${(item.priceInCents / 100).toFixed(2)} each
+                                                        $
+                                                        {(
+                                                            item.priceInCents /
+                                                            100
+                                                        ).toFixed(2)}{" "}
+                                                        each
                                                     </Text>
                                                 )}
                                             </View>
@@ -269,12 +274,17 @@ export default function OrderSummary() {
                                                                 />
                                                                 <Text className="flex-1 text-sm italic text-muted-foreground">
                                                                     "
-                                                                    {subItem.comment}
+                                                                    {
+                                                                        subItem.comment
+                                                                    }
                                                                     "
                                                                 </Text>
                                                             </View>
                                                             <Text className="ml-2 text-sm text-muted-foreground">
-                                                                x{subItem.quantity}
+                                                                x
+                                                                {
+                                                                    subItem.quantity
+                                                                }
                                                             </Text>
                                                         </View>
                                                     ),
@@ -285,33 +295,48 @@ export default function OrderSummary() {
                                 ))}
 
                                 {/* Price Breakdown */}
-                                {currentLocationSummary.subtotalInCents !== null && (
+                                {currentLocationSummary.subtotalInCents !==
+                                    null && (
                                     <View className="p-4 mt-2 border rounded-2xl border-primary/30 bg-primary/5">
                                         <View className="flex-row items-center justify-between mb-2">
                                             <Text className="text-sm text-muted-foreground">
                                                 Subtotal
                                             </Text>
                                             <Text className="text-sm text-foreground">
-                                                ${(currentLocationSummary.subtotalInCents / 100).toFixed(2)}
+                                                $
+                                                {(
+                                                    currentLocationSummary.subtotalInCents /
+                                                    100
+                                                ).toFixed(2)}
                                             </Text>
                                         </View>
-                                        {currentLocationSummary.taxInCents !== null && (
+                                        {currentLocationSummary.taxInCents !==
+                                            null && (
                                             <View className="flex-row items-center justify-between mb-2">
                                                 <Text className="text-sm text-muted-foreground">
                                                     Tax
                                                 </Text>
                                                 <Text className="text-sm text-foreground">
-                                                    ${(currentLocationSummary.taxInCents / 100).toFixed(2)}
+                                                    $
+                                                    {(
+                                                        currentLocationSummary.taxInCents /
+                                                        100
+                                                    ).toFixed(2)}
                                                 </Text>
                                             </View>
                                         )}
-                                        {currentLocationSummary.totalInCents !== null && (
+                                        {currentLocationSummary.totalInCents !==
+                                            null && (
                                             <View className="flex-row items-center justify-between pt-2 border-t border-primary/20">
                                                 <Text className="text-base font-semibold text-foreground">
                                                     Total
                                                 </Text>
                                                 <Text className="text-base font-semibold text-primary">
-                                                    ${(currentLocationSummary.totalInCents / 100).toFixed(2)}
+                                                    $
+                                                    {(
+                                                        currentLocationSummary.totalInCents /
+                                                        100
+                                                    ).toFixed(2)}
                                                 </Text>
                                             </View>
                                         )}

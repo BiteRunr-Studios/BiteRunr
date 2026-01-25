@@ -45,6 +45,10 @@ export default function SpecificOrder() {
                 duration: 2000,
                 easing: Easing.inOut(Easing.ease),
             }),
+            withTiming(1, {
+                duration: 2000,
+                easing: Easing.inOut(Easing.ease),
+            }),
         ),
         -1,
         false,
@@ -232,9 +236,10 @@ export default function SpecificOrder() {
         );
     }
 
-    const progressPercent = data.completionStats && data.completionStats.total > 0
-        ? (data.completionStats.done / data.completionStats.total) * 100
-        : 0;
+    const progressPercent =
+        data.completionStats && data.completionStats.total > 0
+            ? (data.completionStats.done / data.completionStats.total) * 100
+            : 0;
 
     return (
         <>
@@ -303,7 +308,9 @@ export default function SpecificOrder() {
                                             ? "text-orange-500"
                                             : "text-primary"
                                     }`}>
-                                    {data.order.paused ? "In Progress" : "Ordering"}
+                                    {data.order.paused
+                                        ? "In Progress"
+                                        : "Ordering"}
                                 </Text>
                             </View>
                         </View>
@@ -406,7 +413,10 @@ export default function SpecificOrder() {
                                     <View className="relative">
                                         {orderUser.user?.avatarUrl ? (
                                             <Image
-                                                style={{ width: 48, height: 48 }}
+                                                style={{
+                                                    width: 48,
+                                                    height: 48,
+                                                }}
                                                 className="rounded-full"
                                                 source={{
                                                     uri: orderUser.user
@@ -415,7 +425,10 @@ export default function SpecificOrder() {
                                             />
                                         ) : (
                                             <View
-                                                style={{ width: 48, height: 48 }}
+                                                style={{
+                                                    width: 48,
+                                                    height: 48,
+                                                }}
                                                 className="items-center justify-center rounded-full bg-muted">
                                                 <Text className="text-lg font-semibold text-muted-foreground">
                                                     {`${(orderUser.user?.firstName || "").charAt(0)}${(orderUser.user?.lastName || "").charAt(0)}`.toUpperCase() ||
@@ -431,7 +444,9 @@ export default function SpecificOrder() {
                                                     : "bg-orange-400"
                                             }`}>
                                             <Icon
-                                                name={isDone ? "Check" : "Clock"}
+                                                name={
+                                                    isDone ? "Check" : "Clock"
+                                                }
                                                 size={10}
                                                 color="white"
                                             />
@@ -541,7 +556,11 @@ export default function SpecificOrder() {
                                             `/order/summary?orderId=${orderId}`,
                                         )
                                     }>
-                                    <Icon name="ClipboardList" size={20} color="white" />
+                                    <Icon
+                                        name="ClipboardList"
+                                        size={20}
+                                        color="white"
+                                    />
                                     <Text className="text-base font-semibold text-white">
                                         View Order Summary
                                     </Text>

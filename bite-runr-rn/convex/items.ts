@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
-import { auth } from "./auth";
+import { getUserId } from "./authHelper";
 
 // Search items at a location
 export const search = query({
@@ -9,7 +9,7 @@ export const search = query({
     query: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     if (args.query.trim().length === 0) {
@@ -36,7 +36,7 @@ export const search = query({
 export const listByLocation = query({
   args: { locationId: v.id("locations") },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return [];
 
     return await ctx.db
@@ -50,7 +50,7 @@ export const listByLocation = query({
 export const get = query({
   args: { id: v.id("items") },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) return null;
 
     return await ctx.db.get(args.id);
@@ -64,7 +64,7 @@ export const create = mutation({
     locationId: v.id("locations"),
   },
   handler: async (ctx, args) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await getUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     // Check if item already exists at this location

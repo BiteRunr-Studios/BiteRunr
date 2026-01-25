@@ -64,10 +64,10 @@ export function OrderCard({
                     withTiming(1, {
                         duration: 2000,
                         easing: Easing.inOut(Easing.ease),
-                    })
+                    }),
                 ),
                 -1,
-                false
+                false,
             );
         } else {
             cancelAnimation(breatheValue);
@@ -158,7 +158,8 @@ export function OrderCard({
                             }
                         />
                     )}
-                    <Text className={`text-xs font-medium ${statusConfig.text}`}>
+                    <Text
+                        className={`text-xs font-medium ${statusConfig.text}`}>
                         {statusConfig.label}
                     </Text>
                 </View>
