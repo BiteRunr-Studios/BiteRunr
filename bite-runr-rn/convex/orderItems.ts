@@ -88,15 +88,6 @@ export const add = mutation({
             throw new Error("Cannot add items - the run has already started");
         }
 
-        // Check if order exists and is paused (run has started)
-        const order = await ctx.db.get(orderUser.orderId);
-        if (!order) {
-            throw new Error("Order not found");
-        }
-        if (order.paused) {
-            throw new Error("Cannot add items - the run has already started");
-        }
-
         // Check if item already exists with same comments
         const existing = await ctx.db
             .query("orderItems")
@@ -174,7 +165,7 @@ export const update = mutation({
 export const getOrderSummary = query({
     args: { orderId: v.id("orders") },
     handler: async (ctx, args) => {
-        const userId = await auth.getUserId(ctx);
+        const userId = await getUserId(ctx);
         if (!userId) return null;
 
         // Verify user is the order creator

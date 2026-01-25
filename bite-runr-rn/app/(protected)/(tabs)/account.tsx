@@ -39,15 +39,6 @@ type Item = {
 
 const items: Item[] = [
     {
-        key: "personal",
-        title: "Personal Information",
-        subtitle: "View & edit account details",
-        icon: "User",
-        iconBg: "bg-blue-500/10",
-        iconColor: "#3b82f6",
-        href: "/account/account-info",
-    },
-    {
         key: "friends",
         title: "Friends",
         subtitle: "View, make & manage friends",
