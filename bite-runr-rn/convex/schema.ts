@@ -56,7 +56,6 @@ export default defineSchema({
     // Locations (restaurants, etc.)
     locations: defineTable({
         name: v.string(),
-        address: v.string(),
     }).index("by_name", ["name"]),
 
     // Menu items at locations

@@ -9,7 +9,6 @@ export function useLocations() {
         data: data?.map((loc) => ({
             id: loc._id,
             name: loc.name,
-            address: loc.address,
         })) ?? [],
         isLoading: data === undefined,
     };
