@@ -83,7 +83,6 @@ export interface OrderLocation {
 export interface Location {
     id: string;
     name: string;
-    address: string;
     order_locations: OrderLocation[] | null;
 }
 

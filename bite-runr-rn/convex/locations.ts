@@ -25,7 +25,6 @@ export const get = query({
 export const create = mutation({
   args: {
     name: v.string(),
-    address: v.string(),
   },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
@@ -33,7 +32,6 @@ export const create = mutation({
 
     return await ctx.db.insert("locations", {
       name: args.name,
-      address: args.address,
     });
   },
 });
