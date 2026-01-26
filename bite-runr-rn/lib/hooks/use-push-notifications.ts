@@ -34,11 +34,9 @@ export function usePushNotifications() {
         async function register() {
             try {
                 const token = await registerForPushNotificationsAsync();
-                console.log("Push token obtained:", token);
                 if (token) {
                     setExpoPushToken(token);
                     await registerToken({ token });
-                    console.log("Push token registered with Convex");
                     hasRegistered.current = true;
                 }
             } catch (error) {
@@ -50,8 +48,8 @@ export function usePushNotifications() {
 
         // Listen for incoming notifications while app is foregrounded
         notificationListener.current = Notifications.addNotificationReceivedListener(
-            (notification) => {
-                console.log("Notification received:", notification);
+            (_notification) => {
+                // Handle foreground notification if needed
             }
         );
 
@@ -108,13 +106,9 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
 
     // Get the Expo push token
     const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-    if (!projectId) {
-        console.warn("No EAS project ID found. Run 'npx eas init' to configure.");
-    }
     const tokenData = await Notifications.getExpoPushTokenAsync({
         projectId: projectId || undefined,
     });
-    console.log("Expo push token data:", tokenData);
 
     // Android-specific channel setup
     if (Platform.OS === "android") {
@@ -129,14 +123,13 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
     return tokenData.data;
 }
 
-function handleNotificationTap(data: Record<string, unknown>) {
+function handleNotificationTap(_data: Record<string, unknown>) {
     // Handle navigation based on notification type
     // Navigation can be added here based on your app's routing
-    if (data.type === "friend_request") {
-        // Could navigate to friends page
-        console.log("Friend request notification tapped");
-    } else if (data.type === "group_order" && data.orderId) {
-        // Could navigate to order detail
-        console.log("Group order notification tapped:", data.orderId);
-    }
+    // Example:
+    // if (data.type === "friend_request") {
+    //     router.push("/(protected)/account/friends");
+    // } else if (data.type === "group_order" && data.orderId) {
+    //     router.push(`/(protected)/order/${data.orderId}`);
+    // }
 }

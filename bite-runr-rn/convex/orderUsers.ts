@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { getUserId } from "./authHelper";
 import { orderUserStatusValidator } from "./schema";
 
@@ -41,6 +42,34 @@ export const setStatus = mutation({
     }
 
     await ctx.db.patch(orderUser._id, { status: args.status });
+
+    // If user marked themselves as done, check if all users are now done
+    if (args.status === "done") {
+      const order = await ctx.db.get(args.orderId);
+      if (!order) return orderUser._id;
+
+      // Get all order users
+      const allOrderUsers = await ctx.db
+        .query("orderUsers")
+        .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
+        .collect();
+
+      // Check if all users are done
+      const allDone = allOrderUsers.every((ou) =>
+        ou._id === orderUser._id ? true : ou.status === "done"
+      );
+
+      // If all done and current user is not the creator, notify the creator
+      if (allDone && order.creatorId !== userId) {
+        await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUser, {
+          userId: order.creatorId,
+          title: "Orders Ready!",
+          body: `Everyone has finished ordering for ${order.name}`,
+          data: { type: "orders_ready", orderId: args.orderId },
+        });
+      }
+    }
+
     return orderUser._id;
   },
 });

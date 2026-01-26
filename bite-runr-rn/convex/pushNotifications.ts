@@ -51,8 +51,7 @@ export const sendToUser = internalMutation({
         data: v.optional(v.any()),
     },
     handler: async (ctx, args) => {
-        console.log("Sending push notification to user:", args.userId, args.title);
-        const result = await pushNotifications.sendPushNotification(ctx, {
+        await pushNotifications.sendPushNotification(ctx, {
             userId: args.userId,
             notification: {
                 title: args.title,
@@ -61,7 +60,6 @@ export const sendToUser = internalMutation({
             },
             allowUnregisteredTokens: true,
         });
-        console.log("Push notification result:", result);
     },
 });
 
