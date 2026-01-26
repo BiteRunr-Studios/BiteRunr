@@ -4,6 +4,7 @@ import { Redirect, Stack } from "expo-router";
 import { View, ActivityIndicator } from "react-native";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { usePushNotifications } from "@/lib/hooks/use-push-notifications";
 
 export const unstable_settings = {
   initialRouteName: "(tabs)",
@@ -13,6 +14,9 @@ export default function ProtectedLayout() {
   const { isReady, isLoading, isLoggedIn, refreshSession } = useAuth();
   const syncUser = useMutation(api.users.syncUser);
   const hasSynced = useRef(false);
+
+  // Register for push notifications when entering protected area
+  usePushNotifications();
 
   // Sync user when entering protected area (handles OAuth callback)
   useEffect(() => {

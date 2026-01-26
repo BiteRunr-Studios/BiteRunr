@@ -3,6 +3,7 @@ import { ExpoConfig } from "expo/config";
 
 const config: ExpoConfig = {
     name: "BiteRunr",
+    owner: "ryansomers",
     slug: "biterunr",
     version: "1.0.0",
     orientation: "portrait",
@@ -64,10 +65,22 @@ const config: ExpoConfig = {
                     "Allow $(PRODUCT_NAME) to access your photos to set your profile picture.",
             },
         ],
+        [
+            "expo-notifications",
+            {
+                icon: "./assets/images/icon.png",
+                color: "#E6F4FE",
+            },
+        ],
     ],
     experiments: {
         typedRoutes: true,
         reactCompiler: true,
+    },
+    extra: {
+        eas: {
+            projectId: "e77fef75-c90d-4ad7-b842-f01927d4bd9d",
+        },
     },
 };
 
