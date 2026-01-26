@@ -5,6 +5,7 @@ import { View, ActivityIndicator } from "react-native";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { usePushNotifications } from "@/lib/hooks/use-push-notifications";
+import { NotificationPermissionModal } from "@/components/notifications/notification-permission-modal";
 
 export const unstable_settings = {
   initialRouteName: "(tabs)",
@@ -16,7 +17,11 @@ export default function ProtectedLayout() {
   const hasSynced = useRef(false);
 
   // Register for push notifications when entering protected area
-  usePushNotifications();
+  const {
+    showPermissionModal,
+    handleAllowNotifications,
+    handleDenyNotifications,
+  } = usePushNotifications();
 
   // Sync user when entering protected area (handles OAuth callback)
   useEffect(() => {
@@ -82,6 +87,11 @@ export default function ProtectedLayout() {
           <ActivityIndicator size="large" color="#fff" />
         </View>
       )}
+      <NotificationPermissionModal
+        visible={showPermissionModal}
+        onAllow={handleAllowNotifications}
+        onDeny={handleDenyNotifications}
+      />
     </View>
   );
 }

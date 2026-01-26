@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/lib/convex-auth-context";
 
@@ -22,29 +22,53 @@ export function usePushNotifications() {
     const { isLoggedIn, isReady } = useAuth();
     const registerToken = useMutation(api.pushNotifications.registerPushToken);
     const unregisterToken = useMutation(api.pushNotifications.unregisterPushToken);
+    const hasToken = useQuery(
+        api.pushNotifications.hasToken,
+        isReady && isLoggedIn ? {} : "skip"
+    );
+
     const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
-    const hasRegistered = useRef(false);
+    const [showPermissionModal, setShowPermissionModal] = useState(false);
+    const hasCheckedPermission = useRef(false);
     const notificationListener = useRef<Notifications.EventSubscription | null>(null);
     const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
+    // Check if we should show the permission modal
     useEffect(() => {
         if (!isReady || !isLoggedIn) return;
-        if (hasRegistered.current) return;
+        if (hasToken === undefined) return; // Still loading
+        if (hasCheckedPermission.current) return;
 
-        async function register() {
-            try {
-                const token = await registerForPushNotificationsAsync();
-                if (token) {
-                    setExpoPushToken(token);
-                    await registerToken({ token });
-                    hasRegistered.current = true;
-                }
-            } catch (error) {
-                console.error("Failed to register push token:", error);
-            }
+        // Only show modal if user doesn't have a token registered
+        if (hasToken === false) {
+            setShowPermissionModal(true);
         }
+        hasCheckedPermission.current = true;
+    }, [isReady, isLoggedIn, hasToken]);
 
-        register();
+    // Handle user allowing notifications
+    const handleAllowNotifications = useCallback(async () => {
+        setShowPermissionModal(false);
+
+        try {
+            const token = await registerForPushNotificationsAsync();
+            if (token) {
+                setExpoPushToken(token);
+                await registerToken({ token });
+            }
+        } catch (error) {
+            console.error("Failed to register push token:", error);
+        }
+    }, [registerToken]);
+
+    // Handle user denying notifications
+    const handleDenyNotifications = useCallback(() => {
+        setShowPermissionModal(false);
+    }, []);
+
+    // Set up notification listeners when we have a token
+    useEffect(() => {
+        if (!isReady || !isLoggedIn || !hasToken) return;
 
         // Listen for incoming notifications while app is foregrounded
         notificationListener.current = Notifications.addNotificationReceivedListener(
@@ -69,18 +93,23 @@ export function usePushNotifications() {
                 responseListener.current.remove();
             }
         };
-    }, [isReady, isLoggedIn, registerToken]);
+    }, [isReady, isLoggedIn, hasToken]);
 
     // Unregister token on logout
     useEffect(() => {
-        if (isReady && !isLoggedIn && hasRegistered.current && expoPushToken) {
+        if (isReady && !isLoggedIn && expoPushToken) {
             unregisterToken({ token: expoPushToken }).catch(console.error);
-            hasRegistered.current = false;
             setExpoPushToken(null);
+            hasCheckedPermission.current = false;
         }
     }, [isReady, isLoggedIn, unregisterToken, expoPushToken]);
 
-    return { expoPushToken };
+    return {
+        expoPushToken,
+        showPermissionModal,
+        handleAllowNotifications,
+        handleDenyNotifications,
+    };
 }
 
 async function registerForPushNotificationsAsync(): Promise<string | null> {

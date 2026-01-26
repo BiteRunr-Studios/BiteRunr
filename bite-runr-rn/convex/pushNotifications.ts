@@ -1,12 +1,23 @@
 import { v } from "convex/values";
-import { mutation, internalMutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 import { components } from "./_generated/api";
 import { getUserId } from "./authHelper";
 import { PushNotifications } from "@convex-dev/expo-push-notifications";
-import { Id } from "./_generated/dataModel";
 
 // Initialize the push notifications component
 export const pushNotifications = new PushNotifications(components.pushNotifications);
+
+// Check if current user has a push token registered
+export const hasToken = query({
+    args: {},
+    handler: async (ctx) => {
+        const userId = await getUserId(ctx);
+        if (!userId) return false;
+
+        const status = await pushNotifications.getStatusForUser(ctx, { userId });
+        return status.hasToken;
+    },
+});
 
 // Register a push token for the current user
 export const registerPushToken = mutation({
