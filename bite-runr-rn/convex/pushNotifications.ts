@@ -37,16 +37,14 @@ export const registerPushToken = mutation({
     },
 });
 
-// Unregister push token on logout (remove token for user)
+// Unregister push token on logout (removes all tokens for user)
 export const unregisterPushToken = mutation({
-    args: {
-        token: v.string(),
-    },
-    handler: async (ctx, args) => {
+    args: {},
+    handler: async (ctx) => {
         const userId = await getUserId(ctx);
         if (!userId) throw new Error("Not authenticated");
 
-        // Remove the push token for this user
+        // Remove all push tokens for this user
         await pushNotifications.removeToken(ctx, { userId });
 
         return true;

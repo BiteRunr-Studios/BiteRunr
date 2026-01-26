@@ -30,6 +30,7 @@ export function usePushNotifications() {
     const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
     const [showPermissionModal, setShowPermissionModal] = useState(false);
     const hasCheckedPermission = useRef(false);
+    const isRegistering = useRef(false);
     const notificationListener = useRef<Notifications.EventSubscription | null>(null);
     const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
@@ -46,8 +47,23 @@ export function usePushNotifications() {
         hasCheckedPermission.current = true;
     }, [isReady, isLoggedIn, hasToken]);
 
+    // Sync local token state for returning users who already have a token registered
+    useEffect(() => {
+        if (!isReady || !isLoggedIn || hasToken !== true) return;
+        if (expoPushToken) return; // Already synced
+
+        (async () => {
+            const token = await getExistingPushToken();
+            if (token) {
+                setExpoPushToken(token);
+            }
+        })();
+    }, [isReady, isLoggedIn, hasToken, expoPushToken]);
+
     // Handle user allowing notifications
     const handleAllowNotifications = useCallback(async () => {
+        if (isRegistering.current) return;
+        isRegistering.current = true;
         setShowPermissionModal(false);
 
         try {
@@ -58,6 +74,7 @@ export function usePushNotifications() {
             }
         } catch (error) {
             console.error("Failed to register push token:", error);
+            isRegistering.current = false;
         }
     }, [registerToken]);
 
@@ -98,9 +115,10 @@ export function usePushNotifications() {
     // Unregister token on logout
     useEffect(() => {
         if (isReady && !isLoggedIn && expoPushToken) {
-            unregisterToken({ token: expoPushToken }).catch(console.error);
+            unregisterToken({}).catch(console.error);
             setExpoPushToken(null);
             hasCheckedPermission.current = false;
+            isRegistering.current = false;
         }
     }, [isReady, isLoggedIn, unregisterToken, expoPushToken]);
 
@@ -150,6 +168,24 @@ async function registerForPushNotificationsAsync(): Promise<string | null> {
     }
 
     return tokenData.data;
+}
+
+// Get existing push token without requesting permissions (for returning users)
+async function getExistingPushToken(): Promise<string | null> {
+    if (!Device.isDevice) return null;
+
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== "granted") return null;
+
+    try {
+        const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+        const tokenData = await Notifications.getExpoPushTokenAsync({
+            projectId: projectId || undefined,
+        });
+        return tokenData.data;
+    } catch {
+        return null;
+    }
 }
 
 function handleNotificationTap(_data: Record<string, unknown>) {
