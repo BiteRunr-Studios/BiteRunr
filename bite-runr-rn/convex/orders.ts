@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { getUserId } from "./authHelper";
 import { orderStatusValidator } from "./schema";
@@ -284,6 +285,19 @@ export const create = mutation({
         status: "ordering",
         settlementStatus: "unpaid",
         amountOwed: 0n,
+      });
+    }
+
+    // Send push notifications to invited friends
+    if (args.friendIds.length > 0) {
+      const creator = await ctx.db.get(userId);
+      const creatorName = creator ? creator.firstName : "Someone";
+
+      await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUsers, {
+        userIds: args.friendIds,
+        title: "Group Order Started",
+        body: `A group order started with ${creatorName}`,
+        data: { type: "group_order", orderId },
       });
     }
 

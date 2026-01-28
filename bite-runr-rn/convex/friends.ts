@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { getUserId } from "./authHelper";
 
 // List all friends for the current user
@@ -128,10 +129,23 @@ export const sendRequest = mutation({
       throw new Error("Already friends");
     }
 
-    return await ctx.db.insert("friendRequests", {
+    const requestId = await ctx.db.insert("friendRequests", {
       senderId: userId,
       receiverId: args.receiverId,
     });
+
+    // Send push notification to receiver
+    const sender = await ctx.db.get(userId);
+    const senderName = sender ? `${sender.firstName} ${sender.lastName}` : "Someone";
+
+    await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUser, {
+      userId: args.receiverId,
+      title: "New Friend Request",
+      body: `${senderName} requested to friend you`,
+      data: { type: "friend_request", senderId: userId },
+    });
+
+    return requestId;
   },
 });
 
