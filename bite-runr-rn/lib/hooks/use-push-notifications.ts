@@ -74,6 +74,7 @@ export function usePushNotifications() {
             }
         } catch (error) {
             console.error("Failed to register push token:", error);
+        } finally {
             isRegistering.current = false;
         }
     }, [registerToken]);
