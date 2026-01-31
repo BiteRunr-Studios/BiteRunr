@@ -72,6 +72,13 @@ const config: ExpoConfig = {
                 color: "#E6F4FE",
             },
         ],
+        [
+            "expo-camera",
+            {
+                cameraPermission:
+                    "Allow $(PRODUCT_NAME) to access your camera to scan QR codes for joining group orders.",
+            },
+        ],
     ],
     experiments: {
         typedRoutes: true,

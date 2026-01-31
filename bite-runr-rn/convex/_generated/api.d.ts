@@ -16,6 +16,7 @@ import type * as http from "../http.js";
 import type * as items from "../items.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as locations from "../locations.js";
+import type * as orderInvites from "../orderInvites.js";
 import type * as orderItems from "../orderItems.js";
 import type * as orderLocations from "../orderLocations.js";
 import type * as orderUsers from "../orderUsers.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   items: typeof items;
   "lib/utils": typeof lib_utils;
   locations: typeof locations;
+  orderInvites: typeof orderInvites;
   orderItems: typeof orderItems;
   orderLocations: typeof orderLocations;
   orderUsers: typeof orderUsers;
