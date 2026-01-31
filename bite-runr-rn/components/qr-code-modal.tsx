@@ -25,16 +25,25 @@ export function QRCodeModal({
     const activeInvite = useQuery(api.orderInvites.getActiveInvite, { orderId });
     const createInvite = useMutation(api.orderInvites.createInvite);
     const [isCreating, setIsCreating] = React.useState(false);
+    const [createAttempted, setCreateAttempted] = React.useState(false);
 
-    // Create invite when modal opens if none exists
+    // Create invite when modal opens if none exists (one-time attempt)
     useEffect(() => {
-        if (visible && activeInvite === null && !isCreating) {
+        if (visible && activeInvite === null && !isCreating && !createAttempted) {
             setIsCreating(true);
+            setCreateAttempted(true);
             createInvite({ orderId })
                 .catch((err) => console.error("Failed to create invite:", err))
                 .finally(() => setIsCreating(false));
         }
-    }, [visible, activeInvite, orderId, createInvite, isCreating]);
+    }, [visible, activeInvite, orderId, createInvite, isCreating, createAttempted]);
+
+    // Reset attempt state when modal closes
+    useEffect(() => {
+        if (!visible) {
+            setCreateAttempted(false);
+        }
+    }, [visible]);
 
     const inviteCode = activeInvite?.code;
     const deepLink = inviteCode ? `biterunr://join/${inviteCode}` : null;

@@ -3,12 +3,15 @@ import { query, mutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { getUserId, requireUserIdWithSync } from "./authHelper";
 
-// Generate a random 8-character alphanumeric code
+// Generate a cryptographically secure random 8-character alphanumeric code
 function generateInviteCode(): string {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Excluding similar looking chars (0, O, 1, I)
     let code = "";
+    const randomValues = new Uint8Array(8);
+    crypto.getRandomValues(randomValues);
+    
     for (let i = 0; i < 8; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
+        code += chars.charAt(randomValues[i] % chars.length);
     }
     return code;
 }
