@@ -9,15 +9,7 @@ import {
     RefreshControl,
     TouchableOpacity,
 } from "react-native";
-import { PageWithHeader } from "@/components/layout/page-with-header";
 import { ErrorBoundary } from "@/components/common/error-boundary";
-import Animated, {
-    useSharedValue,
-    useAnimatedStyle,
-    withTiming,
-    withRepeat,
-    Easing,
-} from "react-native-reanimated";
 import { AuthContext } from "@/lib/convex-auth-context";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -26,6 +18,7 @@ import Icon from "@/components/common/icon";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import type { icons } from "lucide-react-native";
+import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
 
 type Item = {
     key: string;
@@ -110,22 +103,17 @@ export default function AccountTab() {
     };
 
     return (
-        <PageWithHeader
-            title="Account"
-            logoSource={require("@/assets/images/app-logo.png")}
-            onLogoPress={() => Alert.alert("Logo pressed")}
-            onBellPress={() => Alert.alert("Notifications")}>
-            <ErrorBoundary>
-                <ScrollView
-                    className="flex-1"
-                    contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
-                    showsVerticalScrollIndicator={false}
-                    refreshControl={
-                        <RefreshControl
-                            refreshing={isRefreshing}
-                            onRefresh={onRefresh}
-                        />
-                    }>
+        <ErrorBoundary>
+            <ScrollView
+                className="flex-1 bg-background"
+                contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={onRefresh}
+                    />
+                }>
                     {isLoading && <ProfileSkeleton />}
 
                     {!isLoading && user && (
@@ -274,91 +262,40 @@ export default function AccountTab() {
                             </Text>
                         </View>
                     )}
-                </ScrollView>
-            </ErrorBoundary>
-        </PageWithHeader>
+            </ScrollView>
+        </ErrorBoundary>
     );
 }
 
 function ProfileSkeleton() {
-    const sweep = useSharedValue(0);
-
-    React.useEffect(() => {
-        sweep.value = withRepeat(
-            withTiming(1, {
-                duration: 1400,
-                easing: Easing.inOut(Easing.ease),
-            }),
-            -1,
-            true,
-        );
-    }, [sweep]);
-
-    const shimmerStyle = useAnimatedStyle(() => {
-        const translatePercent = -40 + sweep.value * 80;
-        return {
-            transform: [{ translateX: translatePercent }],
-            opacity: 0.18,
-        };
-    });
-
-    const Block = ({
-        width,
-        height,
-        rounded = "rounded-lg",
-        className = "",
-    }: {
-        width: number;
-        height: number;
-        rounded?: string;
-        className?: string;
-    }) => {
-        return (
-            <View
-                className={`bg-muted ${rounded} overflow-hidden ${className}`}
-                style={{ width, height }}>
-                <Animated.View
-                    style={[
-                        shimmerStyle,
-                        {
-                            position: "absolute",
-                            top: 0,
-                            bottom: 0,
-                            width: width * 0.35,
-                            backgroundColor: "#ffffff",
-                        },
-                    ]}
-                />
-            </View>
-        );
-    };
-
     return (
-        <View>
-            {/* Profile Card Skeleton */}
-            <View className="flex-row items-center p-5 mb-6 border rounded-2xl border-muted bg-card">
-                <Block width={80} height={80} rounded="rounded-full" />
-                <View className="flex-1 ml-4">
-                    <Block width={160} height={24} className="mb-2" />
-                    <Block width={200} height={16} className="mb-2" />
-                    <Block width={140} height={16} />
+        <Skeleton>
+            <View>
+                {/* Profile Card Skeleton */}
+                <View className="flex-row items-center p-5 mb-6 border rounded-2xl border-muted bg-card">
+                    <SkeletonBlock width={80} height={80} rounded="rounded-full" />
+                    <View className="flex-1 ml-4">
+                        <SkeletonBlock width={160} height={24} className="mb-2" />
+                        <SkeletonBlock width={200} height={16} className="mb-2" />
+                        <SkeletonBlock width={140} height={16} />
+                    </View>
+                </View>
+
+                {/* Menu Items Skeleton */}
+                <View className="gap-3">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <View
+                            key={i}
+                            className="flex-row items-center p-4 border rounded-xl border-muted bg-card">
+                            <SkeletonBlock width={48} height={48} rounded="rounded-xl" />
+                            <View className="flex-1 ml-3">
+                                <SkeletonBlock width={140} height={20} className="mb-2" />
+                                <SkeletonBlock width={180} height={16} />
+                            </View>
+                        </View>
+                    ))}
                 </View>
             </View>
-
-            {/* Menu Items Skeleton */}
-            <View className="gap-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                    <View
-                        key={i}
-                        className="flex-row items-center p-4 border rounded-xl border-muted bg-card">
-                        <Block width={48} height={48} rounded="rounded-xl" />
-                        <View className="flex-1 ml-3">
-                            <Block width={140} height={20} className="mb-2" />
-                            <Block width={180} height={16} />
-                        </View>
-                    </View>
-                ))}
-            </View>
-        </View>
+        </Skeleton>
     );
 }

@@ -95,6 +95,13 @@ export default function RootLayout() {
                                         animationTypeForReplace: "pop",
                                     }}
                                 />
+                                <Stack.Screen
+                                    name="join/[code]"
+                                    options={{
+                                        headerShown: false,
+                                        presentation: "modal",
+                                    }}
+                                />
                             </Stack>
                         </GestureHandlerRootView>
                     </SafeAreaProvider>

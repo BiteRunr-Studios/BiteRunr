@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import ReAnimated, {
     useSharedValue,
@@ -25,6 +25,7 @@ import Icon from "@/components/common/icon";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { QRCodeModal } from "@/components/qr-code-modal";
 
 type ButtonState = "readyToRun" | "enabled" | "disabled";
 
@@ -33,6 +34,7 @@ export default function SpecificOrder() {
     const { colorScheme } = useColorScheme();
     const buttonOpacity = useRef(new Animated.Value(0)).current;
     const buttonTranslateY = useRef(new Animated.Value(20)).current;
+    const [showQRModal, setShowQRModal] = useState(false);
 
     const breatheValue = useSharedValue(1);
     breatheValue.value = withRepeat(
@@ -259,13 +261,26 @@ export default function SpecificOrder() {
                     Order Details
                 </Text>
                 {isCreator && (
-                    <TouchableOpacity
-                        onPress={handleCancelOrder}
-                        className="px-3 py-1.5 rounded-full bg-destructive/10">
-                        <Text className="text-sm font-medium text-destructive">
-                            Cancel
-                        </Text>
-                    </TouchableOpacity>
+                    <View className="flex-row items-center gap-2">
+                        {!data.order.paused && (
+                            <TouchableOpacity
+                                onPress={() => setShowQRModal(true)}
+                                className="p-2 rounded-full bg-primary/10">
+                                <Icon
+                                    name="QrCode"
+                                    size={20}
+                                    color={NAV_THEME[colorScheme].primary}
+                                />
+                            </TouchableOpacity>
+                        )}
+                        <TouchableOpacity
+                            onPress={handleCancelOrder}
+                            className="px-3 py-1.5 rounded-full bg-destructive/10">
+                            <Text className="text-sm font-medium text-destructive">
+                                Cancel
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 )}
             </View>
 
@@ -625,6 +640,16 @@ export default function SpecificOrder() {
                     </>
                 )}
             </View>
+
+            {/* QR Code Modal for inviting users */}
+            {isCreator && data && (
+                <QRCodeModal
+                    visible={showQRModal}
+                    orderId={orderId as Id<"orders">}
+                    orderName={data.order.name}
+                    onClose={() => setShowQRModal(false)}
+                />
+            )}
         </>
     );
 }

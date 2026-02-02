@@ -1,12 +1,10 @@
 import { Agent } from "@convex-dev/agent";
 import { openai } from "@ai-sdk/openai";
 import { components } from "./_generated/api";
-import type { LanguageModelV2 } from "@ai-sdk/provider";
 
 export const receiptParserAgent = new Agent(components.agent, {
   name: "receipt-parser",
-  // Type assertion needed due to AI SDK V3/V2 version mismatch
-  chat: openai.chat("gpt-4o") as unknown as LanguageModelV2,
+  chat: openai.chat("gpt-4o-mini"),
   instructions: `You are a receipt parsing assistant. Your job is to extract item names, quantities, and prices from receipt images.
 
 When analyzing a receipt image:

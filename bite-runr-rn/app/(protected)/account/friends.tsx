@@ -18,6 +18,7 @@ import Icon from "@/components/common/icon";
 import { Input } from "@/components/common/input";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
+import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
 
 type Tab = "friends" | "requests" | "search";
 
@@ -162,12 +163,17 @@ function FriendsList() {
 
     if (isLoading) {
         return (
-            <View className="items-center justify-center flex-1">
-                <ActivityIndicator
-                    size="large"
-                    color={NAV_THEME[colorScheme].primary}
-                />
-            </View>
+            <ScrollView
+                className="flex-1 px-4"
+                contentContainerStyle={{ paddingBottom: 20 }}>
+                <Skeleton>
+                    <View className="gap-3">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <FriendCardSkeleton key={i} />
+                        ))}
+                    </View>
+                </Skeleton>
+            </ScrollView>
         );
     }
 
@@ -272,12 +278,17 @@ function FriendRequests() {
 
     if (isLoading) {
         return (
-            <View className="items-center justify-center flex-1">
-                <ActivityIndicator
-                    size="large"
-                    color={NAV_THEME[colorScheme].primary}
-                />
-            </View>
+            <ScrollView
+                className="flex-1 px-4"
+                contentContainerStyle={{ paddingBottom: 20 }}>
+                <Skeleton>
+                    <View className="gap-3">
+                        {[1, 2, 3].map((i) => (
+                            <FriendRequestSkeleton key={i} />
+                        ))}
+                    </View>
+                </Skeleton>
+            </ScrollView>
         );
     }
 
@@ -430,11 +441,14 @@ function SearchUsers() {
             )}
 
             {isSearching && (
-                <View className="items-center justify-center flex-1">
-                    <ActivityIndicator
-                        size="large"
-                        color={NAV_THEME[colorScheme].primary}
-                    />
+                <View className="flex-1 mt-4">
+                    <Skeleton>
+                        <View className="gap-3">
+                            {[1, 2, 3].map((i) => (
+                                <FriendCardSkeleton key={i} />
+                            ))}
+                        </View>
+                    </Skeleton>
                 </View>
             )}
 
@@ -561,6 +575,41 @@ function Avatar({
                 style={{ fontSize: size * 0.35 }}>
                 {initials || "U"}
             </Text>
+        </View>
+    );
+}
+
+function FriendCardSkeleton() {
+    return (
+        <View className="flex-row items-center p-4 border rounded-xl border-muted bg-card">
+            <SkeletonBlock width={52} height={52} rounded="rounded-full" />
+            <View className="flex-1 ml-3">
+                <SkeletonBlock width={140} height={18} className="mb-2" />
+                <SkeletonBlock width={80} height={14} />
+            </View>
+            <SkeletonBlock width={40} height={40} rounded="rounded-xl" />
+        </View>
+    );
+}
+
+function FriendRequestSkeleton() {
+    return (
+        <View className="p-4 border rounded-xl border-muted bg-card">
+            <View className="flex-row items-center">
+                <SkeletonBlock width={52} height={52} rounded="rounded-full" />
+                <View className="flex-1 ml-3">
+                    <SkeletonBlock width={140} height={18} className="mb-2" />
+                    <SkeletonBlock width={160} height={14} />
+                </View>
+            </View>
+            <View className="flex-row gap-3 mt-4">
+                <View className="flex-1">
+                    <SkeletonBlock width="100%" height={44} rounded="rounded-xl" />
+                </View>
+                <View className="flex-1">
+                    <SkeletonBlock width="100%" height={44} rounded="rounded-xl" />
+                </View>
+            </View>
         </View>
     );
 }

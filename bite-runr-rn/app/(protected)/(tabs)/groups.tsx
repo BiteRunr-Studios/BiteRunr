@@ -1,15 +1,13 @@
 import { useState } from "react";
 import {
-    ActivityIndicator,
     Pressable,
     ScrollView,
     Text,
     View,
     TouchableOpacity,
 } from "react-native";
-import { PageWithHeader } from "@/components/layout/page-with-header";
 import { ErrorBoundary } from "@/components/common/error-boundary";
-import { OrderCard } from "@/components/order-card";
+import { OrderCard, OrderCardSkeleton } from "@/components/order-card";
 import { Link, router } from "expo-router";
 import { Input } from "@/components/common/input";
 import { useQuery } from "convex/react";
@@ -17,6 +15,7 @@ import { api } from "@/convex/_generated/api";
 import Icon from "@/components/common/icon";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
+import { Skeleton } from "@/components/common/skeleton";
 
 export default function GroupsTab() {
     const [selectedIndex, setSelectedIndex] = useState(0);
@@ -63,9 +62,8 @@ export default function GroupsTab() {
     ];
 
     return (
-        <PageWithHeader title="Groups">
-            <ErrorBoundary>
-                <View className="flex-1 px-4">
+        <ErrorBoundary>
+            <View className="flex-1 px-4 bg-background">
                     {/* Tab Selector */}
                     <View className="flex-row gap-2 mt-4 mb-4">
                         {tabs.map((tab, index) => (
@@ -120,15 +118,13 @@ export default function GroupsTab() {
                         contentContainerStyle={{ paddingBottom: 24 }}
                         showsVerticalScrollIndicator={false}>
                         {isPending && (
-                            <View className="items-center mt-12">
-                                <ActivityIndicator
-                                    size="large"
-                                    color={NAV_THEME[colorScheme].primary}
-                                />
-                                <Text className="mt-3 text-muted-foreground">
-                                    Loading orders...
-                                </Text>
-                            </View>
+                            <Skeleton>
+                                <View className="gap-3">
+                                    {[1, 2, 3, 4].map((i) => (
+                                        <OrderCardSkeleton key={i} />
+                                    ))}
+                                </View>
+                            </Skeleton>
                         )}
 
                         {!isPending && filteredOrders && (
@@ -245,8 +241,7 @@ export default function GroupsTab() {
                             </>
                         )}
                     </ScrollView>
-                </View>
-            </ErrorBoundary>
-        </PageWithHeader>
+            </View>
+        </ErrorBoundary>
     );
 }

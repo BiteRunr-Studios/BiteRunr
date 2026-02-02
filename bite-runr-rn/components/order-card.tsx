@@ -12,6 +12,7 @@ import ReAnimated, {
     cancelAnimation,
 } from "react-native-reanimated";
 import { useEffect } from "react";
+import { Skeleton, SkeletonBlock } from "./common/skeleton";
 
 type OrderStatus = "created" | "active" | "completed" | "cancelled";
 
@@ -253,5 +254,46 @@ export function OrderCard({
                 )}
             </View>
         </View>
+    );
+}
+
+export function OrderCardSkeleton() {
+    return (
+        <Skeleton>
+            <View className="p-4 border rounded-2xl border-muted bg-card">
+                {/* Header Row */}
+                <View className="flex-row items-start justify-between mb-3">
+                    <View className="flex-1">
+                        <SkeletonBlock width={80} height={16} className="mb-2" />
+                        <SkeletonBlock width={180} height={24} />
+                    </View>
+                    <SkeletonBlock
+                        width={80}
+                        height={24}
+                        rounded="rounded-full"
+                    />
+                </View>
+
+                {/* Footer Row */}
+                <View className="flex-row items-center justify-between pt-3 border-t border-muted">
+                    <View className="flex-row items-center">
+                        {[1, 2, 3].map((i) => (
+                            <View
+                                key={i}
+                                style={{ marginLeft: i > 1 ? -12 : 0 }}
+                                className="border-2 rounded-full border-card">
+                                <SkeletonBlock
+                                    width={32}
+                                    height={32}
+                                    rounded="rounded-full"
+                                />
+                            </View>
+                        ))}
+                        <SkeletonBlock width={60} height={16} className="ml-2" />
+                    </View>
+                    <SkeletonBlock width={70} height={24} rounded="rounded-full" />
+                </View>
+            </View>
+        </Skeleton>
     );
 }

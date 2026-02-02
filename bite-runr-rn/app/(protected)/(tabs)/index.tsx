@@ -1,21 +1,21 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
-    ActivityIndicator,
     Pressable,
     ScrollView,
     Text,
     View,
     TouchableOpacity,
 } from "react-native";
-import { PageWithHeader } from "@/components/layout/page-with-header";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { OrderCard } from "@/components/order-card";
+import { OrderCard, OrderCardSkeleton } from "@/components/order-card";
 import Icon from "@/components/common/icon";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { useRouter } from "expo-router";
+import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
+import { QRScannerModal } from "@/components/qr-scanner-modal";
 
 // Constants for active orders carousel
 const CARD_WIDTH = 300;
@@ -28,29 +28,52 @@ export default function HomeTab() {
     const frequentItems = useQuery(api.orders.getFrequentItems, { limit: 6 });
     const { colorScheme } = useColorScheme();
     const router = useRouter();
+    const [showScanner, setShowScanner] = useState(false);
 
-    const isLoading =
-        activeOrders === undefined ||
-        pastOrders === undefined ||
-        frequentItems === undefined;
+    const handleScan = (code: string) => {
+        setShowScanner(false);
+        // Navigate to the join page with the scanned code
+        router.push(`/join/${code}`);
+    };
+
+    // Track initial data load to prevent flash of empty state
+    const [isInitializing, setIsInitializing] = useState(true);
+
+    const queriesReturned =
+        activeOrders !== undefined &&
+        pastOrders !== undefined &&
+        frequentItems !== undefined;
+
+    const hasAnyData =
+        (activeOrders?.length ?? 0) > 0 ||
+        (pastOrders?.length ?? 0) > 0 ||
+        (frequentItems?.length ?? 0) > 0;
+
+    // Show content immediately if we have data, otherwise wait for data to settle
+    useEffect(() => {
+        if (!queriesReturned) return;
+
+        // If we have data, show it immediately
+        if (hasAnyData) {
+            setIsInitializing(false);
+            return;
+        }
+
+        // If queries returned but empty, wait longer before showing empty state
+        // This handles the case where Convex returns empty before auth syncs
+        const timer = setTimeout(() => setIsInitializing(false), 1500);
+        return () => clearTimeout(timer);
+    }, [queriesReturned, hasAnyData]);
+
+    const isLoading = !queriesReturned || isInitializing;
 
     return (
-        <PageWithHeader title="Home">
-            <ErrorBoundary>
-                <ScrollView
-                    className="flex-1"
-                    showsVerticalScrollIndicator={false}>
-                    {isLoading && (
-                        <View className="items-center mt-16">
-                            <ActivityIndicator
-                                size="large"
-                                color={NAV_THEME[colorScheme].primary}
-                            />
-                            <Text className="mt-3 text-muted-foreground">
-                                Loading...
-                            </Text>
-                        </View>
-                    )}
+        <ErrorBoundary>
+            <View className="flex-1 bg-background">
+            <ScrollView
+                className="flex-1"
+                showsVerticalScrollIndicator={false}>
+                {isLoading && <HomeSkeleton />}
 
                     {!isLoading && (
                         <View className="gap-8 px-4 pb-8 mt-4">
@@ -411,8 +434,145 @@ export default function HomeTab() {
                                 )}
                         </View>
                     )}
-                </ScrollView>
-            </ErrorBoundary>
-        </PageWithHeader>
+            </ScrollView>
+
+            {/* Floating Scan Button */}
+            <TouchableOpacity
+                onPress={() => setShowScanner(true)}
+                className="absolute bottom-6 right-6 w-14 h-14 rounded-full bg-primary items-center justify-center shadow-lg"
+                style={{
+                    shadowColor: NAV_THEME[colorScheme].primary,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 8,
+                }}>
+                <Icon name="ScanLine" size={24} color="white" />
+            </TouchableOpacity>
+
+            {/* QR Scanner Modal */}
+            <QRScannerModal
+                visible={showScanner}
+                onScan={handleScan}
+                onClose={() => setShowScanner(false)}
+            />
+            </View>
+        </ErrorBoundary>
+    );
+}
+
+function HomeSkeleton() {
+    return (
+        <Skeleton>
+            <View className="gap-8 px-4 pb-8 mt-4">
+                {/* Active Orders Section Skeleton */}
+                <View>
+                    <View className="flex-row items-center justify-between mb-4">
+                        <View className="flex-row items-center gap-3">
+                            <SkeletonBlock
+                                width={40}
+                                height={40}
+                                rounded="rounded-xl"
+                            />
+                            <SkeletonBlock width={120} height={24} />
+                        </View>
+                        <SkeletonBlock
+                            width={80}
+                            height={28}
+                            rounded="rounded-full"
+                        />
+                    </View>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        scrollEnabled={false}
+                        className="-mx-4"
+                        contentContainerStyle={{ paddingHorizontal: 16 }}>
+                        {[1, 2].map((i) => (
+                            <View
+                                key={i}
+                                style={{
+                                    width: CARD_WIDTH,
+                                    marginRight: i < 2 ? CARD_GAP : 0,
+                                }}>
+                                <OrderCardSkeleton />
+                            </View>
+                        ))}
+                    </ScrollView>
+                </View>
+
+                {/* Favorites Section Skeleton */}
+                <View>
+                    <View className="flex-row items-center gap-3 mb-4">
+                        <SkeletonBlock
+                            width={40}
+                            height={40}
+                            rounded="rounded-xl"
+                        />
+                        <SkeletonBlock width={120} height={24} />
+                    </View>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        scrollEnabled={false}
+                        className="-mx-4 px-4">
+                        <View className="flex-row gap-3">
+                            {[1, 2, 3].map((i) => (
+                                <FavoriteItemSkeleton key={i} />
+                            ))}
+                        </View>
+                    </ScrollView>
+                </View>
+
+                {/* Past Orders Section Skeleton */}
+                <View>
+                    <View className="flex-row items-center gap-3 mb-4">
+                        <SkeletonBlock
+                            width={40}
+                            height={40}
+                            rounded="rounded-xl"
+                        />
+                        <SkeletonBlock width={130} height={24} />
+                    </View>
+                    <View className="gap-3">
+                        {[1, 2, 3].map((i) => (
+                            <PastOrderSkeleton key={i} />
+                        ))}
+                    </View>
+                </View>
+            </View>
+        </Skeleton>
+    );
+}
+
+function FavoriteItemSkeleton() {
+    return (
+        <View className="p-4 border w-44 rounded-2xl border-muted bg-card">
+            <View className="flex-row items-center justify-between mb-3">
+                <SkeletonBlock width={40} height={40} rounded="rounded-xl" />
+                <SkeletonBlock width={40} height={24} rounded="rounded-full" />
+            </View>
+            <SkeletonBlock width={120} height={20} className="mb-2" />
+            <SkeletonBlock width={100} height={16} />
+        </View>
+    );
+}
+
+function PastOrderSkeleton() {
+    return (
+        <View className="p-4 border rounded-2xl border-muted bg-card">
+            <View className="flex-row items-start justify-between">
+                <View className="flex-1">
+                    <SkeletonBlock width={100} height={16} className="mb-2" />
+                    <SkeletonBlock width={180} height={22} />
+                </View>
+                <SkeletonBlock width={90} height={24} rounded="rounded-full" />
+            </View>
+            <View className="flex-row items-center gap-4 pt-3 mt-3 border-t border-muted">
+                <SkeletonBlock width={60} height={16} />
+                <SkeletonBlock width={50} height={16} />
+                <SkeletonBlock width={70} height={16} />
+            </View>
+        </View>
     );
 }

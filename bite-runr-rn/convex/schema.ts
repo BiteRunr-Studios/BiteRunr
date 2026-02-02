@@ -121,4 +121,18 @@ export default defineSchema({
             "itemId",
             "comments",
         ]),
+
+    // Order invites (QR code-based group joining)
+    orderInvites: defineTable({
+        orderId: v.id("orders"),
+        code: v.string(), // 8-char alphanumeric code
+        createdBy: v.id("users"),
+        expiresAt: v.number(), // Timestamp when invite expires
+        usageCount: v.number(), // Number of times this invite has been used
+        maxUses: v.optional(v.number()), // Optional limit on uses (null = unlimited)
+        isActive: v.boolean(), // Can be deactivated by creator
+    })
+        .index("by_code", ["code"])
+        .index("by_orderId", ["orderId"])
+        .index("by_orderId_isActive", ["orderId", "isActive"]),
 });
