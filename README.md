@@ -1,85 +1,96 @@
 # BiteRunr
 
-BiteRunr is an iOS app that streamlines group food ordering and payment splitting among friends. It helps groups organize orders and simplifies reimbursing the person who paid for the food.
+BiteRunr is a React Native mobile app that streamlines group food ordering and payment splitting among friends. It helps groups coordinate orders, scan receipts with AI, and track who owes what.
 
 ## Features
 
--   **Group Order Management**: Create and join food ordering groups
--   **Friend System**: Connect with friends and send/accept friend requests
--   **Order Tracking**: Track order status (created, active, completed, cancelled)
--   **Payment Simplification**: Easy way to track who owes what for group orders
--   **User Profiles**: Manage your personal information
+- **Group Order Management**: Create orders, add locations, and invite friends to join
+- **QR Code Invites**: Share orders via QR codes or alphanumeric invite codes
+- **AI Receipt Scanning**: Scan receipts with GPT-4o to automatically extract items and prices
+- **Settlement Tracking**: Track payment status per user (unpaid, claimed, confirmed)
+- **Friend System**: Send/accept friend requests and manage connections
+- **Push Notifications**: Real-time notifications via Expo push notifications
+- **Order Status Tracking**: Full order lifecycle (created, active, completed, cancelled)
 
 ## Tech Stack
 
 ### Frontend
 
--   Swift/SwiftUI iOS application
--   Kotlin Android application
--   Supabase for authentication
+- React Native 0.81 with Expo 54 (Expo Router for file-based routing)
+- NativeWind (Tailwind CSS for React Native)
+- React Navigation (tabs, drawer)
+- Lucide React Native for icons
 
 ### Backend
 
--   Node.js with Hono framework
--   Supabase(PostgreSQL) database with Drizzle ORM
--   OpenAPI/Swagger for API documentation
--   Supabase for authentication
+- Convex (real-time database and serverless functions)
+- Better Auth (email OTP + OAuth via GitHub/Google)
+- Resend for email delivery
+- AI SDK with OpenAI (GPT-4o-mini) for receipt parsing
 
 ## Project Structure
 
--   `/BiteRunr` - Kotlin Multiplatform App
--   `/BiteClubAPI` - Node.js backend API
+```
+bite-runr-rn/
+├── app/                  # Expo Router pages
+│   ├── (auth)/           # Sign in, sign up, OTP verification
+│   ├── (protected)/      # Authenticated screens
+│   │   ├── (tabs)/       # Home, Groups, Account tabs
+│   │   ├── order/        # Create, view, manage orders
+│   │   └── account/      # Profile, friends, support
+│   └── join/             # QR code / invite code entry point
+├── components/           # Reusable UI components
+├── convex/               # Convex backend (schema, functions, agents)
+├── hooks/                # Custom React hooks
+├── lib/                  # Utilities, auth helpers
+└── assets/               # Static assets
+```
 
-## Models
+## Data Models
 
-The app uses several interconnected data models:
-
--   **UserProfile**: Core user profile data and social connections.
--   **OrderDTO**: Group food orders with status, creator, and participants.
--   **OrderItem**: Individual food items linked to users and locations.
--   **Location**: Restaurant or venue details.
--   **OrderUserDTO**: Users participating in an order.
--   **OrderLocationDTO**: Locations associated with an order.
--   **FriendRequest**: Pending or resolved friend requests.
--   **Friendship**: Confirmed social connections between users.
--   **FriendRequestUser**: Lightweight user data for friend request context.
--   **ErrorResponse**: Structured backend error with validation details.
-
-These models are designed to support serialization with ‎⁠kotlinx.serialization⁠, cross-platform compatibility, and integration with SwiftUI and Jetpack Compose.
+- **Users**: Profiles with names and avatars, synced via Better Auth
+- **Orders**: Group food orders with status lifecycle and creator tracking
+- **Order Items**: Individual items with quantities, prices (in cents), and per-user assignment
+- **Order Users**: Participants with ordering status and settlement tracking
+- **Locations & Items**: Restaurants/venues and their menu items
+- **Friends & Friend Requests**: Social connections between users
+- **Order Invites**: Shareable codes with expiry and usage limits
 
 ## Getting Started
 
 ### Prerequisites
 
--   iOS device or simulator
--   Android device or simulator
--   Node.js and npm/pnpm
--   PostgreSQL database
+- Node.js (v18+)
+- iOS device/simulator or Android device/simulator
+- Convex account
+- Expo CLI
 
 ### Installation
 
 1. Clone the repository
-2. Set up the backend:
-    ```
-    cd BiteClubAPI
-    pnpm install
-    ```
-3. Configure environment variables (see .env.example)
-4. Run database migrations:
-    ```
-    pnpm drizzle-kit push
-    ```
-5. Start the backend:
-
-    ```
-    pnpm dev
-    ```
-
-6. Open the Kotlin Multiplatform app in Android Studio and run it on a simulator or device
+2. Install dependencies:
+   ```
+   cd bite-runr-rn
+   npm install
+   ```
+3. Start the Convex dev server:
+   ```
+   npm run convex:br
+   ```
+4. Start the Expo dev server:
+   ```
+   npm run dev
+   ```
+5. Run on a device or simulator:
+   ```
+   npm run ios
+   # or
+   npm run android
+   ```
 
 ---
 
-Copyright (c) 2025 RunrStudios  
+Copyright (c) 2025 RunrStudios
 All rights reserved.
 
 Unauthorized copying, use, or distribution of this code is strictly prohibited.
