@@ -354,7 +354,7 @@ export default function OrderSummary() {
                 </View>
 
                 {/* Footer */}
-                <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
+                <View className="gap-3 px-6 pt-4 pb-10 border-t border-muted bg-background">
                     <TouchableOpacity
                         className={`w-full py-3 border rounded-lg border-primary ${
                             isScanning ? "bg-primary/5" : "bg-primary/10"
@@ -380,6 +380,25 @@ export default function OrderSummary() {
                             </Text>
                         )}
                     </TouchableOpacity>
+
+                    {/* Show "View Payments" when ALL locations have been scanned */}
+                    {summary.locationSummaries.length > 0 &&
+                        summary.locationSummaries.every(
+                            (ls) => ls.subtotalInCents !== null,
+                        ) && (
+                            <TouchableOpacity
+                                className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
+                                onPress={() =>
+                                    router.push(
+                                        `/order/settlement?orderId=${orderId}`,
+                                    )
+                                }>
+                                <Icon name="Wallet" size={20} color="white" />
+                                <Text className="text-base font-semibold text-white">
+                                    View Payments
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                 </View>
             </View>
 

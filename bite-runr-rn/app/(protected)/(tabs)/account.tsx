@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { AuthContext } from "@/lib/convex-auth-context";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { router } from "expo-router";
 import Icon from "@/components/common/icon";
@@ -43,8 +43,8 @@ const items: Item[] = [
     {
         key: "payments",
         title: "Payments",
-        subtitle: "View & claim owed amounts",
-        icon: "CreditCard",
+        subtitle: "Set up your PayPal.me",
+        icon: "Wallet",
         iconBg: "bg-purple-500/10",
         iconColor: "#a855f7",
         href: "/account/payments",
@@ -71,6 +71,7 @@ const items: Item[] = [
 
 export default function AccountTab() {
     const { signOut } = useContext(AuthContext);
+    const unregisterPushToken = useMutation(api.pushNotifications.unregisterPushToken);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const { colorScheme } = useColorScheme();
 
@@ -84,6 +85,8 @@ export default function AccountTab() {
 
     async function onSignOut() {
         try {
+            // Unregister push token while still authenticated
+            await unregisterPushToken({}).catch(() => {});
             await signOut();
         } catch (e: any) {
             Alert.alert("Error", e?.message ?? "Something went wrong.");

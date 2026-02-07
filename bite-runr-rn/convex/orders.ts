@@ -168,6 +168,7 @@ export const get = query({
           userId: ou.userId,
           orderId: ou.orderId,
           status: ou.status,
+          settlementStatus: ou.settlementStatus,
           amountOwed: ou.amountOwed,
           itemCount,
           isCreator: ou.userId === order.creatorId,
@@ -212,6 +213,9 @@ export const get = query({
     const doneCount = orderUsers.filter((ou) => ou.status === "done").length;
     const totalCount = orderUsers.length;
 
+    // Get creator's PayPal handle for payment links
+    const creator = await ctx.db.get(order.creatorId);
+
     return {
       count: totalItems,
       orderUsers: enrichedOrderUsers,
@@ -224,6 +228,7 @@ export const get = query({
         id: order._id,
         name: order.name,
         creatorId: order.creatorId,
+        creatorPaypalMe: creator?.paypalMe ?? null,
         comments: order.comments,
         status: order.status,
         paused: order.paused,
@@ -233,6 +238,7 @@ export const get = query({
         id: ol._id,
         orderId: ol.orderId,
         locationId: ol.locationId,
+        receiptTotalInCents: ol.receiptTotalInCents ?? null,
         createdAt: ol._creationTime,
       })),
     };

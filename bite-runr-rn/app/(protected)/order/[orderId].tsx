@@ -222,6 +222,12 @@ export default function SpecificOrder() {
         }
     }
 
+    // Check if all locations have been scanned (receipts confirmed)
+    const allLocationsScanned =
+        data?.orderLocations &&
+        data.orderLocations.length > 0 &&
+        data.orderLocations.every((ol) => ol.receiptTotalInCents !== null);
+
     if (isPending) {
         return (
             <View className="items-center justify-center flex-1 px-6">
@@ -527,25 +533,42 @@ export default function SpecificOrder() {
                         })}
                     </View>
                 </View>
+
             </ScrollView>
 
             {/* Footer */}
             <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
                 {data.order.paused && !isCreator ? (
-                    <View className="items-center py-4">
-                        <View className="items-center justify-center w-12 h-12 mb-3 rounded-full bg-primary/10">
-                            <Icon
-                                name="Truck"
-                                size={24}
-                                color={NAV_THEME[colorScheme].primary}
-                            />
+                    <View className="gap-3">
+                        <View className="items-center py-2">
+                            <View className="items-center justify-center w-12 h-12 mb-3 rounded-full bg-primary/10">
+                                <Icon
+                                    name="Truck"
+                                    size={24}
+                                    color={NAV_THEME[colorScheme].primary}
+                                />
+                            </View>
+                            <Text className="text-lg font-semibold text-center text-foreground">
+                                Your order is being picked up
+                            </Text>
+                            <Text className="mt-1 text-sm text-center text-muted-foreground">
+                                Sit tight! You'll be notified when it's ready.
+                            </Text>
                         </View>
-                        <Text className="text-lg font-semibold text-center text-foreground">
-                            Your order is being picked up
-                        </Text>
-                        <Text className="mt-1 text-sm text-center text-muted-foreground">
-                            Sit tight! You'll be notified when it's ready.
-                        </Text>
+                        {allLocationsScanned && (
+                            <TouchableOpacity
+                                className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
+                                onPress={() =>
+                                    router.push(
+                                        `/order/settlement?orderId=${orderId}`,
+                                    )
+                                }>
+                                <Icon name="Wallet" size={20} color="white" />
+                                <Text className="text-base font-semibold text-white">
+                                    View Payments
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 ) : (
                     <>
@@ -564,22 +587,45 @@ export default function SpecificOrder() {
                         )}
                         <View className="flex-col gap-3">
                             {data.order.paused && isCreator ? (
-                                <TouchableOpacity
-                                    className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
-                                    onPress={() =>
-                                        router.push(
-                                            `/order/summary?orderId=${orderId}`,
-                                        )
-                                    }>
-                                    <Icon
-                                        name="ClipboardList"
-                                        size={20}
-                                        color="white"
-                                    />
-                                    <Text className="text-base font-semibold text-white">
-                                        View Order Summary
-                                    </Text>
-                                </TouchableOpacity>
+                                <>
+                                    <TouchableOpacity
+                                        className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
+                                        onPress={() =>
+                                            router.push(
+                                                `/order/summary?orderId=${orderId}`,
+                                            )
+                                        }>
+                                        <Icon
+                                            name="ClipboardList"
+                                            size={20}
+                                            color="white"
+                                        />
+                                        <Text className="text-base font-semibold text-white">
+                                            View Order Summary
+                                        </Text>
+                                    </TouchableOpacity>
+                                    {allLocationsScanned && (
+                                        <TouchableOpacity
+                                            className="flex-row items-center justify-center w-full gap-2 py-4 border rounded-xl border-primary"
+                                            onPress={() =>
+                                                router.push(
+                                                    `/order/settlement?orderId=${orderId}`,
+                                                )
+                                            }>
+                                            <Icon
+                                                name="Wallet"
+                                                size={20}
+                                                color={
+                                                    NAV_THEME[colorScheme]
+                                                        .primary
+                                                }
+                                            />
+                                            <Text className="text-base font-semibold text-primary">
+                                                View Payments
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </>
                             ) : (
                                 <TouchableOpacity
                                     className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"

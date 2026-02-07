@@ -42,7 +42,7 @@ export const unregisterPushToken = mutation({
     args: {},
     handler: async (ctx) => {
         const userId = await getUserId(ctx);
-        if (!userId) throw new Error("Not authenticated");
+        if (!userId) return false;
 
         // Remove all push tokens for this user
         await pushNotifications.removeToken(ctx, { userId });

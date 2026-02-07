@@ -18,6 +18,7 @@ export const syncUser = mutation({
             lastName: v.string(),
             avatarUrl: v.optional(v.string()),
             avatarStorageId: v.optional(v.id("_storage")),
+            paypalMe: v.optional(v.string()),
         }),
         v.null()
     ),
@@ -36,6 +37,7 @@ export const syncUser = mutation({
             lastName: user.lastName,
             avatarUrl: user.avatarUrl,
             avatarStorageId: user.avatarStorageId,
+            paypalMe: user.paypalMe,
         };
     },
 });
@@ -58,6 +60,7 @@ export const getCurrentUser = query({
             lastName: user.lastName,
             avatarUrl: user.avatarUrl,
             avatarStorageId: user.avatarStorageId,
+            paypalMe: user.paypalMe,
         };
     },
 });
@@ -156,5 +159,22 @@ export const removeAvatar = mutation({
         });
 
         return { success: true };
+    },
+});
+
+// Update user's PayPal.me handle
+export const updatePaypalMe = mutation({
+    args: {
+        paypalMe: v.optional(v.string()),
+    },
+    handler: async (ctx, args) => {
+        const userId = await getUserId(ctx);
+        if (!userId) throw new Error("Not authenticated");
+
+        const trimmed = args.paypalMe?.trim() || undefined;
+
+        await ctx.db.patch(userId, { paypalMe: trimmed });
+
+        return userId;
     },
 });

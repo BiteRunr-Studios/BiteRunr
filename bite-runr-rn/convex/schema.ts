@@ -29,6 +29,7 @@ export default defineSchema({
         lastName: v.string(),
         avatarUrl: v.optional(v.string()),
         avatarStorageId: v.optional(v.id("_storage")),
+        paypalMe: v.optional(v.string()),
     })
         .index("email", ["email"])
         .searchIndex("search_name", { searchField: "firstName" })

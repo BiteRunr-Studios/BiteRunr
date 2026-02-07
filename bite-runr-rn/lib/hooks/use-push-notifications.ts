@@ -6,6 +6,7 @@ import Constants from "expo-constants";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/lib/convex-auth-context";
+import { router } from "expo-router";
 
 // Configure how notifications are handled when app is in foreground
 Notifications.setNotificationHandler({
@@ -113,21 +114,30 @@ export function usePushNotifications() {
         };
     }, [isReady, isLoggedIn, hasToken]);
 
-    // Unregister token on logout
+    // Reset local state when user logs out (don't call unregister here — auth is already gone)
     useEffect(() => {
         if (isReady && !isLoggedIn && expoPushToken) {
-            unregisterToken({}).catch(console.error);
             setExpoPushToken(null);
             hasCheckedPermission.current = false;
             isRegistering.current = false;
         }
-    }, [isReady, isLoggedIn, unregisterToken, expoPushToken]);
+    }, [isReady, isLoggedIn, expoPushToken]);
+
+    // Call this BEFORE signing out (while still authenticated)
+    const cleanupBeforeSignOut = useCallback(async () => {
+        try {
+            await unregisterToken({});
+        } catch {
+            // Ignore — best-effort cleanup
+        }
+    }, [unregisterToken]);
 
     return {
         expoPushToken,
         showPermissionModal,
         handleAllowNotifications,
         handleDenyNotifications,
+        cleanupBeforeSignOut,
     };
 }
 
@@ -189,13 +199,10 @@ async function getExistingPushToken(): Promise<string | null> {
     }
 }
 
-function handleNotificationTap(_data: Record<string, unknown>) {
-    // Handle navigation based on notification type
-    // Navigation can be added here based on your app's routing
-    // Example:
-    // if (data.type === "friend_request") {
-    //     router.push("/(protected)/account/friends");
-    // } else if (data.type === "group_order" && data.orderId) {
-    //     router.push(`/(protected)/order/${data.orderId}`);
-    // }
+function handleNotificationTap(data: Record<string, unknown>) {
+    if (data.orderId && typeof data.orderId === "string") {
+        router.push(`/(protected)/order/${data.orderId}` as any);
+    } else if (data.type === "friend_request") {
+        router.push("/(protected)/account/friends" as any);
+    }
 }
