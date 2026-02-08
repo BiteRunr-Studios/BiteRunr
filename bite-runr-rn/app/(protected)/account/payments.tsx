@@ -39,7 +39,7 @@ export default function PaymentSettingsScreen() {
 
     useEffect(() => {
         if (user) {
-            const changed = paypalMe !== (user.paypalMe ?? "");
+            const changed = paypalMe.trim() !== (user.paypalMe ?? "");
             setHasChanges(changed);
         }
     }, [paypalMe, user]);
