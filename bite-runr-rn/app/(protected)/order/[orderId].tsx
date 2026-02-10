@@ -230,7 +230,7 @@ export default function SpecificOrder() {
 
     if (isPending) {
         return (
-            <View className="items-center justify-center flex-1 px-6">
+            <View className="flex-1 justify-center items-center px-6">
                 <Text className="text-foreground">Loading...</Text>
             </View>
         );
@@ -238,7 +238,7 @@ export default function SpecificOrder() {
 
     if (!data) {
         return (
-            <View className="items-center justify-center flex-1 px-6">
+            <View className="flex-1 justify-center items-center px-6">
                 <Text className="text-destructive">Order not found</Text>
             </View>
         );
@@ -253,7 +253,7 @@ export default function SpecificOrder() {
         <>
             <SafeAreaView edges={["top"]} />
             {/* Header */}
-            <View className="flex-row items-center justify-between px-4 py-3 border-b border-border">
+            <View className="flex-row justify-between items-center px-4 py-3 border-b border-border">
                 <Pressable
                     onPress={() => router.back()}
                     className="p-2 -ml-2 rounded-full active:opacity-70">
@@ -267,7 +267,7 @@ export default function SpecificOrder() {
                     Order Details
                 </Text>
                 {isCreator && (
-                    <View className="flex-row items-center gap-2">
+                    <View className="flex-row gap-2 items-center">
                         {!data.order.paused && (
                             <TouchableOpacity
                                 onPress={() => setShowQRModal(true)}
@@ -293,8 +293,8 @@ export default function SpecificOrder() {
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
                 {/* Order Info Card */}
                 <View className="mx-4 mt-4">
-                    <View className="p-5 border rounded-2xl border-muted bg-card">
-                        <View className="flex-row items-start justify-between mb-3">
+                    <View className="p-5 rounded-2xl border border-muted bg-card">
+                        <View className="flex-row justify-between items-start mb-3">
                             <View className="flex-1">
                                 <Text className="text-sm text-muted-foreground">
                                     {new Date(
@@ -338,8 +338,8 @@ export default function SpecificOrder() {
 
                         {/* Stats Row */}
                         <View className="flex-row gap-4 pt-3 mt-1 border-t border-muted">
-                            <View className="flex-row items-center gap-2">
-                                <View className="items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                            <View className="flex-row gap-2 items-center">
+                                <View className="justify-center items-center w-8 h-8 rounded-full bg-primary/10">
                                     <Icon
                                         name="Users"
                                         size={16}
@@ -355,8 +355,8 @@ export default function SpecificOrder() {
                                         : "people"}
                                 </Text>
                             </View>
-                            <View className="flex-row items-center gap-2">
-                                <View className="items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                            <View className="flex-row gap-2 items-center">
+                                <View className="justify-center items-center w-8 h-8 rounded-full bg-primary/10">
                                     <Icon
                                         name="ShoppingBag"
                                         size={16}
@@ -377,7 +377,7 @@ export default function SpecificOrder() {
                 {/* Progress Section */}
                 {!data.order.paused && (
                     <View className="px-4 mt-6">
-                        <View className="flex-row items-center justify-between mb-3">
+                        <View className="flex-row justify-between items-center mb-3">
                             <Text className="text-base font-semibold text-foreground">
                                 Order Progress
                             </Text>
@@ -386,7 +386,7 @@ export default function SpecificOrder() {
                                 {data.completionStats?.total} done
                             </Text>
                         </View>
-                        <View className="h-2 overflow-hidden rounded-full bg-muted">
+                        <View className="overflow-hidden h-2 rounded-full bg-muted">
                             <View
                                 className={`h-full rounded-full ${
                                     data.completionStats?.allDone
@@ -397,7 +397,7 @@ export default function SpecificOrder() {
                             />
                         </View>
                         {data.completionStats?.allDone && (
-                            <View className="flex-row items-center gap-2 mt-2">
+                            <View className="flex-row gap-2 items-center mt-2">
                                 <Icon
                                     name="CircleCheck"
                                     size={14}
@@ -450,7 +450,7 @@ export default function SpecificOrder() {
                                                     width: 48,
                                                     height: 48,
                                                 }}
-                                                className="items-center justify-center rounded-full bg-muted">
+                                                className="justify-center items-center rounded-full bg-muted">
                                                 <Text className="text-lg font-semibold text-muted-foreground">
                                                     {`${(orderUser.user?.firstName || "").charAt(0)}${(orderUser.user?.lastName || "").charAt(0)}`.toUpperCase() ||
                                                         "U"}
@@ -476,7 +476,7 @@ export default function SpecificOrder() {
 
                                     {/* Info */}
                                     <View className="flex-1 ml-3">
-                                        <View className="flex-row items-center gap-2">
+                                        <View className="flex-row gap-2 items-center">
                                             <Text
                                                 className={`text-base font-medium ${
                                                     isCurrentUser
@@ -495,7 +495,7 @@ export default function SpecificOrder() {
                                                 </View>
                                             )}
                                         </View>
-                                        <View className="flex-row items-center gap-2 mt-1">
+                                        <View className="flex-row gap-2 items-center mt-1">
                                             <Text
                                                 className={`text-sm ${
                                                     isDone
@@ -520,7 +520,7 @@ export default function SpecificOrder() {
 
                                     {/* Done badge */}
                                     {isDone && (
-                                        <View className="items-center justify-center w-8 h-8 rounded-full bg-green-500/10">
+                                        <View className="justify-center items-center w-8 h-8 rounded-full bg-green-500/10">
                                             <Icon
                                                 name="CircleCheck"
                                                 size={20}
@@ -533,7 +533,6 @@ export default function SpecificOrder() {
                         })}
                     </View>
                 </View>
-
             </ScrollView>
 
             {/* Footer */}
@@ -541,7 +540,7 @@ export default function SpecificOrder() {
                 {data.order.paused && !isCreator ? (
                     <View className="gap-3">
                         <View className="items-center py-2">
-                            <View className="items-center justify-center w-12 h-12 mb-3 rounded-full bg-primary/10">
+                            <View className="justify-center items-center mb-3 w-12 h-12 rounded-full bg-primary/10">
                                 <Icon
                                     name="Truck"
                                     size={24}
@@ -557,7 +556,7 @@ export default function SpecificOrder() {
                         </View>
                         {allLocationsScanned && (
                             <TouchableOpacity
-                                className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
+                                className="flex-row gap-2 justify-center items-center py-4 w-full rounded-xl bg-primary"
                                 onPress={() =>
                                     router.push(
                                         `/order/settlement?orderId=${orderId}`,
@@ -573,7 +572,7 @@ export default function SpecificOrder() {
                 ) : (
                     <>
                         {data.order.paused && (
-                            <View className="flex-row items-center gap-2 p-3 mb-4 rounded-lg bg-orange-500/10">
+                            <View className="flex-row gap-2 items-center p-3 mb-4 rounded-lg bg-orange-500/10">
                                 <Icon
                                     name="CircleAlert"
                                     size={18}
@@ -589,7 +588,7 @@ export default function SpecificOrder() {
                             {data.order.paused && isCreator ? (
                                 <>
                                     <TouchableOpacity
-                                        className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
+                                        className="flex-row gap-2 justify-center items-center py-4 w-full rounded-xl bg-primary"
                                         onPress={() =>
                                             router.push(
                                                 `/order/summary?orderId=${orderId}`,
@@ -606,7 +605,7 @@ export default function SpecificOrder() {
                                     </TouchableOpacity>
                                     {allLocationsScanned && (
                                         <TouchableOpacity
-                                            className="flex-row items-center justify-center w-full gap-2 py-4 border rounded-xl border-primary"
+                                            className="flex-row gap-2 justify-center items-center py-4 w-full rounded-xl border border-primary"
                                             onPress={() =>
                                                 router.push(
                                                     `/order/settlement?orderId=${orderId}`,
@@ -628,7 +627,7 @@ export default function SpecificOrder() {
                                 </>
                             ) : (
                                 <TouchableOpacity
-                                    className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
+                                    className="flex-row gap-2 justify-center items-center py-4 w-full rounded-xl bg-primary"
                                     onPress={handleSelectItems}>
                                     <Icon name="Plus" size={20} color="white" />
                                     <Text className="text-base font-semibold text-white">
