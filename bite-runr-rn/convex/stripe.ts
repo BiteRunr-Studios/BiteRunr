@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import {
     query,
+    mutation,
     action,
     internalMutation,
     internalQuery,
@@ -485,6 +486,39 @@ export const updateSettlementStatus = internalMutation({
         await ctx.db.patch(args.orderUserId, {
             settlementStatus: args.status,
         });
+    },
+});
+
+// Cancel a pending payment when user dismisses the Payment Sheet
+export const cancelPendingPayment = mutation({
+    args: { orderUserId: v.id("orderUsers") },
+    handler: async (ctx, args) => {
+        const userId = await getUserId(ctx);
+        if (!userId) throw new Error("Not authenticated");
+
+        const orderUser = await ctx.db.get(args.orderUserId);
+        if (!orderUser || orderUser.userId !== userId) {
+            throw new Error("Not authorized");
+        }
+
+        // Find the pending/processing payment for this orderUser
+        const payments = await ctx.db
+            .query("payments")
+            .withIndex("by_orderUserId", (q) =>
+                q.eq("orderUserId", args.orderUserId),
+            )
+            .collect();
+
+        const pendingPayment = payments.find(
+            (p) => p.status === "pending" || p.status === "processing",
+        );
+
+        if (pendingPayment) {
+            await ctx.db.patch(pendingPayment._id, { status: "failed", failureMessage: "Cancelled by user" });
+        }
+
+        // Reset settlement status back to unpaid
+        await ctx.db.patch(args.orderUserId, { settlementStatus: "unpaid" });
     },
 });
 

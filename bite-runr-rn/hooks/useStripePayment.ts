@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { useAction } from "convex/react";
+import { useState, useCallback, useRef } from "react";
+import { useAction, useMutation } from "convex/react";
 import { useStripe } from "@stripe/stripe-react-native";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -9,24 +9,36 @@ type PaymentState = "idle" | "creating" | "presenting" | "succeeded" | "failed";
 export function useStripePayment() {
     const { initPaymentSheet, presentPaymentSheet } = useStripe();
     const createPaymentIntentAction = useAction(api.stripe.createPaymentIntent);
+    const cancelPayment = useMutation(api.stripe.cancelPendingPayment);
+    const activeOrderUserId = useRef<Id<"orderUsers"> | null>(null);
 
     const [state, setState] = useState<PaymentState>("idle");
     const [error, setError] = useState<string | null>(null);
+
+    const resetPayment = useCallback(
+        async (orderUserId: Id<"orderUsers">) => {
+            try {
+                await cancelPayment({ orderUserId });
+            } catch {
+                // Best effort
+            }
+        },
+        [cancelPayment],
+    );
 
     const pay = useCallback(
         async (orderUserId: Id<"orderUsers">) => {
             setState("creating");
             setError(null);
+            activeOrderUserId.current = orderUserId;
 
             try {
-                // Create PaymentIntent on backend
                 const result = await createPaymentIntentAction({ orderUserId });
 
                 if (!result?.clientSecret) {
                     throw new Error("Failed to create payment");
                 }
 
-                // Initialize Payment Sheet
                 const { error: initError } = await initPaymentSheet({
                     paymentIntentClientSecret: result.clientSecret,
                     merchantDisplayName: "BiteRunr",
@@ -37,28 +49,28 @@ export function useStripePayment() {
                     throw new Error(initError.message);
                 }
 
-                // Present Payment Sheet
                 setState("presenting");
                 const { error: presentError } = await presentPaymentSheet();
 
                 if (presentError) {
-                    if (presentError.code === "Canceled") {
-                        // User cancelled -- reset to idle
-                        setState("idle");
-                        return false;
-                    }
-                    throw new Error(presentError.message);
+                    // User dismissed or payment failed -- reset backend state
+                    await resetPayment(orderUserId);
+                    setState("idle");
+                    return false;
                 }
 
+                // Success -- webhook will update the status
+                activeOrderUserId.current = null;
                 setState("succeeded");
                 return true;
             } catch (err: any) {
+                await resetPayment(orderUserId);
                 setState("failed");
                 setError(err?.message ?? "Payment failed");
                 return false;
             }
         },
-        [createPaymentIntentAction, initPaymentSheet, presentPaymentSheet],
+        [createPaymentIntentAction, initPaymentSheet, presentPaymentSheet, resetPayment],
     );
 
     const reset = useCallback(() => {
