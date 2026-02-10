@@ -40,6 +40,12 @@ export default function OrderSummary() {
         orderId ? { orderId: orderId as Id<"orders"> } : "skip",
     );
 
+    // Order data for settlement info
+    const orderData = useQuery(
+        api.orders.get,
+        orderId ? { orderId: orderId as Id<"orders"> } : "skip",
+    );
+
     // Receipt scanning hook
     const {
         state: scanState,
@@ -350,6 +356,99 @@ export default function OrderSummary() {
                                 </Text>
                             </View>
                         )}
+
+                        {/* Settlement Summary - shows after amounts are assigned */}
+                        {orderData && (() => {
+                            const participants = orderData.orderUsers.filter(
+                                (ou) => !ou.isCreator,
+                            );
+                            const hasAmounts = participants.some(
+                                (ou) => Number(ou.amountOwed) > 0,
+                            );
+                            if (!hasAmounts) return null;
+
+                            const paidCount = participants.filter(
+                                (ou) =>
+                                    ou.settlementStatus === "paid" ||
+                                    ou.settlementStatus === "confirmed",
+                            ).length;
+                            const totalOwed = participants.reduce(
+                                (sum, ou) => sum + Number(ou.amountOwed),
+                                0,
+                            );
+
+                            return (
+                                <View className="p-4 mt-4 border rounded-2xl border-primary/30 bg-primary/5">
+                                    <View className="flex-row items-center justify-between mb-3">
+                                        <View className="flex-row items-center gap-2">
+                                            <Icon
+                                                name="Wallet"
+                                                size={16}
+                                                color={
+                                                    NAV_THEME[colorScheme]
+                                                        .primary
+                                                }
+                                            />
+                                            <Text className="text-sm font-semibold text-foreground">
+                                                Who owes what
+                                            </Text>
+                                        </View>
+                                        <Text className="text-sm text-muted-foreground">
+                                            {paidCount}/{participants.length}{" "}
+                                            paid
+                                        </Text>
+                                    </View>
+                                    <View className="gap-2">
+                                        {participants.map((ou) => {
+                                            const amount = Number(
+                                                ou.amountOwed,
+                                            );
+                                            if (amount <= 0) return null;
+                                            const isPaid =
+                                                ou.settlementStatus ===
+                                                    "paid" ||
+                                                ou.settlementStatus ===
+                                                    "confirmed";
+                                            return (
+                                                <View
+                                                    key={ou.id}
+                                                    className="flex-row items-center justify-between">
+                                                    <Text
+                                                        className={`text-sm ${isPaid ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                                                        {ou.user?.firstName}{" "}
+                                                        {ou.user?.lastName}
+                                                    </Text>
+                                                    <View className="flex-row items-center gap-2">
+                                                        <Text
+                                                            className={`text-sm font-medium ${isPaid ? "text-green-500" : "text-foreground"}`}>
+                                                            $
+                                                            {(
+                                                                amount / 100
+                                                            ).toFixed(2)}
+                                                        </Text>
+                                                        {isPaid && (
+                                                            <Icon
+                                                                name="CircleCheck"
+                                                                size={14}
+                                                                color="#22c55e"
+                                                            />
+                                                        )}
+                                                    </View>
+                                                </View>
+                                            );
+                                        })}
+                                    </View>
+                                    <View className="flex-row items-center justify-between pt-2 mt-2 border-t border-primary/20">
+                                        <Text className="text-sm font-semibold text-foreground">
+                                            Total
+                                        </Text>
+                                        <Text className="text-sm font-semibold text-primary">
+                                            ${(totalOwed / 100).toFixed(2)}
+                                        </Text>
+                                    </View>
+                                </View>
+                            );
+                        })()}
                     </ScrollView>
                 </View>
 

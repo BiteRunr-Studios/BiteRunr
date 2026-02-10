@@ -17,6 +17,7 @@ import { ConvexReactClient } from "convex/react";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { AuthProvider } from "@/lib/convex-auth-context";
 import { authClient } from "@/lib/auth-client";
+import { StripeProvider } from "@stripe/stripe-react-native";
 import "../global.css";
 
 const LIGHT_THEME: Theme = { ...DefaultTheme, colors: NAV_THEME.light };
@@ -74,6 +75,9 @@ export default function RootLayout() {
     return (
         <ConvexBetterAuthProvider client={convex} authClient={authClient}>
             <AuthProvider>
+                <StripeProvider
+                    publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
+                >
                 <ThemeProvider
                     value={colorScheme == "dark" ? DARK_THEME : LIGHT_THEME}
                 >
@@ -106,6 +110,7 @@ export default function RootLayout() {
                         </GestureHandlerRootView>
                     </SafeAreaProvider>
                 </ThemeProvider>
+                </StripeProvider>
             </AuthProvider>
         </ConvexBetterAuthProvider>
     );

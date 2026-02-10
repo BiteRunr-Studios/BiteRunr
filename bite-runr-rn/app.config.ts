@@ -79,6 +79,12 @@ const config: ExpoConfig = {
                     "Allow $(PRODUCT_NAME) to access your camera to scan QR codes for joining group orders.",
             },
         ],
+        [
+            "@stripe/stripe-react-native",
+            {
+                enableGooglePay: true,
+            },
+        ],
     ],
     experiments: {
         typedRoutes: true,

@@ -18,6 +18,8 @@ export const syncUser = mutation({
             lastName: v.string(),
             avatarUrl: v.optional(v.string()),
             avatarStorageId: v.optional(v.id("_storage")),
+            stripeConnectAccountId: v.optional(v.string()),
+            stripeConnectOnboarded: v.optional(v.boolean()),
         }),
         v.null()
     ),
@@ -36,6 +38,8 @@ export const syncUser = mutation({
             lastName: user.lastName,
             avatarUrl: user.avatarUrl,
             avatarStorageId: user.avatarStorageId,
+            stripeConnectAccountId: user.stripeConnectAccountId,
+            stripeConnectOnboarded: user.stripeConnectOnboarded,
         };
     },
 });

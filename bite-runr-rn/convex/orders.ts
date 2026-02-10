@@ -168,6 +168,7 @@ export const get = query({
           userId: ou.userId,
           orderId: ou.orderId,
           status: ou.status,
+          settlementStatus: ou.settlementStatus,
           amountOwed: ou.amountOwed,
           itemCount,
           isCreator: ou.userId === order.creatorId,

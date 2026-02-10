@@ -18,6 +18,17 @@ export const settlementStatusValidator = v.union(
     v.literal("unpaid"),
     v.literal("claimed"),
     v.literal("confirmed"),
+    v.literal("processing"),
+    v.literal("paid"),
+    v.literal("failed"),
+);
+
+export const paymentStatusValidator = v.union(
+    v.literal("pending"),
+    v.literal("processing"),
+    v.literal("succeeded"),
+    v.literal("failed"),
+    v.literal("refunded"),
 );
 
 export default defineSchema({
@@ -29,6 +40,8 @@ export default defineSchema({
         lastName: v.string(),
         avatarUrl: v.optional(v.string()),
         avatarStorageId: v.optional(v.id("_storage")),
+        stripeConnectAccountId: v.optional(v.string()),
+        stripeConnectOnboarded: v.optional(v.boolean()),
     })
         .index("email", ["email"])
         .searchIndex("search_name", { searchField: "firstName" })
@@ -135,4 +148,23 @@ export default defineSchema({
         .index("by_code", ["code"])
         .index("by_orderId", ["orderId"])
         .index("by_orderId_isActive", ["orderId", "isActive"]),
+
+    // Stripe payments
+    payments: defineTable({
+        orderId: v.id("orders"),
+        orderUserId: v.id("orderUsers"),
+        payerUserId: v.id("users"),
+        recipientUserId: v.id("users"),
+        stripePaymentIntentId: v.string(),
+        stripeConnectAccountId: v.string(),
+        amountInCents: v.int64(),
+        applicationFeeInCents: v.int64(),
+        status: paymentStatusValidator,
+        clientSecret: v.optional(v.string()),
+        failureMessage: v.optional(v.string()),
+    })
+        .index("by_orderId", ["orderId"])
+        .index("by_orderUserId", ["orderUserId"])
+        .index("by_stripePaymentIntentId", ["stripePaymentIntentId"])
+        .index("by_orderId_status", ["orderId", "status"]),
 });

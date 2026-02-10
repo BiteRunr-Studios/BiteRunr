@@ -7,6 +7,7 @@ import {
     Animated,
     Alert,
     Pressable,
+    ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
@@ -26,6 +27,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { QRCodeModal } from "@/components/qr-code-modal";
+import { useStripePayment } from "@/hooks/useStripePayment";
 
 type ButtonState = "readyToRun" | "enabled" | "disabled";
 
@@ -75,6 +77,13 @@ export default function SpecificOrder() {
     // Mutations
     const setStatus = useMutation(api.orderUsers.setStatus);
     const updateOrder = useMutation(api.orders.update);
+
+    // Payment
+    const runnerCapability = useQuery(
+        api.stripe.getRunnerPaymentCapability,
+        orderId ? { orderId: orderId as Id<"orders"> } : "skip",
+    );
+    const { pay, isProcessing: isPaymentProcessing } = useStripePayment();
 
     const prevStatusRef = useRef<string | null>(null);
 
@@ -510,10 +519,32 @@ export default function SpecificOrder() {
                                                     : "items"}
                                             </Text>
                                         </View>
+
+                                        {/* Amount owed + settlement status */}
+                                        {data.order.paused &&
+                                            Number(orderUser.amountOwed) > 0 && (
+                                                <View className="flex-row items-center gap-2 mt-1.5">
+                                                    <Text className="text-sm font-medium text-foreground">
+                                                        $
+                                                        {(
+                                                            Number(
+                                                                orderUser.amountOwed,
+                                                            ) / 100
+                                                        ).toFixed(2)}
+                                                    </Text>
+                                                    <SettlementBadge
+                                                        status={
+                                                            orderUser.settlementStatus
+                                                        }
+                                                    />
+                                                </View>
+                                            )}
                                     </View>
 
-                                    {/* Done badge */}
-                                    {isDone && (
+                                    {/* Status badge */}
+                                    {data.order.paused &&
+                                    Number(orderUser.amountOwed) > 0 &&
+                                    orderUser.settlementStatus === "paid" ? (
                                         <View className="items-center justify-center w-8 h-8 rounded-full bg-green-500/10">
                                             <Icon
                                                 name="CircleCheck"
@@ -521,7 +552,15 @@ export default function SpecificOrder() {
                                                 color="#22c55e"
                                             />
                                         </View>
-                                    )}
+                                    ) : isDone && !data.order.paused ? (
+                                        <View className="items-center justify-center w-8 h-8 rounded-full bg-green-500/10">
+                                            <Icon
+                                                name="CircleCheck"
+                                                size={20}
+                                                color="#22c55e"
+                                            />
+                                        </View>
+                                    ) : null}
                                 </View>
                             );
                         })}
@@ -532,65 +571,33 @@ export default function SpecificOrder() {
             {/* Footer */}
             <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
                 {data.order.paused && !isCreator ? (
-                    <View className="items-center py-4">
-                        <View className="items-center justify-center w-12 h-12 mb-3 rounded-full bg-primary/10">
-                            <Icon
-                                name="Truck"
-                                size={24}
-                                color={NAV_THEME[colorScheme].primary}
-                            />
-                        </View>
-                        <Text className="text-lg font-semibold text-center text-foreground">
-                            Your order is being picked up
-                        </Text>
-                        <Text className="mt-1 text-sm text-center text-muted-foreground">
-                            Sit tight! You'll be notified when it's ready.
-                        </Text>
-                    </View>
+                    <ParticipantFooter
+                        data={data}
+                        currentUserId={currentUserId}
+                        runnerCanReceive={
+                            runnerCapability?.canReceivePayments ?? false
+                        }
+                        onPay={pay}
+                        isPaymentProcessing={isPaymentProcessing}
+                        colorScheme={colorScheme}
+                    />
+                ) : data.order.paused && isCreator ? (
+                    <RunnerFooter
+                        orderId={orderId as string}
+                        colorScheme={colorScheme}
+                    />
                 ) : (
                     <>
-                        {data.order.paused && (
-                            <View className="flex-row items-center gap-2 p-3 mb-4 rounded-lg bg-orange-500/10">
-                                <Icon
-                                    name="CircleAlert"
-                                    size={18}
-                                    color="#f97316"
-                                />
-                                <Text className="flex-1 text-sm text-orange-500">
-                                    The run has started. No more items can be
-                                    added.
-                                </Text>
-                            </View>
-                        )}
                         <View className="flex-col gap-3">
-                            {data.order.paused && isCreator ? (
-                                <TouchableOpacity
-                                    className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
-                                    onPress={() =>
-                                        router.push(
-                                            `/order/summary?orderId=${orderId}`,
-                                        )
-                                    }>
-                                    <Icon
-                                        name="ClipboardList"
-                                        size={20}
-                                        color="white"
-                                    />
-                                    <Text className="text-base font-semibold text-white">
-                                        View Order Summary
-                                    </Text>
-                                </TouchableOpacity>
-                            ) : (
-                                <TouchableOpacity
-                                    className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
-                                    onPress={handleSelectItems}>
-                                    <Icon name="Plus" size={20} color="white" />
-                                    <Text className="text-base font-semibold text-white">
-                                        Select Items
-                                    </Text>
-                                </TouchableOpacity>
-                            )}
-                            {isCreator && !data.order.paused && (
+                            <TouchableOpacity
+                                className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
+                                onPress={handleSelectItems}>
+                                <Icon name="Plus" size={20} color="white" />
+                                <Text className="text-base font-semibold text-white">
+                                    Select Items
+                                </Text>
+                            </TouchableOpacity>
+                            {isCreator && (
                                 <Animated.View
                                     style={{
                                         opacity: buttonOpacity,
@@ -651,5 +658,311 @@ export default function SpecificOrder() {
                 />
             )}
         </>
+    );
+}
+
+function ParticipantFooter({
+    data,
+    currentUserId,
+    runnerCanReceive,
+    onPay,
+    isPaymentProcessing,
+    colorScheme,
+}: {
+    data: NonNullable<ReturnType<typeof useQuery<typeof api.orders.get>>>;
+    currentUserId: string | undefined;
+    runnerCanReceive: boolean;
+    onPay: (orderUserId: Id<"orderUsers">) => Promise<boolean>;
+    isPaymentProcessing: boolean;
+    colorScheme: "light" | "dark";
+}) {
+    const currentOrderUser = data.orderUsers.find(
+        (ou) => ou.userId === currentUserId,
+    );
+    const amountOwed = Number(currentOrderUser?.amountOwed ?? 0);
+    const settlementStatus = currentOrderUser?.settlementStatus;
+    const hasAmountsAssigned = amountOwed > 0;
+
+    // Before receipt scanning -- amounts not yet calculated
+    if (!hasAmountsAssigned) {
+        return (
+            <View className="items-center py-4">
+                <View className="items-center justify-center w-12 h-12 mb-3 rounded-full bg-primary/10">
+                    <Icon
+                        name="Truck"
+                        size={24}
+                        color={NAV_THEME[colorScheme].primary}
+                    />
+                </View>
+                <Text className="text-lg font-semibold text-center text-foreground">
+                    Your order is being picked up
+                </Text>
+                <Text className="mt-1 text-sm text-center text-muted-foreground">
+                    Sit tight! You'll be notified when it's ready.
+                </Text>
+            </View>
+        );
+    }
+
+    // Already paid
+    if (settlementStatus === "paid" || settlementStatus === "confirmed") {
+        return (
+            <View className="items-center py-4">
+                <View className="items-center justify-center w-12 h-12 mb-3 rounded-full bg-green-500/10">
+                    <Icon name="CircleCheck" size={24} color="#22c55e" />
+                </View>
+                <Text className="text-lg font-semibold text-center text-foreground">
+                    You're all set!
+                </Text>
+                <Text className="mt-1 text-sm text-center text-muted-foreground">
+                    Your payment of ${(amountOwed / 100).toFixed(2)} has been
+                    completed.
+                </Text>
+            </View>
+        );
+    }
+
+    // Processing
+    if (settlementStatus === "processing") {
+        return (
+            <View className="items-center py-4">
+                <View className="items-center justify-center w-12 h-12 mb-3 rounded-full bg-blue-500/10">
+                    <Icon name="Clock" size={24} color="#3b82f6" />
+                </View>
+                <Text className="text-lg font-semibold text-center text-foreground">
+                    Payment processing
+                </Text>
+                <Text className="mt-1 text-sm text-center text-muted-foreground">
+                    Your payment of ${(amountOwed / 100).toFixed(2)} is being
+                    processed.
+                </Text>
+            </View>
+        );
+    }
+
+    // Unpaid or failed -- show Pay button
+    const canPay =
+        runnerCanReceive &&
+        (settlementStatus === "unpaid" || settlementStatus === "failed");
+
+    return (
+        <View>
+            {/* Amount summary */}
+            <View className="flex-row items-center justify-between p-4 mb-4 border rounded-xl border-muted bg-card">
+                <View>
+                    <Text className="text-sm text-muted-foreground">
+                        Your share
+                    </Text>
+                    <Text className="text-2xl font-bold text-foreground">
+                        ${(amountOwed / 100).toFixed(2)}
+                    </Text>
+                </View>
+                <SettlementBadge status={settlementStatus ?? "unpaid"} />
+            </View>
+
+            {settlementStatus === "failed" && (
+                <View className="flex-row items-center gap-2 p-3 mb-4 rounded-lg bg-red-500/10">
+                    <Icon name="CircleAlert" size={16} color="#ef4444" />
+                    <Text className="flex-1 text-sm text-red-500">
+                        Payment failed. Please try again.
+                    </Text>
+                </View>
+            )}
+
+            {canPay ? (
+                <TouchableOpacity
+                    onPress={() =>
+                        currentOrderUser &&
+                        onPay(currentOrderUser.id as Id<"orderUsers">)
+                    }
+                    disabled={isPaymentProcessing}
+                    className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary active:opacity-80">
+                    {isPaymentProcessing ? (
+                        <ActivityIndicator size="small" color="white" />
+                    ) : (
+                        <>
+                            <Icon name="CreditCard" size={20} color="white" />
+                            <Text className="text-base font-semibold text-white">
+                                Pay ${(amountOwed / 100).toFixed(2)}
+                            </Text>
+                        </>
+                    )}
+                </TouchableOpacity>
+            ) : !runnerCanReceive ? (
+                <View className="items-center py-2">
+                    <Text className="text-sm text-center text-muted-foreground">
+                        The host hasn't set up payments yet. Settle up with them
+                        directly.
+                    </Text>
+                </View>
+            ) : null}
+        </View>
+    );
+}
+
+function RunnerFooter({
+    orderId,
+    colorScheme,
+}: {
+    orderId: string;
+    colorScheme: "light" | "dark";
+}) {
+    const data = useQuery(
+        api.orders.get,
+        orderId ? { orderId: orderId as Id<"orders"> } : "skip",
+    );
+
+    if (!data) return null;
+
+    // Check if any participant has amounts assigned (receipt was scanned)
+    const participants = data.orderUsers.filter((ou) => !ou.isCreator);
+    const hasAmountsAssigned = participants.some(
+        (ou) => Number(ou.amountOwed) > 0,
+    );
+    const paidCount = participants.filter(
+        (ou) => ou.settlementStatus === "paid" || ou.settlementStatus === "confirmed",
+    ).length;
+    const totalOwed = participants.reduce(
+        (sum, ou) => sum + Number(ou.amountOwed),
+        0,
+    );
+    const totalPaid = participants
+        .filter((ou) => ou.settlementStatus === "paid" || ou.settlementStatus === "confirmed")
+        .reduce((sum, ou) => sum + Number(ou.amountOwed), 0);
+
+    return (
+        <View>
+            {/* Settlement overview when amounts are assigned */}
+            {hasAmountsAssigned && participants.length > 0 && (
+                <View className="p-4 mb-4 border rounded-xl border-muted bg-card">
+                    <View className="flex-row items-center justify-between mb-3">
+                        <Text className="text-sm font-semibold text-foreground">
+                            Settlement
+                        </Text>
+                        <Text className="text-sm text-muted-foreground">
+                            {paidCount} of {participants.length} paid
+                        </Text>
+                    </View>
+
+                    {/* Progress bar */}
+                    <View className="h-2 mb-3 overflow-hidden rounded-full bg-muted">
+                        <View
+                            className={`h-full rounded-full ${
+                                paidCount === participants.length
+                                    ? "bg-green-500"
+                                    : "bg-primary"
+                            }`}
+                            style={{
+                                width: `${participants.length > 0 ? (paidCount / participants.length) * 100 : 0}%`,
+                            }}
+                        />
+                    </View>
+
+                    {/* Per-person status */}
+                    <View className="gap-2">
+                        {participants.map((ou) => {
+                            const amount = Number(ou.amountOwed);
+                            if (amount <= 0) return null;
+                            return (
+                                <View
+                                    key={ou.id}
+                                    className="flex-row items-center justify-between">
+                                    <Text className="text-sm text-foreground">
+                                        {ou.user?.firstName} {ou.user?.lastName}
+                                    </Text>
+                                    <View className="flex-row items-center gap-2">
+                                        <Text className="text-sm font-medium text-foreground">
+                                            ${(amount / 100).toFixed(2)}
+                                        </Text>
+                                        <SettlementBadge
+                                            status={ou.settlementStatus}
+                                        />
+                                    </View>
+                                </View>
+                            );
+                        })}
+                    </View>
+
+                    {/* Total summary */}
+                    <View className="flex-row items-center justify-between pt-3 mt-3 border-t border-muted">
+                        <Text className="text-sm font-semibold text-foreground">
+                            Total owed
+                        </Text>
+                        <Text className="text-sm font-semibold text-foreground">
+                            ${(totalOwed / 100).toFixed(2)}
+                        </Text>
+                    </View>
+                    {totalPaid > 0 && (
+                        <View className="flex-row items-center justify-between mt-1">
+                            <Text className="text-sm text-green-500">
+                                Received
+                            </Text>
+                            <Text className="text-sm font-medium text-green-500">
+                                ${(totalPaid / 100).toFixed(2)}
+                            </Text>
+                        </View>
+                    )}
+                </View>
+            )}
+
+            <TouchableOpacity
+                className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
+                onPress={() =>
+                    router.push(`/order/summary?orderId=${orderId}`)
+                }>
+                <Icon name="ClipboardList" size={20} color="white" />
+                <Text className="text-base font-semibold text-white">
+                    View Order Summary
+                </Text>
+            </TouchableOpacity>
+        </View>
+    );
+}
+
+function SettlementBadge({ status }: { status: string }) {
+    const config: Record<string, { label: string; bg: string; text: string }> =
+        {
+            unpaid: {
+                label: "Unpaid",
+                bg: "bg-orange-500/10",
+                text: "text-orange-500",
+            },
+            processing: {
+                label: "Processing",
+                bg: "bg-blue-500/10",
+                text: "text-blue-500",
+            },
+            paid: {
+                label: "Paid",
+                bg: "bg-green-500/10",
+                text: "text-green-500",
+            },
+            failed: {
+                label: "Failed",
+                bg: "bg-red-500/10",
+                text: "text-red-500",
+            },
+            claimed: {
+                label: "Claimed",
+                bg: "bg-purple-500/10",
+                text: "text-purple-500",
+            },
+            confirmed: {
+                label: "Confirmed",
+                bg: "bg-green-500/10",
+                text: "text-green-500",
+            },
+        };
+
+    const c = config[status] ?? {
+        label: status,
+        bg: "bg-muted",
+        text: "text-muted-foreground",
+    };
+
+    return (
+        <View className={`px-2 py-0.5 rounded-full ${c.bg}`}>
+            <Text className={`text-xs font-medium ${c.text}`}>{c.label}</Text>
+        </View>
     );
 }
