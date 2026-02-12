@@ -102,6 +102,13 @@ export default function SelectItems() {
     );
     const isSearchPending = searchResults === undefined;
 
+    const allLocationItems = useQuery(
+        api.items.listByLocation,
+        selectedLocation && !searchQuery
+            ? { locationId: selectedLocation.locationId }
+            : "skip"
+    );
+
     // Mutations
     const setStatus = useMutation(api.orderUsers.setStatus);
     const removeItem = useMutation(api.orderItems.remove);
@@ -327,7 +334,7 @@ export default function SelectItems() {
                         showsVerticalScrollIndicator={false}>
                         {searchQuery ? (
                             // Search results
-                            isSearchPending && debouncedSearchQuery.length > 0 ? (
+                            searchQuery !== debouncedSearchQuery || (isSearchPending && debouncedSearchQuery.length > 0) ? (
                                 <View className="items-center justify-center py-12">
                                     <ActivityIndicator
                                         size="large"
@@ -385,75 +392,123 @@ export default function SelectItems() {
                                     </Text>
                                 </View>
                             )
-                        ) : isItemsPending ? (
-                            <View className="items-center justify-center py-12">
-                                <ActivityIndicator
-                                    size="large"
-                                    color={NAV_THEME[colorScheme].primary}
-                                />
-                            </View>
-                        ) : orderUserLocationItems && orderUserLocationItems.length > 0 ? (
-                            // Order user location items
-                            orderUserLocationItems.map(
-                                (orderUserLocationItem, idx) => (
-                                    <Swipeable
-                                        key={idx}
-                                        renderRightActions={renderRightActions(
-                                            orderUserLocationItem.id,
-                                            orderUserLocationItem.item?.name ??
-                                                "this item"
-                                        )}>
-                                        <Pressable
-                                            onPress={() =>
-                                                handleExistingItemPress(
-                                                    orderUserLocationItem
-                                                )
-                                            }
-                                            className="flex-row items-center w-full gap-3 p-4 border rounded-2xl border-muted bg-card active:opacity-70">
-                                            <View className="items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                        ) : (
+                            <>
+                                {/* Your existing order items */}
+                                {orderUserLocationItems && orderUserLocationItems.length > 0 && (
+                                    <>
+                                        <Text className="text-sm font-semibold tracking-wider uppercase text-muted-foreground">
+                                            Your Items
+                                        </Text>
+                                        {orderUserLocationItems.map(
+                                            (orderUserLocationItem, idx) => (
+                                                <Swipeable
+                                                    key={idx}
+                                                    renderRightActions={renderRightActions(
+                                                        orderUserLocationItem.id,
+                                                        orderUserLocationItem.item?.name ??
+                                                            "this item"
+                                                    )}>
+                                                    <Pressable
+                                                        onPress={() =>
+                                                            handleExistingItemPress(
+                                                                orderUserLocationItem
+                                                            )
+                                                        }
+                                                        className="flex-row items-center w-full gap-3 p-4 border rounded-2xl border-muted bg-card active:opacity-70">
+                                                        <View className="items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                                                            <Icon
+                                                                name="UtensilsCrossed"
+                                                                size={20}
+                                                                color={NAV_THEME[colorScheme].primary}
+                                                            />
+                                                        </View>
+                                                        <View className="flex-1">
+                                                            <Text className="text-lg text-foreground">
+                                                                {orderUserLocationItem.item?.name}
+                                                            </Text>
+                                                            <Text className="text-sm text-muted-foreground">
+                                                                From{" "}
+                                                                {selectedLocation?.locationName}
+                                                            </Text>
+                                                        </View>
+                                                        <View className="px-3 py-1 rounded-full bg-primary/20">
+                                                            <Text className="text-sm font-semibold text-primary">
+                                                                x{orderUserLocationItem.quantity}
+                                                            </Text>
+                                                        </View>
+                                                    </Pressable>
+                                                </Swipeable>
+                                            )
+                                        )}
+                                    </>
+                                )}
+
+                                {/* All available items at this location */}
+                                {allLocationItems === undefined ? (
+                                    <View className="items-center justify-center py-12">
+                                        <ActivityIndicator
+                                            size="large"
+                                            color={NAV_THEME[colorScheme].primary}
+                                        />
+                                    </View>
+                                ) : allLocationItems.length > 0 ? (
+                                    <>
+                                        <Text className="text-sm font-semibold tracking-wider uppercase text-muted-foreground">
+                                            All Items
+                                        </Text>
+                                        {allLocationItems.map((item, idx) => (
+                                            <Pressable
+                                                key={idx}
+                                                onPress={() =>
+                                                    handleSearchItemPress({
+                                                        name: item.name,
+                                                        id: item._id,
+                                                    })
+                                                }
+                                                className="flex-row items-center w-full gap-3 p-4 border rounded-2xl border-muted bg-card active:opacity-70">
+                                                <View className="items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                                                    <Icon
+                                                        name="UtensilsCrossed"
+                                                        size={20}
+                                                        color={NAV_THEME[colorScheme].primary}
+                                                    />
+                                                </View>
+                                                <View className="flex-1">
+                                                    <Text className="text-lg text-foreground">
+                                                        {item.name}
+                                                    </Text>
+                                                    <Text className="text-sm text-muted-foreground">
+                                                        From{" "}
+                                                        {selectedLocation?.locationName}
+                                                    </Text>
+                                                </View>
                                                 <Icon
-                                                    name="UtensilsCrossed"
+                                                    name="Plus"
                                                     size={20}
                                                     color={NAV_THEME[colorScheme].primary}
                                                 />
-                                            </View>
-                                            <View className="flex-1">
-                                                <Text className="text-lg text-foreground">
-                                                    {
-                                                        orderUserLocationItem
-                                                            .item?.name
-                                                    }
-                                                </Text>
-                                                <Text className="text-sm text-muted-foreground">
-                                                    From{" "}
-                                                    {selectedLocation?.locationName}
-                                                </Text>
-                                            </View>
-                                            <View className="px-3 py-1 rounded-full bg-primary/20">
-                                                <Text className="text-sm font-semibold text-primary">
-                                                    x{orderUserLocationItem.quantity}
-                                                </Text>
-                                            </View>
-                                        </Pressable>
-                                    </Swipeable>
-                                )
-                            )
-                        ) : (
-                            <View className="items-center justify-center py-12">
-                                <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-primary/10">
-                                    <Icon
-                                        name="ShoppingBag"
-                                        size={28}
-                                        color={NAV_THEME[colorScheme].primary}
-                                    />
-                                </View>
-                                <Text className="text-base font-medium text-foreground">
-                                    No items yet
-                                </Text>
-                                <Text className="mt-1 text-sm text-muted-foreground">
-                                    Search above to add items to your order
-                                </Text>
-                            </View>
+                                            </Pressable>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <View className="items-center justify-center py-12">
+                                        <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-primary/10">
+                                            <Icon
+                                                name="ShoppingBag"
+                                                size={28}
+                                                color={NAV_THEME[colorScheme].primary}
+                                            />
+                                        </View>
+                                        <Text className="text-base font-medium text-foreground">
+                                            No items at this location
+                                        </Text>
+                                        <Text className="mt-1 text-sm text-muted-foreground">
+                                            Search above to add a new item
+                                        </Text>
+                                    </View>
+                                )}
+                            </>
                         )}
                     </ScrollView>
                 </View>
