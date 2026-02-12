@@ -108,8 +108,36 @@ http.route({
     method: "POST",
     handler: httpAction(async (ctx, request) => {
         try {
-            const payload = await request.json();
-            console.log("Paysafe webhook received:", JSON.stringify(payload));
+            const body = await request.text();
+
+            // Verify webhook signature
+            const webhookSecret = process.env.PAYSAFE_WEBHOOK_SECRET;
+            if (webhookSecret) {
+                const signature = request.headers.get("Signature");
+                if (!signature) {
+                    console.error("Paysafe webhook: missing Signature header");
+                    return new Response("Missing signature", { status: 401 });
+                }
+
+                const key = await crypto.subtle.importKey(
+                    "raw",
+                    new TextEncoder().encode(webhookSecret),
+                    { name: "HMAC", hash: "SHA-256" },
+                    false,
+                    ["sign"],
+                );
+                const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(body));
+                const expected = btoa(String.fromCharCode(...new Uint8Array(mac)));
+
+                if (signature !== expected) {
+                    console.error("Paysafe webhook: invalid signature");
+                    return new Response("Invalid signature", { status: 401 });
+                }
+            } else {
+                console.warn("PAYSAFE_WEBHOOK_SECRET not configured — skipping signature verification");
+            }
+
+            const payload = JSON.parse(body);
 
             // Extract eventType - could be at top level or nested
             const eventType = (
@@ -126,6 +154,8 @@ http.route({
                 payload.payment?.merchantRefNum ??
                 payload.data?.merchantRefNum
             ) as string | undefined;
+
+            console.log("Paysafe webhook received:", { eventType, merchantRefNum });
 
             if (!eventType || !merchantRefNum) {
                 console.error("Paysafe webhook: missing fields", {

@@ -108,7 +108,10 @@ function formatCents(cents: number | bigint): string {
 }
 
 export default function Settlement() {
-    const { orderId } = useLocalSearchParams();
+    const params = useLocalSearchParams();
+    const orderId = Array.isArray(params.orderId)
+        ? params.orderId[0]
+        : params.orderId;
     const { colorScheme } = useColorScheme();
     const [isRequesting, setIsRequesting] = useState(false);
     const [isCompleting, setIsCompleting] = useState(false);
@@ -325,7 +328,8 @@ export default function Settlement() {
                                                     }
                                                 />
                                                 <Text className="text-sm font-medium text-primary">
-                                                    Simulate Payment
+                                                    Open Payment Link{" "}
+                                                    {/* TODO: remove similation link for prod */}
                                                 </Text>
                                             </Pressable>
                                         )}

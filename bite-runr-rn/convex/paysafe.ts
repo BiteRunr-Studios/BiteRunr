@@ -347,6 +347,45 @@ export const processPayment = internalAction({
   },
 });
 
+// Shared helper: sync settlement status and send notifications based on payment handle status
+async function syncSettlementStatus(
+  ctx: { db: any; scheduler: any },
+  handle: { orderUserId: any; orderId: any },
+  status: string,
+) {
+  if (status === "completed") {
+    await ctx.db.patch(handle.orderUserId, { settlementStatus: "confirmed" });
+
+    const orderUser = await ctx.db.get(handle.orderUserId);
+    if (orderUser) {
+      const order = await ctx.db.get(handle.orderId);
+      await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUser, {
+        userId: orderUser.userId,
+        title: "Payment Confirmed",
+        body: `Your payment for ${order?.name ?? "the order"} has been confirmed!`,
+        data: { type: "payment_confirmed", orderId: handle.orderId },
+      });
+    }
+  } else if (status === "initiated" || status === "payable" || status === "processing") {
+    await ctx.db.patch(handle.orderUserId, { settlementStatus: "claimed" });
+  } else if (status === "failed" || status === "expired") {
+    await ctx.db.patch(handle.orderUserId, { settlementStatus: "unpaid" });
+
+    if (status === "failed") {
+      const orderUser = await ctx.db.get(handle.orderUserId);
+      if (orderUser) {
+        const order = await ctx.db.get(handle.orderId);
+        await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUser, {
+          userId: orderUser.userId,
+          title: "Payment Issue",
+          body: `There was an issue with your payment for ${order?.name ?? "the order"}. Please try again.`,
+          data: { type: "payment_failed", orderId: handle.orderId },
+        });
+      }
+    }
+  }
+}
+
 // Internal mutation: update payment handle status and sync settlement status
 export const updatePaymentHandleStatus = internalMutation({
   args: {
@@ -368,37 +407,7 @@ export const updatePaymentHandleStatus = internalMutation({
     if (args.errorMessage !== undefined) updates.errorMessage = args.errorMessage;
 
     await ctx.db.patch(args.paymentHandleId, updates);
-
-    // Sync settlement status on orderUser
-    if (args.status === "completed") {
-      await ctx.db.patch(handle.orderUserId, { settlementStatus: "confirmed" });
-
-      // Send push notification to the member
-      const orderUser = await ctx.db.get(handle.orderUserId);
-      if (orderUser) {
-        const order = await ctx.db.get(handle.orderId);
-        await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUser, {
-          userId: orderUser.userId,
-          title: "Payment Confirmed",
-          body: `Your payment for ${order?.name ?? "the order"} has been confirmed!`,
-          data: { type: "payment_confirmed", orderId: handle.orderId },
-        });
-      }
-    } else if (args.status === "initiated" || args.status === "payable" || args.status === "processing") {
-      await ctx.db.patch(handle.orderUserId, { settlementStatus: "claimed" });
-    } else if (args.status === "failed") {
-      // Notify member of failure
-      const orderUser = await ctx.db.get(handle.orderUserId);
-      if (orderUser) {
-        const order = await ctx.db.get(handle.orderId);
-        await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUser, {
-          userId: orderUser.userId,
-          title: "Payment Issue",
-          body: `There was an issue with your payment for ${order?.name ?? "the order"}. Please try again.`,
-          data: { type: "payment_failed", orderId: handle.orderId },
-        });
-      }
-    }
+    await syncSettlementStatus(ctx, handle, args.status);
   },
 });
 
@@ -448,37 +457,6 @@ export const processWebhook = internalMutation({
     if (args.paysafeResponse) updates.paysafeResponse = args.paysafeResponse;
 
     await ctx.db.patch(args.paymentHandleId, updates);
-
-    // Sync settlement status
-    if (newStatus === "completed") {
-      await ctx.db.patch(handle.orderUserId, { settlementStatus: "confirmed" });
-
-      const orderUser = await ctx.db.get(handle.orderUserId);
-      if (orderUser) {
-        const order = await ctx.db.get(handle.orderId);
-        await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUser, {
-          userId: orderUser.userId,
-          title: "Payment Confirmed",
-          body: `Your payment for ${order?.name ?? "the order"} has been confirmed!`,
-          data: { type: "payment_confirmed", orderId: handle.orderId },
-        });
-      }
-    } else if (newStatus === "failed" || newStatus === "expired") {
-      // Reset to unpaid so creator can re-request
-      await ctx.db.patch(handle.orderUserId, { settlementStatus: "unpaid" });
-
-      if (newStatus === "failed") {
-        const orderUser = await ctx.db.get(handle.orderUserId);
-        if (orderUser) {
-          const order = await ctx.db.get(handle.orderId);
-          await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUser, {
-            userId: orderUser.userId,
-            title: "Payment Issue",
-            body: `There was an issue with your payment for ${order?.name ?? "the order"}.`,
-            data: { type: "payment_failed", orderId: handle.orderId },
-          });
-        }
-      }
-    }
+    await syncSettlementStatus(ctx, handle, newStatus);
   },
 });
