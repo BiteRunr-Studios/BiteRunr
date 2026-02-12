@@ -118,9 +118,9 @@ http.route({
                 payload.event
             ) as string | undefined;
 
-            // Extract merchantRefNum - could be at top level or nested in
-            // paymentHandle, payment, or data objects
+            // Extract merchantRefNum - Paysafe nests data inside a "payload" key
             const merchantRefNum = (
+                payload.payload?.merchantRefNum ??
                 payload.merchantRefNum ??
                 payload.paymentHandle?.merchantRefNum ??
                 payload.payment?.merchantRefNum ??

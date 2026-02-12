@@ -9,7 +9,7 @@ import {
     Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useQuery, useAction } from "convex/react";
+import { useQuery, useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
@@ -17,7 +17,14 @@ import { Button } from "@/components/common/button";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 
-type PaymentStatus = "pending" | "initiated" | "payable" | "processing" | "completed" | "failed" | "expired";
+type PaymentStatus =
+    | "pending"
+    | "initiated"
+    | "payable"
+    | "processing"
+    | "completed"
+    | "failed"
+    | "expired";
 
 type PaymentHandle = {
     id: string;
@@ -40,7 +47,10 @@ type Member = {
 
 function getStatusIcon(
     settlementStatus: string,
-    paymentHandle: { status: PaymentStatus; errorMessage?: string | null } | null,
+    paymentHandle: {
+        status: PaymentStatus;
+        errorMessage?: string | null;
+    } | null,
 ) {
     if (settlementStatus === "confirmed") {
         return { name: "CircleCheck" as const, color: "#22c55e" };
@@ -65,7 +75,10 @@ function getStatusIcon(
 
 function getStatusText(
     settlementStatus: string,
-    paymentHandle: { status: PaymentStatus; errorMessage?: string | null } | null,
+    paymentHandle: {
+        status: PaymentStatus;
+        errorMessage?: string | null;
+    } | null,
 ) {
     if (settlementStatus === "confirmed") return "Paid";
     if (paymentHandle) {
@@ -98,6 +111,7 @@ export default function Settlement() {
     const { orderId } = useLocalSearchParams();
     const { colorScheme } = useColorScheme();
     const [isRequesting, setIsRequesting] = useState(false);
+    const [isCompleting, setIsCompleting] = useState(false);
 
     const paymentStatus = useQuery(
         api.paysafe.getOrderPaymentStatus,
@@ -105,15 +119,53 @@ export default function Settlement() {
     );
 
     const requestPayments = useAction(api.paysafe.requestPayments);
+    const updateOrder = useMutation(api.orders.update);
+
+    const handleCompleteOrder = async () => {
+        if (!orderId) return;
+        setIsCompleting(true);
+        try {
+            await updateOrder({
+                orderId: orderId as Id<"orders">,
+                status: "completed",
+            });
+            Alert.alert(
+                "Order Complete",
+                "This order has been marked as complete.",
+                [
+                    {
+                        text: "OK",
+                        onPress: () => router.dismissTo("/(protected)/(tabs)"),
+                    },
+                ],
+            );
+        } catch (error) {
+            Alert.alert(
+                "Error",
+                error instanceof Error
+                    ? error.message
+                    : "Failed to complete order",
+            );
+        } finally {
+            setIsCompleting(false);
+        }
+    };
 
     const handleRequestPayments = async () => {
         if (!orderId) return;
         setIsRequesting(true);
         try {
-            const result = await requestPayments({ orderId: orderId as Id<"orders"> });
+            const result = await requestPayments({
+                orderId: orderId as Id<"orders">,
+            });
             Alert.alert("Payment Requests", result.message);
         } catch (error) {
-            Alert.alert("Error", error instanceof Error ? error.message : "Failed to request payments");
+            Alert.alert(
+                "Error",
+                error instanceof Error
+                    ? error.message
+                    : "Failed to request payments",
+            );
         } finally {
             setIsRequesting(false);
         }
@@ -121,7 +173,7 @@ export default function Settlement() {
 
     if (paymentStatus === undefined) {
         return (
-            <View className="items-center justify-center flex-1 bg-background">
+            <View className="flex-1 justify-center items-center bg-background">
                 <Text className="text-foreground">Loading...</Text>
             </View>
         );
@@ -129,7 +181,7 @@ export default function Settlement() {
 
     if (paymentStatus === null) {
         return (
-            <View className="items-center justify-center flex-1 bg-background">
+            <View className="flex-1 justify-center items-center bg-background">
                 <Text className="text-destructive">
                     Not authorized to view settlement
                 </Text>
@@ -140,7 +192,10 @@ export default function Settlement() {
     // Calculate totals
     const members = paymentStatus.members as Member[];
     const nonCreatorMembers = members.filter((m) => !m.isCreator);
-    const totalOwed = nonCreatorMembers.reduce((sum, m) => sum + Number(m.amountOwed), 0);
+    const totalOwed = nonCreatorMembers.reduce(
+        (sum, m) => sum + Number(m.amountOwed),
+        0,
+    );
     const totalPaid = nonCreatorMembers
         .filter((m) => m.settlementStatus === "confirmed")
         .reduce((sum, m) => sum + Number(m.amountOwed), 0);
@@ -174,21 +229,29 @@ export default function Settlement() {
                 </View>
 
                 {/* Summary Card */}
-                <View className="p-4 mx-4 mt-4 border rounded-2xl border-primary/30 bg-primary/5">
-                    <View className="flex-row items-center justify-between mb-2">
-                        <Text className="text-sm text-muted-foreground">Total Owed</Text>
+                <View className="p-4 mx-4 mt-4 rounded-2xl border border-primary/30 bg-primary/5">
+                    <View className="flex-row justify-between items-center mb-2">
+                        <Text className="text-sm text-muted-foreground">
+                            Total Owed
+                        </Text>
                         <Text className="text-sm font-medium text-foreground">
                             {formatCents(totalOwed)}
                         </Text>
                     </View>
-                    <View className="flex-row items-center justify-between mb-2">
-                        <Text className="text-sm text-muted-foreground">Total Paid</Text>
-                        <Text className="text-sm font-medium text-foreground" style={{ color: "#22c55e" }}>
+                    <View className="flex-row justify-between items-center mb-2">
+                        <Text className="text-sm text-muted-foreground">
+                            Total Paid
+                        </Text>
+                        <Text
+                            className="text-sm font-medium text-foreground"
+                            style={{ color: "#22c55e" }}>
                             {formatCents(totalPaid)}
                         </Text>
                     </View>
-                    <View className="flex-row items-center justify-between pt-2 border-t border-primary/20">
-                        <Text className="text-base font-semibold text-foreground">Outstanding</Text>
+                    <View className="flex-row justify-between items-center pt-2 border-t border-primary/20">
+                        <Text className="text-base font-semibold text-foreground">
+                            Outstanding
+                        </Text>
                         <Text className="text-base font-semibold text-primary">
                             {formatCents(totalOwed - totalPaid)}
                         </Text>
@@ -202,18 +265,25 @@ export default function Settlement() {
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ gap: 12, paddingBottom: 32 }}>
                         {nonCreatorMembers.map((member) => {
-                            const statusIcon = getStatusIcon(member.settlementStatus, member.paymentHandle);
-                            const statusText = getStatusText(member.settlementStatus, member.paymentHandle);
+                            const statusIcon = getStatusIcon(
+                                member.settlementStatus,
+                                member.paymentHandle,
+                            );
+                            const statusText = getStatusText(
+                                member.settlementStatus,
+                                member.paymentHandle,
+                            );
                             const amount = Number(member.amountOwed);
 
                             return (
                                 <View
                                     key={member.orderUserId}
-                                    className="p-4 border rounded-2xl border-muted bg-card">
-                                    <View className="flex-row items-center justify-between">
+                                    className="p-4 rounded-2xl border border-muted bg-card">
+                                    <View className="flex-row justify-between items-center">
                                         <View className="flex-1">
                                             <Text className="text-base font-medium text-foreground">
-                                                {member.firstName} {member.lastName}
+                                                {member.firstName}{" "}
+                                                {member.lastName}
                                             </Text>
                                             <Text className="text-sm text-muted-foreground">
                                                 {member.email}
@@ -223,32 +293,48 @@ export default function Settlement() {
                                             {formatCents(amount)}
                                         </Text>
                                     </View>
-                                    <View className="flex-row items-center gap-2 pt-3 mt-3 border-t border-muted">
+                                    <View className="flex-row gap-2 items-center pt-3 mt-3 border-t border-muted">
                                         <Icon
                                             name={statusIcon.name}
                                             size={16}
                                             color={statusIcon.color}
                                         />
-                                        <Text className="text-sm" style={{ color: statusIcon.color }}>
+                                        <Text
+                                            className="text-sm"
+                                            style={{ color: statusIcon.color }}>
                                             {statusText}
                                         </Text>
                                     </View>
-                                    {member.paymentHandle?.redirectUrl && member.paymentHandle.status !== "completed" && (
-                                        <Pressable
-                                            onPress={() => Linking.openURL(member.paymentHandle!.redirectUrl!)}
-                                            className="flex-row items-center gap-1.5 mt-2 active:opacity-70">
-                                            <Icon name="ExternalLink" size={14} color={NAV_THEME[colorScheme].primary} />
-                                            <Text className="text-sm font-medium text-primary">
-                                                Simulate Payment
-                                            </Text>
-                                        </Pressable>
-                                    )}
+                                    {member.paymentHandle?.redirectUrl &&
+                                        member.paymentHandle.status !==
+                                            "completed" && (
+                                            <Pressable
+                                                onPress={() =>
+                                                    Linking.openURL(
+                                                        member.paymentHandle!
+                                                            .redirectUrl!,
+                                                    )
+                                                }
+                                                className="flex-row items-center gap-1.5 mt-2 active:opacity-70">
+                                                <Icon
+                                                    name="ExternalLink"
+                                                    size={14}
+                                                    color={
+                                                        NAV_THEME[colorScheme]
+                                                            .primary
+                                                    }
+                                                />
+                                                <Text className="text-sm font-medium text-primary">
+                                                    Simulate Payment
+                                                </Text>
+                                            </Pressable>
+                                        )}
                                 </View>
                             );
                         })}
 
                         {nonCreatorMembers.length === 0 && (
-                            <View className="items-center justify-center py-12">
+                            <View className="justify-center items-center py-12">
                                 <Text className="text-muted-foreground">
                                     No members owe money
                                 </Text>
@@ -258,7 +344,7 @@ export default function Settlement() {
                 </View>
 
                 {/* Footer */}
-                {hasUnpaidMembers && (
+                {hasUnpaidMembers ? (
                     <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
                         <Button
                             label="Request Payments"
@@ -268,7 +354,17 @@ export default function Settlement() {
                             color={NAV_THEME[colorScheme].primary}
                         />
                     </View>
-                )}
+                ) : nonCreatorMembers.length > 0 ? (
+                    <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
+                        <Button
+                            label="Complete Order"
+                            icon="CircleCheck"
+                            onPress={handleCompleteOrder}
+                            loading={isCompleting}
+                            color="#22c55e"
+                        />
+                    </View>
+                ) : null}
             </View>
         </>
     );

@@ -381,17 +381,21 @@ export default function OrderSummary() {
                         )}
                     </TouchableOpacity>
 
-                    <TouchableOpacity
-                        className="w-full py-3 rounded-lg bg-primary"
-                        onPress={() =>
-                            router.push(
-                                `/order/settlement?orderId=${orderId}` as never,
-                            )
-                        }>
-                        <Text className="text-sm font-semibold text-center text-white">
-                            View Settlement
-                        </Text>
-                    </TouchableOpacity>
+                    {summary.locationSummaries.every(
+                        (ls) => ls.totalInCents !== null,
+                    ) && (
+                        <TouchableOpacity
+                            className="w-full py-3 rounded-lg bg-primary"
+                            onPress={() =>
+                                router.push(
+                                    `/order/settlement?orderId=${orderId}` as never,
+                                )
+                            }>
+                            <Text className="text-sm font-semibold text-center text-white">
+                                View Settlement
+                            </Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
             </View>
 
