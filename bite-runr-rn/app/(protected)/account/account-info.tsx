@@ -207,7 +207,7 @@ export default function AccountInfoScreen() {
                             color={NAV_THEME[colorScheme].primary}
                         />
                     </Pressable>
-                    <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
+                    <Text className="flex-1 ml-2 text-xl font-bold text-foreground">
                         Personal Information
                     </Text>
                 </View>
@@ -234,7 +234,7 @@ export default function AccountInfoScreen() {
                             color={NAV_THEME[colorScheme].primary}
                         />
                     </Pressable>
-                    <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
+                    <Text className="flex-1 ml-2 text-xl font-bold text-foreground">
                         Personal Information
                     </Text>
                 </View>
@@ -270,7 +270,7 @@ export default function AccountInfoScreen() {
                         color={NAV_THEME[colorScheme].primary}
                     />
                 </Pressable>
-                <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
+                <Text className="flex-1 ml-2 text-xl font-bold text-foreground">
                     Personal Information
                 </Text>
             </View>

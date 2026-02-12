@@ -161,7 +161,7 @@ export default function OrderSummary() {
                                         : "bg-muted"
                                 }`}>
                                 <Text
-                                    className={`text ${
+                                    className={`text-sm ${
                                         selectedLocation?.orderLocationId ===
                                         location.orderLocationId
                                             ? "text-white"
@@ -356,7 +356,7 @@ export default function OrderSummary() {
                 {/* Footer */}
                 <View className="gap-3 px-6 pt-4 pb-10 border-t border-muted bg-background">
                     <TouchableOpacity
-                        className={`w-full py-3 border rounded-lg border-primary ${
+                        className={`w-full py-3 border rounded-xl border-primary ${
                             isScanning ? "bg-primary/5" : "bg-primary/10"
                         }`}
                         onPress={handleScanPress}
@@ -385,7 +385,7 @@ export default function OrderSummary() {
                         (ls) => ls.totalInCents !== null,
                     ) && (
                         <TouchableOpacity
-                            className="w-full py-3 rounded-lg bg-primary"
+                            className="w-full py-3 rounded-xl bg-primary"
                             onPress={() =>
                                 router.push(
                                     `/order/settlement?orderId=${orderId}` as never,
@@ -403,14 +403,14 @@ export default function OrderSummary() {
             <ActionSheet
                 ref={sourceActionSheetRef}
                 containerStyle={{
-                    backgroundColor: NAV_THEME[colorScheme].background,
+                    backgroundColor: colorScheme === "dark" ? "hsl(0, 0%, 7%)" : "hsl(0, 0%, 96%)",
                     borderTopLeftRadius: 24,
                     borderTopRightRadius: 24,
                 }}
                 gestureEnabled={true}
                 defaultOverlayOpacity={0.3}
                 useBottomSafeAreaPadding={true}>
-                <View className="gap-3 p-4 bg-background">
+                <View className="gap-3 p-4">
                     <Text className="mb-1 text-lg font-bold text-center text-foreground">
                         Scan Receipt
                     </Text>
