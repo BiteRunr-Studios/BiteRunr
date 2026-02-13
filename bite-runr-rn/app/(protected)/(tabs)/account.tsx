@@ -75,6 +75,7 @@ export default function AccountTab() {
     const { colorScheme } = useColorScheme();
 
     const user = useQuery(api.users.getCurrentUser);
+    const pendingCount = useQuery(api.friends.pendingRequestCount);
     const isLoading = user === undefined;
 
     const onRefresh = useCallback(() => {
@@ -222,6 +223,13 @@ export default function AccountTab() {
                                                 {item.subtitle}
                                             </Text>
                                         </View>
+                                        {item.key === "friends" && typeof pendingCount === "number" && pendingCount > 0 && (
+                                            <View className="items-center justify-center w-6 h-6 mr-2 bg-red-500 rounded-full">
+                                                <Text className="text-xs font-bold text-white">
+                                                    {pendingCount > 9 ? "9+" : pendingCount}
+                                                </Text>
+                                            </View>
+                                        )}
                                         <Icon
                                             name="ChevronRight"
                                             size={20}
