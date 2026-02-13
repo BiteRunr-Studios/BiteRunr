@@ -24,8 +24,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Plus, Trash2, Search, X } from 'lucide-react'
-import { useState } from 'react'
+import { Plus, Trash2, Search, X, Upload } from 'lucide-react'
+import { useState, useRef } from 'react'
 import type { Id } from '../../../convex/_generated/dataModel'
 
 export const Route = createFileRoute('/locations/')({
@@ -37,6 +37,7 @@ function LocationsPage() {
   const createLocation = useMutation(api.admin.createLocation)
   const deleteLocation = useMutation(api.admin.deleteLocation)
   const deleteLocations = useMutation(api.admin.deleteLocations)
+  const bulkCreateLocations = useMutation(api.admin.bulkCreateLocations)
 
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
@@ -46,6 +47,9 @@ function LocationsPage() {
     new Set(),
   )
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
+  const [importError, setImportError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const filteredLocations = locations?.filter((loc) =>
     loc.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -79,6 +83,50 @@ function LocationsPage() {
       console.error('Failed to delete locations:', error)
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const handleImportJSON = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setImportError(null)
+    setIsImporting(true)
+    try {
+      const text = await file.text()
+      const parsed = JSON.parse(text)
+
+      let names: string[]
+      if (Array.isArray(parsed)) {
+        names = parsed.map((entry) => {
+          if (typeof entry === 'string') return entry
+          if (typeof entry === 'object' && entry !== null && typeof entry.name === 'string') return entry.name
+          throw new Error('Each entry must be a string or an object with a "name" field')
+        })
+      } else {
+        throw new Error('JSON file must contain an array')
+      }
+
+      if (names.length === 0) {
+        throw new Error('No locations found in file')
+      }
+
+      const result = await bulkCreateLocations({ names })
+      setImportError(null)
+      // Show brief success — it'll appear in the list via reactivity
+      console.log(`Imported ${result.created} locations`)
+    } catch (error) {
+      setImportError(
+        error instanceof SyntaxError
+          ? 'Invalid JSON file'
+          : error instanceof Error
+            ? error.message
+            : 'Failed to import locations',
+      )
+    } finally {
+      setIsImporting(false)
+      // Reset file input so the same file can be selected again
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -117,10 +165,27 @@ function LocationsPage() {
               Manage restaurant locations and their menu items
             </p>
           </div>
-          <Button onClick={() => setShowCreate(true)}>
-            <Plus className="mr-1 size-4" />
-            Add Location
-          </Button>
+          <div className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              className="hidden"
+              onChange={handleImportJSON}
+            />
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isImporting}
+            >
+              <Upload className="mr-1 size-4" />
+              {isImporting ? 'Importing...' : 'Import JSON'}
+            </Button>
+            <Button onClick={() => setShowCreate(true)}>
+              <Plus className="mr-1 size-4" />
+              Add Location
+            </Button>
+          </div>
         </div>
 
         {/* Search and Bulk Actions */}
@@ -179,6 +244,16 @@ function LocationsPage() {
             </AlertDialog>
           )}
         </div>
+
+        {/* Import Error */}
+        {importError && (
+          <div className="flex items-center justify-between rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <span>{importError}</span>
+            <button onClick={() => setImportError(null)}>
+              <X className="size-4" />
+            </button>
+          </div>
+        )}
 
         {/* Create Form */}
         {showCreate && (
