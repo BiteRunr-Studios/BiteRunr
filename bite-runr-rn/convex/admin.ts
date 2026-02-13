@@ -63,6 +63,22 @@ export const deleteLocation = mutation({
   },
 });
 
+export const bulkCreateLocations = mutation({
+  args: {
+    names: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    let created = 0;
+    for (const name of args.names) {
+      const trimmed = name.trim();
+      if (!trimmed) continue;
+      await ctx.db.insert("locations", { name: trimmed });
+      created++;
+    }
+    return { created };
+  },
+});
+
 export const deleteLocations = mutation({
   args: { ids: v.array(v.id("locations")) },
   handler: async (ctx, args) => {
