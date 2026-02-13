@@ -19,6 +19,8 @@ import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import type { icons } from "lucide-react-native";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { HeaderBar } from "@/components/layout/header-bar";
 
 type Item = {
     key: string;
@@ -73,6 +75,7 @@ export default function AccountTab() {
     const { signOut } = useContext(AuthContext);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const { colorScheme } = useColorScheme();
+    const insets = useSafeAreaInsets();
 
     const user = useQuery(api.users.getCurrentUser);
     const pendingCount = useQuery(api.friends.pendingRequestCount);
@@ -105,8 +108,10 @@ export default function AccountTab() {
 
     return (
         <ErrorBoundary>
+            <View style={{ paddingTop: insets.top }} className="flex-1 bg-background">
+            <HeaderBar />
             <ScrollView
-                className="flex-1 bg-background"
+                className="flex-1"
                 contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
@@ -271,6 +276,7 @@ export default function AccountTab() {
                         </View>
                     )}
             </ScrollView>
+            </View>
         </ErrorBoundary>
     );
 }

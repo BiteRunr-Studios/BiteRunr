@@ -377,11 +377,11 @@ export default function SelectItems() {
                                 ))
                             ) : (
                                 <View className="items-center justify-center py-12">
-                                    <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-muted">
+                                    <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-primary/10">
                                         <Icon
                                             name="SearchX"
                                             size={28}
-                                            color={NAV_THEME[colorScheme].border}
+                                            color={NAV_THEME[colorScheme].primary}
                                         />
                                     </View>
                                     <Text className="text-base font-medium text-muted-foreground">

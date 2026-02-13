@@ -16,11 +16,14 @@ import Icon from "@/components/common/icon";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { Skeleton } from "@/components/common/skeleton";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { HeaderBar } from "@/components/layout/header-bar";
 
 export default function GroupsTab() {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [searchQuery, setSearchQuery] = useState("");
     const { colorScheme } = useColorScheme();
+    const insets = useSafeAreaInsets();
 
     // Get current user
     const currentUser = useQuery(api.users.getCurrentUser);
@@ -63,7 +66,9 @@ export default function GroupsTab() {
 
     return (
         <ErrorBoundary>
-            <View className="flex-1 px-4 bg-background">
+            <View style={{ paddingTop: insets.top }} className="flex-1 bg-background">
+                    <HeaderBar />
+                <View className="flex-1 px-4">
                     {/* Tab Selector */}
                     <View className="flex-row gap-2 mt-4 mb-4">
                         {tabs.map((tab, index) => (
@@ -241,6 +246,7 @@ export default function GroupsTab() {
                             </>
                         )}
                     </ScrollView>
+                </View>
             </View>
         </ErrorBoundary>
     );

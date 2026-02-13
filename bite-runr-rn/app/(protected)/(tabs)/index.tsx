@@ -5,6 +5,7 @@ import {
     Text,
     View,
     TouchableOpacity,
+    useWindowDimensions,
 } from "react-native";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { useQuery } from "convex/react";
@@ -15,12 +16,11 @@ import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { useRouter } from "expo-router";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
-import { QRScannerModal } from "@/components/qr-scanner-modal";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { HeaderBar } from "@/components/layout/header-bar";
 
-// Constants for active orders carousel
-const CARD_WIDTH = 300;
+const CARD_PADDING = 16;
 const CARD_GAP = 16;
-const CARD_SNAP_WIDTH = CARD_WIDTH + CARD_GAP;
 
 export default function HomeTab() {
     const activeOrders = useQuery(api.orders.getActiveOrders);
@@ -28,14 +28,9 @@ export default function HomeTab() {
     const frequentItems = useQuery(api.orders.getFrequentItems, { limit: 6 });
     const { colorScheme } = useColorScheme();
     const router = useRouter();
-    const [showScanner, setShowScanner] = useState(false);
-
-    const handleScan = (code: string) => {
-        setShowScanner(false);
-        // Navigate to the join page with the scanned code
-        router.push(`/join/${code}`);
-    };
-
+    const insets = useSafeAreaInsets();
+    const { width: screenWidth } = useWindowDimensions();
+    const cardWidth = screenWidth - CARD_PADDING * 2;
     // Track initial data load to prevent flash of empty state
     const [isInitializing, setIsInitializing] = useState(true);
 
@@ -69,7 +64,8 @@ export default function HomeTab() {
 
     return (
         <ErrorBoundary>
-            <View className="flex-1 bg-background">
+            <View style={{ paddingTop: insets.top }} className="flex-1 bg-background">
+            <HeaderBar />
             <ScrollView
                 className="flex-1"
                 showsVerticalScrollIndicator={false}>
@@ -140,11 +136,12 @@ export default function HomeTab() {
                                     <ScrollView
                                         horizontal
                                         showsHorizontalScrollIndicator={false}
+                                        pagingEnabled={false}
                                         decelerationRate="fast"
-                                        snapToOffsets={activeOrders.map((_, i) => i * CARD_SNAP_WIDTH)}
+                                        snapToInterval={cardWidth + CARD_GAP}
                                         snapToAlignment="start"
                                         className="-mx-4"
-                                        contentContainerStyle={{ paddingHorizontal: 16 }}>
+                                        contentContainerStyle={{ paddingHorizontal: CARD_PADDING }}>
                                         {activeOrders.map((order, index) => (
                                             <Pressable
                                                 key={order.id}
@@ -154,7 +151,7 @@ export default function HomeTab() {
                                                     )
                                                 }
                                                 style={{
-                                                    width: CARD_WIDTH,
+                                                    width: cardWidth,
                                                     marginRight: index < activeOrders.length - 1 ? CARD_GAP : 0
                                                 }}>
                                                 <OrderCard
@@ -435,27 +432,6 @@ export default function HomeTab() {
                         </View>
                     )}
             </ScrollView>
-
-            {/* Floating Scan Button */}
-            <TouchableOpacity
-                onPress={() => setShowScanner(true)}
-                className="absolute bottom-6 right-6 w-14 h-14 rounded-full bg-primary items-center justify-center shadow-lg"
-                style={{
-                    shadowColor: NAV_THEME[colorScheme].primary,
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 8,
-                    elevation: 8,
-                }}>
-                <Icon name="ScanLine" size={24} color="white" />
-            </TouchableOpacity>
-
-            {/* QR Scanner Modal */}
-            <QRScannerModal
-                visible={showScanner}
-                onScan={handleScan}
-                onClose={() => setShowScanner(false)}
-            />
             </View>
         </ErrorBoundary>
     );
@@ -482,23 +458,7 @@ function HomeSkeleton() {
                             rounded="rounded-full"
                         />
                     </View>
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        scrollEnabled={false}
-                        className="-mx-4"
-                        contentContainerStyle={{ paddingHorizontal: 16 }}>
-                        {[1, 2].map((i) => (
-                            <View
-                                key={i}
-                                style={{
-                                    width: CARD_WIDTH,
-                                    marginRight: i < 2 ? CARD_GAP : 0,
-                                }}>
-                                <OrderCardSkeleton />
-                            </View>
-                        ))}
-                    </ScrollView>
+                    <OrderCardSkeleton />
                 </View>
 
                 {/* Favorites Section Skeleton */}
