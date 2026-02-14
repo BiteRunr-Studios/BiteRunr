@@ -238,15 +238,13 @@ export default function Settlement() {
             m.settlementStatus !== "settled_in_person" &&
             Number(m.amountOwed) > 0,
     );
-    const allSettled =
-        totalOwed > 0 &&
-        nonCreatorMembers
-            .filter((m) => Number(m.amountOwed) > 0)
-            .every(
-                (m) =>
-                    m.settlementStatus === "confirmed" ||
-                    m.settlementStatus === "settled_in_person",
-            );
+    const allSettled = nonCreatorMembers
+        .filter((m) => Number(m.amountOwed) > 0)
+        .every(
+            (m) =>
+                m.settlementStatus === "confirmed" ||
+                m.settlementStatus === "settled_in_person",
+        );
 
     return (
         <>
