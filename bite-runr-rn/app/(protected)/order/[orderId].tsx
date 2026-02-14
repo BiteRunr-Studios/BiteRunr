@@ -546,6 +546,22 @@ export default function SpecificOrder() {
                         <Text className="mt-1 text-sm text-center text-muted-foreground">
                             Sit tight! You'll be notified when it's ready.
                         </Text>
+                        <TouchableOpacity
+                            className="flex-row items-center justify-center gap-2 px-6 py-3 mt-4 rounded-xl bg-primary"
+                            onPress={() =>
+                                router.push(
+                                    `/order/my-settlement?orderId=${orderId}`,
+                                )
+                            }>
+                            <Icon
+                                name="Receipt"
+                                size={18}
+                                color="white"
+                            />
+                            <Text className="text-base font-semibold text-white">
+                                View My Settlement
+                            </Text>
+                        </TouchableOpacity>
                     </View>
                 ) : (
                     <>

@@ -193,7 +193,7 @@ export function useReceiptScanning(
 
                 setParsedItems(parseResult.items);
                 setReceiptStoreName(parseResult.storeName || null);
-                setReceiptTotal(parseResult.totalInCents || null);
+                setReceiptTotal(parseResult.totalInCents ?? null);
 
                 // Auto-match with order items
                 if (orderItems) {

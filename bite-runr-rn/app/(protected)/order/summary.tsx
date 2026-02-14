@@ -382,7 +382,7 @@ export default function OrderSummary() {
                     </TouchableOpacity>
 
                     {summary.locationSummaries.every(
-                        (ls) => ls.totalInCents !== null,
+                        (ls) => ls.subtotalInCents !== null,
                     ) && (
                         <TouchableOpacity
                             className="w-full py-3 rounded-xl bg-primary"
