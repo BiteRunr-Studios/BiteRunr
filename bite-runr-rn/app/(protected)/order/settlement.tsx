@@ -238,6 +238,15 @@ export default function Settlement() {
             m.settlementStatus !== "settled_in_person" &&
             Number(m.amountOwed) > 0,
     );
+    const allSettled =
+        totalOwed > 0 &&
+        nonCreatorMembers
+            .filter((m) => Number(m.amountOwed) > 0)
+            .every(
+                (m) =>
+                    m.settlementStatus === "confirmed" ||
+                    m.settlementStatus === "settled_in_person",
+            );
 
     return (
         <>
@@ -412,7 +421,7 @@ export default function Settlement() {
                             color={NAV_THEME[colorScheme].primary}
                         />
                     </View>
-                ) : nonCreatorMembers.length > 0 ? (
+                ) : allSettled ? (
                     <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
                         <Button
                             label="Complete Order"
