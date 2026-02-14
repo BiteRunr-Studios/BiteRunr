@@ -70,7 +70,64 @@ export const getOrderPaymentStatus = query({
   },
 });
 
-// Mark a member as settled in person (creator only)
+// Get settlement status for the current user (non-creator member)
+export const getMySettlementStatus = query({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    const order = await ctx.db.get(args.orderId);
+    if (!order) return null;
+
+    // Must not be the creator
+    if (order.creatorId === userId) return null;
+
+    // Find the current user's orderUser record
+    const orderUsers = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
+      .collect();
+
+    const myOrderUser = orderUsers.find((ou) => ou.userId === userId);
+    if (!myOrderUser) return null;
+
+    // Get the creator's info
+    const creator = await ctx.db.get(order.creatorId);
+
+    // Get the latest payment handle for this user
+    const paymentHandles = await ctx.db
+      .query("paymentHandles")
+      .withIndex("by_orderUserId", (q) => q.eq("orderUserId", myOrderUser._id))
+      .collect();
+
+    let latestHandle = null;
+    for (const handle of paymentHandles) {
+      if (!latestHandle || handle._creationTime > latestHandle._creationTime) {
+        latestHandle = handle;
+      }
+    }
+
+    return {
+      orderName: order.name,
+      creatorFirstName: creator?.firstName ?? "Unknown",
+      creatorLastName: creator?.lastName ?? "",
+      orderUserId: myOrderUser._id,
+      amountOwed: myOrderUser.amountOwed,
+      settlementStatus: myOrderUser.settlementStatus,
+      paymentHandle: latestHandle
+        ? {
+            id: latestHandle._id,
+            status: latestHandle.status,
+            errorMessage: latestHandle.errorMessage,
+            redirectUrl: latestHandle.redirectUrl,
+          }
+        : null,
+    };
+  },
+});
+
+// Mark a member as settled in person (creator or the member themselves)
 export const markSettledInPerson = mutation({
   args: {
     orderId: v.id("orders"),
@@ -81,13 +138,18 @@ export const markSettledInPerson = mutation({
     if (!userId) throw new Error("Not authenticated");
 
     const order = await ctx.db.get(args.orderId);
-    if (!order || order.creatorId !== userId) {
-      throw new Error("Only the order creator can mark settlements");
-    }
+    if (!order) throw new Error("Order not found");
 
     const orderUser = await ctx.db.get(args.orderUserId);
     if (!orderUser || orderUser.orderId !== args.orderId) {
       throw new Error("Member not found in this order");
+    }
+
+    // Allow creator OR the member themselves
+    const isCreator = order.creatorId === userId;
+    const isSelf = orderUser.userId === userId;
+    if (!isCreator && !isSelf) {
+      throw new Error("Not authorized to mark this settlement");
     }
 
     if (orderUser.amountOwed <= 0n) {
