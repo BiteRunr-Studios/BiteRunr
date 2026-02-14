@@ -18,6 +18,7 @@ export const settlementStatusValidator = v.union(
     v.literal("unpaid"),
     v.literal("claimed"),
     v.literal("confirmed"),
+    v.literal("settled_in_person"),
 );
 
 export const paymentHandleStatusValidator = v.union(

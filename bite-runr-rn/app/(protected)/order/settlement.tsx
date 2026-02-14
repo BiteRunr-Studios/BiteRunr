@@ -52,7 +52,7 @@ function getStatusIcon(
         errorMessage?: string | null;
     } | null,
 ) {
-    if (settlementStatus === "confirmed") {
+    if (settlementStatus === "confirmed" || settlementStatus === "settled_in_person") {
         return { name: "CircleCheck" as const, color: "#22c55e" };
     }
     if (paymentHandle) {
@@ -81,6 +81,7 @@ function getStatusText(
     } | null,
 ) {
     if (settlementStatus === "confirmed") return "Paid";
+    if (settlementStatus === "settled_in_person") return "Settled in person";
     if (paymentHandle) {
         switch (paymentHandle.status) {
             case "pending":
@@ -122,6 +123,7 @@ export default function Settlement() {
     );
 
     const requestPayments = useAction(api.paysafe.requestPayments);
+    const markSettledInPerson = useMutation(api.paysafe.markSettledInPerson);
     const updateOrder = useMutation(api.orders.update);
 
     const handleCompleteOrder = async () => {
@@ -152,6 +154,34 @@ export default function Settlement() {
         } finally {
             setIsCompleting(false);
         }
+    };
+
+    const handleMarkSettled = (member: Member) => {
+        Alert.alert(
+            "Mark as Settled",
+            `Confirm that ${member.firstName} ${member.lastName} has paid ${formatCents(member.amountOwed)} in person?`,
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Confirm",
+                    onPress: async () => {
+                        try {
+                            await markSettledInPerson({
+                                orderId: orderId as Id<"orders">,
+                                orderUserId: member.orderUserId as Id<"orderUsers">,
+                            });
+                        } catch (error) {
+                            Alert.alert(
+                                "Error",
+                                error instanceof Error
+                                    ? error.message
+                                    : "Failed to mark as settled",
+                            );
+                        }
+                    },
+                },
+            ],
+        );
     };
 
     const handleRequestPayments = async () => {
@@ -200,10 +230,13 @@ export default function Settlement() {
         0,
     );
     const totalPaid = nonCreatorMembers
-        .filter((m) => m.settlementStatus === "confirmed")
+        .filter((m) => m.settlementStatus === "confirmed" || m.settlementStatus === "settled_in_person")
         .reduce((sum, m) => sum + Number(m.amountOwed), 0);
     const hasUnpaidMembers = nonCreatorMembers.some(
-        (m) => m.settlementStatus !== "confirmed" && Number(m.amountOwed) > 0,
+        (m) =>
+            m.settlementStatus !== "confirmed" &&
+            m.settlementStatus !== "settled_in_person" &&
+            Number(m.amountOwed) > 0,
     );
 
     return (
@@ -330,6 +363,27 @@ export default function Settlement() {
                                                 <Text className="text-sm font-medium text-primary">
                                                     Open Payment Link{" "}
                                                     {/* TODO: remove similation link for prod */}
+                                                </Text>
+                                            </Pressable>
+                                        )}
+                                    {amount > 0 &&
+                                        member.settlementStatus !== "confirmed" &&
+                                        member.settlementStatus !== "settled_in_person" && (
+                                            <Pressable
+                                                onPress={() =>
+                                                    handleMarkSettled(member)
+                                                }
+                                                className="flex-row items-center gap-1.5 mt-2 active:opacity-70">
+                                                <Icon
+                                                    name="HandCoins"
+                                                    size={14}
+                                                    color={
+                                                        NAV_THEME[colorScheme]
+                                                            .primary
+                                                    }
+                                                />
+                                                <Text className="text-sm font-medium text-primary">
+                                                    Mark as Settled
                                                 </Text>
                                             </Pressable>
                                         )}

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, action, internalAction, internalMutation, internalQuery } from "./_generated/server";
+import { query, mutation, action, internalAction, internalMutation, internalQuery } from "./_generated/server";
 import { internal, api } from "./_generated/api";
 import { getUserId } from "./authHelper";
 import { paymentHandleStatusValidator } from "./schema";
@@ -67,6 +67,38 @@ export const getOrderPaymentStatus = query({
       orderName: order.name,
       members,
     };
+  },
+});
+
+// Mark a member as settled in person (creator only)
+export const markSettledInPerson = mutation({
+  args: {
+    orderId: v.id("orders"),
+    orderUserId: v.id("orderUsers"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const order = await ctx.db.get(args.orderId);
+    if (!order || order.creatorId !== userId) {
+      throw new Error("Only the order creator can mark settlements");
+    }
+
+    const orderUser = await ctx.db.get(args.orderUserId);
+    if (!orderUser || orderUser.orderId !== args.orderId) {
+      throw new Error("Member not found in this order");
+    }
+
+    if (orderUser.amountOwed <= 0n) {
+      throw new Error("Member does not owe any money");
+    }
+
+    if (orderUser.settlementStatus === "confirmed" || orderUser.settlementStatus === "settled_in_person") {
+      throw new Error("Member is already settled");
+    }
+
+    await ctx.db.patch(args.orderUserId, { settlementStatus: "settled_in_person" });
   },
 });
 
@@ -141,8 +173,8 @@ export const getUnpaidMembers = internalQuery({
       if (ou.userId === args.creatorId) continue;
       // Skip zero amounts
       if (ou.amountOwed <= 0n) continue;
-      // Skip already confirmed
-      if (ou.settlementStatus === "confirmed") continue;
+      // Skip already confirmed or settled in person
+      if (ou.settlementStatus === "confirmed" || ou.settlementStatus === "settled_in_person") continue;
 
       // Check for active payment handles
       const existingHandles = await ctx.db
