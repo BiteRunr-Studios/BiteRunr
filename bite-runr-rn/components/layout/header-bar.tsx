@@ -1,9 +1,17 @@
-import React from "react";
-import { View, Image, Pressable, Alert } from "react-native";
+import React, { useState } from "react";
+import { View, Image, Pressable } from "react-native";
 import { TabBarIcon } from "@/components/layout/tabbar-icon";
 import { router } from "expo-router";
+import { QRScannerModal } from "@/components/qr-scanner-modal";
 
 export function HeaderBar() {
+    const [showScanner, setShowScanner] = useState(false);
+
+    const handleScan = (code: string) => {
+        setShowScanner(false);
+        router.push(`/join/${code}`);
+    };
+
     return (
         <View className="bg-background">
             <View className="flex-row items-center justify-between px-4 py-2 min-h-20">
@@ -18,13 +26,19 @@ export function HeaderBar() {
                 </Pressable>
 
                 <Pressable
-                    onPress={() => Alert.alert("Notifications", "Coming soon!")}
+                    onPress={() => setShowScanner(true)}
                     className="px-3 py-2 rounded-lg active:opacity-80"
                     accessibilityRole="button"
-                    accessibilityLabel="Notifications">
-                    <TabBarIcon name="Bell" color="hsl(215.4 16.3% 46.9%)" />
+                    accessibilityLabel="Scan QR code">
+                    <TabBarIcon name="ScanLine" color="hsl(215.4 16.3% 46.9%)" />
                 </Pressable>
             </View>
+
+            <QRScannerModal
+                visible={showScanner}
+                onScan={handleScan}
+                onClose={() => setShowScanner(false)}
+            />
         </View>
     );
 }

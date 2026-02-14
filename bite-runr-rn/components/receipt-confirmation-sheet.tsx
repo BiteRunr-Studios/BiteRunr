@@ -11,6 +11,7 @@ import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import Icon from "@/components/common/icon";
+import { Button } from "@/components/common/button";
 import type { MatchedItem } from "@/hooks/useReceiptScanning";
 
 interface OrderItem {
@@ -220,7 +221,7 @@ function MatchItem({
                         <Text className="text-xs text-muted-foreground">
                             Price:
                         </Text>
-                        <View className="flex-row items-center flex-1 px-2 py-1 border rounded-lg border-input bg-background">
+                        <View className="flex-row items-center flex-1 px-3 py-2 border rounded-xl border-input bg-background">
                             <Text className="text-sm text-muted-foreground">
                                 $
                             </Text>
@@ -289,7 +290,7 @@ export function ReceiptConfirmationSheet({
         <ActionSheet
             ref={actionSheetRef}
             containerStyle={{
-                backgroundColor: NAV_THEME[colorScheme].background,
+                backgroundColor: colorScheme === "dark" ? "hsl(0, 0%, 7%)" : "hsl(0, 0%, 96%)",
                 borderTopLeftRadius: 24,
                 borderTopRightRadius: 24,
                 height: "85%",
@@ -298,7 +299,7 @@ export function ReceiptConfirmationSheet({
             onClose={onClose}
             defaultOverlayOpacity={0.3}
             useBottomSafeAreaPadding={true}>
-            <View className="flex-1 bg-background">
+            <View className="flex-1">
                 {/* Header */}
                 <View className="px-4 pt-4 pb-3 border-b border-border">
                     <View className="flex-row items-center justify-between">
@@ -344,7 +345,7 @@ export function ReceiptConfirmationSheet({
                 </ScrollView>
 
                 {/* Footer */}
-                <View className="px-4 py-3 border-t border-border bg-background">
+                <View className="px-4 py-3 border-t border-border">
                     <View className="flex-row items-center justify-between mb-3">
                         <Text className="text-sm text-muted-foreground">
                             {validMatchCount} of {matchedItems.length} items
@@ -355,28 +356,20 @@ export function ReceiptConfirmationSheet({
                         </Text>
                     </View>
                     <View className="flex-col gap-2">
-                        <TouchableOpacity
+                        <Button
+                            label={isSaving
+                                ? "Saving..."
+                                : `Save ${validMatchCount} Price${validMatchCount !== 1 ? "s" : ""}`}
                             onPress={onConfirm}
                             disabled={isSaving || validMatchCount === 0}
-                            className={`w-full py-3 rounded-lg ${
-                                isSaving || validMatchCount === 0
-                                    ? "bg-primary/50"
-                                    : "bg-primary"
-                            }`}>
-                            <Text className="text-base font-semibold text-center text-white">
-                                {isSaving
-                                    ? "Saving..."
-                                    : `Save ${validMatchCount} Price${validMatchCount !== 1 ? "s" : ""}`}
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
+                            loading={isSaving}
+                        />
+                        <Button
+                            label="Cancel"
+                            variant="outline"
                             onPress={onClose}
                             disabled={isSaving}
-                            className="w-full py-3 border rounded-lg border-input bg-background">
-                            <Text className="text-base font-semibold text-center text-foreground">
-                                Cancel
-                            </Text>
-                        </TouchableOpacity>
+                        />
                     </View>
                 </View>
             </View>

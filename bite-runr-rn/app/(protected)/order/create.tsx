@@ -23,6 +23,7 @@ import {
 } from "@/lib/hooks/use-order-api";
 import { router } from "expo-router";
 import Icon from "@/components/common/icon";
+import { Input } from "@/components/common/input";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 
@@ -149,7 +150,7 @@ export default function CreateOrder() {
                         color={NAV_THEME[colorScheme].primary}
                     />
                 </Pressable>
-                <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
+                <Text className="flex-1 ml-2 text-xl font-bold text-foreground">
                     Create Order
                 </Text>
             </View>
@@ -192,36 +193,20 @@ export default function CreateOrder() {
                                 </Text>
                                 <Text className="text-sm text-red-500">*</Text>
                             </View>
-                            <View
-                                className={`flex-row items-center px-4 border rounded-xl bg-background ${
-                                    fieldErrors.name
-                                        ? "border-red-500"
-                                        : "border-muted"
-                                }`}>
-                                <TextInput
-                                    className="flex-1 py-3.5 text-base text-foreground"
-                                    placeholder="e.g., Friday Lunch Run"
-                                    placeholderTextColor={NAV_THEME[colorScheme].border}
-                                    value={name}
-                                    onChangeText={(text) => {
-                                        setName(text);
-                                        if (fieldErrors.name) {
-                                            setFieldErrors((prev) => ({
-                                                ...prev,
-                                                name: undefined,
-                                            }));
-                                        }
-                                    }}
-                                />
-                            </View>
-                            {fieldErrors.name && (
-                                <View className="flex-row items-center gap-1 mt-2">
-                                    <Icon name="CircleAlert" size={12} color="#ef4444" />
-                                    <Text className="text-xs text-red-500">
-                                        {fieldErrors.name}
-                                    </Text>
-                                </View>
-                            )}
+                            <Input
+                                value={name}
+                                placeholder="e.g., Friday Lunch Run"
+                                errorMessage={fieldErrors.name ?? null}
+                                onChangeText={(text) => {
+                                    setName(text);
+                                    if (fieldErrors.name) {
+                                        setFieldErrors((prev) => ({
+                                            ...prev,
+                                            name: undefined,
+                                        }));
+                                    }
+                                }}
+                            />
                         </View>
 
                         {/* Locations Field */}
@@ -245,7 +230,7 @@ export default function CreateOrder() {
                                         }));
                                     }
                                 }}
-                                className={`flex-row items-center justify-between px-4 py-3.5 border rounded-xl bg-background ${
+                                className={`flex-row items-center justify-between px-4 h-[55px] border rounded-xl bg-background ${
                                     fieldErrors.order_locations
                                         ? "border-red-500"
                                         : "border-muted"
@@ -305,7 +290,7 @@ export default function CreateOrder() {
                                         }));
                                     }
                                 }}
-                                className={`flex-row items-center justify-between px-4 py-3.5 border rounded-xl bg-background ${
+                                className={`flex-row items-center justify-between px-4 h-[55px] border rounded-xl bg-background ${
                                     fieldErrors.order_users
                                         ? "border-red-500"
                                         : "border-muted"

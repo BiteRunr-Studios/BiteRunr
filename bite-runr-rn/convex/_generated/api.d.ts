@@ -21,6 +21,7 @@ import type * as orderItems from "../orderItems.js";
 import type * as orderLocations from "../orderLocations.js";
 import type * as orderUsers from "../orderUsers.js";
 import type * as orders from "../orders.js";
+import type * as paysafe from "../paysafe.js";
 import type * as pushNotifications from "../pushNotifications.js";
 import type * as receiptAgent from "../receiptAgent.js";
 import type * as receiptScanning from "../receiptScanning.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   orderLocations: typeof orderLocations;
   orderUsers: typeof orderUsers;
   orders: typeof orders;
+  paysafe: typeof paysafe;
   pushNotifications: typeof pushNotifications;
   receiptAgent: typeof receiptAgent;
   receiptScanning: typeof receiptScanning;

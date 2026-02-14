@@ -8,6 +8,7 @@ import {
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
+import { Button } from "@/components/common/button";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -86,7 +87,7 @@ export function AddItemSheet({
         <ActionSheet
             ref={actionSheetRef}
             containerStyle={{
-                backgroundColor: NAV_THEME[colorScheme].background,
+                backgroundColor: colorScheme === "dark" ? "hsl(0, 0%, 7%)" : "hsl(0, 0%, 96%)",
                 borderTopLeftRadius: 24,
                 borderTopRightRadius: 24,
                 height: "75%",
@@ -95,7 +96,7 @@ export function AddItemSheet({
             onClose={handleClose}
             defaultOverlayOpacity={0.3}
             useBottomSafeAreaPadding={true}>
-            <View className="flex-1 bg-background">
+            <View className="flex-1">
                 {/* Header */}
                 <View className="px-4 pt-4 pb-3 border-b border-border">
                     <Text className="text-xl font-bold text-foreground">
@@ -121,7 +122,7 @@ export function AddItemSheet({
                                     -
                                 </Text>
                             </TouchableOpacity>
-                            <View className="items-center justify-center flex-1 h-12 border rounded-lg border-input bg-background">
+                            <View className="items-center justify-center flex-1 h-12 border rounded-xl border-input bg-background">
                                 <Text className="text-xl font-semibold text-foreground">
                                     {quantity}
                                 </Text>
@@ -142,7 +143,7 @@ export function AddItemSheet({
                             Comments (Optional)
                         </Text>
                         <TextInput
-                            className="p-3 border rounded-lg border-input bg-background text-foreground"
+                            className="px-4 py-3 border rounded-xl border-input bg-background text-foreground"
                             placeholder="Add any special instructions..."
                             placeholderTextColor="hsl(215.4 16.3% 46.9%)"
                             value={comments}
@@ -156,22 +157,10 @@ export function AddItemSheet({
                 </View>
 
                 {/* Footer - Fixed at bottom */}
-                <View className="px-4 py-3 border-t border-border bg-background">
+                <View className="px-4 py-3 border-t border-border">
                     <View className="flex-col gap-2">
-                        <TouchableOpacity
-                            onPress={handleAdd}
-                            className="w-full py-3 rounded-lg bg-primary">
-                            <Text className="text-base font-semibold text-center text-white">
-                                Add to Order
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={handleClose}
-                            className="w-full py-3 border rounded-lg border-input bg-background">
-                            <Text className="text-base font-semibold text-center text-foreground">
-                                Cancel
-                            </Text>
-                        </TouchableOpacity>
+                        <Button label="Add to Order" onPress={handleAdd} />
+                        <Button label="Cancel" variant="outline" onPress={handleClose} />
                     </View>
                 </View>
             </View>

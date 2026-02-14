@@ -11,6 +11,7 @@ import {
     Image,
 } from "react-native";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
+import { Button } from "@/components/common/button";
 
 export interface SelectableItem {
     id: string;
@@ -82,7 +83,7 @@ export function MultiSelectSheet({
         <ActionSheet
             ref={actionSheetRef}
             containerStyle={{
-                backgroundColor: NAV_THEME[colorScheme].background,
+                backgroundColor: colorScheme === "dark" ? "hsl(0, 0%, 7%)" : "hsl(0, 0%, 96%)",
                 borderTopLeftRadius: 24,
                 borderTopRightRadius: 24,
                 height: "90%",
@@ -91,7 +92,7 @@ export function MultiSelectSheet({
             onClose={handleClose}
             defaultOverlayOpacity={0.3}
             useBottomSafeAreaPadding={true}>
-            <View className="flex-1 bg-background">
+            <View className="flex-1">
                 {/* Header */}
                 <View className="px-4 pt-4 pb-3 border-b border-border">
                     <View className="flex-row items-center justify-between mb-3">
@@ -101,9 +102,9 @@ export function MultiSelectSheet({
                     </View>
 
                     {/* Search bar */}
-                    <View className="flex-row items-center px-3 border rounded-lg border-input bg-background">
+                    <View className="flex-row items-center px-4 border rounded-xl border-input bg-background">
                         <TextInput
-                            className="flex-1 py-2 text-foreground"
+                            className="flex-1 py-3 text-foreground"
                             placeholder="Search..."
                             placeholderTextColor="hsl(215.4 16.3% 46.9%)"
                             value={searchQuery}
@@ -182,14 +183,11 @@ export function MultiSelectSheet({
                 )}
 
                 {/* Footer - Fixed at bottom */}
-                <View className="px-4 py-3 border-t border-border bg-background">
-                    <Pressable
+                <View className="px-4 py-3 border-t border-border">
+                    <Button
+                        label={`Confirm (${localSelectedIds.length} selected)`}
                         onPress={handleConfirm}
-                        className="px-4 py-3 rounded-lg bg-primary">
-                        <Text className="font-semibold text-center text-white">
-                            Confirm ({localSelectedIds.length} selected)
-                        </Text>
-                    </Pressable>
+                    />
                 </View>
             </View>
         </ActionSheet>
