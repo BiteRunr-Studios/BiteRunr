@@ -11,14 +11,12 @@ COPY bite-runr-dashboard/package.json bite-runr-dashboard/pnpm-lock.yaml ./
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy the convex directory that the symlink points to
-COPY bite-runr-rn/convex /app/bite-runr-rn/convex
-
 # Copy dashboard source
 COPY bite-runr-dashboard/ .
 
-# Remove the symlink and create a real link to the copied convex dir
-RUN rm -f convex && ln -s /app/bite-runr-rn/convex convex
+# Replace the symlink with the actual convex files so they can resolve node_modules
+RUN rm -f convex
+COPY bite-runr-rn/convex ./convex
 
 # Build
 RUN pnpm build
