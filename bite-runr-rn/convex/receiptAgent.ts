@@ -7,7 +7,17 @@ export const receiptParserAgent = new Agent(components.agent, {
   chat: openai.chat("gpt-4o-mini"),
   instructions: `You are a receipt parsing assistant. Your job is to extract item names, quantities, and prices from receipt images.
 
-When analyzing a receipt image:
+IMPORTANT: First, determine if the image is actually a receipt or invoice. If the image is NOT a receipt (e.g., a random photo, a selfie, a screenshot of something unrelated, a meme, a landscape, etc.), you MUST return this exact JSON:
+{
+  "error": "not_a_receipt"
+}
+
+If the image appears to be a receipt but is too blurry, dark, or unreadable to extract any items, return:
+{
+  "error": "unreadable_receipt"
+}
+
+When analyzing a valid receipt image:
 1. Identify all purchased items listed on the receipt
 2. Extract the item name exactly as it appears (or a cleaned-up readable version)
 3. Extract the quantity for each item (default to 1 if not shown)

@@ -12,6 +12,7 @@ export type ScanState =
     | "parsing"
     | "confirming"
     | "saving"
+    | "success"
     | "error";
 
 export interface ParsedReceiptItem {
@@ -92,7 +93,7 @@ export function useReceiptScanning(
     const startScan = useCallback(
         async (source: "camera" | "library") => {
             // Prevent starting a new scan while one is already in progress
-            if (state !== "idle" && state !== "error") {
+            if (state !== "idle" && state !== "error" && state !== "success") {
                 return;
             }
 
@@ -225,9 +226,20 @@ export function useReceiptScanning(
                 setState("confirming");
             } catch (err) {
                 console.error("Receipt scanning error:", err);
-                setError(
-                    err instanceof Error ? err.message : "An error occurred",
-                );
+                const message = err instanceof Error ? err.message : "";
+
+                // Translate common technical errors into user-friendly messages
+                if (message.includes("Failed to upload image") || message.includes("no storage ID")) {
+                    setError("We couldn't upload your photo. Please check your internet connection and try again.");
+                } else if (message.includes("network") || message.includes("fetch") || message.includes("Network request failed")) {
+                    setError("We're having trouble connecting right now. Please check your internet connection and try again.");
+                } else if (message.includes("Not authenticated")) {
+                    setError("Your session has expired. Please sign in again and try once more.");
+                } else if (message.includes("Not authorized")) {
+                    setError("You don't have permission to scan receipts for this order.");
+                } else {
+                    setError("Something went wrong while scanning your receipt. Please try again.");
+                }
                 setState("error");
             }
         },
@@ -309,12 +321,24 @@ export function useReceiptScanning(
                 receiptTotalInCents: receiptTotal ?? undefined,
             });
 
-            reset();
+            // Show success state briefly before resetting
+            setState("success");
+            setParsedItems([]);
+            setMatchedItems([]);
+            setReceiptStoreName(null);
+            setReceiptTotal(null);
+            setError(null);
         } catch (err) {
             console.error("Error saving matches:", err);
-            setError(
-                err instanceof Error ? err.message : "Failed to save matches",
-            );
+            const message = err instanceof Error ? err.message : "";
+
+            if (message.includes("network") || message.includes("fetch") || message.includes("Network request failed")) {
+                setError("We're having trouble connecting right now. Please check your internet connection and try again.");
+            } else if (message.includes("Not authenticated")) {
+                setError("Your session has expired. Please sign in again and try once more.");
+            } else {
+                setError("We couldn't save your receipt matches. Please try again.");
+            }
             setState("error");
         }
     }, [
