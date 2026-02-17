@@ -9,10 +9,16 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_CONVEX_URL": "https://amicable-mallard-749.convex.cloud"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_CONVEX_URL": "https://amicable-mallard-749.convex.cloud"
+      }
     }
   },
   "submit": {

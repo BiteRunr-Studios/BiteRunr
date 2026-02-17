@@ -3,7 +3,7 @@ import { ExpoConfig } from "expo/config";
 
 const config: ExpoConfig = {
     name: "BiteRunr",
-    owner: "ryansomers",
+    owner: "omniquark",
     slug: "biterunr",
     version: "1.0.0",
     orientation: "portrait",
@@ -28,6 +28,9 @@ const config: ExpoConfig = {
                 resizeMode: "contain",
                 backgroundColor: "#000000",
             },
+        },
+        infoPlist: {
+            ITSAppUsesNonExemptEncryption: false,
         },
     },
     android: {
@@ -93,7 +96,7 @@ const config: ExpoConfig = {
     },
     extra: {
         eas: {
-            projectId: "e77fef75-c90d-4ad7-b842-f01927d4bd9d",
+            projectId: "26c766a6-7b59-470c-8464-f4ea0f74ab65",
         },
     },
 };
