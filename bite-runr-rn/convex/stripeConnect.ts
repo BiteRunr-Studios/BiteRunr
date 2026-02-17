@@ -211,6 +211,7 @@ export const createPaymentSheetParams = action({
             amount,
             currency: "cad",
             customer: customerId,
+            payment_method_types: ["card", "link"],
             application_fee_amount: platformFee,
             transfer_data: {
                 destination: data.stripeAccountId,
