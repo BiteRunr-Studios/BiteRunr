@@ -17,6 +17,29 @@ import { Button } from "@/components/common/button";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 
+const ONBOARDING_STEPS = [
+    {
+        icon: "UserCheck" as const,
+        title: "Verify your identity",
+        desc: "Stripe will ask for your name, date of birth, and address to confirm who you are.",
+    },
+    {
+        icon: "CreditCard" as const,
+        title: "Add a debit card",
+        desc: "Link a debit card to receive instant payouts. You can also use a bank account.",
+    },
+    {
+        icon: "ShieldCheck" as const,
+        title: "Quick review",
+        desc: "Stripe verifies your info — this usually only takes a few minutes.",
+    },
+    {
+        icon: "Banknote" as const,
+        title: "Start getting paid",
+        desc: "Once approved, order members can pay you directly with their card.",
+    },
+];
+
 export default function PaymentsScreen() {
     const { colorScheme } = useColorScheme();
     const [isSettingUp, setIsSettingUp] = useState(false);
@@ -220,30 +243,91 @@ export default function PaymentsScreen() {
 
                     {!connectedAccount && (
                         <View className="p-4 border rounded-2xl border-muted bg-card">
-                            <Text className="text-base text-foreground mb-2">
-                                Set up card payments so order members can pay you
-                                directly with their credit or debit card.
+                            <Text className="text-base text-foreground mb-1">
+                                Get paid by your group
                             </Text>
                             <Text className="text-sm text-muted-foreground mb-4">
-                                Powered by Stripe. You'll need to verify your
-                                identity and add a bank account or debit card for
-                                payouts.
+                                Set up takes about 2 minutes. Here's what to
+                                expect:
                             </Text>
+
+                            <View className="mb-5">
+                                {ONBOARDING_STEPS.map((step, index) => (
+                                    <View
+                                        key={step.title}
+                                        className="flex-row items-start gap-3">
+                                        {/* Step indicator line */}
+                                        <View className="items-center w-8">
+                                            <View
+                                                className="items-center justify-center w-8 h-8 rounded-full"
+                                                style={{
+                                                    backgroundColor:
+                                                        NAV_THEME[colorScheme]
+                                                            .primary + "15",
+                                                }}>
+                                                <Icon
+                                                    name={step.icon}
+                                                    size={16}
+                                                    color={
+                                                        NAV_THEME[colorScheme]
+                                                            .primary
+                                                    }
+                                                />
+                                            </View>
+                                            {index <
+                                                ONBOARDING_STEPS.length -
+                                                    1 && (
+                                                <View
+                                                    className="w-0.5 flex-1 my-1 rounded-full"
+                                                    style={{
+                                                        backgroundColor:
+                                                            NAV_THEME[
+                                                                colorScheme
+                                                            ].primary + "30",
+                                                        minHeight: 20,
+                                                    }}
+                                                />
+                                            )}
+                                        </View>
+
+                                        <View className="flex-1 pb-4">
+                                            <Text className="text-sm font-medium text-foreground">
+                                                {step.title}
+                                            </Text>
+                                            <Text className="text-xs text-muted-foreground mt-0.5">
+                                                {step.desc}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                ))}
+                            </View>
+
                             <Button
-                                label="Set Up Card Payments"
-                                icon="CreditCard"
+                                label="Get Started"
+                                icon="ArrowRight"
                                 onPress={handleSetupPayouts}
                                 loading={isSettingUp}
                                 color={NAV_THEME[colorScheme].primary}
                             />
+
+                            <View className="flex-row items-center justify-center gap-1.5 mt-3">
+                                <Icon
+                                    name="Lock"
+                                    size={12}
+                                    color={NAV_THEME[colorScheme].border}
+                                />
+                                <Text className="text-xs text-muted-foreground">
+                                    Secured by Stripe
+                                </Text>
+                            </View>
                         </View>
                     )}
 
                     {connectedAccount && !isReady && (
                         <View className="p-4 border rounded-2xl border-muted bg-card">
-                            <View className="flex-row gap-2 items-center mb-3">
+                            <View className="flex-row gap-2 items-center mb-1">
                                 <Icon
-                                    name="Clock"
+                                    name={isOnboarded ? "Clock" : "CircleAlert"}
                                     size={20}
                                     color="#f59e0b"
                                 />
@@ -252,14 +336,74 @@ export default function PaymentsScreen() {
                                     style={{ color: "#f59e0b" }}>
                                     {isOnboarded
                                         ? "Verification in progress"
-                                        : "Setup incomplete"}
+                                        : "Almost there"}
                                 </Text>
                             </View>
                             <Text className="text-sm text-muted-foreground mb-4">
                                 {isOnboarded
-                                    ? "Stripe is verifying your details. This usually takes a few minutes."
-                                    : "You haven't finished setting up your payout account. Complete the setup to start accepting card payments."}
+                                    ? "Stripe is reviewing your details. This usually takes just a few minutes — check back shortly."
+                                    : "You're almost done! Finish the last few steps to start accepting card payments."}
                             </Text>
+
+                            {/* Progress steps */}
+                            <View className="mb-4">
+                                {ONBOARDING_STEPS.map((step, index) => {
+                                    // Steps 0-1 are "done" if onboarded, step 2 is "in progress", step 3 is pending
+                                    // If not onboarded, step 0 might be done but we don't know exactly — show all as pending
+                                    const isDone = isOnboarded && index <= 1;
+                                    const isActive = isOnboarded && index === 2;
+
+                                    return (
+                                        <View
+                                            key={step.title}
+                                            className="flex-row items-center gap-3"
+                                            style={{
+                                                paddingVertical: 6,
+                                                opacity:
+                                                    isDone || isActive
+                                                        ? 1
+                                                        : 0.4,
+                                            }}>
+                                            <View
+                                                className="items-center justify-center w-6 h-6 rounded-full"
+                                                style={{
+                                                    backgroundColor: isDone
+                                                        ? "#22c55e20"
+                                                        : isActive
+                                                          ? "#f59e0b20"
+                                                          : NAV_THEME[
+                                                                  colorScheme
+                                                              ].primary + "10",
+                                                }}>
+                                                <Icon
+                                                    name={
+                                                        isDone
+                                                            ? "Check"
+                                                            : isActive
+                                                              ? "LoaderCircle"
+                                                              : step.icon
+                                                    }
+                                                    size={13}
+                                                    color={
+                                                        isDone
+                                                            ? "#22c55e"
+                                                            : isActive
+                                                              ? "#f59e0b"
+                                                              : NAV_THEME[
+                                                                    colorScheme
+                                                                ].primary
+                                                    }
+                                                />
+                                            </View>
+                                            <Text
+                                                className={`text-sm ${isDone ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                                                {step.title}
+                                            </Text>
+                                        </View>
+                                    );
+                                })}
+                            </View>
+
                             <View className="gap-3">
                                 {!isOnboarded && (
                                     <Button
@@ -398,55 +542,63 @@ export default function PaymentsScreen() {
                     )}
                 </View>
 
-                {/* Info Section */}
-                <View className="mb-6">
-                    <View className="flex-row items-center gap-3 mb-4">
-                        <View className="items-center justify-center w-10 h-10 rounded-xl bg-blue-500/10">
-                            <Icon name="Info" size={20} color="#3b82f6" />
-                        </View>
-                        <Text className="text-lg font-semibold text-foreground">
-                            How it Works
-                        </Text>
-                    </View>
-
-                    <View className="gap-3">
-                        {[
-                            {
-                                icon: "ShoppingBag" as const,
-                                title: "You run the order",
-                                desc: "Pick up food for your group as the runner.",
-                            },
-                            {
-                                icon: "CreditCard" as const,
-                                title: "Members pay you",
-                                desc: "Each member can pay their share with a credit or debit card.",
-                            },
-                            {
-                                icon: "Banknote" as const,
-                                title: "You get paid",
-                                desc: "Funds are deposited to your bank account or debit card.",
-                            },
-                        ].map((item) => (
-                            <View
-                                key={item.title}
-                                className="flex-row items-start gap-3 p-3 border rounded-xl border-muted bg-card">
+                {/* How it Works — only show when not yet onboarded */}
+                {connectedAccount && isReady && (
+                    <View className="mb-6 mt-2">
+                        <View className="flex-row items-center gap-3 mb-4">
+                            <View className="items-center justify-center w-10 h-10 rounded-xl bg-blue-500/10">
                                 <Icon
-                                    name={item.icon}
+                                    name="Info"
                                     size={20}
-                                    color={NAV_THEME[colorScheme].primary}
+                                    color="#3b82f6"
                                 />
-                                <View className="flex-1">
-                                    <Text className="text-sm font-medium text-foreground">
-                                        {item.title}
-                                    </Text>
-                                    <Text className="text-sm text-muted-foreground">
-                                        {item.desc}
-                                    </Text>
-                                </View>
                             </View>
-                        ))}
+                            <Text className="text-lg font-semibold text-foreground">
+                                How it Works
+                            </Text>
+                        </View>
+
+                        <View className="gap-3">
+                            {[
+                                {
+                                    icon: "ShoppingBag" as const,
+                                    title: "You run the order",
+                                    desc: "Pick up food for your group as the runner.",
+                                },
+                                {
+                                    icon: "CreditCard" as const,
+                                    title: "Members pay you",
+                                    desc: "Each member can pay their share with a credit or debit card.",
+                                },
+                                {
+                                    icon: "Banknote" as const,
+                                    title: "You get paid",
+                                    desc: "Funds are deposited to your bank account or debit card.",
+                                },
+                            ].map((item) => (
+                                <View
+                                    key={item.title}
+                                    className="flex-row items-start gap-3 p-3 border rounded-xl border-muted bg-card">
+                                    <Icon
+                                        name={item.icon}
+                                        size={20}
+                                        color={
+                                            NAV_THEME[colorScheme].primary
+                                        }
+                                    />
+                                    <View className="flex-1">
+                                        <Text className="text-sm font-medium text-foreground">
+                                            {item.title}
+                                        </Text>
+                                        <Text className="text-sm text-muted-foreground">
+                                            {item.desc}
+                                        </Text>
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
                     </View>
-                </View>
+                )}
             </ScrollView>
         </SafeAreaView>
     );
