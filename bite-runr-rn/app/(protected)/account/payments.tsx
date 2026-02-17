@@ -203,6 +203,31 @@ export default function PaymentsScreen() {
     };
 
     const isOnboarded = connectedAccount?.onboardingComplete;
+    const isLoading = connectedAccount === undefined;
+    const hasNoAccount = connectedAccount === null;
+
+    // Derive step completion from actual Stripe account state
+    const getStepStatus = (index: number) => {
+        if (!connectedAccount) return "pending";
+        // Step 0: Verify identity — done once onboarding is submitted
+        if (index === 0) return isOnboarded ? "done" : "pending";
+        // Step 1: Add debit card — done once payouts are enabled
+        if (index === 1) {
+            if (connectedAccount.payoutsEnabled) return "done";
+            return isOnboarded ? "active" : "pending";
+        }
+        // Step 2: Quick review — done once charges are enabled
+        if (index === 2) {
+            if (connectedAccount.chargesEnabled) return "done";
+            if (isOnboarded) return "active";
+            return "pending";
+        }
+        // Step 3: Start getting paid — done once everything is ready
+        if (index === 3) {
+            return connectedAccount.chargesEnabled ? "done" : "pending";
+        }
+        return "pending";
+    };
 
     return (
         <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
@@ -222,6 +247,16 @@ export default function PaymentsScreen() {
                 </Text>
             </View>
 
+            {isLoading && (
+                <View className="flex-1 items-center justify-center">
+                    <ActivityIndicator
+                        color={NAV_THEME[colorScheme].primary}
+                        size="large"
+                    />
+                </View>
+            )}
+
+            {!isLoading && (
             <ScrollView
                 className="flex-1"
                 contentContainerStyle={{ padding: 16 }}
@@ -241,7 +276,7 @@ export default function PaymentsScreen() {
                         </Text>
                     </View>
 
-                    {!connectedAccount && (
+                    {hasNoAccount && (
                         <View className="p-4 border rounded-2xl border-muted bg-card">
                             <Text className="text-base text-foreground mb-1">
                                 Get paid by your group
@@ -348,10 +383,9 @@ export default function PaymentsScreen() {
                             {/* Progress steps */}
                             <View className="mb-4">
                                 {ONBOARDING_STEPS.map((step, index) => {
-                                    // Steps 0-1 are "done" if onboarded, step 2 is "in progress", step 3 is pending
-                                    // If not onboarded, step 0 might be done but we don't know exactly — show all as pending
-                                    const isDone = isOnboarded && index <= 1;
-                                    const isActive = isOnboarded && index === 2;
+                                    const status = getStepStatus(index);
+                                    const isDone = status === "done";
+                                    const isActive = status === "active";
 
                                     return (
                                         <View
@@ -600,6 +634,7 @@ export default function PaymentsScreen() {
                     </View>
                 )}
             </ScrollView>
+            )}
         </SafeAreaView>
     );
 }
