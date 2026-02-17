@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import {
     View,
     Text,
@@ -6,8 +7,9 @@ import {
     Alert,
     Linking,
 } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
@@ -93,13 +95,47 @@ export default function MySettlement() {
         ? params.orderId[0]
         : params.orderId;
     const { colorScheme } = useColorScheme();
+    const [isPaying, setIsPaying] = useState(false);
 
     const settlement = useQuery(
         api.paysafe.getMySettlementStatus,
         orderId ? { orderId: orderId as Id<"orders"> } : "skip",
     );
 
+    const runnerStripeStatus = useQuery(
+        api.payments.getRunnerStripeStatus,
+        orderId ? { orderId: orderId as Id<"orders"> } : "skip",
+    );
+
     const markSettledInPerson = useMutation(api.paysafe.markSettledInPerson);
+    const createSettlementCheckout = useAction(
+        api.stripeConnect.createSettlementCheckout,
+    );
+
+    const handlePayWithCard = async () => {
+        if (!orderId) return;
+        setIsPaying(true);
+        try {
+            const result = await createSettlementCheckout({
+                orderId: orderId as Id<"orders">,
+            });
+            if (result.url) {
+                await WebBrowser.openAuthSessionAsync(
+                    result.url,
+                    "biterunr://payment-",
+                );
+            }
+        } catch (error) {
+            Alert.alert(
+                "Error",
+                error instanceof Error
+                    ? error.message
+                    : "Failed to create payment",
+            );
+        } finally {
+            setIsPaying(false);
+        }
+    };
 
     const handleSettleInCash = () => {
         if (!settlement || !orderId) return;
@@ -159,10 +195,11 @@ export default function MySettlement() {
         settlement.paymentHandle,
     );
 
-    const canSettleInCash =
-        amount > 0 &&
-        settlement.settlementStatus !== "confirmed" &&
-        settlement.settlementStatus !== "settled_in_person";
+    const isSettled =
+        settlement.settlementStatus === "confirmed" ||
+        settlement.settlementStatus === "settled_in_person";
+    const canPay = amount > 0 && !isSettled;
+    const runnerAcceptsCards = runnerStripeStatus?.acceptsCards ?? false;
 
     return (
         <>
@@ -217,7 +254,7 @@ export default function MySettlement() {
                         </Text>
                     </View>
 
-                    {/* Payment Link */}
+                    {/* Paysafe Payment Link */}
                     {settlement.paymentHandle?.redirectUrl &&
                         settlement.paymentHandle.status !== "completed" && (
                             <Pressable
@@ -233,7 +270,7 @@ export default function MySettlement() {
                                     color={NAV_THEME[colorScheme].primary}
                                 />
                                 <Text className="text-sm font-medium text-primary">
-                                    Open Payment Link
+                                    Open E-Transfer Link
                                 </Text>
                             </Pressable>
                         )}
@@ -242,14 +279,27 @@ export default function MySettlement() {
                 {/* Spacer */}
                 <View className="flex-1" />
 
-                {/* Footer */}
-                {canSettleInCash && (
-                    <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
+                {/* Footer Actions */}
+                {canPay && (
+                    <View className="px-6 pt-4 pb-10 border-t border-muted bg-background gap-3">
+                        {runnerAcceptsCards && (
+                            <Button
+                                label="Pay with Card"
+                                icon="CreditCard"
+                                onPress={handlePayWithCard}
+                                loading={isPaying}
+                                color={NAV_THEME[colorScheme].primary}
+                            />
+                        )}
                         <Button
                             label="Settle in Cash"
                             icon="HandCoins"
                             onPress={handleSettleInCash}
-                            color={NAV_THEME[colorScheme].primary}
+                            color={
+                                runnerAcceptsCards
+                                    ? NAV_THEME[colorScheme].border
+                                    : NAV_THEME[colorScheme].primary
+                            }
                         />
                     </View>
                 )}
