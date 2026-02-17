@@ -126,6 +126,7 @@ export default function MySettlement() {
                 customerEphemeralKeySecret: params.ephemeralKeySecret,
                 customerId: params.customerId,
                 merchantDisplayName: "BiteRunr",
+                returnURL: "biterunr://stripe-redirect",
             });
 
             if (initError) {

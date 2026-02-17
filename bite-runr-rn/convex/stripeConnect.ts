@@ -14,8 +14,8 @@ function getStripe() {
     });
 }
 
-// Platform fee: 10%. Change as needed.
-const APPLICATION_FEE_PERCENT = 0.1;
+// Platform fee: 1%. Change as needed.
+const APPLICATION_FEE_PERCENT = 0.01;
 
 // --- SELLER ONBOARDING ---
 // Creates a Stripe Connect Express account and returns the onboarding URL.
@@ -83,7 +83,9 @@ export const createConnectAccount = action({
 
 export const checkOnboardingStatus = action({
     args: {},
-    handler: async (ctx): Promise<{
+    handler: async (
+        ctx,
+    ): Promise<{
         onboarded: boolean;
         payoutsEnabled: boolean;
         chargesEnabled: boolean;
@@ -110,10 +112,8 @@ export const checkOnboardingStatus = action({
         );
         const onboardingComplete: boolean =
             stripeAccount.details_submitted ?? false;
-        const payoutsEnabled: boolean =
-            stripeAccount.payouts_enabled ?? false;
-        const chargesEnabled: boolean =
-            stripeAccount.charges_enabled ?? false;
+        const payoutsEnabled: boolean = stripeAccount.payouts_enabled ?? false;
+        const chargesEnabled: boolean = stripeAccount.charges_enabled ?? false;
 
         await ctx.runMutation(
             internal.payments.updateConnectedAccountByStripeId,
@@ -138,7 +138,10 @@ export const checkOnboardingStatus = action({
 
 export const createPaymentSheetParams = action({
     args: { orderId: v.id("orders") },
-    handler: async (ctx, args): Promise<{
+    handler: async (
+        ctx,
+        args,
+    ): Promise<{
         paymentIntentClientSecret: string;
         ephemeralKeySecret: string;
         customerId: string;
@@ -188,10 +191,13 @@ export const createPaymentSheetParams = action({
             });
             customerId = customer.id;
 
-            await ctx.runMutation(internal.payments.updateUserStripeCustomerId, {
-                userId: user._id,
-                stripeCustomerId: customerId,
-            });
+            await ctx.runMutation(
+                internal.payments.updateUserStripeCustomerId,
+                {
+                    userId: user._id,
+                    stripeCustomerId: customerId,
+                },
+            );
         }
 
         // Create an Ephemeral Key for the customer
@@ -248,7 +254,9 @@ export const createPaymentSheetParams = action({
 
 export const getPayoutBalance = action({
     args: {},
-    handler: async (ctx): Promise<{
+    handler: async (
+        ctx,
+    ): Promise<{
         available: number;
         pending: number;
         instantAvailable: number;
@@ -307,7 +315,9 @@ export const getPayoutBalance = action({
 
 export const requestInstantPayout = action({
     args: {},
-    handler: async (ctx): Promise<{
+    handler: async (
+        ctx,
+    ): Promise<{
         success: boolean;
         amount: number;
         fee: number;
@@ -375,8 +385,7 @@ export const requestInstantPayout = action({
             };
         } catch (error) {
             // Provide user-friendly messages for common Stripe errors
-            const msg =
-                error instanceof Error ? error.message : String(error);
+            const msg = error instanceof Error ? error.message : String(error);
             if (msg.includes("insufficient funds") || msg.includes("balance")) {
                 throw new Error(
                     "Insufficient funds for instant payout. Your balance may have changed — please try again.",
@@ -412,9 +421,7 @@ export const createDashboardLink = action({
         if (!account) throw new Error("No connected account found");
 
         const loginLink: Stripe.LoginLink =
-            await getStripe().accounts.createLoginLink(
-                account.stripeAccountId,
-            );
+            await getStripe().accounts.createLoginLink(account.stripeAccountId);
         return { url: loginLink.url };
     },
 });
