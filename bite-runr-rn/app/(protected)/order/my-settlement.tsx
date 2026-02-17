@@ -127,6 +127,13 @@ export default function MySettlement() {
                 customerId: params.customerId,
                 merchantDisplayName: "BiteRunr",
                 returnURL: "biterunr://stripe-redirect",
+                applePay: {
+                    merchantCountryCode: "CA",
+                },
+                googlePay: {
+                    merchantCountryCode: "CA",
+                    testEnv: __DEV__,
+                },
             });
 
             if (initError) {
