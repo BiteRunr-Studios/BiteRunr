@@ -243,6 +243,29 @@ export const expirePendingPayments = internalMutation({
     },
 });
 
+// Internal: get user's stripeCustomerId
+export const getUserStripeCustomerId = internalQuery({
+    args: { userId: v.id("users") },
+    handler: async (ctx, args) => {
+        const user = await ctx.db.get(args.userId);
+        if (!user) return null;
+        return { stripeCustomerId: user.stripeCustomerId };
+    },
+});
+
+// Internal: update user's stripeCustomerId
+export const updateUserStripeCustomerId = internalMutation({
+    args: {
+        userId: v.id("users"),
+        stripeCustomerId: v.string(),
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.patch(args.userId, {
+            stripeCustomerId: args.stripeCustomerId,
+        });
+    },
+});
+
 // Internal: create stripe payment record
 export const createStripePaymentRecord = internalMutation({
     args: {
@@ -251,6 +274,7 @@ export const createStripePaymentRecord = internalMutation({
         orderId: v.id("orders"),
         orderUserId: v.id("orderUsers"),
         stripeSessionId: v.optional(v.string()),
+        stripePaymentIntentId: v.optional(v.string()),
         amount: v.number(),
         platformFee: v.number(),
         currency: v.string(),
@@ -315,6 +339,58 @@ export const updateStripePaymentBySessionId = internalMutation({
             }
         } else if (args.status === "failed") {
             // Reset to unpaid so member can try again
+            await ctx.db.patch(payment.orderUserId, {
+                settlementStatus: "unpaid",
+            });
+        }
+    },
+});
+
+// Internal: update stripe payment by PaymentIntent ID and sync settlement status
+export const updateStripePaymentByPaymentIntentId = internalMutation({
+    args: {
+        stripePaymentIntentId: v.string(),
+        status: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const payment = await ctx.db
+            .query("stripePayments")
+            .withIndex("by_stripePaymentIntentId", (q) =>
+                q.eq("stripePaymentIntentId", args.stripePaymentIntentId),
+            )
+            .first();
+        if (!payment) return;
+
+        await ctx.db.patch(payment._id, {
+            status: args.status,
+            updatedAt: Date.now(),
+        });
+
+        // Sync settlement status
+        if (args.status === "completed") {
+            await ctx.db.patch(payment.orderUserId, {
+                settlementStatus: "confirmed",
+            });
+
+            // Send push notification
+            const orderUser = await ctx.db.get(payment.orderUserId);
+            if (orderUser) {
+                const order = await ctx.db.get(payment.orderId);
+                await ctx.scheduler.runAfter(
+                    0,
+                    internal.pushNotifications.sendToUser,
+                    {
+                        userId: orderUser.userId,
+                        title: "Payment Confirmed",
+                        body: `Your card payment for ${order?.name ?? "the order"} has been confirmed!`,
+                        data: {
+                            type: "payment_confirmed",
+                            orderId: payment.orderId,
+                        },
+                    },
+                );
+            }
+        } else if (args.status === "failed") {
             await ctx.db.patch(payment.orderUserId, {
                 settlementStatus: "unpaid",
             });

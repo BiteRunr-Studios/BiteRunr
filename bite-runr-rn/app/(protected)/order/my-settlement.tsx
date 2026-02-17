@@ -7,7 +7,7 @@ import {
     Alert,
     Linking,
 } from "react-native";
-import * as WebBrowser from "expo-web-browser";
+import { useStripe } from "@stripe/stripe-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -96,6 +96,7 @@ export default function MySettlement() {
         : params.orderId;
     const { colorScheme } = useColorScheme();
     const [isPaying, setIsPaying] = useState(false);
+    const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
     const settlement = useQuery(
         api.paysafe.getMySettlementStatus,
@@ -108,23 +109,38 @@ export default function MySettlement() {
     );
 
     const markSettledInPerson = useMutation(api.paysafe.markSettledInPerson);
-    const createSettlementCheckout = useAction(
-        api.stripeConnect.createSettlementCheckout,
+    const createPaymentSheetParams = useAction(
+        api.stripeConnect.createPaymentSheetParams,
     );
 
     const handlePayWithCard = async () => {
         if (!orderId) return;
         setIsPaying(true);
         try {
-            const result = await createSettlementCheckout({
+            const params = await createPaymentSheetParams({
                 orderId: orderId as Id<"orders">,
             });
-            if (result.url) {
-                await WebBrowser.openAuthSessionAsync(
-                    result.url,
-                    "biterunr://payment-",
-                );
+
+            const { error: initError } = await initPaymentSheet({
+                paymentIntentClientSecret: params.paymentIntentClientSecret,
+                customerEphemeralKeySecret: params.ephemeralKeySecret,
+                customerId: params.customerId,
+                merchantDisplayName: "BiteRunr",
+            });
+
+            if (initError) {
+                Alert.alert("Error", initError.message);
+                return;
             }
+
+            const { error: presentError } = await presentPaymentSheet();
+
+            if (presentError) {
+                // User cancelled — not a real error
+                if (presentError.code === "Canceled") return;
+                Alert.alert("Payment Failed", presentError.message);
+            }
+            // On success, the webhook handles updating the payment status
         } catch (error) {
             Alert.alert(
                 "Error",

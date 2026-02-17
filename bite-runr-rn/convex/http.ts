@@ -252,12 +252,28 @@ http.route({
                     );
                     break;
                 }
-                case "payment_intent.succeeded":
-                    console.log("Payment succeeded:", event.data.object.id);
+                case "payment_intent.succeeded": {
+                    const succeededIntent = event.data.object;
+                    await ctx.runMutation(
+                        internal.payments.updateStripePaymentByPaymentIntentId,
+                        {
+                            stripePaymentIntentId: succeededIntent.id,
+                            status: "completed",
+                        },
+                    );
                     break;
-                case "payment_intent.payment_failed":
-                    console.log("Payment failed:", event.data.object.id);
+                }
+                case "payment_intent.payment_failed": {
+                    const failedIntent = event.data.object;
+                    await ctx.runMutation(
+                        internal.payments.updateStripePaymentByPaymentIntentId,
+                        {
+                            stripePaymentIntentId: failedIntent.id,
+                            status: "failed",
+                        },
+                    );
                     break;
+                }
                 case "transfer.created": {
                     const transfer = event.data.object;
                     const transferRunner = await ctx.runQuery(

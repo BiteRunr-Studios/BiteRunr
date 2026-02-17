@@ -40,6 +40,7 @@ export default defineSchema({
         lastName: v.string(),
         avatarUrl: v.optional(v.string()),
         avatarStorageId: v.optional(v.id("_storage")),
+        stripeCustomerId: v.optional(v.string()),
     })
         .index("email", ["email"])
         .searchIndex("search_name", { searchField: "firstName" })
@@ -183,7 +184,8 @@ export default defineSchema({
         .index("by_sellerId", ["sellerId"])
         .index("by_stripeSessionId", ["stripeSessionId"])
         .index("by_orderUserId", ["orderUserId"])
-        .index("by_status", ["status"]),
+        .index("by_status", ["status"])
+        .index("by_stripePaymentIntentId", ["stripePaymentIntentId"]),
 
     // Order invites (QR code-based group joining)
     orderInvites: defineTable({

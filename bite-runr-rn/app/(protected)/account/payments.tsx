@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
     View,
     Text,
     Pressable,
     ScrollView,
     Alert,
+    ActivityIndicator,
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -21,6 +22,15 @@ export default function PaymentsScreen() {
     const [isSettingUp, setIsSettingUp] = useState(false);
     const [isChecking, setIsChecking] = useState(false);
     const [isOpeningDashboard, setIsOpeningDashboard] = useState(false);
+    const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+    const [isRequestingPayout, setIsRequestingPayout] = useState(false);
+    const [balanceData, setBalanceData] = useState<{
+        available: number;
+        pending: number;
+        instantAvailable: number;
+        instantPayoutsEnabled: boolean;
+        currency: string;
+    } | null>(null);
 
     const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
     const createConnectAccount = useAction(
@@ -31,6 +41,10 @@ export default function PaymentsScreen() {
     );
     const createDashboardLink = useAction(
         api.stripeConnect.createDashboardLink,
+    );
+    const getPayoutBalance = useAction(api.stripeConnect.getPayoutBalance);
+    const requestInstantPayout = useAction(
+        api.stripeConnect.requestInstantPayout,
     );
 
     const handleSetupPayouts = async () => {
@@ -87,6 +101,65 @@ export default function PaymentsScreen() {
         }
     };
 
+    const isReady = connectedAccount?.chargesEnabled;
+
+    const fetchBalance = useCallback(async () => {
+        if (!isReady) return;
+        setIsLoadingBalance(true);
+        try {
+            const result = await getPayoutBalance({});
+            setBalanceData(result);
+        } catch {
+            // Silently fail — balance card just won't show
+        } finally {
+            setIsLoadingBalance(false);
+        }
+    }, [isReady, getPayoutBalance]);
+
+    useEffect(() => {
+        fetchBalance();
+    }, [fetchBalance]);
+
+    const formatCurrency = (amount: number) => {
+        return `$${(amount / 100).toFixed(2)}`;
+    };
+
+    const handleInstantPayout = async () => {
+        if (!balanceData || balanceData.instantAvailable <= 0) return;
+
+        Alert.alert(
+            "Instant Payout",
+            `Cash out ${formatCurrency(balanceData.instantAvailable)} instantly to your debit card? A small fee (typically 1%) will be deducted by Stripe.`,
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Cash Out",
+                    onPress: async () => {
+                        setIsRequestingPayout(true);
+                        try {
+                            const result = await requestInstantPayout({});
+                            Alert.alert(
+                                "Payout Sent!",
+                                `${formatCurrency(result.amount)} is on its way to your debit card.${result.fee > 0 ? ` (Fee: ${formatCurrency(result.fee)})` : ""}`,
+                            );
+                            // Refresh balance after payout
+                            fetchBalance();
+                        } catch (error) {
+                            Alert.alert(
+                                "Payout Failed",
+                                error instanceof Error
+                                    ? error.message
+                                    : "Failed to create instant payout. Make sure you have a debit card linked to your Stripe account.",
+                            );
+                        } finally {
+                            setIsRequestingPayout(false);
+                        }
+                    },
+                },
+            ],
+        );
+    };
+
     const handleOpenDashboard = async () => {
         setIsOpeningDashboard(true);
         try {
@@ -107,7 +180,6 @@ export default function PaymentsScreen() {
     };
 
     const isOnboarded = connectedAccount?.onboardingComplete;
-    const isReady = connectedAccount?.chargesEnabled;
 
     return (
         <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
@@ -235,6 +307,93 @@ export default function PaymentsScreen() {
                                 loading={isOpeningDashboard}
                                 color={NAV_THEME[colorScheme].primary}
                             />
+                        </View>
+                    )}
+
+                    {/* Balance & Instant Payout */}
+                    {connectedAccount && isReady && (
+                        <View className="mt-4 p-4 border rounded-2xl border-muted bg-card">
+                            <View className="flex-row items-center gap-3 mb-3">
+                                <View className="items-center justify-center w-10 h-10 rounded-xl bg-green-500/10">
+                                    <Icon
+                                        name="Wallet"
+                                        size={20}
+                                        color="#22c55e"
+                                    />
+                                </View>
+                                <Text className="text-lg font-semibold text-foreground">
+                                    Your Balance
+                                </Text>
+                            </View>
+
+                            {isLoadingBalance && !balanceData && (
+                                <View className="items-center py-4">
+                                    <ActivityIndicator
+                                        color={NAV_THEME[colorScheme].primary}
+                                    />
+                                </View>
+                            )}
+
+                            {balanceData && (
+                                <View>
+                                    <View className="flex-row justify-between mb-2">
+                                        <Text className="text-sm text-muted-foreground">
+                                            Available
+                                        </Text>
+                                        <Text className="text-base font-semibold text-foreground">
+                                            {formatCurrency(
+                                                balanceData.available,
+                                            )}
+                                        </Text>
+                                    </View>
+                                    {balanceData.pending > 0 && (
+                                        <View className="flex-row justify-between mb-3">
+                                            <Text className="text-sm text-muted-foreground">
+                                                Pending
+                                            </Text>
+                                            <Text className="text-sm text-muted-foreground">
+                                                {formatCurrency(
+                                                    balanceData.pending,
+                                                )}
+                                            </Text>
+                                        </View>
+                                    )}
+
+                                    {balanceData.available > 0 &&
+                                    balanceData.instantPayoutsEnabled ? (
+                                        <Button
+                                            label={`Instant Payout — ${formatCurrency(balanceData.instantAvailable)}`}
+                                            icon="Zap"
+                                            onPress={handleInstantPayout}
+                                            loading={isRequestingPayout}
+                                            color="#22c55e"
+                                        />
+                                    ) : (
+                                        <View className="mt-2">
+                                            {balanceData.available === 0 &&
+                                            balanceData.pending > 0 ? (
+                                                <Text className="text-xs text-muted-foreground text-center">
+                                                    Funds are pending and
+                                                    typically become available in
+                                                    1-2 business days.
+                                                </Text>
+                                            ) : balanceData.available === 0 &&
+                                              balanceData.pending === 0 ? (
+                                                <Text className="text-xs text-muted-foreground text-center">
+                                                    No balance yet. Funds will
+                                                    appear here after order
+                                                    members pay.
+                                                </Text>
+                                            ) : (
+                                                <Text className="text-xs text-muted-foreground text-center">
+                                                    Instant payouts require a
+                                                    debit card linked in Stripe.
+                                                </Text>
+                                            )}
+                                        </View>
+                                    )}
+                                </View>
+                            )}
                         </View>
                     )}
                 </View>
