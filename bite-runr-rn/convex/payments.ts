@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import {
     query,
+    mutation,
     internalMutation,
     internalQuery,
 } from "./_generated/server";
@@ -395,6 +396,164 @@ export const updateStripePaymentByPaymentIntentId = internalMutation({
                 settlementStatus: "unpaid",
             });
         }
+    },
+});
+
+// ---- SETTLEMENT ----
+
+// Public: get payment/settlement status for all members of an order (creator only)
+export const getOrderPaymentStatus = query({
+    args: { orderId: v.id("orders") },
+    handler: async (ctx, args) => {
+        const userId = await getUserId(ctx);
+        if (!userId) return null;
+
+        const order = await ctx.db.get(args.orderId);
+        if (!order || order.creatorId !== userId) return null;
+
+        const orderUsers = await ctx.db
+            .query("orderUsers")
+            .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
+            .collect();
+
+        const members = await Promise.all(
+            orderUsers.map(async (ou) => {
+                const user = await ctx.db.get(ou.userId);
+
+                // Get the latest Stripe payment for this order user
+                const payments = await ctx.db
+                    .query("stripePayments")
+                    .withIndex("by_orderUserId", (q) =>
+                        q.eq("orderUserId", ou._id),
+                    )
+                    .collect();
+                const latestPayment =
+                    payments.length > 0
+                        ? payments.reduce((a, b) =>
+                              a._creationTime > b._creationTime ? a : b,
+                          )
+                        : null;
+
+                return {
+                    orderUserId: ou._id,
+                    userId: ou.userId,
+                    isCreator: ou.userId === order.creatorId,
+                    firstName: user?.firstName ?? "Unknown",
+                    lastName: user?.lastName ?? "",
+                    email: user?.email ?? "",
+                    amountOwed: ou.amountOwed,
+                    settlementStatus: ou.settlementStatus,
+                    stripePayment: latestPayment
+                        ? {
+                              status: latestPayment.status,
+                              amount: latestPayment.amount,
+                          }
+                        : null,
+                };
+            }),
+        );
+
+        return {
+            orderId: args.orderId,
+            orderName: order.name,
+            members,
+        };
+    },
+});
+
+// Public: get settlement status for the current user (non-creator member)
+export const getMySettlementStatus = query({
+    args: { orderId: v.id("orders") },
+    handler: async (ctx, args) => {
+        const userId = await getUserId(ctx);
+        if (!userId) return null;
+
+        const order = await ctx.db.get(args.orderId);
+        if (!order) return null;
+
+        // Must not be the creator
+        if (order.creatorId === userId) return null;
+
+        const orderUsers = await ctx.db
+            .query("orderUsers")
+            .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
+            .collect();
+
+        const myOrderUser = orderUsers.find((ou) => ou.userId === userId);
+        if (!myOrderUser) return null;
+
+        const creator = await ctx.db.get(order.creatorId);
+
+        // Get the latest Stripe payment for this user
+        const payments = await ctx.db
+            .query("stripePayments")
+            .withIndex("by_orderUserId", (q) =>
+                q.eq("orderUserId", myOrderUser._id),
+            )
+            .collect();
+        const latestPayment =
+            payments.length > 0
+                ? payments.reduce((a, b) =>
+                      a._creationTime > b._creationTime ? a : b,
+                  )
+                : null;
+
+        return {
+            orderName: order.name,
+            creatorFirstName: creator?.firstName ?? "Unknown",
+            creatorLastName: creator?.lastName ?? "",
+            orderUserId: myOrderUser._id,
+            amountOwed: myOrderUser.amountOwed,
+            settlementStatus: myOrderUser.settlementStatus,
+            stripePayment: latestPayment
+                ? {
+                      status: latestPayment.status,
+                      amount: latestPayment.amount,
+                  }
+                : null,
+        };
+    },
+});
+
+// Public: mark a member as settled in person (creator or the member themselves)
+export const markSettledInPerson = mutation({
+    args: {
+        orderId: v.id("orders"),
+        orderUserId: v.id("orderUsers"),
+    },
+    handler: async (ctx, args) => {
+        const userId = await getUserId(ctx);
+        if (!userId) throw new Error("Not authenticated");
+
+        const order = await ctx.db.get(args.orderId);
+        if (!order) throw new Error("Order not found");
+
+        const orderUser = await ctx.db.get(args.orderUserId);
+        if (!orderUser || orderUser.orderId !== args.orderId) {
+            throw new Error("Member not found in this order");
+        }
+
+        // Allow creator OR the member themselves
+        const isCreator = order.creatorId === userId;
+        const isSelf = orderUser.userId === userId;
+        if (!isCreator && !isSelf) {
+            throw new Error("Not authorized to mark this settlement");
+        }
+
+        if (orderUser.amountOwed <= 0n) {
+            throw new Error("Member does not owe any money");
+        }
+
+        if (
+            orderUser.settlementStatus === "confirmed" ||
+            orderUser.settlementStatus === "settled_in_person"
+        ) {
+            throw new Error("Member is already settled");
+        }
+
+        await ctx.db.patch(args.orderUserId, {
+            settlementStatus: "settled_in_person",
+        });
     },
 });
 

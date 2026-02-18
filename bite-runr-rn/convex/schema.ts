@@ -21,16 +21,6 @@ export const settlementStatusValidator = v.union(
     v.literal("settled_in_person"),
 );
 
-export const paymentHandleStatusValidator = v.union(
-    v.literal("pending"),
-    v.literal("initiated"),
-    v.literal("payable"),
-    v.literal("processing"),
-    v.literal("completed"),
-    v.literal("failed"),
-    v.literal("expired"),
-);
-
 export default defineSchema({
     // Users table - managed by Better Auth component but we define the schema for our code
     // Better Auth adds the core fields, we add our custom fields
@@ -133,22 +123,6 @@ export default defineSchema({
             "itemId",
             "comments",
         ]),
-
-    // Payment handles (Paysafe e-transfer requests)
-    paymentHandles: defineTable({
-        orderUserId: v.id("orderUsers"),
-        orderId: v.id("orders"),
-        merchantRefNum: v.string(),
-        paymentHandleId: v.optional(v.string()),
-        status: paymentHandleStatusValidator,
-        amountInCents: v.int64(),
-        redirectUrl: v.optional(v.string()),
-        paysafeResponse: v.optional(v.string()),
-        errorMessage: v.optional(v.string()),
-    })
-        .index("by_orderUserId", ["orderUserId"])
-        .index("by_orderId", ["orderId"])
-        .index("by_merchantRefNum", ["merchantRefNum"]),
 
     // Stripe Connect accounts (runners who receive card payments)
     connectedAccounts: defineTable({

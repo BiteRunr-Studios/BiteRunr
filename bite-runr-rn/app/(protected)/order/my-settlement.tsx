@@ -5,7 +5,6 @@ import {
     Text,
     Pressable,
     Alert,
-    Linking,
 } from "react-native";
 import { useStripe } from "@stripe/stripe-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,36 +16,20 @@ import { Button } from "@/components/common/button";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 
-type PaymentStatus =
-    | "pending"
-    | "initiated"
-    | "payable"
-    | "processing"
-    | "completed"
-    | "failed"
-    | "expired";
-
 function getStatusIcon(
     settlementStatus: string,
-    paymentHandle: {
-        status: PaymentStatus;
-        errorMessage?: string | null;
-    } | null,
+    stripePayment: { status: string } | null,
 ) {
     if (settlementStatus === "confirmed" || settlementStatus === "settled_in_person") {
         return { name: "CircleCheck" as const, color: "#22c55e" };
     }
-    if (paymentHandle) {
-        switch (paymentHandle.status) {
+    if (stripePayment) {
+        switch (stripePayment.status) {
             case "pending":
-            case "initiated":
-            case "payable":
-            case "processing":
                 return { name: "Clock" as const, color: "#f59e0b" };
             case "failed":
-                return { name: "CircleX" as const, color: "#ef4444" };
             case "expired":
-                return { name: "CircleX" as const, color: "#9ca3af" };
+                return { name: "CircleX" as const, color: "#ef4444" };
             case "completed":
                 return { name: "CircleCheck" as const, color: "#22c55e" };
         }
@@ -56,32 +39,23 @@ function getStatusIcon(
 
 function getStatusText(
     settlementStatus: string,
-    paymentHandle: {
-        status: PaymentStatus;
-        errorMessage?: string | null;
-    } | null,
+    stripePayment: { status: string } | null,
 ) {
     if (settlementStatus === "confirmed") return "Paid";
     if (settlementStatus === "settled_in_person") return "Settled in person";
-    if (paymentHandle) {
-        switch (paymentHandle.status) {
+    if (stripePayment) {
+        switch (stripePayment.status) {
             case "pending":
-                return "Sending request...";
-            case "initiated":
-                return "Request sent";
-            case "payable":
-                return "Ready to pay";
-            case "processing":
-                return "Processing...";
+                return "Payment pending...";
             case "completed":
                 return "Paid";
             case "failed":
-                return paymentHandle.errorMessage ?? "Failed";
+                return "Payment failed";
             case "expired":
-                return "Expired";
+                return "Payment expired";
         }
     }
-    return "Not requested";
+    return "Unpaid";
 }
 
 function formatCents(cents: number | bigint): string {
@@ -99,7 +73,7 @@ export default function MySettlement() {
     const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
     const settlement = useQuery(
-        api.paysafe.getMySettlementStatus,
+        api.payments.getMySettlementStatus,
         orderId ? { orderId: orderId as Id<"orders"> } : "skip",
     );
 
@@ -108,7 +82,7 @@ export default function MySettlement() {
         orderId ? { orderId: orderId as Id<"orders"> } : "skip",
     );
 
-    const markSettledInPerson = useMutation(api.paysafe.markSettledInPerson);
+    const markSettledInPerson = useMutation(api.payments.markSettledInPerson);
     const createPaymentSheetParams = useAction(
         api.stripeConnect.createPaymentSheetParams,
     );
@@ -212,11 +186,11 @@ export default function MySettlement() {
     const amount = Number(settlement.amountOwed);
     const statusIcon = getStatusIcon(
         settlement.settlementStatus,
-        settlement.paymentHandle,
+        settlement.stripePayment,
     );
     const statusText = getStatusText(
         settlement.settlementStatus,
-        settlement.paymentHandle,
+        settlement.stripePayment,
     );
 
     const isSettled =
@@ -277,27 +251,6 @@ export default function MySettlement() {
                             {statusText}
                         </Text>
                     </View>
-
-                    {/* Paysafe Payment Link */}
-                    {settlement.paymentHandle?.redirectUrl &&
-                        settlement.paymentHandle.status !== "completed" && (
-                            <Pressable
-                                onPress={() =>
-                                    Linking.openURL(
-                                        settlement.paymentHandle!.redirectUrl!,
-                                    )
-                                }
-                                className="flex-row items-center gap-1.5 mt-3 pt-3 border-t border-muted active:opacity-70">
-                                <Icon
-                                    name="ExternalLink"
-                                    size={16}
-                                    color={NAV_THEME[colorScheme].primary}
-                                />
-                                <Text className="text-sm font-medium text-primary">
-                                    Open E-Transfer Link
-                                </Text>
-                            </Pressable>
-                        )}
                 </View>
 
                 {/* Spacer */}
