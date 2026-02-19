@@ -6,32 +6,15 @@ import {
     ScrollView,
     Pressable,
     Alert,
-    Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useQuery, useAction, useMutation } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { Button } from "@/components/common/button";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
-
-type PaymentStatus =
-    | "pending"
-    | "initiated"
-    | "payable"
-    | "processing"
-    | "completed"
-    | "failed"
-    | "expired";
-
-type PaymentHandle = {
-    id: string;
-    status: PaymentStatus;
-    errorMessage?: string | null;
-    redirectUrl?: string | null;
-};
 
 type Member = {
     orderUserId: string;
@@ -42,30 +25,26 @@ type Member = {
     email: string;
     amountOwed: bigint | number;
     settlementStatus: string;
-    paymentHandle: PaymentHandle | null;
+    stripePayment: {
+        status: string;
+        amount: number;
+    } | null;
 };
 
 function getStatusIcon(
     settlementStatus: string,
-    paymentHandle: {
-        status: PaymentStatus;
-        errorMessage?: string | null;
-    } | null,
+    stripePayment: { status: string } | null,
 ) {
     if (settlementStatus === "confirmed" || settlementStatus === "settled_in_person") {
         return { name: "CircleCheck" as const, color: "#22c55e" };
     }
-    if (paymentHandle) {
-        switch (paymentHandle.status) {
+    if (stripePayment) {
+        switch (stripePayment.status) {
             case "pending":
-            case "initiated":
-            case "payable":
-            case "processing":
                 return { name: "Clock" as const, color: "#f59e0b" };
             case "failed":
-                return { name: "CircleX" as const, color: "#ef4444" };
             case "expired":
-                return { name: "CircleX" as const, color: "#9ca3af" };
+                return { name: "CircleX" as const, color: "#ef4444" };
             case "completed":
                 return { name: "CircleCheck" as const, color: "#22c55e" };
         }
@@ -75,32 +54,23 @@ function getStatusIcon(
 
 function getStatusText(
     settlementStatus: string,
-    paymentHandle: {
-        status: PaymentStatus;
-        errorMessage?: string | null;
-    } | null,
+    stripePayment: { status: string } | null,
 ) {
     if (settlementStatus === "confirmed") return "Paid";
     if (settlementStatus === "settled_in_person") return "Settled in person";
-    if (paymentHandle) {
-        switch (paymentHandle.status) {
+    if (stripePayment) {
+        switch (stripePayment.status) {
             case "pending":
-                return "Sending request...";
-            case "initiated":
-                return "Request sent";
-            case "payable":
-                return "Ready to pay";
-            case "processing":
-                return "Processing...";
+                return "Payment pending...";
             case "completed":
                 return "Paid";
             case "failed":
-                return paymentHandle.errorMessage ?? "Failed";
+                return "Payment failed";
             case "expired":
-                return "Expired";
+                return "Payment expired";
         }
     }
-    return "Not requested";
+    return "Unpaid";
 }
 
 function formatCents(cents: number | bigint): string {
@@ -114,16 +84,14 @@ export default function Settlement() {
         ? params.orderId[0]
         : params.orderId;
     const { colorScheme } = useColorScheme();
-    const [isRequesting, setIsRequesting] = useState(false);
     const [isCompleting, setIsCompleting] = useState(false);
 
     const paymentStatus = useQuery(
-        api.paysafe.getOrderPaymentStatus,
+        api.payments.getOrderPaymentStatus,
         orderId ? { orderId: orderId as Id<"orders"> } : "skip",
     );
 
-    const requestPayments = useAction(api.paysafe.requestPayments);
-    const markSettledInPerson = useMutation(api.paysafe.markSettledInPerson);
+    const markSettledInPerson = useMutation(api.payments.markSettledInPerson);
     const updateOrder = useMutation(api.orders.update);
 
     const handleCompleteOrder = async () => {
@@ -184,26 +152,6 @@ export default function Settlement() {
         );
     };
 
-    const handleRequestPayments = async () => {
-        if (!orderId) return;
-        setIsRequesting(true);
-        try {
-            const result = await requestPayments({
-                orderId: orderId as Id<"orders">,
-            });
-            Alert.alert("Payment Requests", result.message);
-        } catch (error) {
-            Alert.alert(
-                "Error",
-                error instanceof Error
-                    ? error.message
-                    : "Failed to request payments",
-            );
-        } finally {
-            setIsRequesting(false);
-        }
-    };
-
     if (paymentStatus === undefined) {
         return (
             <View className="flex-1 justify-center items-center bg-background">
@@ -232,12 +180,6 @@ export default function Settlement() {
     const totalPaid = nonCreatorMembers
         .filter((m) => m.settlementStatus === "confirmed" || m.settlementStatus === "settled_in_person")
         .reduce((sum, m) => sum + Number(m.amountOwed), 0);
-    const hasUnpaidMembers = nonCreatorMembers.some(
-        (m) =>
-            m.settlementStatus !== "confirmed" &&
-            m.settlementStatus !== "settled_in_person" &&
-            Number(m.amountOwed) > 0,
-    );
     const allSettled = nonCreatorMembers
         .filter((m) => Number(m.amountOwed) > 0)
         .every(
@@ -310,11 +252,11 @@ export default function Settlement() {
                         {nonCreatorMembers.map((member) => {
                             const statusIcon = getStatusIcon(
                                 member.settlementStatus,
-                                member.paymentHandle,
+                                member.stripePayment,
                             );
                             const statusText = getStatusText(
                                 member.settlementStatus,
-                                member.paymentHandle,
+                                member.stripePayment,
                             );
                             const amount = Number(member.amountOwed);
 
@@ -348,31 +290,6 @@ export default function Settlement() {
                                             {statusText}
                                         </Text>
                                     </View>
-                                    {member.paymentHandle?.redirectUrl &&
-                                        member.paymentHandle.status !==
-                                            "completed" && (
-                                            <Pressable
-                                                onPress={() =>
-                                                    Linking.openURL(
-                                                        member.paymentHandle!
-                                                            .redirectUrl!,
-                                                    )
-                                                }
-                                                className="flex-row items-center gap-1.5 mt-2 active:opacity-70">
-                                                <Icon
-                                                    name="ExternalLink"
-                                                    size={14}
-                                                    color={
-                                                        NAV_THEME[colorScheme]
-                                                            .primary
-                                                    }
-                                                />
-                                                <Text className="text-sm font-medium text-primary">
-                                                    Open Payment Link{" "}
-                                                    {/* TODO: remove similation link for prod */}
-                                                </Text>
-                                            </Pressable>
-                                        )}
                                     {amount > 0 &&
                                         member.settlementStatus !== "confirmed" &&
                                         member.settlementStatus !== "settled_in_person" && (
@@ -409,17 +326,7 @@ export default function Settlement() {
                 </View>
 
                 {/* Footer */}
-                {hasUnpaidMembers ? (
-                    <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
-                        <Button
-                            label="Request Payments"
-                            icon="Send"
-                            onPress={handleRequestPayments}
-                            loading={isRequesting}
-                            color={NAV_THEME[colorScheme].primary}
-                        />
-                    </View>
-                ) : allSettled ? (
+                {allSettled && (
                     <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
                         <Button
                             label="Complete Order"
@@ -429,7 +336,7 @@ export default function Settlement() {
                             color="#22c55e"
                         />
                     </View>
-                ) : null}
+                )}
             </View>
         </>
     );

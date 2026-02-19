@@ -21,11 +21,8 @@ export const settlementStatusValidator = v.union(
     v.literal("settled_in_person"),
 );
 
-export const paymentHandleStatusValidator = v.union(
+export const stripePaymentStatusValidator = v.union(
     v.literal("pending"),
-    v.literal("initiated"),
-    v.literal("payable"),
-    v.literal("processing"),
     v.literal("completed"),
     v.literal("failed"),
     v.literal("expired"),
@@ -40,6 +37,7 @@ export default defineSchema({
         lastName: v.string(),
         avatarUrl: v.optional(v.string()),
         avatarStorageId: v.optional(v.id("_storage")),
+        stripeCustomerId: v.optional(v.string()),
     })
         .index("email", ["email"])
         .searchIndex("search_name", { searchField: "firstName" })
@@ -133,21 +131,42 @@ export default defineSchema({
             "comments",
         ]),
 
-    // Payment handles (Paysafe e-transfer requests)
-    paymentHandles: defineTable({
-        orderUserId: v.id("orderUsers"),
-        orderId: v.id("orders"),
-        merchantRefNum: v.string(),
-        paymentHandleId: v.optional(v.string()),
-        status: paymentHandleStatusValidator,
-        amountInCents: v.int64(),
-        redirectUrl: v.optional(v.string()),
-        paysafeResponse: v.optional(v.string()),
-        errorMessage: v.optional(v.string()),
+    // Stripe Connect accounts (runners who receive card payments)
+    connectedAccounts: defineTable({
+        userId: v.id("users"),
+        stripeAccountId: v.string(),
+        onboardingComplete: v.boolean(),
+        payoutsEnabled: v.boolean(),
+        chargesEnabled: v.boolean(),
+        email: v.optional(v.string()),
+        createdAt: v.number(),
+        updatedAt: v.number(),
     })
+        .index("by_userId", ["userId"])
+        .index("by_stripeAccountId", ["stripeAccountId"]),
+
+    // Stripe payments (member → runner via Stripe Connect)
+    stripePayments: defineTable({
+        buyerId: v.id("users"),
+        sellerId: v.id("users"),
+        orderId: v.id("orders"),
+        orderUserId: v.id("orderUsers"),
+        stripeSessionId: v.optional(v.string()),
+        stripePaymentIntentId: v.optional(v.string()),
+        amount: v.number(),
+        platformFee: v.number(),
+        currency: v.string(),
+        description: v.string(),
+        status: stripePaymentStatusValidator,
+        createdAt: v.number(),
+        updatedAt: v.number(),
+    })
+        .index("by_buyerId", ["buyerId"])
+        .index("by_sellerId", ["sellerId"])
+        .index("by_stripeSessionId", ["stripeSessionId"])
         .index("by_orderUserId", ["orderUserId"])
-        .index("by_orderId", ["orderId"])
-        .index("by_merchantRefNum", ["merchantRefNum"]),
+        .index("by_status", ["status"])
+        .index("by_stripePaymentIntentId", ["stripePaymentIntentId"]),
 
     // Order invites (QR code-based group joining)
     orderInvites: defineTable({

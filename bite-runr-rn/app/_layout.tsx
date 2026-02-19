@@ -5,6 +5,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StripeProvider } from "@stripe/stripe-react-native";
 import {
     ThemeProvider,
     DarkTheme,
@@ -72,6 +73,10 @@ export default function RootLayout() {
     }, [colorScheme]);
 
     return (
+        <StripeProvider
+            publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
+            merchantIdentifier="merchant.com.RunrStudios.BiteRunrRN"
+        >
         <ConvexBetterAuthProvider client={convex} authClient={authClient}>
             <AuthProvider>
                 <ThemeProvider
@@ -108,5 +113,6 @@ export default function RootLayout() {
                 </ThemeProvider>
             </AuthProvider>
         </ConvexBetterAuthProvider>
+        </StripeProvider>
     );
 }
