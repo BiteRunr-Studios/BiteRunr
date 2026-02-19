@@ -26,6 +26,8 @@ import type * as pushNotifications from "../pushNotifications.js";
 import type * as receiptAgent from "../receiptAgent.js";
 import type * as receiptScanning from "../receiptScanning.js";
 import type * as stripeConnect from "../stripeConnect.js";
+import type * as typesense from "../typesense.js";
+import type * as typesenseHelpers from "../typesenseHelpers.js";
 import type * as users from "../users.js";
 
 import type {
@@ -53,6 +55,8 @@ declare const fullApi: ApiFromModules<{
   receiptAgent: typeof receiptAgent;
   receiptScanning: typeof receiptScanning;
   stripeConnect: typeof stripeConnect;
+  typesense: typeof typesense;
+  typesenseHelpers: typeof typesenseHelpers;
   users: typeof users;
 }>;
 
