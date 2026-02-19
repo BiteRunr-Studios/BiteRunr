@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { getUserId } from "./authHelper";
 
 // Search items at a location
@@ -79,9 +80,18 @@ export const create = mutation({
       return existing._id;
     }
 
-    return await ctx.db.insert("items", {
+    const itemId = await ctx.db.insert("items", {
       name: args.name,
       locationId: args.locationId,
     });
+
+    // Index in Typesense (fire-and-forget)
+    await ctx.scheduler.runAfter(0, internal.typesense.indexItem, {
+      itemId: itemId,
+      name: args.name,
+      locationId: args.locationId,
+    });
+
+    return itemId;
   },
 });

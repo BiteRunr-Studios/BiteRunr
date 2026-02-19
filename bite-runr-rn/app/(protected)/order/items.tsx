@@ -23,7 +23,7 @@ import { Input } from "@/components/common/input";
 import Icon from "@/components/common/icon";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
@@ -68,7 +68,7 @@ export default function SelectItems() {
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearchQuery(searchQuery);
-        }, 300);
+        }, 150);
 
         return () => clearTimeout(timer);
     }, [searchQuery]);
@@ -91,16 +91,48 @@ export default function SelectItems() {
     );
     const isItemsPending = orderUserLocationItems === undefined;
 
-    const searchResults = useQuery(
-        api.items.search,
-        selectedLocation && debouncedSearchQuery.length > 0
-            ? {
-                  locationId: selectedLocation.locationId,
-                  query: debouncedSearchQuery,
-              }
-            : "skip"
-    );
-    const isSearchPending = searchResults === undefined;
+    const [searchResults, setSearchResults] = useState<
+        { _id: string; name: string; locationId: string }[] | null
+    >(null);
+    const [isSearchPending, setIsSearchPending] = useState(false);
+    const [searchResultsQuery, setSearchResultsQuery] = useState("");
+    const typesenseSearch = useAction(api.typesense.searchItems);
+
+    useEffect(() => {
+        if (!selectedLocation || debouncedSearchQuery.length === 0) {
+            setSearchResults(null);
+            setIsSearchPending(false);
+            setSearchResultsQuery("");
+            return;
+        }
+
+        let cancelled = false;
+        setIsSearchPending(true);
+
+        typesenseSearch({
+            locationId: selectedLocation.locationId,
+            query: debouncedSearchQuery,
+        })
+            .then((results) => {
+                if (!cancelled) {
+                    setSearchResults(results);
+                    setSearchResultsQuery(debouncedSearchQuery);
+                    setIsSearchPending(false);
+                }
+            })
+            .catch((error) => {
+                console.error("Search error:", error);
+                if (!cancelled) {
+                    setSearchResults([]);
+                    setSearchResultsQuery(debouncedSearchQuery);
+                    setIsSearchPending(false);
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [debouncedSearchQuery, selectedLocation?.locationId]);
 
     const allLocationItems = useQuery(
         api.items.listByLocation,
@@ -334,7 +366,7 @@ export default function SelectItems() {
                         showsVerticalScrollIndicator={false}>
                         {searchQuery ? (
                             // Search results
-                            searchQuery !== debouncedSearchQuery || (isSearchPending && debouncedSearchQuery.length > 0) ? (
+                            searchQuery !== debouncedSearchQuery || isSearchPending || (debouncedSearchQuery.length > 0 && searchResultsQuery !== debouncedSearchQuery) ? (
                                 <View className="items-center justify-center py-12">
                                     <ActivityIndicator
                                         size="large"
