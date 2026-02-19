@@ -21,6 +21,13 @@ export const settlementStatusValidator = v.union(
     v.literal("settled_in_person"),
 );
 
+export const stripePaymentStatusValidator = v.union(
+    v.literal("pending"),
+    v.literal("completed"),
+    v.literal("failed"),
+    v.literal("expired"),
+);
+
 export default defineSchema({
     // Users table - managed by Better Auth component but we define the schema for our code
     // Better Auth adds the core fields, we add our custom fields
@@ -150,7 +157,7 @@ export default defineSchema({
         platformFee: v.number(),
         currency: v.string(),
         description: v.string(),
-        status: v.string(), // pending | completed | failed
+        status: stripePaymentStatusValidator,
         createdAt: v.number(),
         updatedAt: v.number(),
     })

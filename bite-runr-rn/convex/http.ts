@@ -178,17 +178,17 @@ http.route({
             return new Response("Webhook secret not configured", { status: 500 });
         }
 
-        // Parse Stripe signature header: t=timestamp,v1=signature
-        const parts = Object.fromEntries(
-            signature.split(",").map((part) => {
-                const [key, ...val] = part.split("=");
-                return [key, val.join("=")];
-            }),
-        );
-        const timestamp = parts["t"];
-        const v1Signature = parts["v1"];
+        // Parse Stripe signature header: t=timestamp,v1=sig1,v1=sig2,...
+        const sigParts = signature.split(",").map((part) => {
+            const [key, ...val] = part.split("=");
+            return [key, val.join("=")] as const;
+        });
+        const timestamp = sigParts.find(([k]) => k === "t")?.[1];
+        const v1Signatures = sigParts
+            .filter(([k]) => k === "v1")
+            .map(([, v]) => v);
 
-        if (!timestamp || !v1Signature) {
+        if (!timestamp || v1Signatures.length === 0) {
             return new Response("Invalid signature format", { status: 400 });
         }
 
@@ -209,7 +209,37 @@ http.route({
             .map((b) => b.toString(16).padStart(2, "0"))
             .join("");
 
-        if (v1Signature !== expectedSignature) {
+        // Constant-time comparison: HMAC both sides with a random key so
+        // equal inputs produce equal outputs but comparison leaks no timing info
+        const comparisonKey = await crypto.subtle.importKey(
+            "raw",
+            crypto.getRandomValues(new Uint8Array(32)),
+            { name: "HMAC", hash: "SHA-256" },
+            false,
+            ["sign"],
+        );
+        const encoder = new TextEncoder();
+        const expectedMac = await crypto.subtle.sign(
+            "HMAC",
+            comparisonKey,
+            encoder.encode(expectedSignature),
+        );
+        let signatureMatch = false;
+        for (const v1Sig of v1Signatures) {
+            const receivedMac = await crypto.subtle.sign(
+                "HMAC",
+                comparisonKey,
+                encoder.encode(v1Sig),
+            );
+            const a = new Uint8Array(expectedMac);
+            const b = new Uint8Array(receivedMac);
+            if (a.length === b.length && a.every((val, i) => val === b[i])) {
+                signatureMatch = true;
+                break;
+            }
+        }
+
+        if (!signatureMatch) {
             console.error("Stripe webhook: invalid signature");
             return new Response("Invalid signature", { status: 400 });
         }

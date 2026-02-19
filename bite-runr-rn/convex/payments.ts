@@ -7,6 +7,7 @@ import {
 } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { getUserId } from "./authHelper";
+import { stripePaymentStatusValidator } from "./schema";
 
 // ---- CONNECTED ACCOUNTS ----
 
@@ -37,6 +38,9 @@ export const getMyConnectedAccount = query({
 export const getRunnerStripeStatus = query({
     args: { orderId: v.id("orders") },
     handler: async (ctx, args) => {
+        const userId = await getUserId(ctx);
+        if (!userId) return null;
+
         const order = await ctx.db.get(args.orderId);
         if (!order) return null;
 
@@ -296,7 +300,7 @@ export const createStripePaymentRecord = internalMutation({
 export const updateStripePaymentBySessionId = internalMutation({
     args: {
         stripeSessionId: v.string(),
-        status: v.string(),
+        status: stripePaymentStatusValidator,
         stripePaymentIntentId: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
@@ -351,7 +355,7 @@ export const updateStripePaymentBySessionId = internalMutation({
 export const updateStripePaymentByPaymentIntentId = internalMutation({
     args: {
         stripePaymentIntentId: v.string(),
-        status: v.string(),
+        status: stripePaymentStatusValidator,
     },
     handler: async (ctx, args) => {
         const payment = await ctx.db
@@ -561,6 +565,12 @@ export const markSettledInPerson = mutation({
 export const getStripePaymentForOrderUser = query({
     args: { orderUserId: v.id("orderUsers") },
     handler: async (ctx, args) => {
+        const userId = await getUserId(ctx);
+        if (!userId) return null;
+
+        const orderUser = await ctx.db.get(args.orderUserId);
+        if (!orderUser || orderUser.userId !== userId) return null;
+
         const payments = await ctx.db
             .query("stripePayments")
             .withIndex("by_orderUserId", (q) =>
