@@ -79,6 +79,16 @@ export default function OrderSummary() {
         }
     }, [summary?.locations, selectedLocation]);
 
+    // Auto-dismiss success banner after 3 seconds
+    useEffect(() => {
+        if (scanState === "success") {
+            const timer = setTimeout(() => {
+                resetScan();
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [scanState, resetScan]);
+
     const handleScanPress = () => {
         sourceActionSheetRef.current?.show();
     };
@@ -127,7 +137,7 @@ export default function OrderSummary() {
             <View className="flex-1 bg-background">
                 {/* Header */}
                 <View className="px-4 pt-4 pb-3 border-b border-border">
-                    <View className="flex-row items-center mb-2">
+                    <View className="flex-row items-center mb-1">
                         <Pressable
                             onPress={() => router.back()}
                             className="p-2 -ml-2 rounded-full active:opacity-70">
@@ -138,17 +148,16 @@ export default function OrderSummary() {
                             />
                         </Pressable>
                         <Text className="flex-1 ml-2 text-xl font-bold text-foreground">
-                            Order Summary
+                            {summary.order.name || "Order Summary"}
                         </Text>
                     </View>
-                    <Text className="text-sm text-muted-foreground">
+                    <Text className="mb-3 ml-1 text-sm text-muted-foreground">
                         {summary.totalPeople} people · {summary.totalItems}{" "}
                         items
                     </Text>
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
-                        className="pt-4"
                         contentContainerStyle={{ gap: 8 }}>
                         {summary.locations.map((location) => (
                             <Pressable
@@ -174,53 +183,96 @@ export default function OrderSummary() {
                     </ScrollView>
                 </View>
 
-                {/* Pickup Reminder */}
-                <View className="flex-row items-center gap-3 px-4 py-3 mx-4 mt-4 rounded-xl bg-primary/10">
-                    <Icon
-                        name="ShoppingBag"
-                        size={20}
-                        color={NAV_THEME[colorScheme].primary}
-                    />
-                    <Text className="flex-1 text-sm text-foreground">
-                        Don't forget. You're picking up this order!
-                    </Text>
-                </View>
+                {/* Scan Success Banner */}
+                {scanState === "success" && (
+                    <View className="flex-row items-center gap-3 px-4 py-3 mx-4 mt-4 rounded-xl bg-green-500/10">
+                        <Icon
+                            name="CircleCheck"
+                            size={20}
+                            color="#22c55e"
+                        />
+                        <Text className="flex-1 text-sm font-medium text-green-600 dark:text-green-400">
+                            Receipt prices saved successfully!
+                        </Text>
+                    </View>
+                )}
 
                 {/* Scan Error Banner */}
                 {scanState === "error" && scanError && (
-                    <View className="flex-row items-center gap-3 px-4 py-3 mx-4 mt-4 rounded-xl bg-destructive/10">
-                        <Icon
-                            name="CircleAlert"
-                            size={20}
-                            color={NAV_THEME[colorScheme].notification}
-                        />
-                        <Text className="flex-1 text-sm text-destructive">
-                            {scanError}
-                        </Text>
-                        <Pressable onPress={resetScan}>
+                    <View className="gap-2 px-4 py-3 mx-4 mt-4 rounded-xl bg-destructive/10">
+                        <View className="flex-row items-center gap-3">
                             <Icon
-                                name="X"
-                                size={16}
+                                name="CircleAlert"
+                                size={20}
                                 color={NAV_THEME[colorScheme].notification}
                             />
+                            <Text className="flex-1 text-sm text-destructive">
+                                {scanError}
+                            </Text>
+                            <Pressable onPress={resetScan}>
+                                <Icon
+                                    name="X"
+                                    size={16}
+                                    color={NAV_THEME[colorScheme].notification}
+                                />
+                            </Pressable>
+                        </View>
+                        <Pressable
+                            onPress={() => {
+                                resetScan();
+                                sourceActionSheetRef.current?.show();
+                            }}
+                            className="self-start px-4 py-1.5 rounded-full bg-destructive/15">
+                            <Text className="text-sm font-medium text-destructive">
+                                Try Again
+                            </Text>
                         </Pressable>
                     </View>
                 )}
 
                 {/* Items List */}
-                <View className="flex-1 px-4 py-4">
+                <View className="flex-1 px-4 pt-4">
                     <ScrollView
                         className="flex-1"
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ gap: 12, paddingBottom: 32 }}>
+                        {/* Pickup Reminder */}
+                        <View className="flex-row items-center gap-2 px-3 py-2 rounded-lg bg-primary/5">
+                            <Icon
+                                name="ShoppingBag"
+                                size={16}
+                                color={NAV_THEME[colorScheme].primary}
+                            />
+                            <Text className="flex-1 text-xs text-muted-foreground">
+                                Don't forget. You're picking up this order!
+                            </Text>
+                        </View>
+
                         {currentLocationSummary &&
                         currentLocationSummary.items.length > 0 ? (
                             <>
+                                {/* Section Header */}
+                                <View className="flex-row items-center justify-between">
+                                    <Text className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
+                                        Items
+                                    </Text>
+                                    <View className="px-2.5 py-0.5 rounded-full bg-muted">
+                                        <Text className="text-xs font-medium text-muted-foreground">
+                                            {currentLocationSummary.itemCount}
+                                        </Text>
+                                    </View>
+                                </View>
+
                                 {currentLocationSummary.items.map((item) => (
                                     <View
                                         key={item.itemId}
                                         className="p-4 border rounded-2xl border-muted bg-card">
-                                        <View className="flex-row items-center justify-between">
+                                        <View className="flex-row items-center gap-3">
+                                            <View className="items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                                                <Text className="text-xs font-semibold text-primary">
+                                                    x{item.totalQuantity}
+                                                </Text>
+                                            </View>
                                             <View className="flex-1">
                                                 <Text className="text-base font-medium text-foreground">
                                                     {item.itemName}
@@ -236,14 +288,9 @@ export default function OrderSummary() {
                                                     </Text>
                                                 )}
                                             </View>
-                                            <View className="px-3 py-1 rounded-full bg-primary/20">
-                                                <Text className="text-sm font-semibold text-primary">
-                                                    x{item.totalQuantity}
-                                                </Text>
-                                            </View>
                                         </View>
                                         {item.subItems.length > 0 && (
-                                            <View className="pt-3 mt-3 border-t border-muted">
+                                            <View className="pt-3 mt-3 ml-11 border-l-2 border-muted pl-3">
                                                 {item.baseQuantity > 0 && (
                                                     <View className="flex-row items-center justify-between mb-2">
                                                         <Text className="text-sm text-muted-foreground">
@@ -259,27 +306,13 @@ export default function OrderSummary() {
                                                         <View
                                                             key={index}
                                                             className="flex-row items-start justify-between mb-2 last:mb-0">
-                                                            <View className="flex-row items-start flex-1 gap-2">
-                                                                <Icon
-                                                                    name="MessageSquare"
-                                                                    size={14}
-                                                                    color={
-                                                                        NAV_THEME[
-                                                                            colorScheme
-                                                                        ].border
-                                                                    }
-                                                                    style={{
-                                                                        marginTop: 2,
-                                                                    }}
-                                                                />
-                                                                <Text className="flex-1 text-sm italic text-muted-foreground">
-                                                                    "
-                                                                    {
-                                                                        subItem.comment
-                                                                    }
-                                                                    "
-                                                                </Text>
-                                                            </View>
+                                                            <Text className="flex-1 text-sm italic text-muted-foreground">
+                                                                "
+                                                                {
+                                                                    subItem.comment
+                                                                }
+                                                                "
+                                                            </Text>
                                                             <Text className="ml-2 text-sm text-muted-foreground">
                                                                 x
                                                                 {
@@ -297,55 +330,67 @@ export default function OrderSummary() {
                                 {/* Price Breakdown */}
                                 {currentLocationSummary.subtotalInCents !==
                                     null && (
-                                    <View className="p-4 mt-2 border rounded-2xl border-primary/30 bg-primary/5">
-                                        <View className="flex-row items-center justify-between mb-2">
-                                            <Text className="text-sm text-muted-foreground">
-                                                Subtotal
-                                            </Text>
-                                            <Text className="text-sm text-foreground">
-                                                $
-                                                {(
-                                                    currentLocationSummary.subtotalInCents /
-                                                    100
-                                                ).toFixed(2)}
+                                    <>
+                                        <View className="flex-row items-center justify-between mt-2">
+                                            <Text className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
+                                                Price Summary
                                             </Text>
                                         </View>
-                                        {currentLocationSummary.taxInCents !==
-                                            null && (
+                                        <View className="p-4 border rounded-2xl border-primary/30 bg-primary/5">
                                             <View className="flex-row items-center justify-between mb-2">
                                                 <Text className="text-sm text-muted-foreground">
-                                                    Tax
+                                                    Subtotal
                                                 </Text>
                                                 <Text className="text-sm text-foreground">
                                                     $
                                                     {(
-                                                        currentLocationSummary.taxInCents /
+                                                        currentLocationSummary.subtotalInCents /
                                                         100
                                                     ).toFixed(2)}
                                                 </Text>
                                             </View>
-                                        )}
-                                        {currentLocationSummary.totalInCents !==
-                                            null && (
-                                            <View className="flex-row items-center justify-between pt-2 border-t border-primary/20">
-                                                <Text className="text-base font-semibold text-foreground">
-                                                    Total
-                                                </Text>
-                                                <Text className="text-base font-semibold text-primary">
-                                                    $
-                                                    {(
-                                                        currentLocationSummary.totalInCents /
-                                                        100
-                                                    ).toFixed(2)}
-                                                </Text>
-                                            </View>
-                                        )}
-                                    </View>
+                                            {currentLocationSummary.taxInCents !==
+                                                null && (
+                                                <View className="flex-row items-center justify-between mb-2">
+                                                    <Text className="text-sm text-muted-foreground">
+                                                        Tax
+                                                    </Text>
+                                                    <Text className="text-sm text-foreground">
+                                                        $
+                                                        {(
+                                                            currentLocationSummary.taxInCents /
+                                                            100
+                                                        ).toFixed(2)}
+                                                    </Text>
+                                                </View>
+                                            )}
+                                            {currentLocationSummary.totalInCents !==
+                                                null && (
+                                                <View className="flex-row items-center justify-between pt-2 border-t border-primary/20">
+                                                    <Text className="text-base font-semibold text-foreground">
+                                                        Total
+                                                    </Text>
+                                                    <Text className="text-base font-semibold text-primary">
+                                                        $
+                                                        {(
+                                                            currentLocationSummary.totalInCents /
+                                                            100
+                                                        ).toFixed(2)}
+                                                    </Text>
+                                                </View>
+                                            )}
+                                        </View>
+                                    </>
                                 )}
                             </>
                         ) : (
                             <View className="items-center justify-center py-12">
-                                <Text className="text-muted-foreground">
+                                <Icon
+                                    name="ShoppingBag"
+                                    size={32}
+                                    color={NAV_THEME[colorScheme].border}
+                                />
+                                <Text className="mt-3 text-muted-foreground">
                                     No items from this location
                                 </Text>
                             </View>
@@ -355,31 +400,41 @@ export default function OrderSummary() {
 
                 {/* Footer */}
                 <View className="gap-3 px-6 pt-4 pb-10 border-t border-muted bg-background">
-                    <TouchableOpacity
-                        className={`w-full py-3 border rounded-xl border-primary ${
-                            isScanning ? "bg-primary/5" : "bg-primary/10"
-                        }`}
-                        onPress={handleScanPress}
-                        disabled={isScanning}>
-                        {isScanning ? (
-                            <View className="flex-row items-center justify-center gap-2">
-                                <ActivityIndicator
-                                    size="small"
-                                    color={NAV_THEME[colorScheme].primary}
-                                />
-                                <Text className="text-sm font-semibold text-primary">
-                                    {scanState === "uploading"
-                                        ? "Uploading..."
-                                        : "Analyzing receipt..."}
-                                </Text>
-                            </View>
-                        ) : (
-                            <Text className="text-sm font-semibold text-center text-primary">
-                                Scan receipt for{" "}
-                                {selectedLocation?.name ?? "store"}
-                            </Text>
-                        )}
-                    </TouchableOpacity>
+                    <View>
+                        <TouchableOpacity
+                            className={`w-full py-3 border rounded-xl border-primary ${
+                                isScanning ? "bg-primary/5" : "bg-primary/10"
+                            }`}
+                            onPress={handleScanPress}
+                            disabled={isScanning}>
+                            {isScanning ? (
+                                <View className="flex-row items-center justify-center gap-2">
+                                    <ActivityIndicator
+                                        size="small"
+                                        color={NAV_THEME[colorScheme].primary}
+                                    />
+                                    <Text className="text-sm font-semibold text-primary">
+                                        {scanState === "uploading"
+                                            ? "Sending your photo..."
+                                            : "Reading your receipt..."}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <View className="flex-row items-center justify-center gap-2">
+                                    <Icon
+                                        name="Camera"
+                                        size={16}
+                                        color={NAV_THEME[colorScheme].primary}
+                                    />
+                                    <Text className="text-sm font-semibold text-primary">
+                                        Scan receipt for{" "}
+                                        {selectedLocation?.name ?? "store"}
+                                    </Text>
+                                </View>
+                            )}
+                        </TouchableOpacity>
+                        
+                    </View>
 
                     {summary.locationSummaries.every(
                         (ls) => ls.subtotalInCents !== null,
@@ -413,6 +468,9 @@ export default function OrderSummary() {
                 <View className="gap-3 p-4">
                     <Text className="mb-1 text-lg font-bold text-center text-foreground">
                         Scan Receipt
+                    </Text>
+                    <Text className="text-xs text-center text-muted-foreground -mt-1 mb-1">
+                        For best results, make sure the full receipt is visible and well-lit
                     </Text>
 
                     <ListItem

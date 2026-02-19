@@ -119,14 +119,15 @@ export const parseReceipt = action({
         if (orderItems === null) {
             return {
                 success: false,
-                error: "Not authenticated or not authorized",
+                error: "You don't have permission to scan receipts for this order.",
             };
         }
 
         // Get the image URL from storage
         const imageUrl = await ctx.storage.getUrl(args.storageId);
         if (!imageUrl) {
-            return { success: false, error: "Failed to get image URL" };
+            await ctx.storage.delete(args.storageId);
+            return { success: false, error: "We couldn't process your photo. Please try taking or selecting the image again." };
         }
 
         try {
@@ -165,24 +166,70 @@ export const parseReceipt = action({
                 jsonStr = jsonMatch[1].trim();
             }
 
-            const parsed = JSON.parse(jsonStr);
+            let parsed;
+            try {
+                parsed = JSON.parse(jsonStr);
+            } catch {
+                return {
+                    success: false,
+                    error: "We couldn't read this image. Please make sure you're scanning a clear photo of a receipt.",
+                };
+            }
+
+            // Handle AI-detected issues with the image
+            if (parsed.error === "not_a_receipt") {
+                return {
+                    success: false,
+                    error: "This doesn't look like a receipt. Please take or select a photo of your receipt and try again.",
+                };
+            }
+
+            if (parsed.error === "unreadable_receipt") {
+                return {
+                    success: false,
+                    error: "The receipt is too blurry or dark to read. Please take a clearer photo and try again.",
+                };
+            }
+
+            if (!parsed.items || parsed.items.length === 0) {
+                return {
+                    success: false,
+                    error: "No items found on the receipt. Please make sure the full receipt is visible in the photo.",
+                };
+            }
 
             return {
                 success: true,
-                items: parsed.items || [],
+                items: parsed.items,
                 storeName: parsed.storeName,
                 date: parsed.date,
                 totalInCents: parsed.totalInCents,
             };
         } catch (error) {
             console.error("Error parsing receipt:", error);
+
+            // Provide user-friendly messages for common errors
+            const message = error instanceof Error ? error.message : "";
+
+            if (message.includes("fetch") || message.includes("network") || message.includes("ECONNREFUSED")) {
+                return {
+                    success: false,
+                    error: "We're having trouble connecting right now. Please check your internet connection and try again.",
+                };
+            }
+
             return {
                 success: false,
-                error:
-                    error instanceof Error
-                        ? error.message
-                        : "Failed to parse receipt",
+                error: "Something went wrong while scanning your receipt. Please try again.",
             };
+        } finally {
+            // Always delete the receipt image from storage after processing.
+            // We only need the extracted data, not the photo itself.
+            try {
+                await ctx.storage.delete(args.storageId);
+            } catch {
+                // Storage cleanup is best-effort; don't fail the request if it errors
+            }
         }
     },
 });

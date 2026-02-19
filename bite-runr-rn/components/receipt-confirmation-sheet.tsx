@@ -72,6 +72,12 @@ function MatchItem({
         return "text-red-500";
     };
 
+    const getConfidenceLabel = (confidence: number) => {
+        if (confidence >= 0.7) return "Great match";
+        if (confidence >= 0.4) return "Possible match";
+        return "Needs review";
+    };
+
     const handlePriceChange = (text: string) => {
         // Allow only numbers and a single decimal point
         let cleaned = text.replace(/[^0-9.]/g, "");
@@ -124,7 +130,7 @@ function MatchItem({
                             }`}>
                             <Text
                                 className={`text-xs ${getConfidenceColor(item.confidence)}`}>
-                                {Math.round(item.confidence * 100)}% match
+                                {getConfidenceLabel(item.confidence)}
                             </Text>
                         </View>
                     )}
