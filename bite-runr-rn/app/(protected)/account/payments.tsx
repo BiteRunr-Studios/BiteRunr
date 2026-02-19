@@ -248,7 +248,7 @@ export default function PaymentsScreen() {
             </View>
 
             {isLoading && (
-                <View className="flex-1 items-center justify-center">
+                <View className="flex-1 justify-center items-center">
                     <ActivityIndicator
                         color={NAV_THEME[colorScheme].primary}
                         size="large"
@@ -257,383 +257,398 @@ export default function PaymentsScreen() {
             )}
 
             {!isLoading && (
-            <ScrollView
-                className="flex-1"
-                contentContainerStyle={{ padding: 16 }}
-                showsVerticalScrollIndicator={false}>
-                {/* Card Payments Section */}
-                <View className="mb-6">
-                    <View className="flex-row items-center gap-3 mb-4">
-                        <View className="items-center justify-center w-10 h-10 rounded-xl bg-purple-500/10">
-                            <Icon
-                                name="CreditCard"
-                                size={20}
-                                color="#a855f7"
-                            />
+                <ScrollView
+                    className="flex-1"
+                    contentContainerStyle={{ padding: 16 }}
+                    showsVerticalScrollIndicator={false}>
+                    {/* Card Payments Section */}
+                    <View className="mb-6">
+                        <View className="flex-row gap-3 items-center mb-4">
+                            <View className="justify-center items-center w-10 h-10 rounded-xl bg-purple-500/10">
+                                <Icon
+                                    name="CreditCard"
+                                    size={20}
+                                    color="#a855f7"
+                                />
+                            </View>
+                            <Text className="text-lg font-semibold text-foreground">
+                                Accept Card Payments
+                            </Text>
                         </View>
-                        <Text className="text-lg font-semibold text-foreground">
-                            Accept Card Payments
-                        </Text>
-                    </View>
 
-                    {hasNoAccount && (
-                        <View className="p-4 border rounded-2xl border-muted bg-card">
-                            <Text className="text-base text-foreground mb-1">
-                                Get paid by your group
-                            </Text>
-                            <Text className="text-sm text-muted-foreground mb-4">
-                                Set up takes about 2 minutes. Here's what to
-                                expect:
-                            </Text>
+                        {hasNoAccount && (
+                            <View className="p-4 rounded-2xl border border-muted bg-card">
+                                <Text className="mb-1 text-base text-foreground">
+                                    Get paid by your group
+                                </Text>
+                                <Text className="mb-4 text-sm text-muted-foreground">
+                                    Set up takes about 2 minutes. Here's what to
+                                    expect:
+                                </Text>
 
-                            <View className="mb-5">
-                                {ONBOARDING_STEPS.map((step, index) => (
-                                    <View
-                                        key={step.title}
-                                        className="flex-row items-start gap-3">
-                                        {/* Step indicator line */}
-                                        <View className="items-center w-8">
-                                            <View
-                                                className="items-center justify-center w-8 h-8 rounded-full"
-                                                style={{
-                                                    backgroundColor:
-                                                        NAV_THEME[colorScheme]
-                                                            .primary + "15",
-                                                }}>
-                                                <Icon
-                                                    name={step.icon}
-                                                    size={16}
-                                                    color={
-                                                        NAV_THEME[colorScheme]
-                                                            .primary
-                                                    }
-                                                />
-                                            </View>
-                                            {index <
-                                                ONBOARDING_STEPS.length -
-                                                    1 && (
+                                <View className="mb-5">
+                                    {ONBOARDING_STEPS.map((step, index) => (
+                                        <View
+                                            key={step.title}
+                                            className="flex-row gap-3 items-start">
+                                            {/* Step indicator line */}
+                                            <View className="items-center w-8">
                                                 <View
-                                                    className="w-0.5 flex-1 my-1 rounded-full"
+                                                    className="justify-center items-center w-8 h-8 rounded-full"
                                                     style={{
                                                         backgroundColor:
                                                             NAV_THEME[
                                                                 colorScheme
-                                                            ].primary + "30",
-                                                        minHeight: 20,
-                                                    }}
-                                                />
-                                            )}
-                                        </View>
+                                                            ].primary + "15",
+                                                    }}>
+                                                    <Icon
+                                                        name={step.icon}
+                                                        size={16}
+                                                        color={
+                                                            NAV_THEME[
+                                                                colorScheme
+                                                            ].primary
+                                                        }
+                                                    />
+                                                </View>
+                                                {index <
+                                                    ONBOARDING_STEPS.length -
+                                                        1 && (
+                                                    <View
+                                                        className="w-0.5 flex-1 my-1 rounded-full"
+                                                        style={{
+                                                            backgroundColor:
+                                                                NAV_THEME[
+                                                                    colorScheme
+                                                                ].primary +
+                                                                "30",
+                                                            minHeight: 20,
+                                                        }}
+                                                    />
+                                                )}
+                                            </View>
 
-                                        <View className="flex-1 pb-4">
+                                            <View className="flex-1 pb-4">
+                                                <Text className="text-sm font-medium text-foreground">
+                                                    {step.title}
+                                                </Text>
+                                                <Text className="text-xs text-muted-foreground mt-0.5">
+                                                    {step.desc}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    ))}
+                                </View>
+
+                                <Button
+                                    label="Get Started"
+                                    icon="ArrowRight"
+                                    onPress={handleSetupPayouts}
+                                    loading={isSettingUp}
+                                    color={NAV_THEME[colorScheme].primary}
+                                />
+
+                                <View className="flex-row items-center justify-center gap-1.5 mt-3">
+                                    <Icon
+                                        name="Lock"
+                                        size={12}
+                                        color={NAV_THEME[colorScheme].border}
+                                    />
+                                    <Text className="text-xs text-muted-foreground">
+                                        Secured by Stripe
+                                    </Text>
+                                </View>
+                            </View>
+                        )}
+
+                        {connectedAccount && !isReady && (
+                            <View className="p-4 rounded-2xl border border-muted bg-card">
+                                <View className="flex-row gap-2 items-center mb-1">
+                                    <Icon
+                                        name={
+                                            isOnboarded
+                                                ? "Clock"
+                                                : "CircleAlert"
+                                        }
+                                        size={20}
+                                        color="#f59e0b"
+                                    />
+                                    <Text
+                                        className="text-base font-medium"
+                                        style={{ color: "#f59e0b" }}>
+                                        {isOnboarded
+                                            ? "Verification in progress"
+                                            : "Almost there"}
+                                    </Text>
+                                </View>
+                                <Text className="mb-4 text-sm text-muted-foreground">
+                                    {isOnboarded
+                                        ? "Stripe is reviewing your details. This usually takes just a few minutes — check back shortly."
+                                        : "You're almost done! Finish the last few steps to start accepting card payments."}
+                                </Text>
+
+                                {/* Progress steps */}
+                                <View className="mb-4">
+                                    {ONBOARDING_STEPS.map((step, index) => {
+                                        const status = getStepStatus(index);
+                                        const isDone = status === "done";
+                                        const isActive = status === "active";
+
+                                        return (
+                                            <View
+                                                key={step.title}
+                                                className="flex-row gap-3 items-center"
+                                                style={{
+                                                    paddingVertical: 6,
+                                                    opacity:
+                                                        isDone || isActive
+                                                            ? 1
+                                                            : 0.4,
+                                                }}>
+                                                <View
+                                                    className="justify-center items-center w-6 h-6 rounded-full"
+                                                    style={{
+                                                        backgroundColor: isDone
+                                                            ? "#22c55e20"
+                                                            : isActive
+                                                              ? "#f59e0b20"
+                                                              : NAV_THEME[
+                                                                    colorScheme
+                                                                ].primary +
+                                                                "10",
+                                                    }}>
+                                                    <Icon
+                                                        name={
+                                                            isDone
+                                                                ? "Check"
+                                                                : isActive
+                                                                  ? "LoaderCircle"
+                                                                  : step.icon
+                                                        }
+                                                        size={13}
+                                                        color={
+                                                            isDone
+                                                                ? "#22c55e"
+                                                                : isActive
+                                                                  ? "#f59e0b"
+                                                                  : NAV_THEME[
+                                                                        colorScheme
+                                                                    ].primary
+                                                        }
+                                                    />
+                                                </View>
+                                                <Text
+                                                    className={`text-sm ${isDone ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                                                    {step.title}
+                                                </Text>
+                                            </View>
+                                        );
+                                    })}
+                                </View>
+
+                                <View className="gap-3">
+                                    {!isOnboarded && (
+                                        <Button
+                                            label="Continue Setup"
+                                            icon="ArrowRight"
+                                            onPress={handleSetupPayouts}
+                                            loading={isSettingUp}
+                                            color={
+                                                NAV_THEME[colorScheme].primary
+                                            }
+                                        />
+                                    )}
+                                    <Button
+                                        label="Check Status"
+                                        icon="RefreshCw"
+                                        onPress={handleCheckStatus}
+                                        loading={isChecking}
+                                        color={NAV_THEME[colorScheme].border}
+                                    />
+                                </View>
+                            </View>
+                        )}
+
+                        {/* Balance — hero section when ready */}
+                        {connectedAccount && isReady && (
+                            <View className="p-5 rounded-2xl border border-muted bg-card">
+                                <View className="flex-row gap-3 items-center mb-4">
+                                    <View className="justify-center items-center w-10 h-10 rounded-xl bg-green-500/10">
+                                        <Icon
+                                            name="Wallet"
+                                            size={20}
+                                            color="#22c55e"
+                                        />
+                                    </View>
+                                    <Text className="text-lg font-semibold text-foreground">
+                                        Your Balance
+                                    </Text>
+                                </View>
+
+                                {isLoadingBalance && !balanceData && (
+                                    <View className="items-center py-6">
+                                        <ActivityIndicator
+                                            color={
+                                                NAV_THEME[colorScheme].primary
+                                            }
+                                        />
+                                    </View>
+                                )}
+
+                                {balanceData && (
+                                    <View>
+                                        <Text className="mb-1 text-3xl font-bold text-foreground">
+                                            {formatCurrency(
+                                                balanceData.available,
+                                            )}
+                                        </Text>
+                                        <Text className="mb-4 text-sm text-muted-foreground">
+                                            Available
+                                        </Text>
+
+                                        {balanceData.pending > 0 && (
+                                            <View className="flex-row gap-2 items-center px-3 py-2 mb-4 rounded-xl bg-muted">
+                                                <Icon
+                                                    name="Clock"
+                                                    size={14}
+                                                    color={
+                                                        NAV_THEME[colorScheme]
+                                                            .text
+                                                    }
+                                                />
+                                                <Text className="text-sm text-foreground">
+                                                    {formatCurrency(
+                                                        balanceData.pending,
+                                                    )}{" "}
+                                                    pending
+                                                </Text>
+                                            </View>
+                                        )}
+
+                                        {balanceData.available > 0 &&
+                                        balanceData.instantPayoutsEnabled ? (
+                                            <Button
+                                                label={`Instant Payout — ${formatCurrency(balanceData.instantAvailable)}`}
+                                                icon="Zap"
+                                                onPress={handleInstantPayout}
+                                                loading={isRequestingPayout}
+                                                color="#22c55e"
+                                            />
+                                        ) : (
+                                            <View>
+                                                {balanceData.available === 0 &&
+                                                balanceData.pending > 0 ? (
+                                                    <Text className="text-xs text-center text-muted-foreground">
+                                                        Funds are pending and
+                                                        typically become
+                                                        available in 1-2
+                                                        business days.
+                                                    </Text>
+                                                ) : balanceData.available ===
+                                                      0 &&
+                                                  balanceData.pending === 0 ? (
+                                                    <Text className="text-xs text-center text-muted-foreground">
+                                                        No balance yet. Funds
+                                                        will appear here after
+                                                        order members pay.
+                                                    </Text>
+                                                ) : (
+                                                    <Text className="text-xs text-center text-muted-foreground">
+                                                        Instant payouts require
+                                                        a debit card linked in
+                                                        Stripe.
+                                                    </Text>
+                                                )}
+                                            </View>
+                                        )}
+                                    </View>
+                                )}
+                            </View>
+                        )}
+
+                        {/* Card payments status + dashboard button */}
+                        {connectedAccount && isReady && (
+                            <View className="p-4 mt-3 rounded-2xl border border-muted bg-card">
+                                <View className="flex-row gap-2 items-center mb-3">
+                                    <Icon
+                                        name="CircleCheck"
+                                        size={16}
+                                        color="#22c55e"
+                                    />
+                                    <Text className="text-sm text-muted-foreground">
+                                        Card payments active
+                                    </Text>
+                                </View>
+                                <Button
+                                    label="View Earnings & Payouts"
+                                    icon="ExternalLink"
+                                    variant="outline"
+                                    onPress={handleOpenDashboard}
+                                    loading={isOpeningDashboard}
+                                    color={NAV_THEME[colorScheme].primary}
+                                />
+                            </View>
+                        )}
+                    </View>
+
+                    {/* How it Works — only show when not yet onboarded */}
+                    {connectedAccount && isReady && (
+                        <View className="mt-2 mb-6">
+                            <View className="flex-row gap-3 items-center mb-4">
+                                <View className="justify-center items-center w-10 h-10 rounded-xl bg-blue-500/10">
+                                    <Icon
+                                        name="Info"
+                                        size={20}
+                                        color="#3b82f6"
+                                    />
+                                </View>
+                                <Text className="text-lg font-semibold text-foreground">
+                                    How it Works
+                                </Text>
+                            </View>
+
+                            <View className="gap-3">
+                                {[
+                                    {
+                                        icon: "ShoppingBag" as const,
+                                        title: "You run the order",
+                                        desc: "Pick up food for your group as the runner.",
+                                    },
+                                    {
+                                        icon: "CreditCard" as const,
+                                        title: "Members pay you",
+                                        desc: "Each member can pay their share with a credit or debit card.",
+                                    },
+                                    {
+                                        icon: "Banknote" as const,
+                                        title: "You get paid",
+                                        desc: "Funds are deposited to your bank account.",
+                                    },
+                                ].map((item) => (
+                                    <View
+                                        key={item.title}
+                                        className="flex-row gap-3 items-start p-3 rounded-xl border border-muted bg-card">
+                                        <Icon
+                                            name={item.icon}
+                                            size={20}
+                                            color={
+                                                NAV_THEME[colorScheme].primary
+                                            }
+                                        />
+                                        <View className="flex-1">
                                             <Text className="text-sm font-medium text-foreground">
-                                                {step.title}
+                                                {item.title}
                                             </Text>
-                                            <Text className="text-xs text-muted-foreground mt-0.5">
-                                                {step.desc}
+                                            <Text className="text-sm text-muted-foreground">
+                                                {item.desc}
                                             </Text>
                                         </View>
                                     </View>
                                 ))}
                             </View>
-
-                            <Button
-                                label="Get Started"
-                                icon="ArrowRight"
-                                onPress={handleSetupPayouts}
-                                loading={isSettingUp}
-                                color={NAV_THEME[colorScheme].primary}
-                            />
-
-                            <View className="flex-row items-center justify-center gap-1.5 mt-3">
-                                <Icon
-                                    name="Lock"
-                                    size={12}
-                                    color={NAV_THEME[colorScheme].border}
-                                />
-                                <Text className="text-xs text-muted-foreground">
-                                    Secured by Stripe
-                                </Text>
-                            </View>
                         </View>
                     )}
-
-                    {connectedAccount && !isReady && (
-                        <View className="p-4 border rounded-2xl border-muted bg-card">
-                            <View className="flex-row gap-2 items-center mb-1">
-                                <Icon
-                                    name={isOnboarded ? "Clock" : "CircleAlert"}
-                                    size={20}
-                                    color="#f59e0b"
-                                />
-                                <Text
-                                    className="text-base font-medium"
-                                    style={{ color: "#f59e0b" }}>
-                                    {isOnboarded
-                                        ? "Verification in progress"
-                                        : "Almost there"}
-                                </Text>
-                            </View>
-                            <Text className="text-sm text-muted-foreground mb-4">
-                                {isOnboarded
-                                    ? "Stripe is reviewing your details. This usually takes just a few minutes — check back shortly."
-                                    : "You're almost done! Finish the last few steps to start accepting card payments."}
-                            </Text>
-
-                            {/* Progress steps */}
-                            <View className="mb-4">
-                                {ONBOARDING_STEPS.map((step, index) => {
-                                    const status = getStepStatus(index);
-                                    const isDone = status === "done";
-                                    const isActive = status === "active";
-
-                                    return (
-                                        <View
-                                            key={step.title}
-                                            className="flex-row items-center gap-3"
-                                            style={{
-                                                paddingVertical: 6,
-                                                opacity:
-                                                    isDone || isActive
-                                                        ? 1
-                                                        : 0.4,
-                                            }}>
-                                            <View
-                                                className="items-center justify-center w-6 h-6 rounded-full"
-                                                style={{
-                                                    backgroundColor: isDone
-                                                        ? "#22c55e20"
-                                                        : isActive
-                                                          ? "#f59e0b20"
-                                                          : NAV_THEME[
-                                                                  colorScheme
-                                                              ].primary + "10",
-                                                }}>
-                                                <Icon
-                                                    name={
-                                                        isDone
-                                                            ? "Check"
-                                                            : isActive
-                                                              ? "LoaderCircle"
-                                                              : step.icon
-                                                    }
-                                                    size={13}
-                                                    color={
-                                                        isDone
-                                                            ? "#22c55e"
-                                                            : isActive
-                                                              ? "#f59e0b"
-                                                              : NAV_THEME[
-                                                                    colorScheme
-                                                                ].primary
-                                                    }
-                                                />
-                                            </View>
-                                            <Text
-                                                className={`text-sm ${isDone ? "text-muted-foreground line-through" : "text-foreground"}`}>
-                                                {step.title}
-                                            </Text>
-                                        </View>
-                                    );
-                                })}
-                            </View>
-
-                            <View className="gap-3">
-                                {!isOnboarded && (
-                                    <Button
-                                        label="Continue Setup"
-                                        icon="ArrowRight"
-                                        onPress={handleSetupPayouts}
-                                        loading={isSettingUp}
-                                        color={NAV_THEME[colorScheme].primary}
-                                    />
-                                )}
-                                <Button
-                                    label="Check Status"
-                                    icon="RefreshCw"
-                                    onPress={handleCheckStatus}
-                                    loading={isChecking}
-                                    color={NAV_THEME[colorScheme].border}
-                                />
-                            </View>
-                        </View>
-                    )}
-
-                    {connectedAccount && isReady && (
-                        <View className="p-4 border rounded-2xl border-muted bg-card">
-                            <View className="flex-row gap-2 items-center mb-3">
-                                <Icon
-                                    name="CircleCheck"
-                                    size={20}
-                                    color="#22c55e"
-                                />
-                                <Text
-                                    className="text-base font-medium"
-                                    style={{ color: "#22c55e" }}>
-                                    Card payments active
-                                </Text>
-                            </View>
-                            <Text className="text-sm text-muted-foreground mb-4">
-                                Order members can pay you with their credit or
-                                debit card. Funds are deposited to your connected
-                                account.
-                            </Text>
-                            <Button
-                                label="View Earnings & Payouts"
-                                icon="ExternalLink"
-                                onPress={handleOpenDashboard}
-                                loading={isOpeningDashboard}
-                                color={NAV_THEME[colorScheme].primary}
-                            />
-                        </View>
-                    )}
-
-                    {/* Balance & Instant Payout */}
-                    {connectedAccount && isReady && (
-                        <View className="mt-4 p-4 border rounded-2xl border-muted bg-card">
-                            <View className="flex-row items-center gap-3 mb-3">
-                                <View className="items-center justify-center w-10 h-10 rounded-xl bg-green-500/10">
-                                    <Icon
-                                        name="Wallet"
-                                        size={20}
-                                        color="#22c55e"
-                                    />
-                                </View>
-                                <Text className="text-lg font-semibold text-foreground">
-                                    Your Balance
-                                </Text>
-                            </View>
-
-                            {isLoadingBalance && !balanceData && (
-                                <View className="items-center py-4">
-                                    <ActivityIndicator
-                                        color={NAV_THEME[colorScheme].primary}
-                                    />
-                                </View>
-                            )}
-
-                            {balanceData && (
-                                <View>
-                                    <View className="flex-row justify-between mb-2">
-                                        <Text className="text-sm text-muted-foreground">
-                                            Available
-                                        </Text>
-                                        <Text className="text-base font-semibold text-foreground">
-                                            {formatCurrency(
-                                                balanceData.available,
-                                            )}
-                                        </Text>
-                                    </View>
-                                    {balanceData.pending > 0 && (
-                                        <View className="flex-row justify-between mb-3">
-                                            <Text className="text-sm text-muted-foreground">
-                                                Pending
-                                            </Text>
-                                            <Text className="text-sm text-muted-foreground">
-                                                {formatCurrency(
-                                                    balanceData.pending,
-                                                )}
-                                            </Text>
-                                        </View>
-                                    )}
-
-                                    {balanceData.available > 0 &&
-                                    balanceData.instantPayoutsEnabled ? (
-                                        <Button
-                                            label={`Instant Payout — ${formatCurrency(balanceData.instantAvailable)}`}
-                                            icon="Zap"
-                                            onPress={handleInstantPayout}
-                                            loading={isRequestingPayout}
-                                            color="#22c55e"
-                                        />
-                                    ) : (
-                                        <View className="mt-2">
-                                            {balanceData.available === 0 &&
-                                            balanceData.pending > 0 ? (
-                                                <Text className="text-xs text-muted-foreground text-center">
-                                                    Funds are pending and
-                                                    typically become available in
-                                                    1-2 business days.
-                                                </Text>
-                                            ) : balanceData.available === 0 &&
-                                              balanceData.pending === 0 ? (
-                                                <Text className="text-xs text-muted-foreground text-center">
-                                                    No balance yet. Funds will
-                                                    appear here after order
-                                                    members pay.
-                                                </Text>
-                                            ) : (
-                                                <Text className="text-xs text-muted-foreground text-center">
-                                                    Instant payouts require a
-                                                    debit card linked in Stripe.
-                                                </Text>
-                                            )}
-                                        </View>
-                                    )}
-                                </View>
-                            )}
-                        </View>
-                    )}
-                </View>
-
-                {/* How it Works — only show when not yet onboarded */}
-                {connectedAccount && isReady && (
-                    <View className="mb-6 mt-2">
-                        <View className="flex-row items-center gap-3 mb-4">
-                            <View className="items-center justify-center w-10 h-10 rounded-xl bg-blue-500/10">
-                                <Icon
-                                    name="Info"
-                                    size={20}
-                                    color="#3b82f6"
-                                />
-                            </View>
-                            <Text className="text-lg font-semibold text-foreground">
-                                How it Works
-                            </Text>
-                        </View>
-
-                        <View className="gap-3">
-                            {[
-                                {
-                                    icon: "ShoppingBag" as const,
-                                    title: "You run the order",
-                                    desc: "Pick up food for your group as the runner.",
-                                },
-                                {
-                                    icon: "CreditCard" as const,
-                                    title: "Members pay you",
-                                    desc: "Each member can pay their share with a credit or debit card.",
-                                },
-                                {
-                                    icon: "Banknote" as const,
-                                    title: "You get paid",
-                                    desc: "Funds are deposited to your bank account or debit card.",
-                                },
-                            ].map((item) => (
-                                <View
-                                    key={item.title}
-                                    className="flex-row items-start gap-3 p-3 border rounded-xl border-muted bg-card">
-                                    <Icon
-                                        name={item.icon}
-                                        size={20}
-                                        color={
-                                            NAV_THEME[colorScheme].primary
-                                        }
-                                    />
-                                    <View className="flex-1">
-                                        <Text className="text-sm font-medium text-foreground">
-                                            {item.title}
-                                        </Text>
-                                        <Text className="text-sm text-muted-foreground">
-                                            {item.desc}
-                                        </Text>
-                                    </View>
-                                </View>
-                            ))}
-                        </View>
-                    </View>
-                )}
-            </ScrollView>
+                </ScrollView>
             )}
         </SafeAreaView>
     );
