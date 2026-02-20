@@ -66,8 +66,10 @@ export default function GroupsTab() {
 
     return (
         <ErrorBoundary>
-            <View style={{ paddingTop: insets.top }} className="flex-1 bg-background">
-                    <HeaderBar />
+            <View
+                style={{ paddingTop: insets.top }}
+                className="flex-1 bg-background">
+                <HeaderBar />
                 <View className="flex-1 px-4">
                     {/* Tab Selector */}
                     <View className="flex-row gap-2 mt-4 mb-4">
@@ -108,7 +110,9 @@ export default function GroupsTab() {
                             placeholder="Search orders..."
                             leftIcon="Search"
                             rightIcon="CirclePlus"
-                            onRightIconPress={() => router.push("/order/create")}
+                            onRightIconPress={() =>
+                                router.push("/order/create")
+                            }
                             autoCapitalize="none"
                             returnKeyType="search"
                             errorMessage=""
@@ -120,7 +124,9 @@ export default function GroupsTab() {
                     {/* Content */}
                     <ScrollView
                         className="flex-1"
-                        contentContainerStyle={{ paddingBottom: 24 }}
+                        contentContainerStyle={{
+                            paddingBottom: 80 + insets.bottom,
+                        }}
                         showsVerticalScrollIndicator={false}>
                         {isPending && (
                             <Skeleton>
@@ -135,10 +141,13 @@ export default function GroupsTab() {
                         {!isPending && filteredOrders && (
                             <>
                                 {filteredOrders.length === 0 ? (
-                                    <View className="items-center p-8 mt-4 border rounded-2xl border-dashed border-muted bg-card">
-                                        <View className={`items-center justify-center w-16 h-16 mb-4 rounded-2xl ${
-                                            selectedIndex === 0 ? "bg-yellow-500/10" : "bg-blue-500/10"
-                                        }`}>
+                                    <View className="items-center p-8 mt-4 rounded-2xl border border-dashed border-muted bg-card">
+                                        <View
+                                            className={`items-center justify-center w-16 h-16 mb-4 rounded-2xl ${
+                                                selectedIndex === 0
+                                                    ? "bg-yellow-500/10"
+                                                    : "bg-blue-500/10"
+                                            }`}>
                                             <Icon
                                                 name={
                                                     selectedIndex === 0
@@ -167,34 +176,38 @@ export default function GroupsTab() {
                                                   ? "Start a new order to get your group together"
                                                   : "When friends invite you to an order, it'll show up here"}
                                         </Text>
-                                        {selectedIndex === 0 && !searchQuery && (
-                                            <TouchableOpacity
-                                                onPress={() =>
-                                                    router.push("/order/create")
-                                                }
-                                                className="flex-row items-center gap-2 px-5 py-2.5 mt-4 rounded-xl bg-primary">
-                                                <Icon
-                                                    name="Plus"
-                                                    size={18}
-                                                    color="white"
-                                                />
-                                                <Text className="font-semibold text-white">
-                                                    New Order
-                                                </Text>
-                                            </TouchableOpacity>
-                                        )}
+                                        {selectedIndex === 0 &&
+                                            !searchQuery && (
+                                                <TouchableOpacity
+                                                    onPress={() =>
+                                                        router.push(
+                                                            "/order/create",
+                                                        )
+                                                    }
+                                                    className="flex-row items-center gap-2 px-5 py-2.5 mt-4 rounded-xl bg-primary">
+                                                    <Icon
+                                                        name="Plus"
+                                                        size={18}
+                                                        color="white"
+                                                    />
+                                                    <Text className="font-semibold text-white">
+                                                        New Order
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            )}
                                     </View>
                                 ) : (
                                     <View className="gap-3">
                                         {filteredOrders.map((item) => {
-                                            const orderUsers = item.orderUsers.map(
-                                                (ou) => ({
+                                            const orderUsers =
+                                                item.orderUsers.map((ou) => ({
                                                     id: ou.id,
-                                                    firstName: ou.user?.firstName,
+                                                    firstName:
+                                                        ou.user?.firstName,
                                                     lastName: ou.user?.lastName,
-                                                    avatarUrl: ou.user?.avatarUrl,
-                                                })
-                                            );
+                                                    avatarUrl:
+                                                        ou.user?.avatarUrl,
+                                                }));
 
                                             return item.order.status ===
                                                 "active" ? (
@@ -205,20 +218,28 @@ export default function GroupsTab() {
                                                     <Pressable>
                                                         <OrderCard
                                                             id={item.order.id}
-                                                            name={item.order.name}
+                                                            name={
+                                                                item.order.name
+                                                            }
                                                             comments={
-                                                                item.order.comments
+                                                                item.order
+                                                                    .comments
                                                             }
                                                             status={
-                                                                item.order.status
+                                                                item.order
+                                                                    .status
                                                             }
                                                             paused={
-                                                                item.order.paused
+                                                                item.order
+                                                                    .paused
                                                             }
                                                             createdAt={
-                                                                item.order.createdAt
+                                                                item.order
+                                                                    .createdAt
                                                             }
-                                                            orderUsers={orderUsers}
+                                                            orderUsers={
+                                                                orderUsers
+                                                            }
                                                             itemCount={
                                                                 item.itemsCount
                                                             }
@@ -230,7 +251,9 @@ export default function GroupsTab() {
                                                     key={item.order.id}
                                                     id={item.order.id}
                                                     name={item.order.name}
-                                                    comments={item.order.comments}
+                                                    comments={
+                                                        item.order.comments
+                                                    }
                                                     status={item.order.status}
                                                     paused={item.order.paused}
                                                     createdAt={
