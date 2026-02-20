@@ -26,7 +26,6 @@ interface OrderUser {
 interface OrderCardProps {
     id: string;
     name: string;
-    comments?: string | null;
     status: OrderStatus;
     paused: boolean;
     createdAt: number | Date;
@@ -36,7 +35,6 @@ interface OrderCardProps {
 
 export function OrderCard({
     name,
-    comments,
     status,
     paused,
     createdAt,
@@ -165,15 +163,6 @@ export function OrderCard({
                     </Text>
                 </View>
             </View>
-
-            {/* Comments */}
-            {comments && (
-                <Text
-                    className="mb-3 text-sm text-muted-foreground"
-                    numberOfLines={2}>
-                    {comments}
-                </Text>
-            )}
 
             {/* Footer Row - Avatars and Stats */}
             <View className="flex-row items-center justify-between pt-3 mt-auto border-t border-muted">
