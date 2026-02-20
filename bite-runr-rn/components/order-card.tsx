@@ -166,11 +166,10 @@ export function OrderCard({
                 </View>
             </View>
 
-            {/* Comments - always reserve space for consistent card height */}
+            {/* Comments - always rendered for consistent card height */}
             <Text
                 className="mb-3 text-sm text-muted-foreground"
-                numberOfLines={2}
-                style={{ minHeight: 36 }}>
+                numberOfLines={1}>
                 {comments || " "}
             </Text>
 

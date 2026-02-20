@@ -168,6 +168,14 @@ export default defineSchema({
         .index("by_status", ["status"])
         .index("by_stripePaymentIntentId", ["stripePaymentIntentId"]),
 
+    // Device push token ownership (tracks which user owns which device token)
+    devicePushTokens: defineTable({
+        pushToken: v.string(),
+        userId: v.id("users"),
+    })
+        .index("by_pushToken", ["pushToken"])
+        .index("by_userId", ["userId"]),
+
     // Order invites (QR code-based group joining)
     orderInvites: defineTable({
         orderId: v.id("orders"),
