@@ -4,6 +4,8 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ConvexProvider } from 'convex/react'
 import { convex } from '../convex'
 import { ThemeProvider } from '../hooks/use-theme'
+import { AuthProvider, useAuth } from '../hooks/use-auth'
+import { LoginPage } from '../components/login-page'
 
 import appCss from '../styles.css?url'
 
@@ -46,12 +48,26 @@ export const Route = createRootRoute({
   component: RootComponent,
 })
 
+function AuthGate() {
+  const { isAuthenticated } = useAuth()
+
+  if (!isAuthenticated) {
+    return <LoginPage />
+  }
+
+  return (
+    <ConvexProvider client={convex}>
+      <Outlet />
+    </ConvexProvider>
+  )
+}
+
 function RootComponent() {
   return (
     <ThemeProvider>
-      <ConvexProvider client={convex}>
-        <Outlet />
-      </ConvexProvider>
+      <AuthProvider>
+        <AuthGate />
+      </AuthProvider>
     </ThemeProvider>
   )
 }
