@@ -166,14 +166,13 @@ export function OrderCard({
                 </View>
             </View>
 
-            {/* Comments */}
-            {comments && (
-                <Text
-                    className="mb-3 text-sm text-muted-foreground"
-                    numberOfLines={2}>
-                    {comments}
-                </Text>
-            )}
+            {/* Comments - always reserve space for consistent card height */}
+            <Text
+                className="mb-3 text-sm text-muted-foreground"
+                numberOfLines={2}
+                style={{ minHeight: 36 }}>
+                {comments || " "}
+            </Text>
 
             {/* Footer Row - Avatars and Stats */}
             <View className="flex-row items-center justify-between pt-3 border-t border-muted">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, Modal, Pressable, StyleSheet } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import Icon from "@/components/common/icon";
@@ -19,20 +19,24 @@ export function QRScannerModal({
     const { colorScheme } = useColorScheme();
     const [permission, requestPermission] = useCameraPermissions();
     const [hasScanned, setHasScanned] = useState(false);
+    const scannedRef = useRef(false);
 
     // Reset scanned state when modal opens
     useEffect(() => {
         if (visible) {
             setHasScanned(false);
+            scannedRef.current = false;
         }
     }, [visible]);
 
     const handleBarcodeScanned = ({ data }: { data: string }) => {
-        if (hasScanned) return;
+        // Use ref for synchronous guard to prevent race condition
+        if (scannedRef.current) return;
 
         // Parse the deep link format: biterunr://join/CODE
         const match = data.match(/biterunr:\/\/join\/([A-Z0-9]+)/i);
         if (match) {
+            scannedRef.current = true;
             setHasScanned(true);
             onScan(match[1].toUpperCase());
         }
