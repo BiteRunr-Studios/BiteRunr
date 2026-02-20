@@ -72,10 +72,11 @@ export const unregisterPushToken = mutation({
         await pushNotifications.removeToken(ctx, { userId });
 
         // Clean up our ownership tracking
-        if (args.token) {
+        const token = args.token;
+        if (token) {
             const record = await ctx.db
                 .query("devicePushTokens")
-                .withIndex("by_pushToken", (q) => q.eq("pushToken", args.token))
+                .withIndex("by_pushToken", (q) => q.eq("pushToken", token))
                 .first();
             if (record && record.userId === userId) {
                 await ctx.db.delete(record._id);
