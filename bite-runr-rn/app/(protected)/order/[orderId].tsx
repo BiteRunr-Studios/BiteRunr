@@ -8,6 +8,7 @@ import {
     Alert,
     Pressable,
 } from "react-native";
+import { Flow } from "react-native-animated-spinkit";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -35,6 +36,7 @@ export default function SpecificOrder() {
     const buttonOpacity = useRef(new Animated.Value(0)).current;
     const buttonTranslateY = useRef(new Animated.Value(20)).current;
     const [showQRModal, setShowQRModal] = useState(false);
+    const [isSelectingItems, setIsSelectingItems] = useState(false);
 
     const breatheValue = useSharedValue(1);
     breatheValue.value = withRepeat(
@@ -126,6 +128,8 @@ export default function SpecificOrder() {
     };
 
     async function handleSelectItems() {
+        if (isSelectingItems) return;
+
         const orderUser = data?.orderUsers.find(
             (x) => x.userId === currentUserId,
         );
@@ -135,6 +139,7 @@ export default function SpecificOrder() {
             return;
         }
 
+        setIsSelectingItems(true);
         try {
             await setStatus({
                 orderId: orderId as Id<"orders">,
@@ -145,6 +150,8 @@ export default function SpecificOrder() {
             );
         } catch (error) {
             console.error("Failed to set status:", error);
+        } finally {
+            setIsSelectingItems(false);
         }
     }
 
@@ -598,9 +605,14 @@ export default function SpecificOrder() {
                                 </TouchableOpacity>
                             ) : (
                                 <TouchableOpacity
-                                    className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
-                                    onPress={handleSelectItems}>
-                                    <Icon name="Plus" size={20} color="white" />
+                                    className={`flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary ${isSelectingItems ? "opacity-50" : ""}`}
+                                    onPress={handleSelectItems}
+                                    disabled={isSelectingItems}>
+                                    {isSelectingItems ? (
+                                        <Flow size={22} color="white" />
+                                    ) : (
+                                        <Icon name="Plus" size={20} color="white" />
+                                    )}
                                     <Text className="text-base font-semibold text-white">
                                         Select Items
                                     </Text>

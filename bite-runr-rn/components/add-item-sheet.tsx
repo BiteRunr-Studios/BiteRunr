@@ -22,6 +22,7 @@ interface AddItemSheetProps {
     itemId: string;
     orderUserId: string;
     orderLocationId: string;
+    locationId?: string;
 }
 
 export function AddItemSheet({
@@ -33,13 +34,18 @@ export function AddItemSheet({
     itemId,
     orderUserId,
     orderLocationId,
+    locationId,
 }: AddItemSheetProps) {
     const actionSheetRef = useRef<ActionSheetRef>(null);
     const [quantity, setQuantity] = useState(1);
     const [comments, setComments] = useState("");
+    const [isAdding, setIsAdding] = useState(false);
     const { colorScheme } = useColorScheme();
 
     const addItem = useMutation(api.orderItems.add);
+    const createItem = useMutation(api.items.create);
+
+    const isNewItem = !itemId && !!locationId;
 
     useEffect(() => {
         if (visible) {
@@ -50,11 +56,22 @@ export function AddItemSheet({
     }, [visible]);
 
     const handleAdd = async () => {
+        if (isAdding) return;
+        setIsAdding(true);
         try {
+            let resolvedItemId = itemId;
+
+            if (isNewItem) {
+                resolvedItemId = await createItem({
+                    name: itemName,
+                    locationId: locationId as Id<"locations">,
+                });
+            }
+
             await addItem({
                 orderLocationId: orderLocationId as Id<"orderLocations">,
                 orderUserId: orderUserId as Id<"orderUsers">,
-                itemId: itemId as Id<"items">,
+                itemId: resolvedItemId as Id<"items">,
                 comments: comments || undefined,
                 quantity,
             });
@@ -65,6 +82,8 @@ export function AddItemSheet({
             onAdd();
         } catch (error) {
             console.error("Error adding item:", error);
+        } finally {
+            setIsAdding(false);
         }
     };
 
@@ -159,8 +178,8 @@ export function AddItemSheet({
                 {/* Footer - Fixed at bottom */}
                 <View className="px-4 py-3 border-t border-border">
                     <View className="flex-col gap-2">
-                        <Button label="Add to Order" onPress={handleAdd} />
-                        <Button label="Cancel" variant="outline" onPress={handleClose} />
+                        <Button label={isNewItem ? "Create & Add to Order" : "Add to Order"} onPress={handleAdd} loading={isAdding} />
+                        <Button label="Cancel" variant="outline" onPress={handleClose} disabled={isAdding} />
                     </View>
                 </View>
             </View>
