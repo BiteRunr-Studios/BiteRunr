@@ -5,7 +5,6 @@ import {
     View,
     Alert,
     Pressable,
-    Image,
     RefreshControl,
     TouchableOpacity,
 } from "react-native";
@@ -21,6 +20,7 @@ import type { icons } from "lucide-react-native";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HeaderBar } from "@/components/layout/header-bar";
+import { Avatar } from "@/components/common/avatar";
 
 type Item = {
     key: string;
@@ -98,14 +98,6 @@ export default function AccountTab() {
         ? [user.firstName, user.lastName].filter(Boolean).join(" ")
         : null;
 
-    const getInitials = () => {
-        if (!user) return "U";
-        return (
-            `${(user.firstName || "").charAt(0)}${(user.lastName || "").charAt(0)}`.toUpperCase() ||
-            "U"
-        );
-    };
-
     return (
         <ErrorBoundary>
             <View style={{ paddingTop: insets.top }} className="flex-1 bg-background">
@@ -132,22 +124,11 @@ export default function AccountTab() {
                                 className="p-5 mb-6 border rounded-2xl border-muted bg-card active:opacity-90">
                                 <View className="flex-row items-center">
                                     <View className="relative">
-                                        {user.avatarUrl ? (
-                                            <Image
-                                                source={{ uri: user.avatarUrl }}
-                                                className="w-20 h-20 rounded-full"
-                                                resizeMode="cover"
-                                            />
-                                        ) : (
-                                            <View className="items-center justify-center w-20 h-20 rounded-full bg-primary/10">
-                                                <Text
-                                                    style={{ fontSize: 28 }}
-                                                    className="font-bold text-primary">
-                                                    {`${(user.firstName || "").charAt(0)}${(user.lastName || "").charAt(0)}`.toUpperCase() ||
-                                                        "U"}
-                                                </Text>
-                                            </View>
-                                        )}
+                                        <Avatar
+                                            name={fullName || "U"}
+                                            avatarUrl={user.avatarUrl}
+                                            size={80}
+                                        />
                                         <View className="absolute bottom-0 right-0 items-center justify-center border-2 rounded-full w-7 h-7 bg-primary border-card">
                                             <Icon
                                                 name="Pencil"

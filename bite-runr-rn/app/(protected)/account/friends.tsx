@@ -4,7 +4,6 @@ import {
     Text,
     ScrollView,
     Pressable,
-    Image,
     Alert,
     ActivityIndicator,
     TouchableOpacity,
@@ -19,6 +18,7 @@ import { Input } from "@/components/common/input";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
+import { Avatar } from "@/components/common/avatar";
 
 type Tab = "friends" | "requests" | "search";
 
@@ -532,49 +532,6 @@ function SearchUsers() {
                     </View>
                 </ScrollView>
             )}
-        </View>
-    );
-}
-
-function Avatar({
-    name,
-    avatarUrl,
-    size = 52,
-}: {
-    name: string;
-    avatarUrl?: string;
-    size?: number;
-}) {
-    if (avatarUrl) {
-        return (
-            <Image
-                source={{ uri: avatarUrl }}
-                style={{ width: size, height: size, borderRadius: size / 2 }}
-                resizeMode="cover"
-            />
-        );
-    }
-
-    const initials = name
-        .split(" ")
-        .map((n) => n.charAt(0))
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
-
-    return (
-        <View
-            style={{
-                width: size,
-                height: size,
-                borderRadius: size / 2,
-            }}
-            className="items-center justify-center bg-muted">
-            <Text
-                className="font-semibold text-muted-foreground"
-                style={{ fontSize: size * 0.35 }}>
-                {initials || "U"}
-            </Text>
         </View>
     );
 }

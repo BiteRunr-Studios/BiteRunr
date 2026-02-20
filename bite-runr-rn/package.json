@@ -42,6 +42,7 @@
         "expo-dev-client": "~6.0.20",
         "expo-device": "~8.0.10",
         "expo-file-system": "~19.0.17",
+        "expo-image": "~3.0.11",
         "expo-image-picker": "~17.0.10",
         "expo-linking": "~8.0.7",
         "expo-navigation-bar": "~5.0.8",

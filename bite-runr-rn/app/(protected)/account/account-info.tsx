@@ -4,7 +4,6 @@ import {
     Text,
     ScrollView,
     Pressable,
-    Image,
     Alert,
     ActivityIndicator,
     KeyboardAvoidingView,
@@ -21,6 +20,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
+import { Avatar } from "@/components/common/avatar";
 
 export default function AccountInfoScreen() {
     const user = useQuery(api.users.getCurrentUser);
@@ -56,13 +56,6 @@ export default function AccountInfoScreen() {
             setHasChanges(changed);
         }
     }, [firstName, lastName, user]);
-
-    const getInitials = () => {
-        const first = firstName.trim() || user?.firstName || "";
-        const last = lastName.trim() || user?.lastName || "";
-        const initials = `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
-        return initials || "U";
-    };
 
     const handleSave = async () => {
         if (!firstName.trim()) {
@@ -289,21 +282,11 @@ export default function AccountInfoScreen() {
                             onPress={showAvatarOptions}
                             disabled={isUploadingAvatar}
                             className="relative active:opacity-80">
-                            {user.avatarUrl ? (
-                                <Image
-                                    source={{ uri: user.avatarUrl }}
-                                    className="w-32 h-32 rounded-full"
-                                    resizeMode="cover"
-                                />
-                            ) : (
-                                <View className="items-center justify-center w-32 h-32 rounded-full bg-primary/10">
-                                    <Text
-                                        style={{ fontSize: 48 }}
-                                        className="font-bold text-primary">
-                                        {getInitials()}
-                                    </Text>
-                                </View>
-                            )}
+                            <Avatar
+                                name={`${firstName || user.firstName || ""} ${lastName || user.lastName || ""}`}
+                                avatarUrl={user.avatarUrl}
+                                size={128}
+                            />
 
                             {/* Camera overlay */}
                             <View className="absolute bottom-0 right-0 items-center justify-center border-4 rounded-full w-11 h-11 bg-primary border-card">
