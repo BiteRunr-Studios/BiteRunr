@@ -172,6 +172,11 @@ export default function SelectItems() {
         setAddSheetVisible(true);
     }
 
+    function handleCreateNewItem() {
+        setSelectedItem({ name: searchQuery.trim(), id: "" });
+        setAddSheetVisible(true);
+    }
+
     function handleExistingItemPress(
         orderUserLocationItem: OrderUserLocationItem
     ) {
@@ -419,9 +424,21 @@ export default function SelectItems() {
                                     <Text className="text-base font-medium text-muted-foreground">
                                         No items found
                                     </Text>
-                                    <Text className="mt-1 text-sm text-muted-foreground">
-                                        Try a different search term
+                                    <Text className="mt-1 mb-4 text-sm text-muted-foreground">
+                                        Create a new item to add it to your order
                                     </Text>
+                                    <TouchableOpacity
+                                        onPress={handleCreateNewItem}
+                                        className="flex-row items-center gap-2 px-6 py-3 rounded-full bg-primary">
+                                        <Icon
+                                            name="Plus"
+                                            size={18}
+                                            color="white"
+                                        />
+                                        <Text className="text-sm font-semibold text-white">
+                                            Create "{searchQuery.trim()}"
+                                        </Text>
+                                    </TouchableOpacity>
                                 </View>
                             )
                         ) : (
@@ -569,6 +586,7 @@ export default function SelectItems() {
                 itemId={selectedItem?.id || ""}
                 orderUserId={orderUserId as string}
                 orderLocationId={selectedLocation?.orderLocationId || ""}
+                locationId={selectedLocation?.locationId || ""}
             />
 
             {/* Edit Item Sheet */}

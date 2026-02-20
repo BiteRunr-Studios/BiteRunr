@@ -42,6 +42,7 @@ export function EditItemSheet({
     const actionSheetRef = useRef<ActionSheetRef>(null);
     const [quantity, setQuantity] = useState(initialQuantity);
     const [comments, setComments] = useState(initialComments || "");
+    const [isUpdating, setIsUpdating] = useState(false);
     const { colorScheme } = useColorScheme();
 
     const updateItem = useMutation(api.orderItems.update);
@@ -58,6 +59,8 @@ export function EditItemSheet({
     }, [visible, initialQuantity, initialComments]);
 
     const handleUpdate = async () => {
+        if (isUpdating) return;
+        setIsUpdating(true);
         try {
             await updateItem({
                 orderItemId: orderItemId as Id<"orderItems">,
@@ -68,6 +71,8 @@ export function EditItemSheet({
             onUpdate();
         } catch (error) {
             console.error("Error updating item:", error);
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -184,8 +189,8 @@ export function EditItemSheet({
                 {/* Footer - Fixed at bottom */}
                 <View className="px-4 py-3 border-t border-border">
                     <View className="flex-col gap-2">
-                        <Button label="Update Item" onPress={handleUpdate} />
-                        <Button label="Cancel" variant="outline" onPress={handleClose} />
+                        <Button label="Update Item" onPress={handleUpdate} loading={isUpdating} />
+                        <Button label="Cancel" variant="outline" onPress={handleClose} disabled={isUpdating} />
                     </View>
                 </View>
             </View>
