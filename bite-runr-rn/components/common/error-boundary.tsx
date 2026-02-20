@@ -12,9 +12,19 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
+    private _mounted = false;
+
     constructor(props: Props) {
         super(props);
         this.state = { hasError: false, error: null };
+    }
+
+    componentDidMount() {
+        this._mounted = true;
+    }
+
+    componentWillUnmount() {
+        this._mounted = false;
     }
 
     static getDerivedStateFromError(error: Error): State {
@@ -26,7 +36,9 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     handleRetry = () => {
-        this.setState({ hasError: false, error: null });
+        if (this._mounted) {
+            this.setState({ hasError: false, error: null });
+        }
     };
 
     render() {
