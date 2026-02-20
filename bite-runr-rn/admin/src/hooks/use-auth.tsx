@@ -1,47 +1,72 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react'
+import { loginAction, verifyTokenAction } from '@/server/auth'
 
 interface AuthContextValue {
-  isAuthenticated: boolean;
-  login: (username: string, password: string) => boolean;
-  logout: () => void;
+  isAuthenticated: boolean
+  login: (username: string, password: string) => Promise<boolean>
+  logout: () => void
 }
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const SESSION_KEY = 'admin_session_token'
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return sessionStorage.getItem("admin_authenticated") === "true";
-  });
+    if (typeof window === 'undefined') return false
+    return sessionStorage.getItem(SESSION_KEY) !== null
+  })
 
-  const login = (username: string, password: string): boolean => {
-    if (
-      username === "admin" &&
-      password === import.meta.env.VITE_ADMIN_PASSWORD
-    ) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem("admin_authenticated", "true");
-      return true;
+  // Validate stored token against the server on mount
+  useEffect(() => {
+    const storedToken = sessionStorage.getItem(SESSION_KEY)
+    if (!storedToken) return
+
+    verifyTokenAction({ data: { token: storedToken } }).then(({ valid }) => {
+      if (!valid) {
+        sessionStorage.removeItem(SESSION_KEY)
+        setIsAuthenticated(false)
+      }
+    })
+  }, [])
+
+  const login = async (
+    username: string,
+    password: string,
+  ): Promise<boolean> => {
+    const result = await loginAction({ data: { username, password } })
+
+    if (result.success && result.token) {
+      sessionStorage.setItem(SESSION_KEY, result.token)
+      setIsAuthenticated(true)
+      return true
     }
-    return false;
-  };
+
+    return false
+  }
 
   const logout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem("admin_authenticated");
-  };
+    setIsAuthenticated(false)
+    sessionStorage.removeItem(SESSION_KEY)
+  }
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
-  );
+  )
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
+  const context = useContext(AuthContext)
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider')
   }
-  return context;
+  return context
 }
