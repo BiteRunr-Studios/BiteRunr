@@ -56,6 +56,54 @@ export const listForUserLocation = query({
     },
 });
 
+// List all items for a specific order user (viewable by any participant in the same order)
+export const listForOrderUser = query({
+    args: {
+        orderUserId: v.id("orderUsers"),
+    },
+    handler: async (ctx, args) => {
+        const userId = await getUserId(ctx);
+        if (!userId) return [];
+
+        // Get the target orderUser
+        const orderUser = await ctx.db.get(args.orderUserId);
+        if (!orderUser) return [];
+
+        // Verify caller is a participant in the same order
+        const callerOrderUser = await ctx.db
+            .query("orderUsers")
+            .withIndex("by_orderId", (q) =>
+                q.eq("orderId", orderUser.orderId),
+            )
+            .filter((q) => q.eq(q.field("userId"), userId))
+            .first();
+        if (!callerOrderUser) return [];
+
+        const orderItems = await ctx.db
+            .query("orderItems")
+            .withIndex("by_orderUserId", (q) =>
+                q.eq("orderUserId", args.orderUserId),
+            )
+            .collect();
+
+        // Enrich with item details
+        const enrichedItems = await Promise.all(
+            orderItems.map(async (oi) => {
+                const item = await ctx.db.get(oi.itemId);
+                return {
+                    id: oi._id,
+                    itemId: oi.itemId,
+                    quantity: oi.quantity,
+                    comments: oi.comments,
+                    itemName: item?.name ?? "Unknown Item",
+                };
+            }),
+        );
+
+        return enrichedItems;
+    },
+});
+
 // Add an item to an order user's cart
 export const add = mutation({
     args: {

@@ -11,7 +11,7 @@ import {
 import { Flow } from "react-native-animated-spinkit";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import ReAnimated, {
     useSharedValue,
@@ -30,6 +30,52 @@ import { QRCodeModal } from "@/components/qr-code-modal";
 
 type ButtonState = "readyToRun" | "enabled" | "disabled";
 
+function UserItemsList({ orderUserId }: { orderUserId: Id<"orderUsers"> }) {
+    const items = useQuery(api.orderItems.listForOrderUser, { orderUserId });
+
+    if (items === undefined) {
+        return (
+            <View className="px-4 py-3">
+                <Flow size={18} color="#888" />
+            </View>
+        );
+    }
+
+    if (items.length === 0) {
+        return (
+            <View className="px-4 py-3">
+                <Text className="text-sm italic text-muted-foreground">
+                    No items added
+                </Text>
+            </View>
+        );
+    }
+
+    return (
+        <View className="px-4 pt-2 pb-3">
+            {items.map((item) => (
+                <View
+                    key={item.id}
+                    className="flex-row items-start justify-between py-1.5">
+                    <View className="flex-1">
+                        <Text className="text-sm text-foreground">
+                            {item.itemName}
+                        </Text>
+                        {item.comments ? (
+                            <Text className="mt-0.5 text-xs text-muted-foreground">
+                                {item.comments}
+                            </Text>
+                        ) : null}
+                    </View>
+                    <Text className="ml-3 text-sm text-muted-foreground">
+                        x{item.quantity}
+                    </Text>
+                </View>
+            ))}
+        </View>
+    );
+}
+
 export default function SpecificOrder() {
     const { orderId } = useLocalSearchParams();
     const { colorScheme } = useColorScheme();
@@ -37,6 +83,11 @@ export default function SpecificOrder() {
     const buttonTranslateY = useRef(new Animated.Value(20)).current;
     const [showQRModal, setShowQRModal] = useState(false);
     const [isSelectingItems, setIsSelectingItems] = useState(false);
+    const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
+
+    const toggleExpanded = useCallback((orderUserId: string) => {
+        setExpandedUserId((prev) => (prev === orderUserId ? null : orderUserId));
+    }, []);
 
     const breatheValue = useSharedValue(1);
     breatheValue.value = withRepeat(
@@ -422,113 +473,150 @@ export default function SpecificOrder() {
                             const isCurrentUser =
                                 orderUser.userId === currentUserId;
                             const isDone = orderUser.status === "done";
+                            const isExpanded = expandedUserId === orderUser.id;
 
-                            return (
-                                <View
+                            const cardContent = (
+                                <>
+                                    <View className="flex-row items-center p-4">
+                                        {/* Avatar */}
+                                        <View className="relative">
+                                            {orderUser.user?.avatarUrl ? (
+                                                <Image
+                                                    style={{
+                                                        width: 48,
+                                                        height: 48,
+                                                    }}
+                                                    className="rounded-full"
+                                                    source={{
+                                                        uri: orderUser.user
+                                                            .avatarUrl,
+                                                    }}
+                                                />
+                                            ) : (
+                                                <View
+                                                    style={{
+                                                        width: 48,
+                                                        height: 48,
+                                                    }}
+                                                    className="items-center justify-center rounded-full bg-muted">
+                                                    <Text className="text-lg font-semibold text-muted-foreground">
+                                                        {`${(orderUser.user?.firstName || "").charAt(0)}${(orderUser.user?.lastName || "").charAt(0)}`.toUpperCase() ||
+                                                            "U"}
+                                                    </Text>
+                                                </View>
+                                            )}
+                                            {/* Status indicator */}
+                                            <View
+                                                className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full items-center justify-center border-2 border-background ${
+                                                    isDone
+                                                        ? "bg-green-500"
+                                                        : "bg-orange-400"
+                                                }`}>
+                                                <Icon
+                                                    name={
+                                                        isDone
+                                                            ? "Check"
+                                                            : "Clock"
+                                                    }
+                                                    size={10}
+                                                    color="white"
+                                                />
+                                            </View>
+                                        </View>
+
+                                        {/* Info */}
+                                        <View className="flex-1 ml-3">
+                                            <View className="flex-row items-center gap-2">
+                                                <Text
+                                                    className={`text-base font-medium ${
+                                                        isCurrentUser
+                                                            ? "text-primary"
+                                                            : "text-foreground"
+                                                    }`}>
+                                                    {orderUser.user?.firstName}{" "}
+                                                    {orderUser.user?.lastName}
+                                                    {isCurrentUser && " (You)"}
+                                                </Text>
+                                                {orderUser.isCreator && (
+                                                    <View className="px-2 py-0.5 rounded-full bg-primary/20">
+                                                        <Text className="text-xs font-medium text-primary">
+                                                            Host
+                                                        </Text>
+                                                    </View>
+                                                )}
+                                            </View>
+                                            <View className="flex-row items-center gap-2 mt-1">
+                                                <Text
+                                                    className={`text-sm ${
+                                                        isDone
+                                                            ? "text-green-500"
+                                                            : "text-orange-400"
+                                                    }`}>
+                                                    {isDone
+                                                        ? "Done ordering"
+                                                        : "Still ordering"}
+                                                </Text>
+                                                <Text className="text-muted-foreground">
+                                                    ·
+                                                </Text>
+                                                <Text className="text-sm text-muted-foreground">
+                                                    {orderUser.itemCount}{" "}
+                                                    {orderUser.itemCount === 1
+                                                        ? "item"
+                                                        : "items"}
+                                                </Text>
+                                            </View>
+                                        </View>
+
+                                        {/* Chevron / Done badge */}
+                                        {isDone ? (
+                                            <Icon
+                                                name={
+                                                    isExpanded
+                                                        ? "ChevronUp"
+                                                        : "ChevronDown"
+                                                }
+                                                size={20}
+                                                color="#22c55e"
+                                            />
+                                        ) : null}
+                                    </View>
+
+                                    {/* Expanded items list */}
+                                    {isDone && isExpanded && (
+                                        <View className="border-t border-muted">
+                                            <UserItemsList
+                                                orderUserId={
+                                                    orderUser.id as Id<"orderUsers">
+                                                }
+                                            />
+                                        </View>
+                                    )}
+                                </>
+                            );
+
+                            return isDone ? (
+                                <Pressable
                                     key={orderUser.id}
-                                    className={`flex-row items-center p-4 border rounded-xl ${
+                                    onPress={() =>
+                                        toggleExpanded(orderUser.id)
+                                    }
+                                    className={`border rounded-xl overflow-hidden ${
                                         isCurrentUser
                                             ? "border-primary/30 bg-primary/5"
                                             : "border-muted bg-card"
                                     }`}>
-                                    {/* Avatar */}
-                                    <View className="relative">
-                                        {orderUser.user?.avatarUrl ? (
-                                            <Image
-                                                style={{
-                                                    width: 48,
-                                                    height: 48,
-                                                }}
-                                                className="rounded-full"
-                                                source={{
-                                                    uri: orderUser.user
-                                                        .avatarUrl,
-                                                }}
-                                            />
-                                        ) : (
-                                            <View
-                                                style={{
-                                                    width: 48,
-                                                    height: 48,
-                                                }}
-                                                className="items-center justify-center rounded-full bg-muted">
-                                                <Text className="text-lg font-semibold text-muted-foreground">
-                                                    {`${(orderUser.user?.firstName || "").charAt(0)}${(orderUser.user?.lastName || "").charAt(0)}`.toUpperCase() ||
-                                                        "U"}
-                                                </Text>
-                                            </View>
-                                        )}
-                                        {/* Status indicator */}
-                                        <View
-                                            className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full items-center justify-center border-2 border-background ${
-                                                isDone
-                                                    ? "bg-green-500"
-                                                    : "bg-orange-400"
-                                            }`}>
-                                            <Icon
-                                                name={
-                                                    isDone ? "Check" : "Clock"
-                                                }
-                                                size={10}
-                                                color="white"
-                                            />
-                                        </View>
-                                    </View>
-
-                                    {/* Info */}
-                                    <View className="flex-1 ml-3">
-                                        <View className="flex-row items-center gap-2">
-                                            <Text
-                                                className={`text-base font-medium ${
-                                                    isCurrentUser
-                                                        ? "text-primary"
-                                                        : "text-foreground"
-                                                }`}>
-                                                {orderUser.user?.firstName}{" "}
-                                                {orderUser.user?.lastName}
-                                                {isCurrentUser && " (You)"}
-                                            </Text>
-                                            {orderUser.isCreator && (
-                                                <View className="px-2 py-0.5 rounded-full bg-primary/20">
-                                                    <Text className="text-xs font-medium text-primary">
-                                                        Host
-                                                    </Text>
-                                                </View>
-                                            )}
-                                        </View>
-                                        <View className="flex-row items-center gap-2 mt-1">
-                                            <Text
-                                                className={`text-sm ${
-                                                    isDone
-                                                        ? "text-green-500"
-                                                        : "text-orange-400"
-                                                }`}>
-                                                {isDone
-                                                    ? "Done ordering"
-                                                    : "Still ordering"}
-                                            </Text>
-                                            <Text className="text-muted-foreground">
-                                                ·
-                                            </Text>
-                                            <Text className="text-sm text-muted-foreground">
-                                                {orderUser.itemCount}{" "}
-                                                {orderUser.itemCount === 1
-                                                    ? "item"
-                                                    : "items"}
-                                            </Text>
-                                        </View>
-                                    </View>
-
-                                    {/* Done badge */}
-                                    {isDone && (
-                                        <View className="items-center justify-center w-8 h-8 rounded-full bg-green-500/10">
-                                            <Icon
-                                                name="CircleCheck"
-                                                size={20}
-                                                color="#22c55e"
-                                            />
-                                        </View>
-                                    )}
+                                    {cardContent}
+                                </Pressable>
+                            ) : (
+                                <View
+                                    key={orderUser.id}
+                                    className={`border rounded-xl overflow-hidden ${
+                                        isCurrentUser
+                                            ? "border-primary/30 bg-primary/5"
+                                            : "border-muted bg-card"
+                                    }`}>
+                                    {cardContent}
                                 </View>
                             );
                         })}
