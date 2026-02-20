@@ -66,7 +66,7 @@ export const unregisterPushToken = mutation({
     },
     handler: async (ctx, args) => {
         const userId = await getUserId(ctx);
-        if (!userId) throw new Error("Not authenticated");
+        if (!userId) return true; // Auth already gone — cleanup will happen on next login
 
         // Remove from the notifications component
         await pushNotifications.removeToken(ctx, { userId });
