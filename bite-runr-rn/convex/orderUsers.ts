@@ -74,6 +74,98 @@ export const setStatus = mutation({
   },
 });
 
+// Leave an order (non-creator only, during ordering phase)
+export const leaveOrder = mutation({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const order = await ctx.db.get(args.orderId);
+    if (!order) throw new Error("Order not found");
+    if (order.status !== "active" && order.status !== "created") {
+      throw new Error("Order is no longer active");
+    }
+    if (order.paused) throw new Error("Cannot leave after the run has started");
+    if (order.creatorId === userId) {
+      throw new Error("The creator cannot leave the order");
+    }
+
+    const orderUser = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_userId_orderId", (q) =>
+        q.eq("userId", userId).eq("orderId", args.orderId)
+      )
+      .first();
+    if (!orderUser) throw new Error("Not a participant in this order");
+
+    // Delete all user's order items
+    const userItems = await ctx.db
+      .query("orderItems")
+      .withIndex("by_orderUserId", (q) => q.eq("orderUserId", orderUser._id))
+      .collect();
+    for (const item of userItems) {
+      await ctx.db.delete(item._id);
+    }
+
+    // Delete the orderUser record
+    await ctx.db.delete(orderUser._id);
+  },
+});
+
+// Remove a participant from an order (creator only, during ordering phase)
+export const removeFromOrder = mutation({
+  args: {
+    orderId: v.id("orders"),
+    targetUserId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const order = await ctx.db.get(args.orderId);
+    if (!order) throw new Error("Order not found");
+    if (order.status !== "active" && order.status !== "created") {
+      throw new Error("Order is no longer active");
+    }
+    if (order.paused) throw new Error("Cannot remove members after the run has started");
+    if (order.creatorId !== userId) {
+      throw new Error("Only the creator can remove participants");
+    }
+    if (args.targetUserId === order.creatorId) {
+      throw new Error("Cannot remove the creator from the order");
+    }
+
+    const targetOrderUser = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_userId_orderId", (q) =>
+        q.eq("userId", args.targetUserId).eq("orderId", args.orderId)
+      )
+      .first();
+    if (!targetOrderUser) throw new Error("User is not a participant in this order");
+
+    // Delete all target user's order items
+    const userItems = await ctx.db
+      .query("orderItems")
+      .withIndex("by_orderUserId", (q) => q.eq("orderUserId", targetOrderUser._id))
+      .collect();
+    for (const item of userItems) {
+      await ctx.db.delete(item._id);
+    }
+
+    // Delete the orderUser record
+    await ctx.db.delete(targetOrderUser._id);
+
+    // Notify the removed user
+    await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUser, {
+      userId: args.targetUserId,
+      title: "Removed from Order",
+      body: `You were removed from the order "${order.name}"`,
+      data: { type: "removed_from_order", orderId: args.orderId },
+    });
+  },
+});
+
 // Update amount owed for an order user (amount in cents)
 export const updateAmountOwed = mutation({
   args: {

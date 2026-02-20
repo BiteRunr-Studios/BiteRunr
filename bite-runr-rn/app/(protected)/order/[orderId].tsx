@@ -20,6 +20,11 @@ import ReAnimated, {
     withSequence,
     withTiming,
     Easing,
+    SharedValue,
+    interpolate,
+    Extrapolation,
+    FadeOutRight,
+    LinearTransition,
 } from "react-native-reanimated";
 import { NAV_THEME } from "@/lib/constants";
 import Icon from "@/components/common/icon";
@@ -27,6 +32,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { QRCodeModal } from "@/components/qr-code-modal";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 
 type ButtonState = "readyToRun" | "enabled" | "disabled";
 
@@ -83,6 +89,7 @@ export default function SpecificOrder() {
     const buttonTranslateY = useRef(new Animated.Value(20)).current;
     const [showQRModal, setShowQRModal] = useState(false);
     const [isSelectingItems, setIsSelectingItems] = useState(false);
+    const [removingUserId, setRemovingUserId] = useState<string | null>(null);
     const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
 
     const toggleExpanded = useCallback((orderUserId: string) => {
@@ -128,6 +135,8 @@ export default function SpecificOrder() {
     // Mutations
     const setStatus = useMutation(api.orderUsers.setStatus);
     const updateOrder = useMutation(api.orders.update);
+    const leaveOrder = useMutation(api.orderUsers.leaveOrder);
+    const removeFromOrder = useMutation(api.orderUsers.removeFromOrder);
 
     const prevStatusRef = useRef<string | null>(null);
 
@@ -279,6 +288,140 @@ export default function SpecificOrder() {
             await startRun();
         }
     }
+
+    function handleLeaveGroup() {
+        Alert.alert(
+            "Leave Group",
+            "Are you sure you want to leave this order? Your items will be removed.",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Leave",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await leaveOrder({
+                                orderId: orderId as Id<"orders">,
+                            });
+                            router.back();
+                        } catch (error) {
+                            console.error("Failed to leave order:", error);
+                            Alert.alert(
+                                "Error",
+                                "Failed to leave order. Please try again.",
+                            );
+                        }
+                    },
+                },
+            ],
+        );
+    }
+
+    function confirmRemoveMember(
+        targetUserId: Id<"users">,
+        memberName: string,
+        swipeable: any,
+    ) {
+        Alert.alert(
+            "Remove Member",
+            `Are you sure you want to remove ${memberName} from this order? Their items will be deleted.`,
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel",
+                    onPress: () => swipeable.close(),
+                },
+                {
+                    text: "Remove",
+                    style: "destructive",
+                    onPress: async () => {
+                        setRemovingUserId(targetUserId);
+                        try {
+                            await removeFromOrder({
+                                orderId: orderId as Id<"orders">,
+                                targetUserId,
+                            });
+                        } catch (error) {
+                            console.error("Failed to remove member:", error);
+                            Alert.alert(
+                                "Error",
+                                "Failed to remove member. Please try again.",
+                            );
+                        } finally {
+                            setRemovingUserId(null);
+                        }
+                        swipeable.close();
+                    },
+                },
+            ],
+        );
+    }
+
+    function RemoveRightAction({
+        progress,
+        targetUserId,
+        memberName,
+        swipeable,
+    }: {
+        progress: SharedValue<number>;
+        targetUserId: Id<"users">;
+        memberName: string;
+        swipeable: any;
+    }) {
+        const animatedStyle = useAnimatedStyle(() => {
+            const scale = interpolate(
+                progress.value,
+                [0, 1],
+                [0.5, 1],
+                Extrapolation.CLAMP,
+            );
+            const opacity = interpolate(
+                progress.value,
+                [0, 0.5, 1],
+                [0, 0.5, 1],
+                Extrapolation.CLAMP,
+            );
+            return { transform: [{ scale }], opacity };
+        });
+
+        return (
+            <View className="justify-center pl-4">
+                <ReAnimated.View style={animatedStyle}>
+                    <TouchableOpacity
+                        onPress={() =>
+                            confirmRemoveMember(
+                                targetUserId,
+                                memberName,
+                                swipeable,
+                            )
+                        }
+                        className="items-center justify-center w-16 h-16 rounded-full"
+                        style={{ backgroundColor: "hsl(0, 84%, 60%)" }}
+                        activeOpacity={0.7}>
+                        <Icon name="UserMinus" size={22} color="white" />
+                    </TouchableOpacity>
+                </ReAnimated.View>
+            </View>
+        );
+    }
+
+    const renderRemoveRightActions = useCallback(
+        (targetUserId: Id<"users">, memberName: string) => {
+            return (
+                progress: SharedValue<number>,
+                _drag: SharedValue<number>,
+                swipeable: any,
+            ) => (
+                <RemoveRightAction
+                    progress={progress}
+                    targetUserId={targetUserId}
+                    memberName={memberName}
+                    swipeable={swipeable}
+                />
+            );
+        },
+        [],
+    );
 
     if (isPending) {
         return (
@@ -595,29 +738,54 @@ export default function SpecificOrder() {
                                 </>
                             );
 
-                            return isDone ? (
+                            const canSwipeRemove =
+                                isCreator &&
+                                !orderUser.isCreator &&
+                                !data.order.paused;
+
+                            const memberName =
+                                `${orderUser.user?.firstName ?? ""} ${orderUser.user?.lastName ?? ""}`.trim();
+
+                            const cardStyle = `border rounded-xl overflow-hidden ${
+                                isCurrentUser
+                                    ? "border-primary/30 bg-primary/5"
+                                    : "border-muted bg-card"
+                            }`;
+
+                            const card = isDone ? (
                                 <Pressable
-                                    key={orderUser.id}
                                     onPress={() =>
                                         toggleExpanded(orderUser.id)
                                     }
-                                    className={`border rounded-xl overflow-hidden ${
-                                        isCurrentUser
-                                            ? "border-primary/30 bg-primary/5"
-                                            : "border-muted bg-card"
-                                    }`}>
+                                    className={cardStyle}>
                                     {cardContent}
                                 </Pressable>
                             ) : (
-                                <View
-                                    key={orderUser.id}
-                                    className={`border rounded-xl overflow-hidden ${
-                                        isCurrentUser
-                                            ? "border-primary/30 bg-primary/5"
-                                            : "border-muted bg-card"
-                                    }`}>
+                                <View className={cardStyle}>
                                     {cardContent}
                                 </View>
+                            );
+
+                            const wrappedCard = canSwipeRemove ? (
+                                <Swipeable
+                                    renderRightActions={renderRemoveRightActions(
+                                        orderUser.userId as Id<"users">,
+                                        memberName,
+                                    )}
+                                    overshootRight={false}>
+                                    {card}
+                                </Swipeable>
+                            ) : (
+                                card
+                            );
+
+                            return (
+                                <ReAnimated.View
+                                    key={orderUser.id}
+                                    exiting={FadeOutRight.duration(300)}
+                                    layout={LinearTransition.duration(300)}>
+                                    {wrappedCard}
+                                </ReAnimated.View>
                             );
                         })}
                     </View>
@@ -706,6 +874,22 @@ export default function SpecificOrder() {
                                     </Text>
                                 </TouchableOpacity>
                             )}
+                            {!isCreator && !data.order.paused && (
+                                <TouchableOpacity
+                                    className="flex-row items-center justify-center w-full gap-2 py-4 border rounded-xl border-destructive bg-destructive/10"
+                                    onPress={handleLeaveGroup}>
+                                    <Icon
+                                        name="LogOut"
+                                        size={18}
+                                        color={
+                                            NAV_THEME[colorScheme].notification
+                                        }
+                                    />
+                                    <Text className="text-base font-semibold text-destructive">
+                                        Leave Group
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
                             {isCreator && !data.order.paused && (
                                 <Animated.View
                                     style={{
@@ -766,6 +950,7 @@ export default function SpecificOrder() {
                     onClose={() => setShowQRModal(false)}
                 />
             )}
+
         </>
     );
 }
