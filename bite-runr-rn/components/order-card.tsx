@@ -1,7 +1,8 @@
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
-import { View, Text, Image } from "react-native";
+import { View, Text } from "react-native";
 import Icon from "./common/icon";
+import { Avatar } from "./common/avatar";
 import ReAnimated, {
     useSharedValue,
     useAnimatedStyle,
@@ -179,32 +180,11 @@ export function OrderCard({
                                         zIndex: orderUsers.length - idx,
                                     }}
                                     className="border-2 rounded-full border-card">
-                                    {orderUser.avatarUrl ? (
-                                        <Image
-                                            style={{
-                                                width: 32,
-                                                height: 32,
-                                            }}
-                                            className="rounded-full"
-                                            source={{
-                                                uri: orderUser.avatarUrl,
-                                            }}
-                                        />
-                                    ) : (
-                                        <View
-                                            style={{
-                                                width: 32,
-                                                height: 32,
-                                            }}
-                                            className="items-center justify-center rounded-full bg-muted">
-                                            <Text
-                                                style={{ fontSize: 12 }}
-                                                className="font-semibold text-muted-foreground">
-                                                {`${(orderUser.firstName || "").charAt(0)}${(orderUser.lastName || "").charAt(0)}`.toUpperCase() ||
-                                                    "U"}
-                                            </Text>
-                                        </View>
-                                    )}
+                                    <Avatar
+                                        name={`${orderUser.firstName || ""} ${orderUser.lastName || ""}`}
+                                        avatarUrl={orderUser.avatarUrl}
+                                        size={32}
+                                    />
                                 </View>
                             ))}
                         {orderUsers.length > 4 && (

@@ -8,10 +8,10 @@ import {
     Pressable,
     FlatList,
     ActivityIndicator,
-    Image,
 } from "react-native";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { Button } from "@/components/common/button";
+import { Avatar } from "@/components/common/avatar";
 
 export interface SelectableItem {
     id: string;
@@ -136,27 +136,15 @@ export function MultiSelectSheet({
                                     className="px-4 py-4 border-b border-border">
                                     <View className="flex-row items-center justify-between">
                                         <View className="flex-row items-center flex-1">
-                                            {item.avatarUrl ? (
-                                                <Image
-                                                    source={{
-                                                        uri: item.avatarUrl,
-                                                    }}
-                                                    className="w-10 h-10 mr-3 rounded-full"
-                                                />
-                                            ) : item.avatarUrl === null ? (
-                                                <View className="items-center justify-center w-10 h-10 mr-3 rounded-full bg-muted">
-                                                    <Text
-                                                        style={{ fontSize: 16 }}
-                                                        className="font-semibold text-muted-foreground">
-                                                        {(() => {
-                                                            const parts = item.displayName.trim().split(/\s+/);
-                                                            const first = parts[0] || "";
-                                                            const last = parts.length > 1 ? parts[parts.length - 1] : "";
-                                                            return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase() || "U";
-                                                        })()}
-                                                    </Text>
+                                            {item.avatarUrl !== undefined && (
+                                                <View className="mr-3">
+                                                    <Avatar
+                                                        name={item.displayName}
+                                                        avatarUrl={item.avatarUrl}
+                                                        size={40}
+                                                    />
                                                 </View>
-                                            ) : null}
+                                            )}
                                             <Text className="text-base text-foreground">
                                                 {item.displayName}
                                             </Text>
