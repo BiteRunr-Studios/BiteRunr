@@ -120,7 +120,7 @@ export function OrderCard({
     const statusConfig = getStatusConfig();
 
     return (
-        <View className="p-4 border rounded-2xl border-muted bg-card">
+        <View className="flex-1 p-4 border rounded-2xl border-muted bg-card">
             {/* Header Row */}
             <View className="flex-row items-start justify-between mb-3">
                 <View className="flex-1">
@@ -176,7 +176,7 @@ export function OrderCard({
             )}
 
             {/* Footer Row - Avatars and Stats */}
-            <View className="flex-row items-center justify-between pt-3 border-t border-muted">
+            <View className="flex-row items-center justify-between pt-3 mt-auto border-t border-muted">
                 {/* Stacked Avatars */}
                 {orderUsers && orderUsers.length > 0 && (
                     <View className="flex-row items-center">

@@ -114,9 +114,15 @@ export function usePushNotifications() {
     }, [isReady, isLoggedIn, hasToken]);
 
     // Unregister token on logout
+    // Note: This may fail since auth is already gone by the time isLoggedIn flips.
+    // The real protection is in registerPushToken which cleans up the previous
+    // user's token when a new user logs in on the same device.
     useEffect(() => {
         if (isReady && !isLoggedIn && expoPushToken) {
-            unregisterToken({}).catch(console.error);
+            unregisterToken({ token: expoPushToken }).catch(() => {
+                // Expected to fail - auth session is already gone.
+                // Token will be cleaned up on next login via registerPushToken.
+            });
             setExpoPushToken(null);
             hasCheckedPermission.current = false;
             isRegistering.current = false;

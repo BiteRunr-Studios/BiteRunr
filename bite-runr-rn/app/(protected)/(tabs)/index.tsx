@@ -157,6 +157,7 @@ export default function HomeTab() {
                                             className="-mx-4"
                                             contentContainerStyle={{
                                                 paddingHorizontal: CARD_PADDING,
+                                                alignItems: "stretch",
                                             }}>
                                             {activeOrders.map(
                                                 (order, index) => (
