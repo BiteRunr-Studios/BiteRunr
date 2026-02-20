@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 
 export const loginAction = createServerFn({ method: 'POST' })
-  .validator((data: { username: string; password: string }) => data)
+  .input((data: { username: string; password: string }) => data)
   .handler(async ({ data }) => {
     const { username, password } = data
     const expectedPassword = process.env.ADMIN_PASSWORD
@@ -27,7 +27,7 @@ export const loginAction = createServerFn({ method: 'POST' })
   })
 
 export const verifyTokenAction = createServerFn({ method: 'POST' })
-  .validator((data: { token: string }) => data)
+  .input((data: { token: string }) => data)
   .handler(async ({ data }) => {
     const expectedPassword = process.env.ADMIN_PASSWORD
     if (!expectedPassword) return { valid: false }
