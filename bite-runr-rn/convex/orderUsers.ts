@@ -74,63 +74,6 @@ export const setStatus = mutation({
   },
 });
 
-// Add friends to an existing order (creator only, during ordering phase)
-export const addToOrder = mutation({
-  args: {
-    orderId: v.id("orders"),
-    friendIds: v.array(v.id("users")),
-  },
-  handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
-    const order = await ctx.db.get(args.orderId);
-    if (!order) throw new Error("Order not found");
-    if (order.creatorId !== userId) {
-      throw new Error("Only the creator can add participants");
-    }
-    if (order.status !== "active" && order.status !== "created") {
-      throw new Error("Order is no longer active");
-    }
-    if (order.paused) throw new Error("Cannot add members after the run has started");
-
-    const added: typeof args.friendIds = [];
-
-    for (const friendId of args.friendIds) {
-      // Skip if already in the order
-      const existing = await ctx.db
-        .query("orderUsers")
-        .withIndex("by_userId_orderId", (q) =>
-          q.eq("userId", friendId).eq("orderId", args.orderId)
-        )
-        .first();
-      if (existing) continue;
-
-      await ctx.db.insert("orderUsers", {
-        userId: friendId,
-        orderId: args.orderId,
-        status: "ordering",
-        settlementStatus: "unpaid",
-        amountOwed: 0n,
-      });
-      added.push(friendId);
-    }
-
-    // Notify added users
-    if (added.length > 0) {
-      const creator = await ctx.db.get(userId);
-      const creatorName = creator?.firstName || "Someone";
-
-      await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUsers, {
-        userIds: added,
-        title: "Added to Order",
-        body: `${creatorName} added you to "${order.name}"`,
-        data: { type: "added_to_order", orderId: args.orderId },
-      });
-    }
-  },
-});
-
 // Leave an order (non-creator only, during ordering phase)
 export const leaveOrder = mutation({
   args: { orderId: v.id("orders") },

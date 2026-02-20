@@ -20,6 +20,11 @@ import ReAnimated, {
     withSequence,
     withTiming,
     Easing,
+    SharedValue,
+    interpolate,
+    Extrapolation,
+    FadeOutRight,
+    LinearTransition,
 } from "react-native-reanimated";
 import { NAV_THEME } from "@/lib/constants";
 import Icon from "@/components/common/icon";
@@ -27,11 +32,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { QRCodeModal } from "@/components/qr-code-modal";
-import {
-    MultiSelectSheet,
-    SelectableItem,
-} from "@/components/multi-select-sheet";
-import { useFriends } from "@/lib/hooks/use-order-api";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 
 type ButtonState = "readyToRun" | "enabled" | "disabled";
 
@@ -90,7 +91,6 @@ export default function SpecificOrder() {
     const [isSelectingItems, setIsSelectingItems] = useState(false);
     const [removingUserId, setRemovingUserId] = useState<string | null>(null);
     const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
-    const [showAddFriendSheet, setShowAddFriendSheet] = useState(false);
 
     const toggleExpanded = useCallback((orderUserId: string) => {
         setExpandedUserId((prev) => (prev === orderUserId ? null : orderUserId));
@@ -137,8 +137,6 @@ export default function SpecificOrder() {
     const updateOrder = useMutation(api.orders.update);
     const leaveOrder = useMutation(api.orderUsers.leaveOrder);
     const removeFromOrder = useMutation(api.orderUsers.removeFromOrder);
-    const addToOrder = useMutation(api.orderUsers.addToOrder);
-    const { data: friends = [], isLoading: isLoadingFriends } = useFriends();
 
     const prevStatusRef = useRef<string | null>(null);
 
@@ -319,15 +317,20 @@ export default function SpecificOrder() {
         );
     }
 
-    function handleRemoveMember(
+    function confirmRemoveMember(
         targetUserId: Id<"users">,
         memberName: string,
+        swipeable: any,
     ) {
         Alert.alert(
             "Remove Member",
             `Are you sure you want to remove ${memberName} from this order? Their items will be deleted.`,
             [
-                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Cancel",
+                    style: "cancel",
+                    onPress: () => swipeable.close(),
+                },
                 {
                     text: "Remove",
                     style: "destructive",
@@ -347,35 +350,78 @@ export default function SpecificOrder() {
                         } finally {
                             setRemovingUserId(null);
                         }
+                        swipeable.close();
                     },
                 },
             ],
         );
     }
 
-    // Friends not already in this order, for the add-friend sheet
-    const existingUserIds = new Set(data?.orderUsers.map((ou) => ou.userId) ?? []);
-    const availableFriends: SelectableItem[] = friends
-        .filter((f) => !existingUserIds.has(f.id))
-        .map((f) => ({
-            id: f.id,
-            displayName: `${f.first_name} ${f.last_name}`,
-            avatarUrl: f.avatar_url,
-        }));
+    function RemoveRightAction({
+        progress,
+        targetUserId,
+        memberName,
+        swipeable,
+    }: {
+        progress: SharedValue<number>;
+        targetUserId: Id<"users">;
+        memberName: string;
+        swipeable: any;
+    }) {
+        const animatedStyle = useAnimatedStyle(() => {
+            const scale = interpolate(
+                progress.value,
+                [0, 1],
+                [0.5, 1],
+                Extrapolation.CLAMP,
+            );
+            const opacity = interpolate(
+                progress.value,
+                [0, 0.5, 1],
+                [0, 0.5, 1],
+                Extrapolation.CLAMP,
+            );
+            return { transform: [{ scale }], opacity };
+        });
 
-    async function handleAddFriends(selectedIds: string[]) {
-        setShowAddFriendSheet(false);
-        if (selectedIds.length === 0) return;
-        try {
-            await addToOrder({
-                orderId: orderId as Id<"orders">,
-                friendIds: selectedIds as Id<"users">[],
-            });
-        } catch (error) {
-            console.error("Failed to add friends:", error);
-            Alert.alert("Error", "Failed to add friends. Please try again.");
-        }
+        return (
+            <View className="justify-center pl-4">
+                <ReAnimated.View style={animatedStyle}>
+                    <TouchableOpacity
+                        onPress={() =>
+                            confirmRemoveMember(
+                                targetUserId,
+                                memberName,
+                                swipeable,
+                            )
+                        }
+                        className="items-center justify-center w-16 h-16 rounded-full"
+                        style={{ backgroundColor: "hsl(0, 84%, 60%)" }}
+                        activeOpacity={0.7}>
+                        <Icon name="UserMinus" size={22} color="white" />
+                    </TouchableOpacity>
+                </ReAnimated.View>
+            </View>
+        );
     }
+
+    const renderRemoveRightActions = useCallback(
+        (targetUserId: Id<"users">, memberName: string) => {
+            return (
+                progress: SharedValue<number>,
+                _drag: SharedValue<number>,
+                swipeable: any,
+            ) => (
+                <RemoveRightAction
+                    progress={progress}
+                    targetUserId={targetUserId}
+                    memberName={memberName}
+                    swipeable={swipeable}
+                />
+            );
+        },
+        [],
+    );
 
     if (isPending) {
         return (
@@ -562,25 +608,9 @@ export default function SpecificOrder() {
 
                 {/* Participants Section */}
                 <View className="px-4 mt-6 mb-4">
-                    <View className="flex-row items-center justify-between mb-3">
-                        <Text className="text-base font-semibold text-foreground">
-                            Participants
-                        </Text>
-                        {isCreator && !data.order.paused && (
-                            <TouchableOpacity
-                                onPress={() => setShowAddFriendSheet(true)}
-                                className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10">
-                                <Icon
-                                    name="UserPlus"
-                                    size={14}
-                                    color={NAV_THEME[colorScheme].primary}
-                                />
-                                <Text className="text-sm font-medium text-primary">
-                                    Add
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-                    </View>
+                    <Text className="mb-3 text-base font-semibold text-foreground">
+                        Participants
+                    </Text>
                     <View className="gap-3">
                         {data.orderUsers.map((orderUser) => {
                             const isCurrentUser =
@@ -695,38 +725,6 @@ export default function SpecificOrder() {
                                         ) : null}
                                     </View>
 
-                                    {/* Remove button (creator only, non-creator cards, ordering phase) */}
-                                    {isCreator &&
-                                        !orderUser.isCreator &&
-                                        !data.order.paused && (
-                                            <TouchableOpacity
-                                                onPress={() =>
-                                                    handleRemoveMember(
-                                                        orderUser.userId as Id<"users">,
-                                                        `${orderUser.user?.firstName ?? ""} ${orderUser.user?.lastName ?? ""}`.trim(),
-                                                    )
-                                                }
-                                                disabled={removingUserId === orderUser.userId}
-                                                className={`flex-row items-center justify-center gap-1.5 mx-4 mb-3 py-2 rounded-lg bg-destructive/10 ${removingUserId === orderUser.userId ? "opacity-50" : ""}`}>
-                                                {removingUserId === orderUser.userId ? (
-                                                    <Flow size={14} color={NAV_THEME[colorScheme].notification} />
-                                                ) : (
-                                                    <Icon
-                                                        name="UserMinus"
-                                                        size={14}
-                                                        color={
-                                                            NAV_THEME[
-                                                                colorScheme
-                                                            ].notification
-                                                        }
-                                                    />
-                                                )}
-                                                <Text className="text-sm font-medium text-destructive">
-                                                    {removingUserId === orderUser.userId ? "Removing..." : "Remove"}
-                                                </Text>
-                                            </TouchableOpacity>
-                                        )}
-
                                     {/* Expanded items list */}
                                     {isDone && isExpanded && (
                                         <View className="border-t border-muted">
@@ -740,29 +738,54 @@ export default function SpecificOrder() {
                                 </>
                             );
 
-                            return isDone ? (
+                            const canSwipeRemove =
+                                isCreator &&
+                                !orderUser.isCreator &&
+                                !data.order.paused;
+
+                            const memberName =
+                                `${orderUser.user?.firstName ?? ""} ${orderUser.user?.lastName ?? ""}`.trim();
+
+                            const cardStyle = `border rounded-xl overflow-hidden ${
+                                isCurrentUser
+                                    ? "border-primary/30 bg-primary/5"
+                                    : "border-muted bg-card"
+                            }`;
+
+                            const card = isDone ? (
                                 <Pressable
-                                    key={orderUser.id}
                                     onPress={() =>
                                         toggleExpanded(orderUser.id)
                                     }
-                                    className={`border rounded-xl overflow-hidden ${
-                                        isCurrentUser
-                                            ? "border-primary/30 bg-primary/5"
-                                            : "border-muted bg-card"
-                                    }`}>
+                                    className={cardStyle}>
                                     {cardContent}
                                 </Pressable>
                             ) : (
-                                <View
-                                    key={orderUser.id}
-                                    className={`border rounded-xl overflow-hidden ${
-                                        isCurrentUser
-                                            ? "border-primary/30 bg-primary/5"
-                                            : "border-muted bg-card"
-                                    }`}>
+                                <View className={cardStyle}>
                                     {cardContent}
                                 </View>
+                            );
+
+                            const wrappedCard = canSwipeRemove ? (
+                                <Swipeable
+                                    renderRightActions={renderRemoveRightActions(
+                                        orderUser.userId as Id<"users">,
+                                        memberName,
+                                    )}
+                                    overshootRight={false}>
+                                    {card}
+                                </Swipeable>
+                            ) : (
+                                card
+                            );
+
+                            return (
+                                <ReAnimated.View
+                                    key={orderUser.id}
+                                    exiting={FadeOutRight.duration(300)}
+                                    layout={LinearTransition.duration(300)}>
+                                    {wrappedCard}
+                                </ReAnimated.View>
                             );
                         })}
                     </View>
@@ -928,18 +951,6 @@ export default function SpecificOrder() {
                 />
             )}
 
-            {/* Add Friend Sheet */}
-            {isCreator && (
-                <MultiSelectSheet
-                    visible={showAddFriendSheet}
-                    onClose={() => setShowAddFriendSheet(false)}
-                    onConfirm={handleAddFriends}
-                    items={availableFriends}
-                    selectedIds={[]}
-                    title="Add Friends"
-                    isLoading={isLoadingFriends}
-                />
-            )}
         </>
     );
 }
