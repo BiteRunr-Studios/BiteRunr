@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react'
+import { loginAction, verifyTokenAction } from '@/server/auth'
 
 interface AuthContextValue {
   isAuthenticated: boolean
@@ -8,54 +15,39 @@ interface AuthContextValue {
 
 const SESSION_KEY = 'admin_session_token'
 
-async function hashToken(value: string): Promise<string> {
-  const encoded = new TextEncoder().encode(value)
-  const buffer = await crypto.subtle.digest('SHA-256', encoded)
-  return Array.from(new Uint8Array(buffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-}
-
-function getExpectedToken(): string {
-  return `admin:${import.meta.env.VITE_ADMIN_PASSWORD}`
-}
-
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof window === 'undefined') return false
-    // We'll validate the stored token asynchronously on mount
     return sessionStorage.getItem(SESSION_KEY) !== null
   })
 
-  // Validate stored token on mount
-  useState(() => {
-    if (typeof window === 'undefined') return
-    const storedHash = sessionStorage.getItem(SESSION_KEY)
-    if (storedHash) {
-      hashToken(getExpectedToken()).then((expected) => {
-        if (storedHash !== expected) {
-          sessionStorage.removeItem(SESSION_KEY)
-          setIsAuthenticated(false)
-        }
-      })
-    }
-  })
+  // Validate stored token against the server on mount
+  useEffect(() => {
+    const storedToken = sessionStorage.getItem(SESSION_KEY)
+    if (!storedToken) return
+
+    verifyTokenAction({ data: { token: storedToken } }).then(({ valid }) => {
+      if (!valid) {
+        sessionStorage.removeItem(SESSION_KEY)
+        setIsAuthenticated(false)
+      }
+    })
+  }, [])
 
   const login = async (
     username: string,
     password: string,
   ): Promise<boolean> => {
-    if (
-      username === 'admin' &&
-      password === import.meta.env.VITE_ADMIN_PASSWORD
-    ) {
-      const token = await hashToken(`admin:${password}`)
-      sessionStorage.setItem(SESSION_KEY, token)
+    const result = await loginAction({ data: { username, password } })
+
+    if (result.success && result.token) {
+      sessionStorage.setItem(SESSION_KEY, result.token)
       setIsAuthenticated(true)
       return true
     }
+
     return false
   }
 
