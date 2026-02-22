@@ -1,6 +1,6 @@
 // app/_layout.tsx
 import React from "react";
-import { Platform } from "react-native";
+import { Platform, View, Text } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -12,12 +12,14 @@ import {
     DefaultTheme,
     type Theme,
 } from "@react-navigation/native";
+import Toast, { type BaseToastProps } from "react-native-toast-message";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { ConvexReactClient } from "convex/react";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { AuthProvider } from "@/lib/convex-auth-context";
 import { authClient } from "@/lib/auth-client";
+import Icon from "@/components/common/icon";
 import "../global.css";
 
 const LIGHT_THEME: Theme = { ...DefaultTheme, colors: NAV_THEME.light };
@@ -57,8 +59,102 @@ const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
     logger: convexLogger,
 });
 
+function useToastConfig() {
+    const { colorScheme } = useColorScheme();
+    const theme = NAV_THEME[colorScheme];
+
+    return React.useMemo(
+        () => ({
+            success: (props: BaseToastProps) => (
+                <View
+                    style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 10,
+                        backgroundColor: theme.card,
+                        borderWidth: 1,
+                        borderColor: theme.border,
+                        borderRadius: 14,
+                        paddingHorizontal: 16,
+                        paddingVertical: 12,
+                        marginHorizontal: 16,
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: colorScheme === "dark" ? 0.4 : 0.08,
+                        shadowRadius: 8,
+                        elevation: 4,
+                    }}>
+                    <View
+                        style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 14,
+                            backgroundColor: "rgba(34,197,94,0.15)",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}>
+                        <Icon name="Check" size={16} color="#22c55e" />
+                    </View>
+                    <Text
+                        style={{
+                            color: theme.text,
+                            fontSize: 14,
+                            fontWeight: "600",
+                            flex: 1,
+                        }}>
+                        {props.text1}
+                    </Text>
+                </View>
+            ),
+            error: (props: BaseToastProps) => (
+                <View
+                    style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 10,
+                        backgroundColor: theme.card,
+                        borderWidth: 1,
+                        borderColor: theme.border,
+                        borderRadius: 14,
+                        paddingHorizontal: 16,
+                        paddingVertical: 12,
+                        marginHorizontal: 16,
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: colorScheme === "dark" ? 0.4 : 0.08,
+                        shadowRadius: 8,
+                        elevation: 4,
+                    }}>
+                    <View
+                        style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 14,
+                            backgroundColor: "rgba(239,68,68,0.15)",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}>
+                        <Icon name="X" size={16} color="#ef4444" />
+                    </View>
+                    <Text
+                        style={{
+                            color: theme.text,
+                            fontSize: 14,
+                            fontWeight: "600",
+                            flex: 1,
+                        }}>
+                        {props.text1}
+                    </Text>
+                </View>
+            ),
+        }),
+        [colorScheme, theme],
+    );
+}
+
 export default function RootLayout() {
     const { colorScheme } = useColorScheme();
+    const toastConfig = useToastConfig();
 
     React.useEffect(() => {
         if (Platform.OS === "web" && typeof document !== "undefined") {
@@ -109,6 +205,7 @@ export default function RootLayout() {
                                 />
                             </Stack>
                         </GestureHandlerRootView>
+                        <Toast config={toastConfig} topOffset={60} />
                     </SafeAreaProvider>
                 </ThemeProvider>
             </AuthProvider>

@@ -1,9 +1,13 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useMutation, useAction, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { autoMatchReceiptItems } from "@/lib/fuzzy-match";
+
+const DRAFT_KEY_PREFIX = "receipt-draft:";
+const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export type ScanState =
     | "idle"
@@ -31,6 +35,14 @@ export interface MatchedItem {
     manualPriceInCents?: number | null;
 }
 
+interface ReceiptDraft {
+    matchedItems: MatchedItem[];
+    parsedItems: ParsedReceiptItem[];
+    receiptStoreName: string | null;
+    receiptTotal: number | null;
+    savedAt: number;
+}
+
 export interface UseReceiptScanningResult {
     state: ScanState;
     error: string | null;
@@ -38,6 +50,7 @@ export interface UseReceiptScanningResult {
     matchedItems: MatchedItem[];
     receiptStoreName: string | null;
     receiptTotal: number | null;
+    hasDraft: boolean;
     startScan: (source: "camera" | "library") => Promise<void>;
     updateMatch: (
         index: number,
@@ -46,6 +59,9 @@ export interface UseReceiptScanningResult {
     ) => void;
     confirmMatches: () => Promise<void>;
     cancelScan: () => void;
+    dismissScan: () => void;
+    clearDraft: () => Promise<void>;
+    resumeDraft: () => Promise<void>;
     reset: () => void;
 }
 
@@ -61,6 +77,7 @@ export function useReceiptScanning(
         null,
     );
     const [receiptTotal, setReceiptTotal] = useState<number | null>(null);
+    const [hasDraft, setHasDraft] = useState(false);
 
     // Convex mutations and actions
     const generateUploadUrl = useMutation(
@@ -77,6 +94,85 @@ export function useReceiptScanning(
         orderLocationId ? { orderLocationId } : "skip",
     );
 
+    const draftKey = orderLocationId
+        ? `${DRAFT_KEY_PREFIX}${orderLocationId}`
+        : null;
+
+    // Clear draft from AsyncStorage
+    const clearDraft = useCallback(async () => {
+        if (!draftKey) return;
+        try {
+            await AsyncStorage.removeItem(draftKey);
+            setHasDraft(false);
+        } catch (e) {
+            console.error("Failed to clear receipt draft:", e);
+        }
+    }, [draftKey]);
+
+    // Save draft to AsyncStorage when in confirming state
+    useEffect(() => {
+        if (state !== "confirming" || !draftKey) return;
+
+        const draft: ReceiptDraft = {
+            matchedItems,
+            parsedItems,
+            receiptStoreName,
+            receiptTotal,
+            savedAt: Date.now(),
+        };
+
+        AsyncStorage.setItem(draftKey, JSON.stringify(draft)).catch((e) =>
+            console.error("Failed to save receipt draft:", e),
+        );
+    }, [state, matchedItems, parsedItems, receiptStoreName, receiptTotal, draftKey]);
+
+    // Check for draft whenever the location changes
+    useEffect(() => {
+        if (!draftKey) {
+            setHasDraft(false);
+            return;
+        }
+
+        setHasDraft(false);
+        AsyncStorage.getItem(draftKey)
+            .then((raw) => {
+                if (!raw) return;
+                const draft: ReceiptDraft = JSON.parse(raw);
+
+                if (Date.now() - draft.savedAt > DRAFT_MAX_AGE_MS) {
+                    AsyncStorage.removeItem(draftKey);
+                    return;
+                }
+
+                setHasDraft(true);
+            })
+            .catch((e) => console.error("Failed to check receipt draft:", e));
+    }, [draftKey]);
+
+    // Manually resume a saved draft (user-initiated)
+    const resumeDraft = useCallback(async () => {
+        if (!draftKey) return;
+        try {
+            const raw = await AsyncStorage.getItem(draftKey);
+            if (!raw) return;
+            const draft: ReceiptDraft = JSON.parse(raw);
+
+            if (Date.now() - draft.savedAt > DRAFT_MAX_AGE_MS) {
+                await AsyncStorage.removeItem(draftKey);
+                setHasDraft(false);
+                return;
+            }
+
+            setMatchedItems(draft.matchedItems);
+            setParsedItems(draft.parsedItems);
+            setReceiptStoreName(draft.receiptStoreName);
+            setReceiptTotal(draft.receiptTotal);
+            setState("confirming");
+        } catch (e) {
+            console.error("Failed to resume receipt draft:", e);
+        }
+    }, [draftKey]);
+
     const reset = useCallback(() => {
         setState("idle");
         setError(null);
@@ -84,6 +180,11 @@ export function useReceiptScanning(
         setMatchedItems([]);
         setReceiptStoreName(null);
         setReceiptTotal(null);
+    }, []);
+
+    // Gentle close — sets state to idle but preserves the draft
+    const dismissScan = useCallback(() => {
+        setState("idle");
     }, []);
 
     const cancelScan = useCallback(() => {
@@ -100,6 +201,14 @@ export function useReceiptScanning(
             if (!orderLocationId) {
                 setError("No location selected");
                 return;
+            }
+
+            // Clear any existing draft when starting a fresh scan
+            if (draftKey) {
+                AsyncStorage.removeItem(draftKey).catch((e) =>
+                    console.error("Failed to clear old draft:", e),
+                );
+                setHasDraft(false);
             }
 
             try {
@@ -250,6 +359,7 @@ export function useReceiptScanning(
             generateUploadUrl,
             parseReceipt,
             reset,
+            draftKey,
         ],
     );
 
@@ -321,6 +431,14 @@ export function useReceiptScanning(
                 receiptTotalInCents: receiptTotal ?? undefined,
             });
 
+            // Clear draft on successful save
+            if (draftKey) {
+                AsyncStorage.removeItem(draftKey).catch((e) =>
+                    console.error("Failed to clear draft after save:", e),
+                );
+                setHasDraft(false);
+            }
+
             // Show success state briefly before resetting
             setState("success");
             setParsedItems([]);
@@ -347,7 +465,7 @@ export function useReceiptScanning(
         matchedItems,
         receiptTotal,
         confirmReceiptMatches,
-        reset,
+        draftKey,
     ]);
 
     return {
@@ -357,10 +475,14 @@ export function useReceiptScanning(
         matchedItems,
         receiptStoreName,
         receiptTotal,
+        hasDraft,
         startScan,
         updateMatch,
         confirmMatches,
         cancelScan,
+        dismissScan,
+        clearDraft,
+        resumeDraft,
         reset,
     };
 }
