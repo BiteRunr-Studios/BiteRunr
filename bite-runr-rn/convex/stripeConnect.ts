@@ -15,7 +15,7 @@ function getStripe() {
 }
 
 // Platform fee: 1%. Change as needed.
-const APPLICATION_FEE_PERCENT = 0.01;
+const APPLICATION_FEE_PERCENT = 0.05;
 
 // --- SELLER ONBOARDING ---
 // Creates a Stripe Connect Express account and returns the onboarding URL.
@@ -180,8 +180,9 @@ export const createPaymentSheetParams = action({
         }
 
         const stripe = getStripe();
-        const amount: number = Number(data.amountOwed);
-        const platformFee = Math.round(amount * APPLICATION_FEE_PERCENT);
+        const amountOwed: number = Number(data.amountOwed);
+        const platformFee = Math.round(amountOwed * APPLICATION_FEE_PERCENT);
+        const amount = amountOwed + platformFee;
 
         // Get or create a Stripe Customer for the buyer
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -215,7 +216,7 @@ export const createPaymentSheetParams = action({
 
         // Create a PaymentIntent with Connect transfer
         const paymentIntent = await stripe.paymentIntents.create({
-            amount,
+            amount: amount,
             currency: "cad",
             customer: customerId,
             payment_method_types: ["card", "link"],
