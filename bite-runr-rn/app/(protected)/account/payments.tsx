@@ -7,9 +7,9 @@ import {
     Alert,
     ActivityIndicator,
 } from "react-native";
-import * as WebBrowser from "expo-web-browser";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Icon from "@/components/common/icon";
@@ -26,7 +26,7 @@ const ONBOARDING_STEPS = [
     {
         icon: "CreditCard" as const,
         title: "Add a debit card",
-        desc: "Link a debit card to receive instant payouts. You can also use a bank account.",
+        desc: "Link a debit card for instant payouts — or a bank account if you prefer.",
     },
     {
         icon: "ShieldCheck" as const,
@@ -75,10 +75,27 @@ export default function PaymentsScreen() {
         try {
             const result = await createConnectAccount({});
             if (result.url) {
-                await WebBrowser.openAuthSessionAsync(
-                    result.url,
-                    "biterunr://stripe-onboarding-",
-                );
+                await WebBrowser.openBrowserAsync(result.url);
+                // Check status after browser closes
+                setIsChecking(true);
+                try {
+                    const status = await checkOnboardingStatus({});
+                    if (status.onboarded && status.chargesEnabled) {
+                        Alert.alert(
+                            "Setup Complete",
+                            "Your account is ready to accept card payments!",
+                        );
+                    } else if (status.onboarded) {
+                        Alert.alert(
+                            "Almost There",
+                            "Your account is set up but Stripe is still verifying your details. This usually takes a few minutes.",
+                        );
+                    }
+                } catch {
+                    // Status check failed silently — the webhook will update the state
+                } finally {
+                    setIsChecking(false);
+                }
             }
         } catch (error) {
             Alert.alert(
