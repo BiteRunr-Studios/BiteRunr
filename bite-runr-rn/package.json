@@ -12,8 +12,8 @@
         "web": "npm run sync-styles && expo start --web",
         "convex:br": "convex dev --configure existing --team biterunr --project biterunr-d182d --dev-deployment cloud",
         "convex:brtest": "convex dev --configure existing --team biterunr --project biterunrtest --dev-deployment cloud",
-        "eas:build": "eas build --platform ios --profile production --local",
-        "eas:submit": "eas submit --platform ios --path"
+        "eas:build": "eas build --platform ios --profile production --local --output ./build.ipa",
+        "eas:submit": "eas submit --platform ios --path ./build.ipa; rm -rf ./build.ipa"
     },
     "dependencies": {
         "@ai-sdk/openai": "^2.0.89",
