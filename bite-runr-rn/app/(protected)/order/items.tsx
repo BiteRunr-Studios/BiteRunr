@@ -145,6 +145,20 @@ export default function SelectItems() {
     const setStatus = useMutation(api.orderUsers.setStatus);
     const removeItem = useMutation(api.orderItems.remove);
 
+    // Set status to "done" when leaving the items page (swipe back, button, etc.)
+    useEffect(() => {
+        return () => {
+            if (orderId) {
+                setStatus({
+                    orderId: orderId as Id<"orders">,
+                    status: "done",
+                }).catch((error) => {
+                    console.error("Failed to set status on leave:", error);
+                });
+            }
+        };
+    }, [orderId, setStatus]);
+
     useEffect(() => {
         if (
             orderLocations &&
@@ -155,16 +169,8 @@ export default function SelectItems() {
         }
     }, [orderLocations, selectedLocation?.locationId]);
 
-    async function handleDone() {
-        try {
-            await setStatus({
-                orderId: orderId as Id<"orders">,
-                status: "done",
-            });
-            router.dismiss();
-        } catch (error) {
-            console.error("Failed to set status:", error);
-        }
+    function handleDone() {
+        router.dismiss();
     }
 
     function handleSearchItemPress(item: { name: string; id: string }) {
