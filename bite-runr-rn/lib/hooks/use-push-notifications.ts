@@ -36,24 +36,48 @@ export function usePushNotifications() {
     const notificationListener = useRef<Notifications.EventSubscription | null>(null);
     const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
-    // Check if we should show the permission modal
+    // Check if we should show the permission modal, or auto-register if OS permission already granted
     useEffect(() => {
         if (!isReady || !isLoggedIn) return;
         if (hasToken === undefined) return; // Still loading
         if (hasToken === true) return; // Already registered
 
         let cancelled = false;
-        AsyncStorage.getItem(DISMISSED_KEY).then((value) => {
+
+        (async () => {
+            // If OS-level permission is already granted (e.g. previous account on same device),
+            // silently register the token for this user without showing the modal
+            const { status } = await Notifications.getPermissionsAsync();
             if (cancelled) return;
-            if (value === null) {
-                // Never dismissed — show the modal
+
+            if (status === "granted") {
+                if (!isRegistering.current) {
+                    isRegistering.current = true;
+                    try {
+                        const token = await getExistingPushToken();
+                        if (token && !cancelled) {
+                            setExpoPushToken(token);
+                            await registerToken({ token });
+                        }
+                    } catch (error) {
+                        console.error("Failed to auto-register push token:", error);
+                    } finally {
+                        isRegistering.current = false;
+                    }
+                }
+                return;
+            }
+
+            // OS permission not granted — check if we should show the modal
+            const dismissed = await AsyncStorage.getItem(DISMISSED_KEY);
+            if (cancelled) return;
+            if (dismissed === null) {
                 setShowPermissionModal(true);
             }
-            // If dismissed previously, don't show
-        });
+        })();
 
         return () => { cancelled = true; };
-    }, [isReady, isLoggedIn, hasToken]);
+    }, [isReady, isLoggedIn, hasToken, registerToken]);
 
     // Sync local token state for returning users who already have a token registered
     useEffect(() => {
