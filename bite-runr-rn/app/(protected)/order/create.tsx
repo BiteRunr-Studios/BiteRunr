@@ -100,10 +100,6 @@ export default function CreateOrder() {
             errors.order_locations = "At least one location required";
         }
 
-        if (selectedFriendIds.length === 0) {
-            errors.order_users = "At least one friend is required";
-        }
-
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
             return;
@@ -278,7 +274,9 @@ export default function CreateOrder() {
                                 <Text className="text-sm font-medium text-muted-foreground">
                                     Invite Friends
                                 </Text>
-                                <Text className="text-sm text-red-500">*</Text>
+                                <Text className="text-xs text-muted-foreground">
+                                    (optional)
+                                </Text>
                             </View>
                             <Pressable
                                 onPress={() => {
