@@ -3,9 +3,12 @@ import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/lib/convex-auth-context";
+
+const DISMISSED_KEY = "push-permission-dismissed";
 
 // Configure how notifications are handled when app is in foreground
 Notifications.setNotificationHandler({
@@ -29,7 +32,6 @@ export function usePushNotifications() {
 
     const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
     const [showPermissionModal, setShowPermissionModal] = useState(false);
-    const hasCheckedPermission = useRef(false);
     const isRegistering = useRef(false);
     const notificationListener = useRef<Notifications.EventSubscription | null>(null);
     const responseListener = useRef<Notifications.EventSubscription | null>(null);
@@ -38,13 +40,19 @@ export function usePushNotifications() {
     useEffect(() => {
         if (!isReady || !isLoggedIn) return;
         if (hasToken === undefined) return; // Still loading
-        if (hasCheckedPermission.current) return;
+        if (hasToken === true) return; // Already registered
 
-        // Only show modal if user doesn't have a token registered
-        if (hasToken === false) {
-            setShowPermissionModal(true);
-        }
-        hasCheckedPermission.current = true;
+        let cancelled = false;
+        AsyncStorage.getItem(DISMISSED_KEY).then((value) => {
+            if (cancelled) return;
+            if (value === null) {
+                // Never dismissed — show the modal
+                setShowPermissionModal(true);
+            }
+            // If dismissed previously, don't show
+        });
+
+        return () => { cancelled = true; };
     }, [isReady, isLoggedIn, hasToken]);
 
     // Sync local token state for returning users who already have a token registered
@@ -65,6 +73,8 @@ export function usePushNotifications() {
         if (isRegistering.current) return;
         isRegistering.current = true;
         setShowPermissionModal(false);
+        // Clear dismissal flag since user engaged positively
+        await AsyncStorage.removeItem(DISMISSED_KEY).catch(() => {});
 
         try {
             const token = await registerForPushNotificationsAsync();
@@ -82,6 +92,8 @@ export function usePushNotifications() {
     // Handle user denying notifications
     const handleDenyNotifications = useCallback(() => {
         setShowPermissionModal(false);
+        // Persist dismissal so modal doesn't reappear on remount
+        AsyncStorage.setItem(DISMISSED_KEY, Date.now().toString()).catch(() => {});
     }, []);
 
     // Set up notification listeners when we have a token
@@ -114,18 +126,14 @@ export function usePushNotifications() {
     }, [isReady, isLoggedIn, hasToken]);
 
     // Unregister token on logout
-    // Note: This may fail since auth is already gone by the time isLoggedIn flips.
-    // The real protection is in registerPushToken which cleans up the previous
-    // user's token when a new user logs in on the same device.
     useEffect(() => {
         if (isReady && !isLoggedIn && expoPushToken) {
-            unregisterToken({ token: expoPushToken }).catch(() => {
-                // Expected to fail - auth session is already gone.
-                // Token will be cleaned up on next login via registerPushToken.
-            });
+            // Pass the token so the backend can clean up without auth
+            unregisterToken({ token: expoPushToken }).catch(() => {});
             setExpoPushToken(null);
-            hasCheckedPermission.current = false;
             isRegistering.current = false;
+            // Clear the dismissal flag so new user on this device gets the modal
+            AsyncStorage.removeItem(DISMISSED_KEY).catch(() => {});
         }
     }, [isReady, isLoggedIn, unregisterToken, expoPushToken]);
 
@@ -198,10 +206,4 @@ async function getExistingPushToken(): Promise<string | null> {
 function handleNotificationTap(_data: Record<string, unknown>) {
     // Handle navigation based on notification type
     // Navigation can be added here based on your app's routing
-    // Example:
-    // if (data.type === "friend_request") {
-    //     router.push("/(protected)/account/friends");
-    // } else if (data.type === "group_order" && data.orderId) {
-    //     router.push(`/(protected)/order/${data.orderId}`);
-    // }
 }
