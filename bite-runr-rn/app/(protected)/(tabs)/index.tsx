@@ -65,8 +65,14 @@ function FloatingIcon({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         translateY.value = withRepeat(
             withSequence(
-                withTiming(-6, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
-                withTiming(0, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+                withTiming(-6, {
+                    duration: 1500,
+                    easing: Easing.inOut(Easing.ease),
+                }),
+                withTiming(0, {
+                    duration: 1500,
+                    easing: Easing.inOut(Easing.ease),
+                }),
             ),
             -1,
             true,
@@ -149,15 +155,23 @@ export default function HomeTab() {
                         <View className="gap-8 px-4 pb-8 mt-4">
                             {/* Greeting Header */}
                             {currentUser?.firstName && (
-                                <Animated.View entering={FadeInLeft.duration(500)}>
+                                <Animated.View
+                                    entering={FadeInLeft.duration(500)}>
                                     <View className="flex-row justify-between items-center">
                                         <View>
                                             <Text className="text-2xl font-bold">
-                                                <Text style={{ color: "#f97316" }}>
-                                                    {getGreeting()}
+                                                <Text
+                                                    style={{
+                                                        color: "#f97316",
+                                                    }}>
+                                                    {getGreeting()},
                                                 </Text>
-                                                <Text style={{ color: "#ea580c" }}>
-                                                    , {currentUser.firstName}
+                                                <Text
+                                                    style={{
+                                                        color: "#ea580c",
+                                                    }}>
+                                                    {" "}
+                                                    {currentUser.firstName}
                                                 </Text>
                                             </Text>
                                             <Text className="mt-1 text-sm text-muted-foreground">
@@ -193,7 +207,8 @@ export default function HomeTab() {
                             {(activeOrders.length > 0 ||
                                 pastOrders.length > 0 ||
                                 frequentItems.length > 0) && (
-                                <Animated.View entering={FadeInUp.duration(500)}>
+                                <Animated.View
+                                    entering={FadeInUp.duration(500)}>
                                     <View className="flex-row justify-between items-center mb-4">
                                         <View className="flex-row gap-2 items-center">
                                             <Icon
@@ -225,8 +240,9 @@ export default function HomeTab() {
                                                         name="ShoppingBag"
                                                         size={36}
                                                         color={
-                                                            NAV_THEME[colorScheme]
-                                                                .primary
+                                                            NAV_THEME[
+                                                                colorScheme
+                                                            ].primary
                                                         }
                                                     />
                                                 </View>
@@ -314,7 +330,10 @@ export default function HomeTab() {
 
                             {/* Frequently Ordered Items Section */}
                             {frequentItems.length > 0 && (
-                                <Animated.View entering={FadeInUp.duration(500).delay(150)}>
+                                <Animated.View
+                                    entering={FadeInUp.duration(500).delay(
+                                        150,
+                                    )}>
                                     <View className="flex-row gap-2 items-center mb-4">
                                         <Icon
                                             name="Star"
@@ -335,8 +354,7 @@ export default function HomeTab() {
                                                 <AnimatedPressable
                                                     key={item.id}
                                                     style={{ width: 176 }}>
-                                                    <View
-                                                        className="p-4 rounded-2xl border border-muted bg-card">
+                                                    <View className="p-4 rounded-2xl border border-muted bg-card">
                                                         <Text
                                                             className="text-base font-semibold text-foreground"
                                                             numberOfLines={2}>
@@ -350,8 +368,12 @@ export default function HomeTab() {
                                                             />
                                                             <Text
                                                                 className="text-xs text-muted-foreground"
-                                                                numberOfLines={1}>
-                                                                {item.locationName}
+                                                                numberOfLines={
+                                                                    1
+                                                                }>
+                                                                {
+                                                                    item.locationName
+                                                                }
                                                             </Text>
                                                         </View>
                                                         <Text className="mt-2 text-xs text-muted-foreground">
@@ -373,7 +395,10 @@ export default function HomeTab() {
 
                             {/* Past Orders Section */}
                             {pastOrders.length > 0 && (
-                                <Animated.View entering={FadeInUp.duration(500).delay(300)}>
+                                <Animated.View
+                                    entering={FadeInUp.duration(500).delay(
+                                        300,
+                                    )}>
                                     <View className="flex-row gap-2 items-center mb-4">
                                         <Icon
                                             name="History"
@@ -387,10 +412,8 @@ export default function HomeTab() {
 
                                     <View className="gap-3">
                                         {pastOrders.map((order) => (
-                                            <AnimatedPressable
-                                                key={order.id}>
-                                                <View
-                                                    className="p-4 rounded-2xl border border-muted bg-card">
+                                            <AnimatedPressable key={order.id}>
+                                                <View className="p-4 rounded-2xl border border-muted bg-card">
                                                     <View>
                                                         <Text className="text-sm text-muted-foreground">
                                                             {new Date(
@@ -417,11 +440,14 @@ export default function HomeTab() {
                                                                 color="#f97316"
                                                             />
                                                             <Text className="text-sm text-muted-foreground">
-                                                                {order.itemsCount}{" "}
+                                                                {
+                                                                    order.itemsCount
+                                                                }{" "}
                                                                 items
                                                             </Text>
                                                         </View>
-                                                        {order.userAmount > 0 && (
+                                                        {order.userAmount >
+                                                            0 && (
                                                             <View className="flex-row items-center gap-1.5">
                                                                 <Icon
                                                                     name="DollarSign"
@@ -434,7 +460,9 @@ export default function HomeTab() {
                                                                         Number(
                                                                             order.userAmount,
                                                                         ) / 100
-                                                                    ).toFixed(2)}
+                                                                    ).toFixed(
+                                                                        2,
+                                                                    )}
                                                                 </Text>
                                                             </View>
                                                         )}
@@ -446,7 +474,8 @@ export default function HomeTab() {
                                                             />
                                                             <Text className="text-sm text-muted-foreground">
                                                                 {
-                                                                    order.orderUsers
+                                                                    order
+                                                                        .orderUsers
                                                                         .length
                                                                 }{" "}
                                                                 people
@@ -465,7 +494,9 @@ export default function HomeTab() {
                                 pastOrders.length === 0 &&
                                 frequentItems.length === 0 && (
                                     <Animated.View
-                                        entering={FadeInUp.duration(600).springify()}
+                                        entering={FadeInUp.duration(
+                                            600,
+                                        ).springify()}
                                         className="items-center p-8 mt-10">
                                         <FloatingIcon>
                                             <View className="justify-center items-center mb-6 w-24 h-24 rounded-2xl bg-primary/10">

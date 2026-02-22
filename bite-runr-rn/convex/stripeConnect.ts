@@ -42,6 +42,13 @@ export const createConnectAccount = action({
             const account = await getStripe().accounts.create({
                 type: "express",
                 email: user.email,
+                country: "CA",
+                business_type: "individual",
+                business_profile: {
+                    url: "https://biterunr.com",
+                    mcc: "5734",
+                    product_description: "Food delivery services",
+                },
                 capabilities: {
                     card_payments: { requested: true },
                     transfers: { requested: true },

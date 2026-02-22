@@ -7,7 +7,6 @@ import {
     Alert,
     ActivityIndicator,
 } from "react-native";
-import * as WebBrowser from "expo-web-browser";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useQuery, useAction } from "convex/react";
@@ -16,6 +15,7 @@ import Icon from "@/components/common/icon";
 import { Button } from "@/components/common/button";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
+import { StripeOnboardingWebView } from "@/components/stripe-onboarding-webview";
 
 const ONBOARDING_STEPS = [
     {
@@ -26,7 +26,7 @@ const ONBOARDING_STEPS = [
     {
         icon: "CreditCard" as const,
         title: "Add a debit card",
-        desc: "Link a debit card to receive instant payouts. You can also use a bank account.",
+        desc: "Link a debit card for instant payouts — or a bank account if you prefer.",
     },
     {
         icon: "ShieldCheck" as const,
@@ -47,6 +47,8 @@ export default function PaymentsScreen() {
     const [isOpeningDashboard, setIsOpeningDashboard] = useState(false);
     const [isLoadingBalance, setIsLoadingBalance] = useState(false);
     const [isRequestingPayout, setIsRequestingPayout] = useState(false);
+    const [webViewUrl, setWebViewUrl] = useState<string | null>(null);
+    const [dashboardUrl, setDashboardUrl] = useState<string | null>(null);
     const [balanceData, setBalanceData] = useState<{
         available: number;
         pending: number;
@@ -75,10 +77,7 @@ export default function PaymentsScreen() {
         try {
             const result = await createConnectAccount({});
             if (result.url) {
-                await WebBrowser.openAuthSessionAsync(
-                    result.url,
-                    "biterunr://stripe-onboarding-",
-                );
+                setWebViewUrl(result.url);
             }
         } catch (error) {
             Alert.alert(
@@ -90,6 +89,41 @@ export default function PaymentsScreen() {
         } finally {
             setIsSettingUp(false);
         }
+    };
+
+    const handleOnboardingComplete = async () => {
+        setWebViewUrl(null);
+        setIsChecking(true);
+        try {
+            const status = await checkOnboardingStatus({});
+            if (status.onboarded && status.chargesEnabled) {
+                Alert.alert(
+                    "Setup Complete",
+                    "Your account is ready to accept card payments!",
+                );
+            } else if (status.onboarded) {
+                Alert.alert(
+                    "Almost There",
+                    "Your account is set up but Stripe is still verifying your details. This usually takes a few minutes.",
+                );
+            }
+        } catch {
+            // Status check failed silently — the webhook will update the state
+        } finally {
+            setIsChecking(false);
+        }
+    };
+
+    const handleOnboardingRefresh = () => {
+        setWebViewUrl(null);
+        Alert.alert(
+            "Session Expired",
+            "Your setup session has expired. Tap below to try again.",
+            [
+                { text: "Cancel", style: "cancel" },
+                { text: "Try Again", onPress: handleSetupPayouts },
+            ],
+        );
     };
 
     const handleCheckStatus = async () => {
@@ -188,7 +222,7 @@ export default function PaymentsScreen() {
         try {
             const result = await createDashboardLink({});
             if (result.url) {
-                await WebBrowser.openBrowserAsync(result.url);
+                setDashboardUrl(result.url);
             }
         } catch (error) {
             Alert.alert(
@@ -650,6 +684,19 @@ export default function PaymentsScreen() {
                     )}
                 </ScrollView>
             )}
+            <StripeOnboardingWebView
+                visible={!!webViewUrl}
+                url={webViewUrl ?? ""}
+                onComplete={handleOnboardingComplete}
+                onRefresh={handleOnboardingRefresh}
+                onDismiss={() => setWebViewUrl(null)}
+            />
+            <StripeOnboardingWebView
+                visible={!!dashboardUrl}
+                url={dashboardUrl ?? ""}
+                title="Earnings & Payouts"
+                onDismiss={() => setDashboardUrl(null)}
+            />
         </SafeAreaView>
     );
 }
