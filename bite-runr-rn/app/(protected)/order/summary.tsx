@@ -17,9 +17,13 @@ import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { useReceiptScanning } from "@/hooks/useReceiptScanning";
+import { useManualPriceEntry } from "@/hooks/useManualPriceEntry";
 import { ReceiptConfirmationSheet } from "@/components/receipt-confirmation-sheet";
+import { ManualPriceEntrySheet } from "@/components/manual-price-entry-sheet";
 import { ListItem } from "@/components/profile/list-item";
 import { Button } from "@/components/common/button";
+import Toast from "react-native-toast-message";
+import * as Haptics from "expo-haptics";
 
 type Location = {
     orderLocationId: string;
@@ -50,9 +54,27 @@ export default function OrderSummary() {
         startScan,
         updateMatch,
         confirmMatches,
-        cancelScan,
+        dismissScan,
+        hasDraft: hasScanDraft,
+        resumeDraft,
         reset: resetScan,
     } = useReceiptScanning(
+        selectedLocation?.orderLocationId as Id<"orderLocations"> | null,
+        orderId as Id<"orders"> | null,
+    );
+
+    // Manual price entry hook
+    const {
+        state: manualState,
+        error: manualError,
+        prices: manualPrices,
+        orderItems: manualOrderItems,
+        startManualEntry,
+        updatePrice,
+        saveAll: saveManualPrices,
+        dismiss: dismissManual,
+        reset: resetManual,
+    } = useManualPriceEntry(
         selectedLocation?.orderLocationId as Id<"orderLocations"> | null,
         orderId as Id<"orders"> | null,
     );
@@ -79,19 +101,31 @@ export default function OrderSummary() {
         }
     }, [summary?.locations, selectedLocation]);
 
-    // Auto-dismiss success banner after 3 seconds
+    // Show toast on scan success and reset
     useEffect(() => {
         if (scanState === "success") {
-            const timer = setTimeout(() => {
-                resetScan();
-            }, 3000);
-            return () => clearTimeout(timer);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            Toast.show({
+                type: "success",
+                text1: "Receipt prices saved",
+                visibilityTime: 2500,
+            });
+            resetScan();
         }
     }, [scanState, resetScan]);
 
-    const handleScanPress = () => {
-        sourceActionSheetRef.current?.show();
-    };
+    // Show toast on manual entry success and reset
+    useEffect(() => {
+        if (manualState === "success") {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            Toast.show({
+                type: "success",
+                text1: "Prices saved",
+                visibilityTime: 2500,
+            });
+            resetManual();
+        }
+    }, [manualState, resetManual]);
 
     const handleSourceSelect = async (source: "camera" | "library") => {
         sourceActionSheetRef.current?.hide();
@@ -99,7 +133,7 @@ export default function OrderSummary() {
     };
 
     const handleConfirmClose = () => {
-        cancelScan();
+        dismissScan();
     };
 
     const handleConfirm = async () => {
@@ -130,6 +164,18 @@ export default function OrderSummary() {
     );
 
     const isScanning = scanState === "uploading" || scanState === "parsing";
+    const allLocationsPriced = summary.locationSummaries.every(
+        (ls) => ls.subtotalInCents !== null,
+    );
+
+    const locationsWithPrices = summary.locationSummaries.filter(
+        (ls) => ls.subtotalInCents !== null,
+    );
+    const locationsMissingPrices = summary.locationSummaries.filter(
+        (ls) => ls.subtotalInCents === null,
+    );
+    const someLocationsPriced =
+        locationsWithPrices.length > 0 && locationsMissingPrices.length > 0;
 
     return (
         <>
@@ -159,43 +205,43 @@ export default function OrderSummary() {
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={{ gap: 8 }}>
-                        {summary.locations.map((location) => (
-                            <Pressable
-                                key={location.orderLocationId}
-                                onPress={() => setSelectedLocation(location)}
-                                className={`flex-row items-center justify-center px-8 py-2 rounded-full ${
-                                    selectedLocation?.orderLocationId ===
-                                    location.orderLocationId
-                                        ? "bg-primary"
-                                        : "bg-muted"
-                                }`}>
-                                <Text
-                                    className={`text-sm ${
-                                        selectedLocation?.orderLocationId ===
-                                        location.orderLocationId
-                                            ? "text-white"
-                                            : "text-muted-foreground"
+                        {summary.locations.map((location) => {
+                            const locSummary = summary.locationSummaries.find(
+                                (ls) => ls.orderLocationId === location.orderLocationId,
+                            );
+                            const hasPrices = locSummary?.subtotalInCents !== null;
+                            const isSelected =
+                                selectedLocation?.orderLocationId === location.orderLocationId;
+
+                            return (
+                                <Pressable
+                                    key={location.orderLocationId}
+                                    onPress={() => setSelectedLocation(location)}
+                                    className={`flex-row items-center justify-center px-8 py-2 rounded-full ${
+                                        isSelected ? "bg-primary" : "bg-muted"
                                     }`}>
-                                    {location.name}
-                                </Text>
-                            </Pressable>
-                        ))}
+                                    {hasPrices && (
+                                        <View style={{ marginRight: 6 }}>
+                                            <Icon
+                                                name="CircleCheck"
+                                                size={14}
+                                                color={isSelected ? "#fff" : "#22c55e"}
+                                            />
+                                        </View>
+                                    )}
+                                    <Text
+                                        className={`text-sm ${
+                                            isSelected
+                                                ? "text-white"
+                                                : "text-muted-foreground"
+                                        }`}>
+                                        {location.name}
+                                    </Text>
+                                </Pressable>
+                            );
+                        })}
                     </ScrollView>
                 </View>
-
-                {/* Scan Success Banner */}
-                {scanState === "success" && (
-                    <View className="flex-row items-center gap-3 px-4 py-3 mx-4 mt-4 rounded-xl bg-green-500/10">
-                        <Icon
-                            name="CircleCheck"
-                            size={20}
-                            color="#22c55e"
-                        />
-                        <Text className="flex-1 text-sm font-medium text-green-600 dark:text-green-400">
-                            Receipt prices saved successfully!
-                        </Text>
-                    </View>
-                )}
 
                 {/* Scan Error Banner */}
                 {scanState === "error" && scanError && (
@@ -230,24 +276,72 @@ export default function OrderSummary() {
                     </View>
                 )}
 
+                {/* Manual Entry Error Banner */}
+                {manualState === "error" && manualError && (
+                    <View className="gap-2 px-4 py-3 mx-4 mt-4 rounded-xl bg-destructive/10">
+                        <View className="flex-row items-center gap-3">
+                            <Icon
+                                name="CircleAlert"
+                                size={20}
+                                color={NAV_THEME[colorScheme].notification}
+                            />
+                            <Text className="flex-1 text-sm text-destructive">
+                                {manualError}
+                            </Text>
+                            <Pressable onPress={resetManual}>
+                                <Icon
+                                    name="X"
+                                    size={16}
+                                    color={NAV_THEME[colorScheme].notification}
+                                />
+                            </Pressable>
+                        </View>
+                        <Pressable
+                            onPress={() => {
+                                resetManual();
+                                startManualEntry();
+                            }}
+                            className="self-start px-4 py-1.5 rounded-full bg-destructive/15">
+                            <Text className="text-sm font-medium text-destructive">
+                                Try Again
+                            </Text>
+                        </Pressable>
+                    </View>
+                )}
+
+                {/* Remaining Locations Banner */}
+                {someLocationsPriced && (
+                    <Pressable
+                        onPress={() => {
+                            const nextUnpriced = summary.locations.find((loc) =>
+                                locationsMissingPrices.some(
+                                    (ls) => ls.orderLocationId === loc.orderLocationId,
+                                ),
+                            );
+                            if (nextUnpriced) setSelectedLocation(nextUnpriced);
+                        }}
+                        className="flex-row items-center gap-3 px-4 py-3 mx-4 mt-4 rounded-xl bg-yellow-500/10"
+                    >
+                        <Icon name="CircleAlert" size={18} color="#eab308" />
+                        <Text className="flex-1 text-sm text-yellow-700 dark:text-yellow-400">
+                            {locationsMissingPrices.length === 1
+                                ? `Still need prices for ${summary.locations.find((l) => l.orderLocationId === locationsMissingPrices[0].orderLocationId)?.name ?? "1 location"}`
+                                : `Still need prices for ${locationsMissingPrices.length} locations`}
+                        </Text>
+                        <Icon
+                            name="ChevronRight"
+                            size={16}
+                            color="#eab308"
+                        />
+                    </Pressable>
+                )}
+
                 {/* Items List */}
                 <View className="flex-1 px-4 pt-4">
                     <ScrollView
                         className="flex-1"
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ gap: 12, paddingBottom: 32 }}>
-                        {/* Pickup Reminder */}
-                        <View className="flex-row items-center gap-2 px-3 py-2 rounded-lg bg-primary/5">
-                            <Icon
-                                name="ShoppingBag"
-                                size={16}
-                                color={NAV_THEME[colorScheme].primary}
-                            />
-                            <Text className="flex-1 text-xs text-muted-foreground">
-                                Don't forget. You're picking up this order!
-                            </Text>
-                        </View>
-
                         {currentLocationSummary &&
                         currentLocationSummary.items.length > 0 ? (
                             <>
@@ -399,55 +493,58 @@ export default function OrderSummary() {
                 </View>
 
                 {/* Footer */}
-                <View className="gap-3 px-6 pt-4 pb-10 border-t border-muted bg-background">
-                    <View>
+                <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
+                    {isScanning ? (
                         <TouchableOpacity
-                            className={`w-full py-3 border rounded-xl border-primary ${
-                                isScanning ? "bg-primary/5" : "bg-primary/10"
-                            }`}
-                            onPress={handleScanPress}
-                            disabled={isScanning}>
-                            {isScanning ? (
-                                <View className="flex-row items-center justify-center gap-2">
-                                    <ActivityIndicator
-                                        size="small"
-                                        color={NAV_THEME[colorScheme].primary}
-                                    />
-                                    <Text className="text-sm font-semibold text-primary">
-                                        {scanState === "uploading"
-                                            ? "Sending your photo..."
-                                            : "Reading your receipt..."}
-                                    </Text>
-                                </View>
-                            ) : (
-                                <View className="flex-row items-center justify-center gap-2">
-                                    <Icon
-                                        name="Camera"
-                                        size={16}
-                                        color={NAV_THEME[colorScheme].primary}
-                                    />
-                                    <Text className="text-sm font-semibold text-primary">
-                                        Scan receipt for{" "}
-                                        {selectedLocation?.name ?? "store"}
-                                    </Text>
-                                </View>
-                            )}
+                            className="w-full py-3 border rounded-xl border-primary bg-primary/5"
+                            disabled>
+                            <View className="flex-row items-center justify-center gap-2">
+                                <ActivityIndicator
+                                    size="small"
+                                    color={NAV_THEME[colorScheme].primary}
+                                />
+                                <Text className="text-sm font-semibold text-primary">
+                                    {scanState === "uploading"
+                                        ? "Sending your photo..."
+                                        : "Reading your receipt..."}
+                                </Text>
+                            </View>
                         </TouchableOpacity>
-                        
-                    </View>
-
-                    {summary.locationSummaries.every(
-                        (ls) => ls.subtotalInCents !== null,
-                    ) && (
+                    ) : hasScanDraft ? (
                         <TouchableOpacity
                             className="w-full py-3 rounded-xl bg-primary"
-                            onPress={() =>
-                                router.push(
-                                    `/order/settlement?orderId=${orderId}` as never,
-                                )
-                            }>
+                            onPress={resumeDraft}>
                             <Text className="text-sm font-semibold text-center text-white">
-                                View Settlement
+                                Continue receipt review
+                            </Text>
+                        </TouchableOpacity>
+                    ) : allLocationsPriced ? (
+                        <View className="items-center gap-2">
+                            <TouchableOpacity
+                                className="w-full py-3 rounded-xl bg-primary"
+                                onPress={() =>
+                                    router.push(
+                                        `/order/settlement?orderId=${orderId}` as never,
+                                    )
+                                }>
+                                <Text className="text-sm font-semibold text-center text-white">
+                                    View Settlement
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => sourceActionSheetRef.current?.show()}
+                                className="py-2">
+                                <Text className="text-sm font-medium text-primary">
+                                    Edit prices
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <TouchableOpacity
+                            className="w-full py-3 rounded-xl bg-primary"
+                            onPress={() => sourceActionSheetRef.current?.show()}>
+                            <Text className="text-sm font-semibold text-center text-white">
+                                Add Prices
                             </Text>
                         </TouchableOpacity>
                     )}
@@ -467,10 +564,10 @@ export default function OrderSummary() {
                 useBottomSafeAreaPadding={true}>
                 <View className="gap-3 p-4">
                     <Text className="mb-1 text-lg font-bold text-center text-foreground">
-                        Scan Receipt
+                        Add Prices
                     </Text>
                     <Text className="text-xs text-center text-muted-foreground -mt-1 mb-1">
-                        For best results, make sure the full receipt is visible and well-lit
+                        Scan a receipt or enter prices by hand
                     </Text>
 
                     <ListItem
@@ -485,6 +582,16 @@ export default function OrderSummary() {
                         title="Choose from Library"
                         subtitle="Select an existing photo"
                         onPress={() => handleSourceSelect("library")}
+                    />
+
+                    <ListItem
+                        iconName="DollarSign"
+                        title="Enter Manually"
+                        subtitle="Type in prices for each item"
+                        onPress={() => {
+                            sourceActionSheetRef.current?.hide();
+                            setTimeout(() => startManualEntry(), 400);
+                        }}
                     />
 
                     <Button
@@ -506,6 +613,18 @@ export default function OrderSummary() {
                 receiptStoreName={receiptStoreName}
                 receiptTotal={receiptTotal}
                 isSaving={scanState === "saving"}
+            />
+
+            {/* Manual Price Entry Sheet */}
+            <ManualPriceEntrySheet
+                visible={manualState === "entering" || manualState === "saving"}
+                onDismiss={dismissManual}
+                onSave={saveManualPrices}
+                orderItems={manualOrderItems}
+                prices={manualPrices}
+                onUpdatePrice={updatePrice}
+                locationName={selectedLocation?.name ?? "Store"}
+                isSaving={manualState === "saving"}
             />
         </>
     );

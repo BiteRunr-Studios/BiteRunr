@@ -134,6 +134,12 @@ export const parseReceipt = action({
             // Create a thread and send the image to the agent
             const { thread } = await receiptParserAgent.createThread(ctx, {});
 
+            // Build context about expected order items to help decode abbreviations
+            const itemContext =
+                orderItems && orderItems.length > 0
+                    ? `\n\nThe order is expected to contain these items (use these to help decode receipt abbreviations and short codes):\n${orderItems.map((oi) => `- ${oi.itemName} (qty: ${oi.quantity})`).join("\n")}`
+                    : "";
+
             // Type assertion needed due to complex generic inference in Agent class
             const generateTextArgs = {
                 messages: [
@@ -142,7 +148,7 @@ export const parseReceipt = action({
                         content: [
                             {
                                 type: "text",
-                                text: "Please parse this receipt and extract all items with their quantities and prices. Return the result as JSON.",
+                                text: `Please parse this receipt and extract all items with their quantities and prices. Return the result as JSON. Translate any non-English item names to English.${itemContext}`,
                             },
                             {
                                 type: "image",
