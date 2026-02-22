@@ -25,6 +25,7 @@ android
 .metro-health-check*
 
 .env.local
+app.config.local
 
 # ignore builds
 *.ipa

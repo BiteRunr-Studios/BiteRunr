@@ -1,9 +1,14 @@
 // app.config.ts
 import { ExpoConfig } from "expo/config";
 
+let localConfig: Partial<Pick<ExpoConfig, "owner" | "extra">> = {};
+try {
+    localConfig = require("./app.config.local").default;
+} catch {}
+
 const config: ExpoConfig = {
     name: "BiteRunr",
-    owner: "omniquark",
+    owner: localConfig.owner ?? "",
     slug: "biterunr",
     version: "1.1.0",
     orientation: "portrait",
@@ -96,7 +101,7 @@ const config: ExpoConfig = {
     },
     extra: {
         eas: {
-            projectId: "26c766a6-7b59-470c-8464-f4ea0f74ab65",
+            projectId: localConfig.extra?.eas?.projectId ?? "",
         },
     },
 };
