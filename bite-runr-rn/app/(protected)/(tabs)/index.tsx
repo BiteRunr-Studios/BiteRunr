@@ -159,20 +159,12 @@ export default function HomeTab() {
                                     entering={FadeInLeft.duration(500)}>
                                     <View className="flex-row justify-between items-center">
                                         <View>
-                                            <Text className="text-2xl font-bold">
-                                                <Text
-                                                    style={{
-                                                        color: "#f97316",
-                                                    }}>
-                                                    {getGreeting()},
-                                                </Text>
-                                                <Text
-                                                    style={{
-                                                        color: "#ea580c",
-                                                    }}>
-                                                    {" "}
-                                                    {currentUser.firstName}
-                                                </Text>
+                                            <Text
+                                                className="text-2xl font-bold"
+                                                style={{
+                                                    color: "#f97316",
+                                                }}>
+                                                {getGreeting()}
                                             </Text>
                                             <Text className="mt-1 text-sm text-muted-foreground">
                                                 {new Date().toLocaleDateString(
