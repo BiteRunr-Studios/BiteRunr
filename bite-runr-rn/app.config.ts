@@ -1,11 +1,16 @@
 // app.config.ts
 import { ExpoConfig } from "expo/config";
 
+let localConfig: Partial<Pick<ExpoConfig, "owner" | "extra">> = {};
+try {
+    localConfig = require("./app.config.local").default;
+} catch {}
+
 const config: ExpoConfig = {
     name: "BiteRunr",
-    owner: "ryansomers",
+    owner: localConfig.owner ?? "",
     slug: "biterunr",
-    version: "1.0.0",
+    version: "1.1.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "biterunr",
@@ -28,6 +33,9 @@ const config: ExpoConfig = {
                 resizeMode: "contain",
                 backgroundColor: "#000000",
             },
+        },
+        infoPlist: {
+            ITSAppUsesNonExemptEncryption: false,
         },
     },
     android: {
@@ -93,7 +101,7 @@ const config: ExpoConfig = {
     },
     extra: {
         eas: {
-            projectId: "e77fef75-c90d-4ad7-b842-f01927d4bd9d",
+            projectId: localConfig.extra?.eas?.projectId ?? "",
         },
     },
 };
