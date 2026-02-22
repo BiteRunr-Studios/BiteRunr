@@ -296,21 +296,55 @@ export const confirmReceiptMatches = mutation({
     },
 });
 
-// Internal mutation to recalculate amounts owed
+// Internal mutation to recalculate amounts owed (includes proportional tax)
 export const recalculateAmountsOwed = internalMutation({
     args: {
         orderId: v.id("orders"),
     },
     handler: async (ctx, args) => {
+        // Get all order locations for tax distribution
+        const orderLocations = await ctx.db
+            .query("orderLocations")
+            .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
+            .collect();
+
+        // Build per-location subtotals and tax multipliers
+        // taxMultiplier = receiptTotal / subtotal (e.g. 1.08 for 8% tax)
+        const locationTaxMultiplier = new Map<string, number>();
+        for (const loc of orderLocations) {
+            const locItems = await ctx.db
+                .query("orderItems")
+                .withIndex("by_orderLocationId", (q) =>
+                    q.eq("orderLocationId", loc._id),
+                )
+                .collect();
+
+            let locSubtotal = BigInt(0);
+            for (const item of locItems) {
+                if (item.priceInCents) {
+                    locSubtotal += BigInt(item.quantity) * item.priceInCents;
+                }
+            }
+
+            if (loc.receiptTotalInCents && locSubtotal > BigInt(0)) {
+                // Use Number for the ratio since we'll round per-user anyway
+                locationTaxMultiplier.set(
+                    loc._id,
+                    Number(loc.receiptTotalInCents) / Number(locSubtotal),
+                );
+            } else {
+                locationTaxMultiplier.set(loc._id, 1);
+            }
+        }
+
         // Get all order users
         const orderUsers = await ctx.db
             .query("orderUsers")
             .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
             .collect();
 
-        // Calculate total owed for each user
+        // Calculate total owed for each user (with proportional tax)
         for (const orderUser of orderUsers) {
-            // Get all items for this user
             const userItems = await ctx.db
                 .query("orderItems")
                 .withIndex("by_orderUserId", (q) =>
@@ -318,18 +352,29 @@ export const recalculateAmountsOwed = internalMutation({
                 )
                 .collect();
 
-            // Sum up the prices (quantity * priceInCents)
-            let totalOwed = BigInt(0);
+            // Group user's item subtotals by location, then apply tax multiplier
+            const subtotalByLocation = new Map<string, number>();
             for (const item of userItems) {
                 if (item.priceInCents) {
-                    // priceInCents is per item, multiply by quantity
-                    totalOwed += BigInt(item.quantity) * item.priceInCents;
+                    const itemTotal =
+                        Number(BigInt(item.quantity) * item.priceInCents);
+                    const prev =
+                        subtotalByLocation.get(item.orderLocationId) ?? 0;
+                    subtotalByLocation.set(
+                        item.orderLocationId,
+                        prev + itemTotal,
+                    );
                 }
             }
 
-            // Update the user's amountOwed
+            let totalOwed = 0;
+            for (const [locId, subtotal] of subtotalByLocation) {
+                const multiplier = locationTaxMultiplier.get(locId) ?? 1;
+                totalOwed += subtotal * multiplier;
+            }
+
             await ctx.db.patch(orderUser._id, {
-                amountOwed: totalOwed,
+                amountOwed: BigInt(Math.round(totalOwed)),
             });
         }
 
