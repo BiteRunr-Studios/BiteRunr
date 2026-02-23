@@ -3,6 +3,7 @@ import { useMutation, useAction, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from "expo-image-manipulator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { autoMatchReceiptItems } from "@/lib/fuzzy-match";
 
@@ -262,17 +263,24 @@ export function useReceiptScanning(
                 // Upload to Convex storage
                 setState("uploading");
 
+                // Compress and convert to JPEG (handles HEIC, PNG, etc.)
+                const manipulated = await ImageManipulator.manipulateAsync(
+                    asset.uri,
+                    [{ resize: { width: 1500 } }],
+                    { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG },
+                );
+
                 const uploadUrl = await generateUploadUrl();
 
-                // Fetch the image and upload
-                const response = await fetch(asset.uri);
+                // Fetch the compressed image and upload
+                const response = await fetch(manipulated.uri);
                 const blob = await response.blob();
 
                 const uploadResponse = await fetch(uploadUrl, {
                     method: "POST",
                     body: blob,
                     headers: {
-                        "Content-Type": asset.mimeType || "image/jpeg",
+                        "Content-Type": "image/jpeg",
                     },
                 });
 
@@ -337,17 +345,17 @@ export function useReceiptScanning(
                 console.error("Receipt scanning error:", err);
                 const message = err instanceof Error ? err.message : "";
 
-                // Translate common technical errors into user-friendly messages
+                // Translate common technical errors into short toast-friendly messages
                 if (message.includes("Failed to upload image") || message.includes("no storage ID")) {
-                    setError("We couldn't upload your photo. Please check your internet connection and try again.");
+                    setError("Couldn't upload photo");
                 } else if (message.includes("network") || message.includes("fetch") || message.includes("Network request failed")) {
-                    setError("We're having trouble connecting right now. Please check your internet connection and try again.");
+                    setError("No internet connection");
                 } else if (message.includes("Not authenticated")) {
-                    setError("Your session has expired. Please sign in again and try once more.");
+                    setError("Session expired, please sign in");
                 } else if (message.includes("Not authorized")) {
-                    setError("You don't have permission to scan receipts for this order.");
+                    setError("Not authorized");
                 } else {
-                    setError("Something went wrong while scanning your receipt. Please try again.");
+                    setError("Couldn't scan receipt");
                 }
                 setState("error");
             }
@@ -451,11 +459,11 @@ export function useReceiptScanning(
             const message = err instanceof Error ? err.message : "";
 
             if (message.includes("network") || message.includes("fetch") || message.includes("Network request failed")) {
-                setError("We're having trouble connecting right now. Please check your internet connection and try again.");
+                setError("No internet connection");
             } else if (message.includes("Not authenticated")) {
-                setError("Your session has expired. Please sign in again and try once more.");
+                setError("Session expired, please sign in");
             } else {
-                setError("We couldn't save your receipt matches. Please try again.");
+                setError("Couldn't save prices");
             }
             setState("error");
         }

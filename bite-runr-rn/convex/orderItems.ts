@@ -380,6 +380,19 @@ export const getOrderSummary = query({
             }),
         );
 
+        // Filter out locations with no items (nobody ordered from there)
+        const activeLocationIds = new Set<string>(
+            locationSummaries
+                .filter((ls) => ls.itemCount > 0)
+                .map((ls) => ls.orderLocationId as string),
+        );
+        const filteredLocations = locations.filter((l) =>
+            activeLocationIds.has(l.orderLocationId),
+        );
+        const filteredSummaries = locationSummaries.filter((ls) =>
+            activeLocationIds.has(ls.orderLocationId),
+        );
+
         return {
             order: {
                 id: order._id,
@@ -388,9 +401,9 @@ export const getOrderSummary = query({
                 paused: order.paused,
                 createdAt: order._creationTime,
             },
-            locations,
-            locationSummaries,
-            totalItems: locationSummaries.reduce(
+            locations: filteredLocations,
+            locationSummaries: filteredSummaries,
+            totalItems: filteredSummaries.reduce(
                 (sum, ls) => sum + ls.itemCount,
                 0,
             ),
