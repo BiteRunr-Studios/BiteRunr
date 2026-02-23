@@ -36,7 +36,7 @@ const hasOAuthProviders = githubCredentials || googleCredentials;
 if (!siteUrl && hasOAuthProviders) {
     throw new Error(
         "SITE_URL environment variable is required when OAuth providers are configured. " +
-            "OAuth redirect URIs require a full URL (e.g., https://example.com)."
+            "OAuth redirect URIs require a full URL (e.g., https://example.com).",
     );
 }
 
@@ -90,7 +90,7 @@ export const createAuth = (ctx: any) => {
                         bodyMap[type] ?? "Your verification code is:";
 
                     const { error } = await resend.emails.send({
-                        from: "BiteRunr <onboarding@omniquark.me>",
+                        from: "BiteRunr <onboarding@biterunr.com>",
                         to: [email],
                         subject,
                         html: `
