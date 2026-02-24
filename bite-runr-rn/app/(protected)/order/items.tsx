@@ -385,39 +385,54 @@ export default function SelectItems() {
                                     />
                                 </View>
                             ) : searchResults && searchResults.length > 0 ? (
-                                searchResults.map((item, idx) => (
-                                    <Pressable
-                                        key={idx}
-                                        onPress={() =>
-                                            handleSearchItemPress({
-                                                name: item.name,
-                                                id: item._id,
-                                            })
-                                        }
-                                        className="flex-row items-center w-full gap-3 p-4 border rounded-2xl border-muted bg-card active:opacity-70">
-                                        <View className="items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                                <>
+                                    {searchResults.map((item, idx) => (
+                                        <Pressable
+                                            key={idx}
+                                            onPress={() =>
+                                                handleSearchItemPress({
+                                                    name: item.name,
+                                                    id: item._id,
+                                                })
+                                            }
+                                            className="flex-row items-center w-full gap-3 p-4 border rounded-2xl border-muted bg-card active:opacity-70">
+                                            <View className="items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                                                <Icon
+                                                    name="UtensilsCrossed"
+                                                    size={20}
+                                                    color={NAV_THEME[colorScheme].primary}
+                                                />
+                                            </View>
+                                            <View className="flex-1">
+                                                <Text className="text-lg text-foreground">
+                                                    {item.name}
+                                                </Text>
+                                                <Text className="text-sm text-muted-foreground">
+                                                    From{" "}
+                                                    {selectedLocation?.locationName}
+                                                </Text>
+                                            </View>
                                             <Icon
-                                                name="UtensilsCrossed"
+                                                name="Plus"
                                                 size={20}
                                                 color={NAV_THEME[colorScheme].primary}
                                             />
-                                        </View>
-                                        <View className="flex-1">
-                                            <Text className="text-lg text-foreground">
-                                                {item.name}
-                                            </Text>
-                                            <Text className="text-sm text-muted-foreground">
-                                                From{" "}
-                                                {selectedLocation?.locationName}
-                                            </Text>
-                                        </View>
+                                        </Pressable>
+                                    ))}
+                                    {/* Allow creating a new item even when search found similar results */}
+                                    <TouchableOpacity
+                                        onPress={handleCreateNewItem}
+                                        className="flex-row items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-muted">
                                         <Icon
                                             name="Plus"
-                                            size={20}
+                                            size={16}
                                             color={NAV_THEME[colorScheme].primary}
                                         />
-                                    </Pressable>
-                                ))
+                                        <Text className="text-sm font-medium text-primary">
+                                            Create "{searchQuery.trim()}"
+                                        </Text>
+                                    </TouchableOpacity>
+                                </>
                             ) : (
                                 <View className="items-center justify-center py-12">
                                     <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-primary/10">
