@@ -6,7 +6,7 @@ import { NAV_THEME } from "@/lib/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { authClient } from "@/lib/auth-client";
 
-type OAuthProvider = "github" | "google";
+type OAuthProvider = "github" | "google" | "apple";
 
 type OAuthButtonProps = {
     provider: OAuthProvider;
@@ -35,6 +35,8 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
                 return "Continue with Google";
             case "github":
                 return "Continue with GitHub";
+            case "apple":
+                return "Continue with Apple";
             default:
                 return "Continue";
         }
@@ -43,7 +45,12 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
     const spinnerWidth = useRef(new Animated.Value(0)).current;
     const spinnerOpacity = useRef(new Animated.Value(0)).current;
 
-    const iconName = provider === "google" ? "logo-google" : "logo-github";
+    const iconName =
+        provider === "google"
+            ? "logo-google"
+            : provider === "apple"
+              ? "logo-apple"
+              : "logo-github";
 
     const isDisabled = disabled || loading;
 
@@ -80,9 +87,15 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
             console.error(`${provider} OAuth error:`, error);
             const err = error instanceof Error ? error : new Error(String(error));
             onError?.(err);
+            const providerName =
+                provider === "google"
+                    ? "Google"
+                    : provider === "apple"
+                      ? "Apple"
+                      : "GitHub";
             Alert.alert(
                 "Sign In Failed",
-                `Unable to sign in with ${provider === "google" ? "Google" : "GitHub"}. Please try again.`
+                `Unable to sign in with ${providerName}. Please try again.`
             );
         } finally {
             setLoading(false);

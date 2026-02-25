@@ -193,6 +193,11 @@ export default function SignInScreen() {
 
                 <View className="mt-8" />
 
+                {/* Apple Auth Button */}
+                <OAuthButton provider="apple" disabled={loading} />
+
+                <View className="mt-3" />
+
                 {/* GitHub Auth Button */}
                 <OAuthButton provider="github" disabled={loading} />
 
