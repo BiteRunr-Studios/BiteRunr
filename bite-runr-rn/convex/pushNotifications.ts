@@ -60,29 +60,32 @@ export const registerPushToken = mutation({
 });
 
 // Unregister push token on logout
+// Works even without auth by cleaning up via the token string directly
 export const unregisterPushToken = mutation({
     args: {
         token: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         const userId = await getUserId(ctx);
-        if (!userId) return true; // Auth already gone — cleanup will happen on next login
-
-        // Remove from the notifications component
-        await pushNotifications.removeToken(ctx, { userId });
-
-        // Clean up our ownership tracking
         const token = args.token;
+
+        // If we have a token string, clean up by token (works even without auth)
         if (token) {
             const record = await ctx.db
                 .query("devicePushTokens")
                 .withIndex("by_pushToken", (q) => q.eq("pushToken", token))
                 .first();
-            if (record && record.userId === userId) {
+            if (record) {
+                // Remove from the notifications component using the record's userId
+                await pushNotifications.removeToken(ctx, { userId: record.userId });
                 await ctx.db.delete(record._id);
             }
-        } else {
-            // Remove all ownership records for this user
+            return true;
+        }
+
+        // Fallback: if no token string but we have auth, remove by userId
+        if (userId) {
+            await pushNotifications.removeToken(ctx, { userId });
             const records = await ctx.db
                 .query("devicePushTokens")
                 .withIndex("by_userId", (q) => q.eq("userId", userId))

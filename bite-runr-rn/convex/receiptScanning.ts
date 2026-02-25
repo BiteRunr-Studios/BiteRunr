@@ -283,6 +283,48 @@ export const confirmReceiptMatches = mutation({
             });
         }
 
+        // Send "Pickup Complete" notification to members who ordered from this location
+        const orderItems = await ctx.db
+            .query("orderItems")
+            .withIndex("by_orderLocationId", (q) =>
+                q.eq("orderLocationId", args.orderLocationId),
+            )
+            .collect();
+
+        const uniqueOrderUserIds = [
+            ...new Set(orderItems.map((item) => item.orderUserId)),
+        ];
+
+        const orderUserDocs = await Promise.all(
+            uniqueOrderUserIds.map((id) => ctx.db.get(id)),
+        );
+
+        const memberUserIds = orderUserDocs
+            .filter((ou) => ou !== null && ou.userId !== userId)
+            .map((ou) => ou!.userId);
+
+        if (memberUserIds.length > 0) {
+            const location = orderLocation.locationId
+                ? await ctx.db.get(orderLocation.locationId)
+                : null;
+            const locationName = location ? location.name : "the restaurant";
+
+            await ctx.scheduler.runAfter(
+                0,
+                internal.pushNotifications.sendToUsers,
+                {
+                    userIds: memberUserIds,
+                    title: "Pickup Complete!",
+                    body: `Your items from ${locationName} have been picked up`,
+                    data: {
+                        type: "pickup_confirmed",
+                        orderId: args.orderId,
+                        orderLocationId: args.orderLocationId,
+                    },
+                },
+            );
+        }
+
         // Recalculate amounts owed for all users in this order
         await ctx.scheduler.runAfter(
             0,

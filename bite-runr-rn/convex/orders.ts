@@ -333,6 +333,36 @@ export const update = mutation({
     if (args.paused !== undefined) updates.paused = args.paused;
 
     await ctx.db.patch(args.orderId, updates);
+
+    // Send "Run Started" notification when ordering is locked (paused = true)
+    if (args.paused === true) {
+      const creator = await ctx.db.get(userId);
+      const creatorName = creator ? creator.firstName : "Someone";
+      const orderName = order.name || "the order";
+
+      const orderUsers = await ctx.db
+        .query("orderUsers")
+        .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
+        .collect();
+
+      const memberUserIds = orderUsers
+        .map((ou) => ou.userId)
+        .filter((id) => id !== userId);
+
+      if (memberUserIds.length > 0) {
+        await ctx.scheduler.runAfter(
+          0,
+          internal.pushNotifications.sendToUsers,
+          {
+            userIds: memberUserIds,
+            title: "Run Started!",
+            body: `${creatorName} is heading out for ${orderName}`,
+            data: { type: "run_started", orderId: args.orderId },
+          },
+        );
+      }
+    }
+
     return args.orderId;
   },
 });
