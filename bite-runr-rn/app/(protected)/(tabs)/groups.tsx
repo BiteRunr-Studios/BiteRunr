@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
     Pressable,
     ScrollView,
@@ -18,15 +18,28 @@ import { useColorScheme } from "@/lib/use-color-scheme";
 import { Skeleton } from "@/components/common/skeleton";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HeaderBar } from "@/components/layout/header-bar";
+import { PaymentSetupSplash } from "@/components/payment-setup-splash";
 
 export default function GroupsTab() {
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [searchQuery, setSearchQuery] = useState("");
+    const [showPaymentSplash, setShowPaymentSplash] = useState(false);
     const { colorScheme } = useColorScheme();
     const insets = useSafeAreaInsets();
 
     // Get current user
     const currentUser = useQuery(api.users.getCurrentUser);
+
+    // Check if user has Stripe payments set up
+    const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
+
+    const handleCreateOrder = useCallback(() => {
+        if (connectedAccount?.chargesEnabled) {
+            router.push("/order/create");
+        } else {
+            setShowPaymentSplash(true);
+        }
+    }, [connectedAccount]);
     const userId = currentUser?._id;
 
     // Get orders with user details for avatars
@@ -110,9 +123,7 @@ export default function GroupsTab() {
                             placeholder="Search orders..."
                             leftIcon="Search"
                             rightIcon="CirclePlus"
-                            onRightIconPress={() =>
-                                router.push("/order/create")
-                            }
+                            onRightIconPress={handleCreateOrder}
                             autoCapitalize="none"
                             returnKeyType="search"
                             errorMessage=""
@@ -179,11 +190,7 @@ export default function GroupsTab() {
                                         {selectedIndex === 0 &&
                                             !searchQuery && (
                                                 <TouchableOpacity
-                                                    onPress={() =>
-                                                        router.push(
-                                                            "/order/create",
-                                                        )
-                                                    }
+                                                    onPress={handleCreateOrder}
                                                     className="flex-row items-center gap-2 px-5 py-2.5 mt-4 rounded-xl bg-primary">
                                                     <Icon
                                                         name="Plus"
@@ -271,6 +278,18 @@ export default function GroupsTab() {
                     </ScrollView>
                 </View>
             </View>
+
+            <PaymentSetupSplash
+                visible={showPaymentSplash}
+                onSetUp={() => {
+                    setShowPaymentSplash(false);
+                    router.push("/account/payments");
+                }}
+                onSkip={() => {
+                    setShowPaymentSplash(false);
+                    router.push("/order/create");
+                }}
+            />
         </ErrorBoundary>
     );
 }
