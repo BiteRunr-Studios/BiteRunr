@@ -353,9 +353,9 @@ export const requestInstantPayout = action({
         const instantEntry =
             balance.instant_available?.find((b) => b.currency === "cad") ??
             balance.instant_available?.[0];
-        const amount = instantEntry?.amount ?? 0;
+        const availableAmount = instantEntry?.amount ?? 0;
 
-        if (!instantEntry || amount <= 0) {
+        if (!instantEntry || availableAmount <= 0) {
             // Check if there are pending funds to give a better message
             const pendingEntry =
                 balance.pending.find((b) => b.currency === "cad") ??
@@ -373,6 +373,21 @@ export const requestInstantPayout = action({
         }
 
         const currency = instantEntry.currency ?? "cad";
+
+        // Stripe charges an instant payout fee (1%, min $0.50) from the
+        // connected account's balance. Subtract the fee so the payout +
+        // fee doesn't exceed the available balance.
+        const estimatedFee = Math.max(
+            Math.ceil(availableAmount * 0.01),
+            60, // $0.60 CAD minimum fee
+        );
+        const amount = availableAmount - estimatedFee;
+
+        if (amount <= 0) {
+            throw new Error(
+                `Your available balance of $${(availableAmount / 100).toFixed(2)} is too small to cover the instant payout fee. Funds will be paid out automatically on the regular schedule.`,
+            );
+        }
 
         try {
             const payout = await stripe.payouts.create(
