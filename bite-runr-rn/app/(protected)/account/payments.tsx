@@ -164,12 +164,19 @@ export default function PaymentsScreen() {
         return `$${(amount / 100).toFixed(2)}`;
     };
 
+    const estimatePayoutFee = (amount: number) => {
+        return Math.max(Math.ceil(amount * 0.01), 60);
+    };
+
     const handleInstantPayout = async () => {
         if (!balanceData || balanceData.instantAvailable <= 0) return;
 
+        const fee = estimatePayoutFee(balanceData.instantAvailable);
+        const estimatedPayout = balanceData.instantAvailable - fee;
+
         Alert.alert(
             "Instant Payout",
-            `Cash out ${formatCurrency(balanceData.instantAvailable)} instantly to your debit card? A small fee (typically 1%) will be deducted by Stripe.`,
+            `Cash out to your debit card?\n\nBalance: ${formatCurrency(balanceData.instantAvailable)}\nStripe fee: -${formatCurrency(fee)}\nYou'll receive: ~${formatCurrency(estimatedPayout)}`,
             [
                 { text: "Cancel", style: "cancel" },
                 {
@@ -545,7 +552,7 @@ export default function PaymentsScreen() {
                                         {balanceData.available > 0 &&
                                         balanceData.instantPayoutsEnabled ? (
                                             <Button
-                                                label={`Instant Payout — ${formatCurrency(balanceData.instantAvailable)}`}
+                                                label={`Instant Payout — ~${formatCurrency(balanceData.instantAvailable - estimatePayoutFee(balanceData.instantAvailable))}`}
                                                 icon="Zap"
                                                 onPress={handleInstantPayout}
                                                 loading={isRequestingPayout}

@@ -37,6 +37,9 @@ const config: ExpoConfig = {
         infoPlist: {
             ITSAppUsesNonExemptEncryption: false,
         },
+        entitlements: {
+            "com.apple.developer.applesignin": ["Default"],
+        },
     },
     android: {
         adaptiveIcon: {
