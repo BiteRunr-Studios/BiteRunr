@@ -119,6 +119,10 @@ export const getWithDetails = query({
             createdAt: order._creationTime,
           },
           orderUsers: enrichedOrderUsers,
+          orderLocations: orderLocations.map((ol) => ({
+            id: ol._id,
+            locationId: ol.locationId,
+          })),
           itemsCount,
           peopleCount: orderUsers.length,
         };
@@ -470,6 +474,7 @@ export const getPastOrders = query({
             const user = await ctx.db.get(ou.userId);
             return {
               id: ou._id,
+              userId: ou.userId,
               firstName: user?.firstName,
               lastName: user?.lastName,
               avatarUrl: user?.avatarUrl,
@@ -502,7 +507,12 @@ export const getPastOrders = query({
           status: order.status,
           paused: order.paused,
           createdAt: order._creationTime,
+          creatorId: order.creatorId,
           orderUsers: enrichedOrderUsers,
+          orderLocations: orderLocations.map((ol) => ({
+            id: ol._id,
+            locationId: ol.locationId,
+          })),
           itemsCount,
           userAmount,
         };

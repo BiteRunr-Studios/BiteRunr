@@ -473,6 +473,55 @@ export default function HomeTab() {
                                                                 people
                                                             </Text>
                                                         </View>
+                                                        <TouchableOpacity
+                                                            onPress={() => {
+                                                                const locationIds =
+                                                                    order.orderLocations
+                                                                        ?.map(
+                                                                            (
+                                                                                ol,
+                                                                            ) =>
+                                                                                ol.locationId,
+                                                                        )
+                                                                        .join(
+                                                                            ",",
+                                                                        ) ?? "";
+                                                                const friendIds =
+                                                                    order.orderUsers
+                                                                        .filter(
+                                                                            (
+                                                                                ou,
+                                                                            ) =>
+                                                                                ou.userId !==
+                                                                                currentUser?._id,
+                                                                        )
+                                                                        .map(
+                                                                            (
+                                                                                ou,
+                                                                            ) =>
+                                                                                ou.userId,
+                                                                        )
+                                                                        .join(
+                                                                            ",",
+                                                                        );
+                                                                router.push(
+                                                                    `/order/create?reorderName=${encodeURIComponent(order.name)}&reorderLocationIds=${locationIds}&reorderFriendIds=${friendIds}`,
+                                                                );
+                                                            }}
+                                                            className="flex-row items-center gap-1 px-3 py-1.5 ml-auto rounded-full bg-primary/10">
+                                                            <Icon
+                                                                name="RotateCcw"
+                                                                size={12}
+                                                                color={
+                                                                    NAV_THEME[
+                                                                        colorScheme
+                                                                    ].primary
+                                                                }
+                                                            />
+                                                            <Text className="text-xs font-semibold text-primary">
+                                                                Order Again
+                                                            </Text>
+                                                        </TouchableOpacity>
                                                     </View>
                                                 </View>
                                             </AnimatedPressable>
