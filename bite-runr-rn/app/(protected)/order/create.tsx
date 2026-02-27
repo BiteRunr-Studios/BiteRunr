@@ -21,7 +21,7 @@ import {
     useFriends,
     useCreateOrder,
 } from "@/lib/hooks/use-order-api";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import Icon from "@/components/common/icon";
 import { Input } from "@/components/common/input";
 import { NAV_THEME } from "@/lib/constants";
@@ -35,12 +35,21 @@ interface FieldErrors {
 
 export default function CreateOrder() {
     const { colorScheme } = useColorScheme();
-    const [name, setName] = useState("");
+    const { reorderName, reorderLocationIds, reorderFriendIds } =
+        useLocalSearchParams<{
+            reorderName?: string;
+            reorderLocationIds?: string;
+            reorderFriendIds?: string;
+        }>();
+    const isReorder = !!reorderName;
+    const [name, setName] = useState(reorderName ?? "");
     const [comments, setComments] = useState("");
     const [selectedLocationIds, setSelectedLocationIds] = useState<string[]>(
-        []
+        reorderLocationIds ? reorderLocationIds.split(",") : []
     );
-    const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>([]);
+    const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>(
+        reorderFriendIds ? reorderFriendIds.split(",") : []
+    );
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
     const [showLocationsSheet, setShowLocationsSheet] = useState(false);
@@ -147,7 +156,7 @@ export default function CreateOrder() {
                     />
                 </Pressable>
                 <Text className="flex-1 ml-2 text-xl font-bold text-foreground">
-                    Create Order
+                    {isReorder ? "Reorder" : "Create Order"}
                 </Text>
             </View>
 
@@ -169,10 +178,14 @@ export default function CreateOrder() {
                             />
                         </View>
                         <Text className="text-lg font-semibold text-foreground">
-                            New Group Order
+                            {isReorder
+                                ? "Order Again"
+                                : "New Group Order"}
                         </Text>
                         <Text className="mt-1 text-sm text-center text-muted-foreground">
-                            Set up your order details below
+                            {isReorder
+                                ? "Tweak the details and start a new order"
+                                : "Set up your order details below"}
                         </Text>
                     </View>
 

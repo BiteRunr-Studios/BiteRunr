@@ -268,6 +268,31 @@ export default function GroupsTab() {
                                                     }
                                                     orderUsers={orderUsers}
                                                     itemCount={item.itemsCount}
+                                                    onReorder={() => {
+                                                        const locationIds =
+                                                            item.orderLocations
+                                                                ?.map(
+                                                                    (ol) =>
+                                                                        ol.locationId,
+                                                                )
+                                                                .join(",") ??
+                                                            "";
+                                                        const friendIds =
+                                                            item.orderUsers
+                                                                .filter(
+                                                                    (ou) =>
+                                                                        ou.userId !==
+                                                                        userId,
+                                                                )
+                                                                .map(
+                                                                    (ou) =>
+                                                                        ou.userId,
+                                                                )
+                                                                .join(",");
+                                                        router.push(
+                                                            `/order/create?reorderName=${encodeURIComponent(item.order.name)}&reorderLocationIds=${locationIds}&reorderFriendIds=${friendIds}`,
+                                                        );
+                                                    }}
                                                 />
                                             );
                                         })}

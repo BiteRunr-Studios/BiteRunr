@@ -1,6 +1,6 @@
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import Icon from "./common/icon";
 import { Avatar } from "./common/avatar";
 import ReAnimated, {
@@ -32,6 +32,7 @@ interface OrderCardProps {
     createdAt: number | Date;
     orderUsers?: OrderUser[];
     itemCount?: number;
+    onReorder?: () => void;
 }
 
 export function OrderCard({
@@ -41,6 +42,7 @@ export function OrderCard({
     createdAt,
     orderUsers,
     itemCount,
+    onReorder,
 }: OrderCardProps) {
     const isCancelled = status === "cancelled";
     const isCompleted = status === "completed";
@@ -208,19 +210,36 @@ export function OrderCard({
                     </View>
                 )}
 
-                {/* Stats */}
-                {itemCount !== undefined && itemCount > 0 && (
-                    <View className="flex-row items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted">
-                        <Icon
-                            name="ShoppingBag"
-                            size={14}
-                            color={NAV_THEME[colorScheme].text}
-                        />
-                        <Text className="text-xs font-medium text-muted-foreground">
-                            {itemCount} {itemCount === 1 ? "item" : "items"}
-                        </Text>
-                    </View>
-                )}
+                {/* Stats and Reorder */}
+                <View className="flex-row items-center gap-2">
+                    {itemCount !== undefined && itemCount > 0 && (
+                        <View className="flex-row items-center gap-1.5 px-2.5 py-1 rounded-full bg-muted">
+                            <Icon
+                                name="ShoppingBag"
+                                size={14}
+                                color={NAV_THEME[colorScheme].text}
+                            />
+                            <Text className="text-xs font-medium text-muted-foreground">
+                                {itemCount}{" "}
+                                {itemCount === 1 ? "item" : "items"}
+                            </Text>
+                        </View>
+                    )}
+                    {onReorder && (
+                        <TouchableOpacity
+                            onPress={onReorder}
+                            className="flex-row items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10">
+                            <Icon
+                                name="RotateCcw"
+                                size={12}
+                                color={NAV_THEME[colorScheme].primary}
+                            />
+                            <Text className="text-xs font-semibold text-primary">
+                                Order Again
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
             </View>
         </View>
     );
