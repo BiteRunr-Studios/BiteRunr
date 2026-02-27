@@ -47,6 +47,8 @@ export default function PaymentsScreen() {
     const [isOpeningDashboard, setIsOpeningDashboard] = useState(false);
     const [isLoadingBalance, setIsLoadingBalance] = useState(false);
     const [isRequestingPayout, setIsRequestingPayout] = useState(false);
+    const [isRequestingStandardPayout, setIsRequestingStandardPayout] =
+        useState(false);
     const [balanceData, setBalanceData] = useState<{
         available: number;
         pending: number;
@@ -68,6 +70,9 @@ export default function PaymentsScreen() {
     const getPayoutBalance = useAction(api.stripeConnect.getPayoutBalance);
     const requestInstantPayout = useAction(
         api.stripeConnect.requestInstantPayout,
+    );
+    const requestStandardPayout = useAction(
+        api.stripeConnect.requestStandardPayout,
     );
 
     const handleSetupPayouts = async () => {
@@ -200,6 +205,41 @@ export default function PaymentsScreen() {
                             );
                         } finally {
                             setIsRequestingPayout(false);
+                        }
+                    },
+                },
+            ],
+        );
+    };
+
+    const handleStandardPayout = async () => {
+        if (!balanceData || balanceData.available <= 0) return;
+
+        Alert.alert(
+            "Payout to Bank",
+            `Transfer ${formatCurrency(balanceData.available)} to your bank account?\n\nNo fees — funds typically arrive in 1-2 business days.`,
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Transfer",
+                    onPress: async () => {
+                        setIsRequestingStandardPayout(true);
+                        try {
+                            const result = await requestStandardPayout({});
+                            Alert.alert(
+                                "Payout Initiated",
+                                `${formatCurrency(result.amount)} will arrive in your bank account in 1-2 business days.`,
+                            );
+                            fetchBalance();
+                        } catch (error) {
+                            Alert.alert(
+                                "Payout Failed",
+                                error instanceof Error
+                                    ? error.message
+                                    : "Failed to create payout.",
+                            );
+                        } finally {
+                            setIsRequestingStandardPayout(false);
                         }
                     },
                 },
@@ -551,36 +591,73 @@ export default function PaymentsScreen() {
 
                                         {balanceData.available > 0 &&
                                         balanceData.instantPayoutsEnabled ? (
-                                            <Button
-                                                label={`Instant Payout — ~${formatCurrency(balanceData.instantAvailable - estimatePayoutFee(balanceData.instantAvailable))}`}
-                                                icon="Zap"
-                                                onPress={handleInstantPayout}
-                                                loading={isRequestingPayout}
-                                                color="#22c55e"
-                                            />
+                                            <View className="gap-2">
+                                                <Button
+                                                    label={`Instant Payout — ~${formatCurrency(balanceData.instantAvailable - estimatePayoutFee(balanceData.instantAvailable))}`}
+                                                    icon="Zap"
+                                                    onPress={
+                                                        handleInstantPayout
+                                                    }
+                                                    loading={
+                                                        isRequestingPayout
+                                                    }
+                                                    color="#22c55e"
+                                                />
+                                                <Button
+                                                    label={`Bank Transfer — ${formatCurrency(balanceData.available)}`}
+                                                    icon="Building"
+                                                    variant="outline"
+                                                    onPress={
+                                                        handleStandardPayout
+                                                    }
+                                                    loading={
+                                                        isRequestingStandardPayout
+                                                    }
+                                                    color={
+                                                        NAV_THEME[colorScheme]
+                                                            .primary
+                                                    }
+                                                />
+                                                <Text className="text-xs text-center text-muted-foreground">
+                                                    Bank transfers are free
+                                                    and arrive in 1-2
+                                                    business days.
+                                                </Text>
+                                            </View>
+                                        ) : balanceData.available > 0 ? (
+                                            <View className="gap-2">
+                                                <Button
+                                                    label={`Payout to Bank — ${formatCurrency(balanceData.available)}`}
+                                                    icon="Building"
+                                                    onPress={
+                                                        handleStandardPayout
+                                                    }
+                                                    loading={
+                                                        isRequestingStandardPayout
+                                                    }
+                                                    color="#22c55e"
+                                                />
+                                                <Text className="text-xs text-center text-muted-foreground">
+                                                    No fees — arrives in 1-2
+                                                    business days. Add a
+                                                    debit card in Stripe for
+                                                    instant payouts.
+                                                </Text>
+                                            </View>
                                         ) : (
                                             <View>
-                                                {balanceData.available === 0 &&
-                                                balanceData.pending > 0 ? (
+                                                {balanceData.pending > 0 ? (
                                                     <Text className="text-xs text-center text-muted-foreground">
                                                         Funds are pending and
                                                         typically become
                                                         available in 1-2
                                                         business days.
                                                     </Text>
-                                                ) : balanceData.available ===
-                                                      0 &&
-                                                  balanceData.pending === 0 ? (
+                                                ) : (
                                                     <Text className="text-xs text-center text-muted-foreground">
                                                         No balance yet. Funds
                                                         will appear here after
                                                         order members pay.
-                                                    </Text>
-                                                ) : (
-                                                    <Text className="text-xs text-center text-muted-foreground">
-                                                        Instant payouts require
-                                                        a debit card linked in
-                                                        Stripe.
                                                     </Text>
                                                 )}
                                             </View>
