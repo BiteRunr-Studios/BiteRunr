@@ -13,6 +13,7 @@ import {
     type Theme,
 } from "@react-navigation/native";
 import Toast, { type BaseToastProps } from "react-native-toast-message";
+import * as SplashScreen from "expo-splash-screen";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { ConvexReactClient } from "convex/react";
@@ -20,7 +21,10 @@ import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
 import { AuthProvider } from "@/lib/convex-auth-context";
 import { authClient } from "@/lib/auth-client";
 import Icon from "@/components/common/icon";
+import AnimatedSplashScreen from "@/components/animated-splash-screen";
 import "../global.css";
+
+SplashScreen.preventAutoHideAsync();
 
 const LIGHT_THEME: Theme = { ...DefaultTheme, colors: NAV_THEME.light };
 const DARK_THEME: Theme = { ...DarkTheme, colors: NAV_THEME.dark };
@@ -155,6 +159,12 @@ function useToastConfig() {
 export default function RootLayout() {
     const { colorScheme } = useColorScheme();
     const toastConfig = useToastConfig();
+    const [showSplash, setShowSplash] = React.useState(true);
+
+    React.useEffect(() => {
+        // Hide the native splash screen once our animated one is mounted
+        SplashScreen.hideAsync();
+    }, []);
 
     React.useEffect(() => {
         if (Platform.OS === "web" && typeof document !== "undefined") {
@@ -204,6 +214,11 @@ export default function RootLayout() {
                                     }}
                                 />
                             </Stack>
+                            {showSplash && (
+                                <AnimatedSplashScreen
+                                    onAnimationComplete={() => setShowSplash(false)}
+                                />
+                            )}
                         </GestureHandlerRootView>
                         <Toast config={toastConfig} topOffset={60} />
                     </SafeAreaProvider>

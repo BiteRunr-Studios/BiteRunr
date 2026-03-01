@@ -1,4 +1,4 @@
-import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ConvexProvider } from 'convex/react'
@@ -48,8 +48,15 @@ export const Route = createRootRoute({
   component: RootComponent,
 })
 
+const PUBLIC_ROUTES = ['/privacy']
+
 function AuthGate() {
   const { isAuthenticated } = useAuth()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+
+  if (PUBLIC_ROUTES.includes(pathname)) {
+    return <Outlet />
+  }
 
   if (!isAuthenticated) {
     return <LoginPage />
