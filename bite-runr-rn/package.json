@@ -16,7 +16,6 @@
         "eas:build:android": "eas build --platform android --profile production --local --output ./build.aab"
     },
     "dependencies": {
-        "@ai-sdk/openai": "^2.0.89",
         "@auth/core": "^0.37.4",
         "@better-auth/expo": "1.4.9",
         "@convex-dev/agent": "^0.5.0-alpha.1",
@@ -24,6 +23,7 @@
         "@convex-dev/better-auth": "^0.10.10",
         "@convex-dev/expo-push-notifications": "^0.3.1",
         "@expo/vector-icons": "^15.0.2",
+        "@openrouter/ai-sdk-provider": "^1.5.4",
         "@oslojs/crypto": "^1.0.1",
         "@react-native-async-storage/async-storage": "2.2.0",
         "@react-native-segmented-control/segmented-control": "2.5.7",

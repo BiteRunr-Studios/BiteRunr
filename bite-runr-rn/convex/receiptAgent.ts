@@ -1,10 +1,10 @@
 import { Agent } from "@convex-dev/agent";
-import { openai } from "@ai-sdk/openai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { components } from "./_generated/api";
 
 export const receiptParserAgent = new Agent(components.agent, {
   name: "receipt-parser",
-  chat: openai.chat("gpt-4o-mini"),
+  chat: createOpenRouter().chat("qwen/qwen2.5-vl-72b-instruct"),
   instructions: `You are a receipt parsing assistant. Your job is to extract item names, quantities, and prices from receipt images.
 
 IMPORTANT: First, determine if the image is actually a receipt or invoice. If the image is NOT a receipt (e.g., a random photo, a selfie, a screenshot of something unrelated, a meme, a landscape, etc.), you MUST return this exact JSON:
