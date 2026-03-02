@@ -428,6 +428,84 @@ export const requestInstantPayout = action({
     },
 });
 
+// --- STANDARD PAYOUT ---
+// Creates a standard payout to the runner's bank account (1-2 business days).
+
+export const requestStandardPayout = action({
+    args: {},
+    handler: async (
+        ctx,
+    ): Promise<{
+        success: boolean;
+        amount: number;
+        currency: string;
+    }> => {
+        const user = await ctx.runQuery(api.users.getCurrentUser, {});
+        if (!user) throw new Error("Not authenticated");
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const account: any = await ctx.runQuery(
+            internal.payments.getConnectedAccountInternal,
+            { userId: user._id },
+        );
+        if (!account) throw new Error("No connected account found");
+
+        const stripe = getStripe();
+
+        const balance = await stripe.balance.retrieve({
+            stripeAccount: account.stripeAccountId,
+        });
+
+        const availableEntry =
+            balance.available.find((b) => b.currency === "cad") ??
+            balance.available[0];
+        const availableAmount = availableEntry?.amount ?? 0;
+
+        if (availableAmount <= 0) {
+            const pendingEntry =
+                balance.pending.find((b) => b.currency === "cad") ??
+                balance.pending[0];
+            const pendingAmount = pendingEntry?.amount ?? 0;
+
+            if (pendingAmount > 0) {
+                throw new Error(
+                    `No funds available for payout yet. You have $${(pendingAmount / 100).toFixed(2)} pending — these typically become available in 1-2 business days.`,
+                );
+            }
+            throw new Error("No funds available for payout.");
+        }
+
+        const currency = availableEntry?.currency ?? "cad";
+
+        try {
+            const payout = await stripe.payouts.create(
+                {
+                    amount: availableAmount,
+                    currency,
+                    method: "standard",
+                },
+                {
+                    stripeAccount: account.stripeAccountId,
+                },
+            );
+
+            return {
+                success: true,
+                amount: payout.amount,
+                currency,
+            };
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            if (msg.includes("insufficient funds") || msg.includes("balance")) {
+                throw new Error(
+                    "Insufficient funds for payout. Your balance may have changed — please try again.",
+                );
+            }
+            throw new Error(`Payout failed: ${msg}`);
+        }
+    },
+});
+
 // --- RUNNER DASHBOARD LINK ---
 // Opens Stripe Express Dashboard so runners can view earnings/payouts.
 
