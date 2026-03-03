@@ -2,8 +2,9 @@ import { v } from "convex/values";
 import { mutation, action, internalMutation, query } from "./_generated/server";
 import { internal, api } from "./_generated/api";
 import { getUserId } from "./authHelper";
-import { receiptParserAgent } from "./receiptAgent";
-import { Id } from "./_generated/dataModel";
+import { generateObject } from "ai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { z } from "zod";
 
 // Parsed receipt item structure
 export const parsedReceiptItemValidator = v.object({
@@ -20,6 +21,71 @@ export const receiptMatchValidator = v.object({
     confidence: v.number(), // 0-1 fuzzy match confidence
     priceInCents: v.union(v.number(), v.null()),
 });
+
+// Zod schema for structured receipt parsing output
+const receiptResponseSchema = z.object({
+    status: z
+        .enum(["success", "not_a_receipt", "unreadable_receipt"])
+        .describe(
+            "Set to 'not_a_receipt' if the image is not a receipt/invoice. Set to 'unreadable_receipt' if it's a receipt but too blurry/dark to read. Otherwise 'success'.",
+        ),
+    items: z
+        .array(
+            z.object({
+                name: z
+                    .string()
+                    .describe(
+                        "Clean, human-readable item name. Decode abbreviations and translate non-English names to English.",
+                    ),
+                quantity: z
+                    .number()
+                    .int()
+                    .describe("Quantity purchased. Default to 1 if not shown."),
+                priceInCents: z
+                    .number()
+                    .int()
+                    .nullable()
+                    .describe(
+                        "Price in cents (e.g. $12.99 = 1299). Null if unclear.",
+                    ),
+            }),
+        )
+        .describe("Empty array if status is not 'success'."),
+    storeName: z
+        .string()
+        .nullable()
+        .describe("Store name if visible on receipt."),
+    date: z
+        .string()
+        .nullable()
+        .describe("Date if visible, in YYYY-MM-DD format."),
+    totalInCents: z
+        .number()
+        .int()
+        .nullable()
+        .describe("Receipt total in cents including tax, if visible."),
+});
+
+const RECEIPT_PARSER_SYSTEM_PROMPT = `You are a receipt parsing assistant. Extract item names, quantities, and prices from receipt images.
+
+## Abbreviations & Short Codes
+Receipts frequently use abbreviations and short codes. Decode these into full, readable item names:
+- Restaurant codes: "CFA San" → "Chick-fil-A Sandwich", "QP w/C" → "Quarter Pounder with Cheese"
+- Truncated names: "CHKN NUGGET" → "Chicken Nuggets", "FR FRY LG" → "Large French Fries"
+- Size: SM=Small, MD/MED=Medium, LG=Large, XL=Extra Large
+- Modifiers: W/=With, W/O=Without, ADD=Added, NO=Without, XTR=Extra, COMBO=Combo Meal
+- Use context from the store name and other items to decode ambiguous abbreviations
+- If the user provides expected order items, use those as strong hints for decoding
+
+## Multi-Language Receipts
+Receipts may be in any language. Read and parse in the original language, then translate item names to English.
+Keep proper nouns and brand names as-is.
+
+## Rules
+- Skip taxes, totals, subtotals, discounts, tips — only extract purchased items
+- Include modifiers/customizations with the item name
+- Handle partial or unclear text with reasonable assumptions
+- Always return prices in CENTS as integers`;
 
 // Generate upload URL for receipt images
 export const generateReceiptUploadUrl = mutation({
@@ -127,28 +193,36 @@ export const parseReceipt = action({
         const imageUrl = await ctx.storage.getUrl(args.storageId);
         if (!imageUrl) {
             await ctx.storage.delete(args.storageId);
-            return { success: false, error: "We couldn't process your photo. Please try taking or selecting the image again." };
+            return {
+                success: false,
+                error: "We couldn't process your photo. Please try taking or selecting the image again.",
+            };
         }
 
         try {
-            // Create a thread and send the image to the agent
-            const { thread } = await receiptParserAgent.createThread(ctx, {});
-
             // Build context about expected order items to help decode abbreviations
             const itemContext =
                 orderItems && orderItems.length > 0
                     ? `\n\nThe order is expected to contain these items (use these to help decode receipt abbreviations and short codes):\n${orderItems.map((oi) => `- ${oi.itemName} (qty: ${oi.quantity})`).join("\n")}`
                     : "";
 
-            // Type assertion needed due to complex generic inference in Agent class
-            const generateTextArgs = {
+            const openrouter = createOpenRouter();
+            const result = await generateObject({
+                model: openrouter.chat("qwen/qwen3.5-35b-a3b", {
+                    provider: {
+                        order: ["parasail/fp8", "alibaba"],
+                        allow_fallbacks: true,
+                    },
+                }),
+                schema: receiptResponseSchema,
+                system: RECEIPT_PARSER_SYSTEM_PROMPT,
                 messages: [
                     {
                         role: "user",
                         content: [
                             {
                                 type: "text",
-                                text: `Please parse this receipt and extract all items with their quantities and prices. Return the result as JSON. Translate any non-English item names to English.${itemContext}`,
+                                text: `Parse this receipt and extract all items with their quantities and prices.${itemContext}`,
                             },
                             {
                                 type: "image",
@@ -157,47 +231,28 @@ export const parseReceipt = action({
                         ],
                     },
                 ],
-            } as unknown;
-            const result = await thread.generateText(generateTextArgs as never);
+                providerOptions: {
+                    openrouter: { reasoning: { exclude: true } },
+                },
+            });
 
-            // Parse the JSON from the response
-            const responseText = result.text;
+            const parsed = result.object;
 
-            // Extract JSON from the response (it might be wrapped in markdown code blocks)
-            let jsonStr = responseText;
-            const jsonMatch = responseText.match(
-                /```(?:json)?\s*([\s\S]*?)```/,
-            );
-            if (jsonMatch) {
-                jsonStr = jsonMatch[1].trim();
-            }
-
-            let parsed;
-            try {
-                parsed = JSON.parse(jsonStr);
-            } catch {
-                return {
-                    success: false,
-                    error: "We couldn't read this image. Please make sure you're scanning a clear photo of a receipt.",
-                };
-            }
-
-            // Handle AI-detected issues with the image
-            if (parsed.error === "not_a_receipt") {
+            if (parsed.status === "not_a_receipt") {
                 return {
                     success: false,
                     error: "This doesn't look like a receipt. Please take or select a photo of your receipt and try again.",
                 };
             }
 
-            if (parsed.error === "unreadable_receipt") {
+            if (parsed.status === "unreadable_receipt") {
                 return {
                     success: false,
                     error: "The receipt is too blurry or dark to read. Please take a clearer photo and try again.",
                 };
             }
 
-            if (!parsed.items || parsed.items.length === 0) {
+            if (parsed.items.length === 0) {
                 return {
                     success: false,
                     error: "No items found on the receipt. Please make sure the full receipt is visible in the photo.",
@@ -207,9 +262,9 @@ export const parseReceipt = action({
             return {
                 success: true,
                 items: parsed.items,
-                storeName: parsed.storeName,
-                date: parsed.date,
-                totalInCents: parsed.totalInCents,
+                storeName: parsed.storeName ?? undefined,
+                date: parsed.date ?? undefined,
+                totalInCents: parsed.totalInCents ?? undefined,
             };
         } catch (error) {
             console.error("Error parsing receipt:", error);
@@ -217,7 +272,11 @@ export const parseReceipt = action({
             // Provide user-friendly messages for common errors
             const message = error instanceof Error ? error.message : "";
 
-            if (message.includes("fetch") || message.includes("network") || message.includes("ECONNREFUSED")) {
+            if (
+                message.includes("fetch") ||
+                message.includes("network") ||
+                message.includes("ECONNREFUSED")
+            ) {
                 return {
                     success: false,
                     error: "We're having trouble connecting right now. Please check your internet connection and try again.",
@@ -398,8 +457,9 @@ export const recalculateAmountsOwed = internalMutation({
             const subtotalByLocation = new Map<string, number>();
             for (const item of userItems) {
                 if (item.priceInCents) {
-                    const itemTotal =
-                        Number(BigInt(item.quantity) * item.priceInCents);
+                    const itemTotal = Number(
+                        BigInt(item.quantity) * item.priceInCents,
+                    );
                     const prev =
                         subtotalByLocation.get(item.orderLocationId) ?? 0;
                     subtotalByLocation.set(
