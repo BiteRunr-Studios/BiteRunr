@@ -14,8 +14,9 @@ function getStripe() {
     });
 }
 
-// Platform fee: 1%. Change as needed.
+// Platform fee: 5%, minimum $1.00
 const APPLICATION_FEE_PERCENT = 0.05;
+const MINIMUM_APPLICATION_FEE = 100; // cents
 
 // --- SELLER ONBOARDING ---
 // Creates a Stripe Connect Express account and returns the onboarding URL.
@@ -181,7 +182,7 @@ export const createPaymentSheetParams = action({
 
         const stripe = getStripe();
         const amountOwed: number = Number(data.amountOwed);
-        const platformFee = Math.round(amountOwed * APPLICATION_FEE_PERCENT);
+        const platformFee = Math.max(MINIMUM_APPLICATION_FEE, Math.round(amountOwed * APPLICATION_FEE_PERCENT));
         const amount = amountOwed + platformFee;
 
         // Get or create a Stripe Customer for the buyer

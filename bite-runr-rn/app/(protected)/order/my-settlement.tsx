@@ -1,11 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import {
-    View,
-    Text,
-    Pressable,
-    Alert,
-} from "react-native";
+import { View, Text, Pressable, Alert } from "react-native";
 import { useStripe } from "@stripe/stripe-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useQuery, useMutation, useAction } from "convex/react";
@@ -16,11 +11,54 @@ import { Button } from "@/components/common/button";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 
+const PAYMENT_SHEET_COLORS = {
+    light: {
+        primary: "#FF8800",
+        background: "#FFFFFF",
+        componentBackground: "#F0F4F8",
+        componentBorder: "#E0E0E0",
+        componentDivider: "#E3E3E3",
+        primaryText: "#020817",
+        secondaryText: "#556170",
+        componentText: "#020817",
+        placeholderText: "#556170",
+    },
+    dark: {
+        primary: "#FF8800",
+        background: "#000000",
+        componentBackground: "#1E293B",
+        componentBorder: "#1E293B",
+        componentDivider: "#3C3C43",
+        primaryText: "#F8FAFC",
+        secondaryText: "#9BA8B8",
+        componentText: "#F8FAFC",
+        placeholderText: "#9BA8B8",
+    },
+};
+
+function getPaymentAppearance(colorScheme: "light" | "dark") {
+    return {
+        shapes: {
+            borderRadius: 12,
+            borderWidth: 0.5,
+        },
+        primaryButton: {
+            shapes: {
+                borderRadius: 20,
+            },
+        },
+        colors: PAYMENT_SHEET_COLORS[colorScheme],
+    };
+}
+
 function getStatusIcon(
     settlementStatus: string,
     stripePayment: { status: string } | null,
 ) {
-    if (settlementStatus === "confirmed" || settlementStatus === "settled_in_person") {
+    if (
+        settlementStatus === "confirmed" ||
+        settlementStatus === "settled_in_person"
+    ) {
         return { name: "CircleCheck" as const, color: "#22c55e" };
     }
     if (stripePayment) {
@@ -101,6 +139,7 @@ export default function MySettlement() {
                 customerId: params.customerId,
                 merchantDisplayName: "BiteRunr",
                 returnURL: "biterunr://stripe-redirect",
+                appearance: getPaymentAppearance(colorScheme),
                 applePay: {
                     merchantCountryCode: "CA",
                 },
@@ -140,7 +179,7 @@ export default function MySettlement() {
 
         Alert.alert(
             "Settle in Cash",
-            `Confirm that you have paid ${formatCents(settlement.amountOwed)} to ${settlement.creatorFirstName} ${settlement.creatorLastName} in person?`,
+            `Confirm that you have paid ${formatCents(settlement.amountOwed)} to ${settlement.creatorFirstName} ${settlement.creatorLastName} in person?\n\nNo service fee applies for cash settlements.`,
             [
                 { text: "Cancel", style: "cancel" },
                 {
@@ -149,7 +188,8 @@ export default function MySettlement() {
                         try {
                             await markSettledInPerson({
                                 orderId: orderId as Id<"orders">,
-                                orderUserId: settlement.orderUserId as Id<"orderUsers">,
+                                orderUserId:
+                                    settlement.orderUserId as Id<"orderUsers">,
                             });
                         } catch (error) {
                             Alert.alert(
@@ -184,6 +224,8 @@ export default function MySettlement() {
     }
 
     const amount = Number(settlement.amountOwed);
+    const serviceFee = amount > 0 ? Math.max(100, Math.round(amount * 0.05)) : 0;
+    const totalWithFee = amount + serviceFee;
     const statusIcon = getStatusIcon(
         settlement.settlementStatus,
         settlement.stripePayment,
@@ -226,17 +268,37 @@ export default function MySettlement() {
 
                 {/* Amount Card */}
                 <View className="p-4 mx-4 mt-4 rounded-2xl border border-primary/30 bg-primary/5">
-                    <Text className="text-sm text-muted-foreground mb-1">
-                        You owe {settlement.creatorFirstName} {settlement.creatorLastName}
-                    </Text>
-                    <Text className="text-3xl font-bold text-foreground">
-                        {formatCents(amount)}
-                    </Text>
+                    {amount > 0 ? (
+                        <>
+                            <Text className="mb-1 text-sm text-muted-foreground">
+                                You owe {settlement.creatorFirstName}{" "}
+                                {settlement.creatorLastName}
+                            </Text>
+                            <Text className="text-lg text-foreground">
+                                Their share: {formatCents(amount)}
+                            </Text>
+                            <Text className="text-lg text-muted-foreground">
+                                Service fee: {formatCents(serviceFee)}
+                            </Text>
+                            <Text className="mt-1 text-3xl font-bold text-foreground">
+                                Total: {formatCents(totalWithFee)}
+                            </Text>
+                        </>
+                    ) : (
+                        <>
+                            <Text className="mb-1 text-sm text-muted-foreground">
+                                Nothing owed
+                            </Text>
+                            <Text className="text-3xl font-bold text-foreground">
+                                {formatCents(0)}
+                            </Text>
+                        </>
+                    )}
                 </View>
 
                 {/* Status Section */}
                 <View className="p-4 mx-4 mt-4 rounded-2xl border border-muted bg-card">
-                    <Text className="text-sm font-medium text-muted-foreground mb-3">
+                    <Text className="mb-3 text-sm font-medium text-muted-foreground">
                         Payment Status
                     </Text>
                     <View className="flex-row gap-2 items-center">
@@ -258,7 +320,7 @@ export default function MySettlement() {
 
                 {/* Footer Actions */}
                 {canPay && (
-                    <View className="px-6 pt-4 pb-10 border-t border-muted bg-background gap-3">
+                    <View className="gap-3 px-6 pt-4 pb-10 border-t border-muted bg-background">
                         {runnerAcceptsCards && (
                             <Button
                                 label="Pay with Card"
