@@ -11,7 +11,7 @@ export function HeaderBar() {
 
     const handleScan = (code: string) => {
         setShowScanner(false);
-        router.push(`/join/${code}`);
+        router.push(`/join/${encodeURIComponent(code)}`);
     };
 
     const handleEnterCode = () => {
@@ -22,7 +22,7 @@ export function HeaderBar() {
 
     const handleCodeSubmit = (code: string) => {
         setShowEnterCode(false);
-        router.push(`/join/${code}`);
+        router.push(`/join/${encodeURIComponent(code)}`);
     };
 
     return (

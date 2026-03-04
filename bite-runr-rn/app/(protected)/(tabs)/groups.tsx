@@ -80,6 +80,8 @@ export default function GroupsTab() {
             filter === "needs_payment"
         ) {
             setActiveFilter(filter);
+        } else {
+            setActiveFilter("all");
         }
     }, [filter]);
     const [showPaymentSplash, setShowPaymentSplash] = useState(false);

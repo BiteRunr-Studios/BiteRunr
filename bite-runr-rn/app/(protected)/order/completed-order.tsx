@@ -45,6 +45,31 @@ export default function CompletedOrder() {
         orderId ? { orderId: orderId as Id<"orders"> } : "skip",
     );
 
+    // No orderId provided — can't load anything
+    if (!orderId) {
+        return (
+            <SafeAreaView className="flex-1 bg-background">
+                <View className="flex-row items-center gap-3 px-4 py-3">
+                    <Pressable onPress={() => router.back()}>
+                        <Icon
+                            name="ArrowLeft"
+                            size={24}
+                            color={NAV_THEME[colorScheme].text}
+                        />
+                    </Pressable>
+                    <View className="flex-1">
+                        <Text className="text-lg font-semibold text-foreground">
+                            Order not found
+                        </Text>
+                        <Text className="text-xs text-muted-foreground">
+                            This order may have been deleted
+                        </Text>
+                    </View>
+                </View>
+            </SafeAreaView>
+        );
+    }
+
     if (!data) {
         return (
             <SafeAreaView className="flex-1 bg-background">
