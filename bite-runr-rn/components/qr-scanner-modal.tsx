@@ -9,12 +9,14 @@ type QRScannerModalProps = {
     visible: boolean;
     onScan: (code: string) => void;
     onClose: () => void;
+    onEnterCode: () => void;
 };
 
 export function QRScannerModal({
     visible,
     onScan,
     onClose,
+    onEnterCode,
 }: QRScannerModalProps) {
     const { colorScheme } = useColorScheme();
     const [permission, requestPermission] = useCameraPermissions();
@@ -140,6 +142,13 @@ export function QRScannerModal({
                             <Text className="text-white/60 text-center text-sm mt-2">
                                 The code will be scanned automatically
                             </Text>
+                            <Pressable
+                                onPress={onEnterCode}
+                                className="mt-4 py-3 rounded-xl bg-white/15 active:opacity-80">
+                                <Text className="text-white text-center text-sm font-medium">
+                                    Enter code manually
+                                </Text>
+                            </Pressable>
                         </View>
                     </>
                 )}
