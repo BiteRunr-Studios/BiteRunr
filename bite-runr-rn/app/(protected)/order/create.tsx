@@ -165,7 +165,7 @@ export default function CreateOrder() {
                 className="flex-1">
                 <ScrollView
                     className="flex-1"
-                    contentContainerStyle={{ padding: 16 }}
+                    contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}>
                     {/* Header Card */}

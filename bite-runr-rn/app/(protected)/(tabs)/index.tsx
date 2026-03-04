@@ -4,6 +4,7 @@ import {
     Text,
     View,
     TouchableOpacity,
+    Pressable,
 } from "react-native";
 import Animated, {
     FadeInUp,
@@ -159,46 +160,47 @@ export default function HomeTab() {
                     {isLoading && <HomeSkeleton />}
 
                     {!isLoading && (
-                        <View className="gap-6 px-4 pb-8 mt-4">
-                            {/* Greeting Header */}
-                            {currentUser?.firstName && (
-                                <Animated.View
-                                    entering={FadeInLeft.duration(500)}>
-                                    <View className="flex-row justify-between items-center">
-                                        <View>
-                                            <Text
-                                                className="text-2xl font-bold"
-                                                style={{
-                                                    color: "#f97316",
-                                                }}>
-                                                {getGreeting()}
-                                            </Text>
-                                            <Text className="mt-1 text-sm text-muted-foreground">
-                                                {new Date().toLocaleDateString(
-                                                    "en-US",
-                                                    {
-                                                        weekday: "long",
-                                                        month: "long",
-                                                        day: "numeric",
-                                                    },
-                                                )}
-                                            </Text>
-                                        </View>
-                                        <TouchableOpacity
-                                            onPress={handleCreateOrder}
-                                            className="flex-row items-center gap-1.5 px-4 py-2 rounded-full bg-primary">
-                                            <Icon
-                                                name="Plus"
-                                                size={16}
-                                                color="white"
-                                            />
-                                            <Text className="text-sm font-semibold text-white">
-                                                New Order
-                                            </Text>
-                                        </TouchableOpacity>
+                        <View className="px-4 pb-8">
+                            {/* New Order Row — matches groups page position */}
+                            <Animated.View
+                                entering={FadeInUp.duration(400)}
+                                className="flex-row items-center justify-between mt-2 mb-4">
+                                {currentUser?.firstName && (
+                                    <View>
+                                        <Text
+                                            className="text-2xl font-bold"
+                                            style={{
+                                                color: "#f97316",
+                                            }}>
+                                            {getGreeting()}
+                                        </Text>
+                                        <Text className="mt-1 text-sm text-muted-foreground">
+                                            {new Date().toLocaleDateString(
+                                                "en-US",
+                                                {
+                                                    weekday: "long",
+                                                    month: "long",
+                                                    day: "numeric",
+                                                },
+                                            )}
+                                        </Text>
                                     </View>
-                                </Animated.View>
-                            )}
+                                )}
+                                <Pressable
+                                    onPress={handleCreateOrder}
+                                    className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl bg-primary active:opacity-80">
+                                    <Icon
+                                        name="Plus"
+                                        size={16}
+                                        color="white"
+                                    />
+                                    <Text className="text-sm font-semibold text-white">
+                                        New Order
+                                    </Text>
+                                </Pressable>
+                            </Animated.View>
+
+                            <View className="gap-6">
 
                             {/* Summary Card */}
                             <Animated.View
@@ -287,7 +289,7 @@ export default function HomeTab() {
                                         </View>
                                     </AnimatedPressable>
 
-                                    {hasStripe && balanceAmount !== null && (
+                                    {hasStripe && (
                                             <>
                                                 <View className="my-3 border-l border-muted" />
                                                 <AnimatedPressable
@@ -305,13 +307,23 @@ export default function HomeTab() {
                                                                 color="#22c55e"
                                                             />
                                                         </View>
-                                                        <Text className="text-2xl font-bold text-green-600">
-                                                            $
-                                                            {(
-                                                                balanceAmount /
-                                                                100
-                                                            ).toFixed(2)}
-                                                        </Text>
+                                                        {balanceAmount !== null ? (
+                                                            <Animated.Text
+                                                                entering={FadeInUp.duration(300).easing(Easing.out(Easing.ease))}
+                                                                className={`font-bold text-green-600 ${balanceAmount >= 100000 ? "text-base" : balanceAmount >= 10000 ? "text-lg" : "text-2xl"}`}
+                                                                numberOfLines={1}
+                                                                adjustsFontSizeToFit>
+                                                                $
+                                                                {(
+                                                                    balanceAmount /
+                                                                    100
+                                                                ).toFixed(2)}
+                                                            </Animated.Text>
+                                                        ) : (
+                                                            <Skeleton>
+                                                                <SkeletonBlock width={50} height={24} rounded="rounded-md" />
+                                                            </Skeleton>
+                                                        )}
                                                         <Text className="text-xs text-muted-foreground">
                                                             Balance
                                                         </Text>
@@ -320,39 +332,6 @@ export default function HomeTab() {
                                             </>
                                         )}
 
-                                    {settlementSummary &&
-                                        settlementSummary.iOwe > 0 && (
-                                            <>
-                                                <View className="my-3 border-l border-muted" />
-                                                <AnimatedPressable
-                                                    className="flex-1"
-                                                    onPress={() =>
-                                                        router.push(
-                                                            "/account/payments",
-                                                        )
-                                                    }>
-                                                    <View className="items-center py-4 gap-1.5">
-                                                        <View className="items-center justify-center w-10 h-10 rounded-full bg-orange-500/10">
-                                                            <Icon
-                                                                name="ArrowUpRight"
-                                                                size={18}
-                                                                color="#f97316"
-                                                            />
-                                                        </View>
-                                                        <Text className="text-2xl font-bold text-orange-600">
-                                                            $
-                                                            {(
-                                                                settlementSummary.iOwe /
-                                                                100
-                                                            ).toFixed(0)}
-                                                        </Text>
-                                                        <Text className="text-xs text-muted-foreground">
-                                                            To Pay
-                                                        </Text>
-                                                    </View>
-                                                </AnimatedPressable>
-                                            </>
-                                        )}
                                 </View>
                             </Animated.View>
 
@@ -800,6 +779,7 @@ export default function HomeTab() {
                                         </TouchableOpacity>
                                     </Animated.View>
                                 )}
+                            </View>
                         </View>
                     )}
                 </ScrollView>

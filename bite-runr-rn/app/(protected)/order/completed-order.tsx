@@ -9,6 +9,7 @@ import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { Avatar } from "@/components/common/avatar";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
+import Animated, { FadeInUp, Easing } from "react-native-reanimated";
 
 const SETTLEMENT_BADGES: Record<
     string,
@@ -50,11 +51,13 @@ export default function CompletedOrder() {
         return (
             <SafeAreaView className="flex-1 bg-background">
                 <View className="flex-row items-center gap-3 px-4 py-3">
-                    <Pressable onPress={() => router.back()}>
+                    <Pressable
+                        onPress={() => router.back()}
+                        className="p-2 -ml-2 rounded-full active:opacity-70">
                         <Icon
-                            name="ArrowLeft"
+                            name="ChevronLeft"
                             size={24}
-                            color={NAV_THEME[colorScheme].text}
+                            color={NAV_THEME[colorScheme].primary}
                         />
                     </Pressable>
                     <View className="flex-1">
@@ -74,11 +77,13 @@ export default function CompletedOrder() {
         return (
             <SafeAreaView className="flex-1 bg-background">
                 <View className="flex-row items-center gap-3 px-4 py-3">
-                    <Pressable onPress={() => router.back()}>
+                    <Pressable
+                        onPress={() => router.back()}
+                        className="p-2 -ml-2 rounded-full active:opacity-70">
                         <Icon
-                            name="ArrowLeft"
+                            name="ChevronLeft"
                             size={24}
-                            color={NAV_THEME[colorScheme].text}
+                            color={NAV_THEME[colorScheme].primary}
                         />
                     </Pressable>
                     <View className="flex-1 gap-1">
@@ -145,12 +150,16 @@ export default function CompletedOrder() {
     return (
         <SafeAreaView className="flex-1 bg-background">
             {/* Header */}
-            <View className="flex-row items-center gap-3 px-4 py-3">
-                <Pressable onPress={() => router.back()}>
+            <Animated.View
+                entering={FadeInUp.duration(400).easing(Easing.out(Easing.ease))}
+                className="flex-row items-center gap-3 px-4 py-3">
+                <Pressable
+                    onPress={() => router.back()}
+                    className="p-2 -ml-2 rounded-full active:opacity-70">
                     <Icon
-                        name="ArrowLeft"
+                        name="ChevronLeft"
                         size={24}
-                        color={NAV_THEME[colorScheme].text}
+                        color={NAV_THEME[colorScheme].primary}
                     />
                 </Pressable>
                 <View className="flex-1">
@@ -174,7 +183,7 @@ export default function CompletedOrder() {
                         {statusBadge.label}
                     </Text>
                 </View>
-            </View>
+            </Animated.View>
 
             <ScrollView
                 className="flex-1"
@@ -182,7 +191,9 @@ export default function CompletedOrder() {
                 showsVerticalScrollIndicator={false}>
                 <View className="px-4 gap-4">
                     {/* Stats Bar */}
-                    <View className="flex-row rounded-2xl border border-muted bg-card overflow-hidden">
+                    <Animated.View
+                        entering={FadeInUp.duration(400).delay(100).easing(Easing.out(Easing.ease))}
+                        className="flex-row rounded-2xl border border-muted bg-card overflow-hidden">
                         <View className="flex-1 items-center py-4 gap-1">
                             <View className="items-center justify-center w-9 h-9 rounded-full bg-orange-500/10">
                                 <Icon
@@ -237,11 +248,13 @@ export default function CompletedOrder() {
                                 {data.isCreator ? "Total" : "Your Total"}
                             </Text>
                         </View>
-                    </View>
+                    </Animated.View>
 
                     {/* Locations */}
                     {data.locations.length > 0 && (
-                        <View className="flex-row flex-wrap gap-2">
+                        <Animated.View
+                            entering={FadeInUp.duration(400).delay(200).easing(Easing.out(Easing.ease))}
+                            className="flex-row flex-wrap gap-2">
                             {data.locations.map((loc) => (
                                 <View
                                     key={loc.id}
@@ -256,11 +269,13 @@ export default function CompletedOrder() {
                                     </Text>
                                 </View>
                             ))}
-                        </View>
+                        </Animated.View>
                     )}
 
                     {/* Participants */}
-                    <View className="gap-3">
+                    <Animated.View
+                        entering={FadeInUp.duration(400).delay(300).easing(Easing.out(Easing.ease))}
+                        className="gap-3">
                         <Text className="text-sm font-semibold text-muted-foreground">
                             Participants
                         </Text>
@@ -381,7 +396,7 @@ export default function CompletedOrder() {
                                 </View>
                             );
                         })}
-                    </View>
+                    </Animated.View>
                 </View>
             </ScrollView>
         </SafeAreaView>
