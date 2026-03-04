@@ -6,6 +6,7 @@ import {
     View,
     TouchableOpacity,
 } from "react-native";
+import Animated, { FadeInUp } from "react-native-reanimated";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { OrderCard, OrderCardSkeleton } from "@/components/order-card";
 import { Link, router, useLocalSearchParams } from "expo-router";
@@ -19,6 +20,7 @@ import { Skeleton } from "@/components/common/skeleton";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HeaderBar } from "@/components/layout/header-bar";
 import { PaymentSetupSplash } from "@/components/payment-setup-splash";
+import { AnimatedPressable } from "@/components/common/animated-pressable";
 
 type FilterType = "all" | "active" | "completed" | "needs_payment";
 type TimeSection = "Today" | "This Week" | "Earlier";
@@ -171,7 +173,7 @@ export default function GroupsTab() {
                     href={`/order/${item.order.id}`}
                     key={item.order.id}
                     asChild>
-                    <Pressable>
+                    <AnimatedPressable>
                         <OrderCard
                             id={item.order.id}
                             name={item.order.name}
@@ -182,7 +184,7 @@ export default function GroupsTab() {
                             itemCount={item.itemsCount}
                             locationNames={locationNames}
                         />
-                    </Pressable>
+                    </AnimatedPressable>
                 </Link>
             );
         }
@@ -220,7 +222,7 @@ export default function GroupsTab() {
                     href={`/order/completed-order?orderId=${item.order.id}`}
                     key={item.order.id}
                     asChild>
-                    <Pressable>{card}</Pressable>
+                    <AnimatedPressable>{card}</AnimatedPressable>
                 </Link>
             );
         }
@@ -242,7 +244,9 @@ export default function GroupsTab() {
                     showsVerticalScrollIndicator={false}>
                     <View className="flex-1 px-4">
                         {/* Tab Selector */}
-                        <View className="flex-row gap-2 mt-4 mb-4">
+                        <Animated.View
+                            entering={FadeInUp.duration(400)}
+                            className="flex-row gap-2 mt-4 mb-4">
                             {tabs.map((tab, index) => (
                                 <Pressable
                                     key={tab.label}
@@ -271,10 +275,12 @@ export default function GroupsTab() {
                                     </Text>
                                 </Pressable>
                             ))}
-                        </View>
+                        </Animated.View>
 
                         {/* Search Bar */}
-                        <View className="mb-3">
+                        <Animated.View
+                            entering={FadeInUp.duration(400).delay(100)}
+                            className="mb-3">
                             <Input
                                 value={searchQuery}
                                 placeholder="Search orders..."
@@ -287,9 +293,10 @@ export default function GroupsTab() {
                                 onChangeText={setSearchQuery}
                                 onBlur={() => null}
                             />
-                        </View>
+                        </Animated.View>
 
                         {/* Filter Chips */}
+                        <Animated.View entering={FadeInUp.duration(400).delay(200)}>
                         <ScrollView
                             horizontal
                             showsHorizontalScrollIndicator={false}
@@ -330,6 +337,7 @@ export default function GroupsTab() {
                                 );
                             })}
                         </ScrollView>
+                        </Animated.View>
 
                         {/* Content */}
                         {isPending && (
@@ -343,7 +351,7 @@ export default function GroupsTab() {
                         )}
 
                         {!isPending && filteredOrders && (
-                            <>
+                            <Animated.View entering={FadeInUp.duration(400).delay(300)}>
                                 {filteredOrders.length === 0 ? (
                                     <View className="items-center p-8 mt-4 rounded-2xl border border-dashed border-muted bg-card">
                                         <View
@@ -440,7 +448,7 @@ export default function GroupsTab() {
                                         )}
                                     </View>
                                 )}
-                            </>
+                            </Animated.View>
                         )}
                     </View>
                 </ScrollView>

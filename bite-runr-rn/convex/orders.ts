@@ -648,6 +648,59 @@ export const getSettlementSummary = query({
   },
 });
 
+// Get per-order breakdown of who owes you money
+export const getOutstandingDebts = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    const userOrderUsers = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+
+    const debts: {
+      orderId: string;
+      orderName: string;
+      userId: string;
+      firstName: string;
+      lastName: string;
+      avatarUrl: string | null;
+      amountOwed: number;
+    }[] = [];
+
+    for (const userOU of userOrderUsers) {
+      const order = await ctx.db.get(userOU.orderId);
+      if (!order || order.status === "cancelled" || order.creatorId !== userId) continue;
+
+      const allOrderUsers = await ctx.db
+        .query("orderUsers")
+        .withIndex("by_orderId", (q) => q.eq("orderId", order._id))
+        .collect();
+
+      for (const ou of allOrderUsers) {
+        if (ou.userId === userId) continue;
+        if (ou.settlementStatus === "confirmed" || ou.settlementStatus === "settled_in_person") continue;
+        if (ou.amountOwed <= 0n) continue;
+
+        const user = await ctx.db.get(ou.userId);
+        debts.push({
+          orderId: order._id,
+          orderName: order.name,
+          userId: ou.userId,
+          firstName: user?.firstName ?? "",
+          lastName: user?.lastName ?? "",
+          avatarUrl: user?.avatarUrl ?? null,
+          amountOwed: Number(ou.amountOwed),
+        });
+      }
+    }
+
+    return debts.sort((a, b) => b.amountOwed - a.amountOwed);
+  },
+});
+
 // Get completed order details for the completed order detail screen
 export const getCompletedOrderDetails = query({
   args: { orderId: v.id("orders") },

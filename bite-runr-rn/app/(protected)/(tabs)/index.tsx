@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
     ScrollView,
     Text,
@@ -16,7 +16,7 @@ import Animated, {
     Easing,
 } from "react-native-reanimated";
 import { ErrorBoundary } from "@/components/common/error-boundary";
-import { useQuery } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Icon from "@/components/common/icon";
 import { NAV_THEME } from "@/lib/constants";
@@ -67,6 +67,7 @@ export default function HomeTab() {
     const activeOrders = useQuery(api.orders.getActiveOrders);
     const pastOrders = useQuery(api.orders.getPastOrders, { limit: 3 });
     const settlementSummary = useQuery(api.orders.getSettlementSummary);
+    const outstandingDebts = useQuery(api.orders.getOutstandingDebts);
     const frequentGroups = useQuery(api.orders.getFrequentGroups, {});
     const friends = useQuery(api.friends.list);
     const pendingRequests = useQuery(api.friends.pendingRequestCount);
@@ -77,6 +78,24 @@ export default function HomeTab() {
     const insets = useSafeAreaInsets();
     const [isInitializing, setIsInitializing] = useState(true);
     const [showPaymentSplash, setShowPaymentSplash] = useState(false);
+    const [balanceAmount, setBalanceAmount] = useState<number | null>(null);
+    const getPayoutBalance = useAction(api.stripeConnect.getPayoutBalance);
+
+    const hasStripe = connectedAccount?.chargesEnabled === true;
+
+    const fetchBalance = useCallback(async () => {
+        if (!hasStripe) return;
+        try {
+            const result = await getPayoutBalance({});
+            setBalanceAmount(result.available + result.pending);
+        } catch {
+            // Silently fail
+        }
+    }, [hasStripe, getPayoutBalance]);
+
+    useEffect(() => {
+        fetchBalance();
+    }, [fetchBalance]);
 
     const handleCreateOrder = () => {
         if (connectedAccount?.chargesEnabled) {
@@ -268,8 +287,7 @@ export default function HomeTab() {
                                         </View>
                                     </AnimatedPressable>
 
-                                    {settlementSummary &&
-                                        settlementSummary.owedToMe > 0 && (
+                                    {hasStripe && balanceAmount !== null && (
                                             <>
                                                 <View className="my-3 border-l border-muted" />
                                                 <AnimatedPressable
@@ -282,7 +300,7 @@ export default function HomeTab() {
                                                     <View className="items-center py-4 gap-1.5">
                                                         <View className="items-center justify-center w-10 h-10 rounded-full bg-green-500/10">
                                                             <Icon
-                                                                name="ArrowDownLeft"
+                                                                name="Wallet"
                                                                 size={18}
                                                                 color="#22c55e"
                                                             />
@@ -290,12 +308,12 @@ export default function HomeTab() {
                                                         <Text className="text-2xl font-bold text-green-600">
                                                             $
                                                             {(
-                                                                settlementSummary.owedToMe /
+                                                                balanceAmount /
                                                                 100
-                                                            ).toFixed(0)}
+                                                            ).toFixed(2)}
                                                         </Text>
                                                         <Text className="text-xs text-muted-foreground">
-                                                            To Collect
+                                                            Balance
                                                         </Text>
                                                     </View>
                                                 </AnimatedPressable>
@@ -337,6 +355,68 @@ export default function HomeTab() {
                                         )}
                                 </View>
                             </Animated.View>
+
+                            {/* Outstanding Debts Section */}
+                            {outstandingDebts && outstandingDebts.length > 0 && (
+                                <Animated.View
+                                    entering={FadeInUp.duration(500).delay(
+                                        150,
+                                    )}>
+                                    <View className="flex-row gap-2 items-center mb-3">
+                                        <Icon
+                                            name="CircleDollarSign"
+                                            size={20}
+                                            color="#f97316"
+                                        />
+                                        <Text className="text-lg font-semibold text-foreground">
+                                            Awaiting Payment
+                                        </Text>
+                                        <View className="px-2 py-0.5 rounded-full bg-orange-500/10">
+                                            <Text className="text-xs font-medium text-orange-500">
+                                                {outstandingDebts.length}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    <View className="gap-2">
+                                        {outstandingDebts.map((debt) => (
+                                            <AnimatedPressable
+                                                key={`${debt.orderId}-${debt.userId}`}
+                                                onPress={() =>
+                                                    router.push(
+                                                        `/order/${debt.orderId}`,
+                                                    )
+                                                }>
+                                                <View className="flex-row items-center p-3 rounded-xl border border-muted bg-card">
+                                                    <Avatar
+                                                        name={`${debt.firstName} ${debt.lastName}`}
+                                                        avatarUrl={
+                                                            debt.avatarUrl
+                                                        }
+                                                        size={40}
+                                                    />
+                                                    <View className="flex-1 ml-3">
+                                                        <Text className="text-sm font-semibold text-foreground">
+                                                            {debt.firstName}{" "}
+                                                            {debt.lastName}
+                                                        </Text>
+                                                        <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+                                                            {debt.orderName}
+                                                        </Text>
+                                                    </View>
+                                                    <Text className="text-base font-bold text-orange-500">
+                                                        $
+                                                        {(
+                                                            debt.amountOwed /
+                                                            100
+                                                        ).toFixed(2)}
+                                                    </Text>
+                                                </View>
+                                            </AnimatedPressable>
+                                        ))}
+                                    </View>
+                                </Animated.View>
+                            )}
 
                             {/* Your Squads Section */}
                             {hasAnyData && <Animated.View
