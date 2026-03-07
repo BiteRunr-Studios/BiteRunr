@@ -73,7 +73,7 @@ export default function CompletedOrder() {
         );
     }
 
-    if (!data) {
+    if (data === undefined) {
         return (
             <SafeAreaView className="flex-1 bg-background">
                 <View className="flex-row items-center gap-3 px-4 py-3">
@@ -141,6 +141,32 @@ export default function CompletedOrder() {
                         ))}
                     </View>
                 </Skeleton>
+            </SafeAreaView>
+        );
+    }
+
+    if (data === null) {
+        return (
+            <SafeAreaView className="flex-1 bg-background">
+                <View className="flex-row items-center gap-3 px-4 py-3">
+                    <Pressable
+                        onPress={() => router.back()}
+                        className="p-2 -ml-2 rounded-full active:opacity-70">
+                        <Icon
+                            name="ChevronLeft"
+                            size={24}
+                            color={NAV_THEME[colorScheme].primary}
+                        />
+                    </Pressable>
+                    <View className="flex-1">
+                        <Text className="text-lg font-semibold text-foreground">
+                            Order not found
+                        </Text>
+                        <Text className="text-xs text-muted-foreground">
+                            This order is no longer available
+                        </Text>
+                    </View>
+                </View>
             </SafeAreaView>
         );
     }
