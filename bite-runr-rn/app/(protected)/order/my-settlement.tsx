@@ -274,7 +274,7 @@ export default function MySettlement() {
                                 You owe {settlement.creatorFirstName}{" "}
                                 {settlement.creatorLastName}
                             </Text>
-                            {settlement.settlementStatus === "settled_in_person" ? (
+                            {settlement.settlementStatus === "settled_in_person" || (!runnerAcceptsCards && !isSettled) ? (
                                 <Text className="mt-1 text-3xl font-bold text-foreground">
                                     {formatCents(amount)}
                                 </Text>
