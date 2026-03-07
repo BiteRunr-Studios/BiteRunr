@@ -11,6 +11,7 @@
 import type * as admin from "../admin.js";
 import type * as auth from "../auth.js";
 import type * as authHelper from "../authHelper.js";
+import type * as fees from "../fees.js";
 import type * as friends from "../friends.js";
 import type * as http from "../http.js";
 import type * as items from "../items.js";
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   auth: typeof auth;
   authHelper: typeof authHelper;
+  fees: typeof fees;
   friends: typeof friends;
   http: typeof http;
   items: typeof items;
