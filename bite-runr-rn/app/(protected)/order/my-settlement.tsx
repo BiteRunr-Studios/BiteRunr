@@ -224,8 +224,8 @@ export default function MySettlement() {
     }
 
     const amount = Number(settlement.amountOwed);
-    const serviceFee = amount > 0 ? Math.max(100, Math.round(amount * 0.05)) : 0;
-    const totalWithFee = amount + serviceFee;
+    const serviceFee = settlement.serviceFee;
+    const totalWithFee = settlement.totalWithFee;
     const statusIcon = getStatusIcon(
         settlement.settlementStatus,
         settlement.stripePayment,
@@ -274,15 +274,23 @@ export default function MySettlement() {
                                 You owe {settlement.creatorFirstName}{" "}
                                 {settlement.creatorLastName}
                             </Text>
-                            <Text className="text-lg text-foreground">
-                                Their share: {formatCents(amount)}
-                            </Text>
-                            <Text className="text-lg text-muted-foreground">
-                                Service fee: {formatCents(serviceFee)}
-                            </Text>
-                            <Text className="mt-1 text-3xl font-bold text-foreground">
-                                Total: {formatCents(totalWithFee)}
-                            </Text>
+                            {settlement.settlementStatus === "settled_in_person" ? (
+                                <Text className="mt-1 text-3xl font-bold text-foreground">
+                                    {formatCents(amount)}
+                                </Text>
+                            ) : (
+                                <>
+                                    <Text className="text-lg text-foreground">
+                                        Their share: {formatCents(amount)}
+                                    </Text>
+                                    <Text className="text-lg text-muted-foreground">
+                                        Service fee: {formatCents(serviceFee)}
+                                    </Text>
+                                    <Text className="mt-1 text-3xl font-bold text-foreground">
+                                        Total: {formatCents(totalWithFee)}
+                                    </Text>
+                                </>
+                            )}
                         </>
                     ) : (
                         <>
