@@ -33,6 +33,7 @@ interface OrderCardProps {
     orderUsers?: OrderUser[];
     itemCount?: number;
     onReorder?: () => void;
+    locationNames?: string[];
 }
 
 export function OrderCard({
@@ -43,6 +44,7 @@ export function OrderCard({
     orderUsers,
     itemCount,
     onReorder,
+    locationNames,
 }: OrderCardProps) {
     const isCancelled = status === "cancelled";
     const isCompleted = status === "completed";
@@ -137,6 +139,20 @@ export function OrderCard({
                         numberOfLines={1}>
                         {name}
                     </Text>
+                    {locationNames && locationNames.length > 0 && (
+                        <View className="flex-row gap-1 items-center mt-1">
+                            <Icon
+                                name="MapPin"
+                                size={12}
+                                color="#ef4444"
+                            />
+                            <Text
+                                className="text-xs text-muted-foreground"
+                                numberOfLines={1}>
+                                {locationNames.join(", ")}
+                            </Text>
+                        </View>
+                    )}
                 </View>
                 <View
                     className={`flex-row items-center gap-1.5 px-2.5 py-1 rounded-full ${statusConfig.bg}`}>

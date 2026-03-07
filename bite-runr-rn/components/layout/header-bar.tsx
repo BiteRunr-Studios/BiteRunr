@@ -3,13 +3,26 @@ import { View, Image, Pressable } from "react-native";
 import { TabBarIcon } from "@/components/layout/tabbar-icon";
 import { router } from "expo-router";
 import { QRScannerModal } from "@/components/qr-scanner-modal";
+import { EnterCodeModal } from "@/components/enter-code-modal";
 
 export function HeaderBar() {
     const [showScanner, setShowScanner] = useState(false);
+    const [showEnterCode, setShowEnterCode] = useState(false);
 
     const handleScan = (code: string) => {
         setShowScanner(false);
-        router.push(`/join/${code}`);
+        router.push(`/join/${encodeURIComponent(code)}`);
+    };
+
+    const handleEnterCode = () => {
+        setShowScanner(false);
+        // Small delay to let the scanner modal close before opening the code modal
+        setTimeout(() => setShowEnterCode(true), 300);
+    };
+
+    const handleCodeSubmit = (code: string) => {
+        setShowEnterCode(false);
+        router.push(`/join/${encodeURIComponent(code)}`);
     };
 
     return (
@@ -38,6 +51,13 @@ export function HeaderBar() {
                 visible={showScanner}
                 onScan={handleScan}
                 onClose={() => setShowScanner(false)}
+                onEnterCode={handleEnterCode}
+            />
+
+            <EnterCodeModal
+                visible={showEnterCode}
+                onSubmit={handleCodeSubmit}
+                onClose={() => setShowEnterCode(false)}
             />
         </View>
     );

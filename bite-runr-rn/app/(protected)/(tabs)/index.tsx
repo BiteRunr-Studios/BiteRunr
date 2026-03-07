@@ -1,26 +1,24 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
-    Pressable,
     ScrollView,
     Text,
     View,
     TouchableOpacity,
-    useWindowDimensions,
+    Pressable,
 } from "react-native";
 import Animated, {
     FadeInUp,
     FadeInLeft,
     useSharedValue,
     useAnimatedStyle,
-    withTiming,
     withRepeat,
     withSequence,
+    withTiming,
     Easing,
 } from "react-native-reanimated";
 import { ErrorBoundary } from "@/components/common/error-boundary";
-import { useQuery } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { OrderCard, OrderCardSkeleton } from "@/components/order-card";
 import Icon from "@/components/common/icon";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
@@ -28,36 +26,9 @@ import { useRouter } from "expo-router";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { HeaderBar } from "@/components/layout/header-bar";
-
-const ReanimatedPressable = Animated.createAnimatedComponent(Pressable);
-
-function AnimatedPressable({
-    children,
-    style,
-    ...props
-}: React.ComponentProps<typeof Pressable>) {
-    const scale = useSharedValue(1);
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: scale.value }],
-    }));
-
-    const onPressIn = useCallback(() => {
-        scale.value = withTiming(0.97, { duration: 150 });
-    }, []);
-    const onPressOut = useCallback(() => {
-        scale.value = withTiming(1, { duration: 200 });
-    }, []);
-
-    return (
-        <ReanimatedPressable
-            onPressIn={onPressIn}
-            onPressOut={onPressOut}
-            style={[animatedStyle, style]}
-            {...props}>
-            {children}
-        </ReanimatedPressable>
-    );
-}
+import { AnimatedPressable } from "@/components/common/animated-pressable";
+import { Avatar } from "@/components/common/avatar";
+import { PaymentSetupSplash } from "@/components/payment-setup-splash";
 
 function FloatingIcon({ children }: { children: React.ReactNode }) {
     const translateY = useSharedValue(0);
@@ -93,49 +64,86 @@ function getGreeting(): string {
     return "Good evening";
 }
 
-const CARD_PADDING = 16;
-const CARD_GAP = 16;
-
 export default function HomeTab() {
     const activeOrders = useQuery(api.orders.getActiveOrders);
     const pastOrders = useQuery(api.orders.getPastOrders, { limit: 3 });
-    const frequentItems = useQuery(api.orders.getFrequentItems, { limit: 6 });
+    const settlementSummary = useQuery(api.orders.getSettlementSummary);
+    const outstandingDebts = useQuery(api.orders.getOutstandingDebts);
+    const frequentGroups = useQuery(api.orders.getFrequentGroups, {});
+    const friends = useQuery(api.friends.list);
+    const pendingRequests = useQuery(api.friends.pendingRequestCount);
     const currentUser = useQuery(api.users.getCurrentUser);
+    const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
     const { colorScheme } = useColorScheme();
     const router = useRouter();
     const insets = useSafeAreaInsets();
-    const { width: screenWidth } = useWindowDimensions();
-    const cardWidth = screenWidth - CARD_PADDING * 2;
-    // Track initial data load to prevent flash of empty state
     const [isInitializing, setIsInitializing] = useState(true);
+    const [showPaymentSplash, setShowPaymentSplash] = useState(false);
+    const [balanceAmount, setBalanceAmount] = useState<number | null>(null);
+    const getPayoutBalance = useAction(api.stripeConnect.getPayoutBalance);
+
+    const hasStripe = connectedAccount?.chargesEnabled === true;
+
+    const fetchBalance = useCallback(async () => {
+        if (!hasStripe) return;
+        try {
+            const result = await getPayoutBalance({});
+            setBalanceAmount(result.available + result.pending);
+        } catch {
+            // Silently fail
+        }
+    }, [hasStripe, getPayoutBalance]);
+
+    useEffect(() => {
+        fetchBalance();
+    }, [fetchBalance]);
+
+    const handleCreateOrder = () => {
+        if (connectedAccount?.chargesEnabled) {
+            router.push("/order/create");
+        } else {
+            setShowPaymentSplash(true);
+        }
+    };
 
     const queriesReturned =
         activeOrders !== undefined &&
         pastOrders !== undefined &&
-        frequentItems !== undefined;
+        settlementSummary !== undefined &&
+        frequentGroups !== undefined &&
+        friends !== undefined &&
+        pendingRequests !== undefined;
 
     const hasAnyData =
         (activeOrders?.length ?? 0) > 0 ||
         (pastOrders?.length ?? 0) > 0 ||
-        (frequentItems?.length ?? 0) > 0;
+        (settlementSummary?.owedToMe ?? 0) > 0 ||
+        (settlementSummary?.iOwe ?? 0) > 0 ||
+        (frequentGroups?.squads?.length ?? 0) > 0 ||
+        (friends?.length ?? 0) > 0;
 
-    // Show content immediately if we have data, otherwise wait for data to settle
     useEffect(() => {
         if (!queriesReturned) return;
-
-        // If we have data, show it immediately
         if (hasAnyData) {
             setIsInitializing(false);
             return;
         }
-
-        // If queries returned but empty, wait longer before showing empty state
-        // This handles the case where Convex returns empty before auth syncs
         const timer = setTimeout(() => setIsInitializing(false), 1500);
         return () => clearTimeout(timer);
     }, [queriesReturned, hasAnyData]);
 
     const isLoading = !queriesReturned || isInitializing;
+
+    const hasSettlementData =
+        settlementSummary &&
+        (settlementSummary.owedToMe > 0 || settlementSummary.iOwe > 0);
+
+    const hasSquads =
+        frequentGroups && frequentGroups.squads.length > 0;
+
+    const activeOrderCount = activeOrders?.length ?? 0;
+    const friendCount = friends?.length ?? 0;
+    const pendingRequestCount = pendingRequests ?? 0;
 
     return (
         <ErrorBoundary>
@@ -152,246 +160,420 @@ export default function HomeTab() {
                     {isLoading && <HomeSkeleton />}
 
                     {!isLoading && (
-                        <View className="gap-8 px-4 pb-8 mt-4">
-                            {/* Greeting Header */}
-                            {currentUser?.firstName && (
-                                <Animated.View
-                                    entering={FadeInLeft.duration(500)}>
-                                    <View className="flex-row justify-between items-center">
-                                        <View>
-                                            <Text
-                                                className="text-2xl font-bold"
-                                                style={{
-                                                    color: "#f97316",
-                                                }}>
-                                                {getGreeting()}
-                                            </Text>
-                                            <Text className="mt-1 text-sm text-muted-foreground">
-                                                {new Date().toLocaleDateString(
-                                                    "en-US",
-                                                    {
-                                                        weekday: "long",
-                                                        month: "long",
-                                                        day: "numeric",
-                                                    },
-                                                )}
-                                            </Text>
-                                        </View>
-                                        <TouchableOpacity
-                                            onPress={() =>
-                                                router.push("/order/create")
-                                            }
-                                            className="flex-row items-center gap-1.5 px-4 py-2 rounded-full bg-primary">
-                                            <Icon
-                                                name="Plus"
-                                                size={16}
-                                                color="white"
-                                            />
-                                            <Text className="text-sm font-semibold text-white">
-                                                New Order
-                                            </Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </Animated.View>
-                            )}
-
-                            {/* Active Orders Section - only show if there are active orders OR if there's other data */}
-                            {(activeOrders.length > 0 ||
-                                pastOrders.length > 0 ||
-                                frequentItems.length > 0) && (
-                                <Animated.View
-                                    entering={FadeInUp.duration(500)}>
-                                    <View className="flex-row justify-between items-center mb-4">
-                                        <View className="flex-row gap-2 items-center">
-                                            <Icon
-                                                name="Zap"
-                                                size={20}
-                                                color={
-                                                    NAV_THEME[colorScheme]
-                                                        .primary
-                                                }
-                                            />
-                                            <Text className="text-lg font-semibold text-foreground">
-                                                Active Orders
-                                            </Text>
-                                        </View>
-                                        {activeOrders.length > 0 && (
-                                            <View className="px-3 py-1.5 rounded-full bg-primary/10">
-                                                <Text className="text-sm font-semibold text-primary">
-                                                    {activeOrders.length} active
-                                                </Text>
-                                            </View>
-                                        )}
-                                    </View>
-
-                                    {activeOrders.length === 0 ? (
-                                        <View className="items-center p-10 rounded-2xl border border-dashed border-muted bg-card">
-                                            <FloatingIcon>
-                                                <View className="justify-center items-center mb-5 w-20 h-20 rounded-2xl bg-primary/10">
-                                                    <Icon
-                                                        name="ShoppingBag"
-                                                        size={36}
-                                                        color={
-                                                            NAV_THEME[
-                                                                colorScheme
-                                                            ].primary
-                                                        }
-                                                    />
-                                                </View>
-                                            </FloatingIcon>
-                                            <Text className="text-base font-medium text-foreground">
-                                                No active orders
-                                            </Text>
-                                            <Text className="mt-2 text-sm text-center text-muted-foreground">
-                                                Start a new order to get your
-                                                group together
-                                            </Text>
-                                            <TouchableOpacity
-                                                onPress={() =>
-                                                    router.push("/order/create")
-                                                }
-                                                className="flex-row items-center gap-2 px-5 py-2.5 mt-5 rounded-full bg-primary">
-                                                <Icon
-                                                    name="Plus"
-                                                    size={18}
-                                                    color="white"
-                                                />
-                                                <Text className="font-semibold text-white">
-                                                    New Order
-                                                </Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    ) : (
-                                        <ScrollView
-                                            horizontal
-                                            showsHorizontalScrollIndicator={
-                                                false
-                                            }
-                                            pagingEnabled={false}
-                                            decelerationRate="fast"
-                                            snapToInterval={
-                                                cardWidth + CARD_GAP
-                                            }
-                                            snapToAlignment="start"
-                                            className="-mx-4"
-                                            contentContainerStyle={{
-                                                paddingHorizontal: CARD_PADDING,
-                                                alignItems: "stretch",
+                        <View className="px-4 pb-8">
+                            {/* New Order Row — matches groups page position */}
+                            <Animated.View
+                                entering={FadeInUp.duration(400)}
+                                className="flex-row items-center justify-between mt-2 mb-4">
+                                {currentUser?.firstName && (
+                                    <View>
+                                        <Text
+                                            className="text-2xl font-bold"
+                                            style={{
+                                                color: "#f97316",
                                             }}>
-                                            {activeOrders.map(
-                                                (order, index) => (
-                                                    <AnimatedPressable
-                                                        key={order.id}
-                                                        onPress={() =>
-                                                            router.push(
-                                                                `/order/${order.id}`,
-                                                            )
-                                                        }
-                                                        style={{
-                                                            width: cardWidth,
-                                                            marginRight:
-                                                                index <
-                                                                activeOrders.length -
-                                                                    1
-                                                                    ? CARD_GAP
-                                                                    : 0,
-                                                        }}>
-                                                        <OrderCard
-                                                            id={order.id}
-                                                            name={order.name}
-                                                            status={
-                                                                order.status
-                                                            }
-                                                            paused={
-                                                                order.paused
-                                                            }
-                                                            createdAt={
-                                                                order.createdAt
-                                                            }
-                                                            orderUsers={
-                                                                order.orderUsers
-                                                            }
-                                                        />
-                                                    </AnimatedPressable>
-                                                ),
+                                            {getGreeting()}
+                                        </Text>
+                                        <Text className="mt-1 text-sm text-muted-foreground">
+                                            {new Date().toLocaleDateString(
+                                                "en-US",
+                                                {
+                                                    weekday: "long",
+                                                    month: "long",
+                                                    day: "numeric",
+                                                },
                                             )}
-                                        </ScrollView>
-                                    )}
-                                </Animated.View>
-                            )}
+                                        </Text>
+                                    </View>
+                                )}
+                                <Pressable
+                                    onPress={handleCreateOrder}
+                                    className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl bg-primary active:opacity-80">
+                                    <Icon
+                                        name="Plus"
+                                        size={16}
+                                        color="white"
+                                    />
+                                    <Text className="text-sm font-semibold text-white">
+                                        New Order
+                                    </Text>
+                                </Pressable>
+                            </Animated.View>
 
-                            {/* Frequently Ordered Items Section */}
-                            {frequentItems.length > 0 && (
+                            <View className="gap-6">
+
+                            {/* Summary Card */}
+                            <Animated.View
+                                entering={FadeInUp.duration(400)}>
+                                <View className="flex-row rounded-2xl border border-muted bg-card overflow-hidden">
+                                    <AnimatedPressable
+                                        className="flex-1"
+                                        onPress={() =>
+                                            router.push(
+                                                "/groups?filter=active",
+                                            )
+                                        }>
+                                        <View className="items-center py-4 gap-1.5">
+                                            <View className="items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                                                <Icon
+                                                    name="Zap"
+                                                    size={18}
+                                                    color={
+                                                        NAV_THEME[
+                                                            colorScheme
+                                                        ].primary
+                                                    }
+                                                />
+                                            </View>
+                                            <Text className="text-2xl font-bold text-foreground">
+                                                {activeOrderCount}
+                                            </Text>
+                                            <Text className="text-xs text-muted-foreground">
+                                                Orders Active
+                                            </Text>
+                                        </View>
+                                    </AnimatedPressable>
+
+                                    <View className="my-3 border-l border-muted" />
+
+                                    <AnimatedPressable
+                                        className="flex-1"
+                                        onPress={() =>
+                                            router.push("/account/friends")
+                                        }>
+                                        <View className="items-center py-4 gap-1.5">
+                                            <View className="items-center justify-center w-10 h-10 rounded-full bg-blue-500/10">
+                                                <Icon
+                                                    name="Users"
+                                                    size={18}
+                                                    color="#3b82f6"
+                                                />
+                                            </View>
+                                            <Text className="text-2xl font-bold text-foreground">
+                                                {friendCount}
+                                            </Text>
+                                            <Text className="text-xs text-muted-foreground">
+                                                Friends
+                                            </Text>
+                                        </View>
+                                    </AnimatedPressable>
+
+                                    <View className="my-3 border-l border-muted" />
+
+                                    <AnimatedPressable
+                                        className="flex-1"
+                                        onPress={() =>
+                                            router.push("/account/friends")
+                                        }>
+                                        <View className="items-center py-4 gap-1.5">
+                                            <View className="items-center justify-center w-10 h-10 rounded-full bg-yellow-500/10">
+                                                <Icon
+                                                    name="UserPlus"
+                                                    size={18}
+                                                    color="#eab308"
+                                                />
+                                                {pendingRequestCount > 0 && (
+                                                    <View className="absolute -top-1 -right-1 items-center justify-center px-1 min-w-[16px] h-4 rounded-full bg-red-500">
+                                                        <Text className="text-[9px] font-bold text-white">
+                                                            {pendingRequestCount}
+                                                        </Text>
+                                                    </View>
+                                                )}
+                                            </View>
+                                            <Text className="text-2xl font-bold text-foreground">
+                                                {pendingRequestCount}
+                                            </Text>
+                                            <Text className="text-xs text-muted-foreground">
+                                                Requests
+                                            </Text>
+                                        </View>
+                                    </AnimatedPressable>
+
+                                    {hasStripe && (
+                                            <>
+                                                <View className="my-3 border-l border-muted" />
+                                                <AnimatedPressable
+                                                    className="flex-1"
+                                                    onPress={() =>
+                                                        router.push(
+                                                            "/account/payments",
+                                                        )
+                                                    }>
+                                                    <View className="items-center py-4 gap-1.5">
+                                                        <View className="items-center justify-center w-10 h-10 rounded-full bg-green-500/10">
+                                                            <Icon
+                                                                name="Wallet"
+                                                                size={18}
+                                                                color="#22c55e"
+                                                            />
+                                                        </View>
+                                                        {balanceAmount !== null ? (
+                                                            <Animated.Text
+                                                                entering={FadeInUp.duration(300).easing(Easing.out(Easing.ease))}
+                                                                className={`font-bold text-green-600 ${balanceAmount >= 100000 ? "text-base" : balanceAmount >= 10000 ? "text-lg" : "text-2xl"}`}
+                                                                numberOfLines={1}
+                                                                adjustsFontSizeToFit>
+                                                                $
+                                                                {(
+                                                                    balanceAmount /
+                                                                    100
+                                                                ).toFixed(2)}
+                                                            </Animated.Text>
+                                                        ) : (
+                                                            <Skeleton>
+                                                                <SkeletonBlock width={50} height={24} rounded="rounded-md" />
+                                                            </Skeleton>
+                                                        )}
+                                                        <Text className="text-xs text-muted-foreground">
+                                                            Balance
+                                                        </Text>
+                                                    </View>
+                                                </AnimatedPressable>
+                                            </>
+                                        )}
+
+                                </View>
+                            </Animated.View>
+
+                            {/* Outstanding Debts Section */}
+                            {outstandingDebts && outstandingDebts.length > 0 && (
                                 <Animated.View
                                     entering={FadeInUp.duration(500).delay(
                                         150,
                                     )}>
-                                    <View className="flex-row gap-2 items-center mb-4">
+                                    <View className="flex-row gap-2 items-center mb-3">
                                         <Icon
-                                            name="Star"
+                                            name="CircleDollarSign"
                                             size={20}
-                                            color="#eab308"
+                                            color="#f97316"
                                         />
                                         <Text className="text-lg font-semibold text-foreground">
-                                            Your Favorites
+                                            Awaiting Payment
                                         </Text>
+                                        <View className="px-2 py-0.5 rounded-full bg-orange-500/10">
+                                            <Text className="text-xs font-medium text-orange-500">
+                                                {outstandingDebts.length}
+                                            </Text>
+                                        </View>
                                     </View>
 
+                                    <View className="gap-2">
+                                        {outstandingDebts.map((debt) => (
+                                            <AnimatedPressable
+                                                key={`${debt.orderId}-${debt.userId}`}
+                                                onPress={() =>
+                                                    router.push(
+                                                        `/order/${debt.orderId}`,
+                                                    )
+                                                }>
+                                                <View className="flex-row items-center p-3 rounded-xl border border-muted bg-card">
+                                                    <Avatar
+                                                        name={`${debt.firstName} ${debt.lastName}`}
+                                                        avatarUrl={
+                                                            debt.avatarUrl
+                                                        }
+                                                        size={40}
+                                                    />
+                                                    <View className="flex-1 ml-3">
+                                                        <Text className="text-sm font-semibold text-foreground">
+                                                            {debt.firstName}{" "}
+                                                            {debt.lastName}
+                                                        </Text>
+                                                        <Text className="text-xs text-muted-foreground" numberOfLines={1}>
+                                                            {debt.orderName}
+                                                        </Text>
+                                                    </View>
+                                                    <Text className="text-base font-bold text-orange-500">
+                                                        $
+                                                        {(
+                                                            debt.amountOwed /
+                                                            100
+                                                        ).toFixed(2)}
+                                                    </Text>
+                                                </View>
+                                            </AnimatedPressable>
+                                        ))}
+                                    </View>
+                                </Animated.View>
+                            )}
+
+                            {/* Your Squads Section */}
+                            {hasAnyData && <Animated.View
+                                entering={FadeInUp.duration(500).delay(
+                                    200,
+                                )}>
+                                <View className="flex-row gap-2 items-center mb-3">
+                                    <Icon
+                                        name="Users"
+                                        size={20}
+                                        color="#3b82f6"
+                                    />
+                                    <Text className="text-lg font-semibold text-foreground">
+                                        Your Squads
+                                    </Text>
+                                </View>
+
+                            {hasSquads ? (
                                     <ScrollView
                                         horizontal
                                         showsHorizontalScrollIndicator={false}
                                         className="px-4 -mx-4">
                                         <View className="flex-row gap-3">
-                                            {frequentItems.map((item) => (
-                                                <AnimatedPressable
-                                                    key={item.id}
-                                                    style={{ width: 176 }}>
-                                                    <View className="p-4 rounded-2xl border border-muted bg-card">
-                                                        <Text
-                                                            className="text-base font-semibold text-foreground"
-                                                            numberOfLines={2}>
-                                                            {item.name}
-                                                        </Text>
-                                                        <View className="flex-row gap-1 items-center mt-2">
-                                                            <Icon
-                                                                name="MapPin"
-                                                                size={12}
-                                                                color="#ef4444"
-                                                            />
+                                            {frequentGroups.squads.map(
+                                                (squad) => (
+                                                    <AnimatedPressable
+                                                        key={squad.id}
+                                                        style={{ width: 200 }}
+                                                        onPress={() =>
+                                                            router.push(
+                                                                `/order/create?reorderFriendIds=${squad.memberIds}`,
+                                                            )
+                                                        }>
+                                                        <View className="p-4 rounded-2xl border border-muted bg-card">
+                                                            {/* Stacked Avatars */}
+                                                            <View className="flex-row items-center mb-3">
+                                                                {squad.members
+                                                                    .slice(
+                                                                        0,
+                                                                        squad
+                                                                            .members
+                                                                            .length >
+                                                                            4
+                                                                            ? 3
+                                                                            : 4,
+                                                                    )
+                                                                    .map(
+                                                                        (
+                                                                            member,
+                                                                            idx,
+                                                                        ) => (
+                                                                            <View
+                                                                                key={
+                                                                                    member.id
+                                                                                }
+                                                                                style={{
+                                                                                    marginLeft:
+                                                                                        idx >
+                                                                                        0
+                                                                                            ? -10
+                                                                                            : 0,
+                                                                                    zIndex:
+                                                                                        squad
+                                                                                            .members
+                                                                                            .length -
+                                                                                        idx,
+                                                                                }}
+                                                                                className="border-2 rounded-full border-card">
+                                                                                <Avatar
+                                                                                    name={`${member.firstName || ""} ${member.lastName || ""}`}
+                                                                                    avatarUrl={
+                                                                                        member.avatarUrl
+                                                                                    }
+                                                                                    size={
+                                                                                        36
+                                                                                    }
+                                                                                />
+                                                                            </View>
+                                                                        ),
+                                                                    )}
+                                                                {squad.members
+                                                                    .length >
+                                                                    4 && (
+                                                                    <View
+                                                                        style={{
+                                                                            marginLeft: -10,
+                                                                            width: 36,
+                                                                            height: 36,
+                                                                            zIndex: 0,
+                                                                        }}
+                                                                        className="flex items-center justify-center border-2 rounded-full border-card bg-primary">
+                                                                        <Text className="text-xs font-semibold text-white">
+                                                                            +
+                                                                            {squad
+                                                                                .members
+                                                                                .length -
+                                                                                3}
+                                                                        </Text>
+                                                                    </View>
+                                                                )}
+                                                            </View>
+
+                                                            {/* Member Names */}
                                                             <Text
-                                                                className="text-xs text-muted-foreground"
+                                                                className="text-sm font-medium text-foreground"
                                                                 numberOfLines={
                                                                     1
                                                                 }>
-                                                                {
-                                                                    item.locationName
-                                                                }
+                                                                {squad.members
+                                                                    .map(
+                                                                        (m) =>
+                                                                            m.firstName,
+                                                                    )
+                                                                    .join(", ")}
                                                             </Text>
+
+                                                            {/* Order Count */}
+                                                            <Text className="text-xs text-muted-foreground mt-1">
+                                                                {
+                                                                    squad.orderCount
+                                                                }{" "}
+                                                                orders together
+                                                            </Text>
+
+                                                            {/* Location */}
+                                                            {squad.locationNames
+                                                                .length >
+                                                                0 && (
+                                                                <View className="flex-row items-center gap-1 mt-2">
+                                                                    <Icon
+                                                                        name="MapPin"
+                                                                        size={
+                                                                            12
+                                                                        }
+                                                                        color="#ef4444"
+                                                                    />
+                                                                    <Text
+                                                                        className="text-[11px] text-muted-foreground"
+                                                                        numberOfLines={
+                                                                            1
+                                                                        }>
+                                                                        {squad.locationNames.join(
+                                                                            ", ",
+                                                                        )}
+                                                                    </Text>
+                                                                </View>
+                                                            )}
                                                         </View>
-                                                        <Text className="mt-2 text-xs text-muted-foreground">
-                                                            Ordered{" "}
-                                                            {item.totalOrdered}{" "}
-                                                            time
-                                                            {item.totalOrdered !==
-                                                            1
-                                                                ? "s"
-                                                                : ""}
-                                                        </Text>
-                                                    </View>
-                                                </AnimatedPressable>
-                                            ))}
+                                                    </AnimatedPressable>
+                                                ),
+                                            )}
                                         </View>
                                     </ScrollView>
-                                </Animated.View>
+                            ) : (
+                                    <View className="items-center p-6 rounded-2xl border border-dashed border-muted bg-card">
+                                        <View className="items-center justify-center w-12 h-12 mb-3 rounded-full bg-blue-500/10">
+                                            <Icon
+                                                name="Users"
+                                                size={24}
+                                                color="#3b82f6"
+                                            />
+                                        </View>
+                                        <Text className="text-sm font-medium text-foreground text-center">
+                                            No squads yet
+                                        </Text>
+                                        <Text className="mt-1 text-xs text-center text-muted-foreground">
+                                            Order with the same friends to build your squads
+                                        </Text>
+                                    </View>
                             )}
+                                </Animated.View>}
 
-                            {/* Past Orders Section */}
-                            {pastOrders.length > 0 && (
-                                <Animated.View
+                            {/* Recent Orders Section */}
+                            {hasAnyData && <Animated.View
                                     entering={FadeInUp.duration(500).delay(
                                         300,
                                     )}>
-                                    <View className="flex-row gap-2 items-center mb-4">
+                                    <View className="flex-row gap-2 items-center mb-3">
                                         <Icon
                                             name="History"
                                             size={20}
@@ -402,9 +584,16 @@ export default function HomeTab() {
                                         </Text>
                                     </View>
 
+                            {pastOrders.length > 0 ? (
                                     <View className="gap-3">
                                         {pastOrders.map((order) => (
-                                            <AnimatedPressable key={order.id}>
+                                            <AnimatedPressable
+                                                key={order.id}
+                                                onPress={() =>
+                                                    router.push(
+                                                        `/order/completed-order?orderId=${order.id}`,
+                                                    )
+                                                }>
                                                 <View className="p-4 rounded-2xl border border-muted bg-card">
                                                     <View>
                                                         <Text className="text-sm text-muted-foreground">
@@ -527,13 +716,31 @@ export default function HomeTab() {
                                             </AnimatedPressable>
                                         ))}
                                     </View>
-                                </Animated.View>
+                            ) : (
+                                    <View className="items-center p-6 rounded-2xl border border-dashed border-muted bg-card">
+                                        <View className="items-center justify-center w-12 h-12 mb-3 rounded-full bg-blue-500/10">
+                                            <Icon
+                                                name="History"
+                                                size={24}
+                                                color="#3b82f6"
+                                            />
+                                        </View>
+                                        <Text className="text-sm font-medium text-foreground text-center">
+                                            No recent orders
+                                        </Text>
+                                        <Text className="mt-1 text-xs text-center text-muted-foreground">
+                                            Complete orders to see your history here
+                                        </Text>
+                                    </View>
                             )}
+                                </Animated.View>}
 
                             {/* Empty state when nothing exists */}
-                            {activeOrders.length === 0 &&
-                                pastOrders.length === 0 &&
-                                frequentItems.length === 0 && (
+                            {!hasSettlementData &&
+                                !hasSquads &&
+                                activeOrderCount === 0 &&
+                                friendCount === 0 &&
+                                pastOrders.length === 0 && (
                                     <Animated.View
                                         entering={FadeInUp.duration(
                                             600,
@@ -556,12 +763,10 @@ export default function HomeTab() {
                                         </Text>
                                         <Text className="mt-2 text-base text-center text-muted-foreground">
                                             Start your first group order to see
-                                            your history and favorites here
+                                            your dashboard here
                                         </Text>
                                         <TouchableOpacity
-                                            onPress={() =>
-                                                router.push("/order/create")
-                                            }
+                                            onPress={handleCreateOrder}
                                             className="flex-row gap-2 items-center px-6 py-3 mt-6 rounded-full bg-primary">
                                             <Icon
                                                 name="Plus"
@@ -574,10 +779,23 @@ export default function HomeTab() {
                                         </TouchableOpacity>
                                     </Animated.View>
                                 )}
+                            </View>
                         </View>
                     )}
                 </ScrollView>
             </View>
+
+            <PaymentSetupSplash
+                visible={showPaymentSplash}
+                onSetUp={() => {
+                    setShowPaymentSplash(false);
+                    router.push("/account/payments");
+                }}
+                onSkip={() => {
+                    setShowPaymentSplash(false);
+                    router.push("/order/create");
+                }}
+            />
         </ErrorBoundary>
     );
 }
@@ -585,28 +803,76 @@ export default function HomeTab() {
 function HomeSkeleton() {
     return (
         <Skeleton>
-            <View className="gap-8 px-4 pb-8 mt-4">
-                {/* Active Orders Section Skeleton */}
-                <View>
-                    <View className="flex-row justify-between items-center mb-4">
-                        <View className="flex-row gap-2 items-center">
-                            <SkeletonBlock width={20} height={20} />
-                            <SkeletonBlock width={120} height={24} />
-                        </View>
-                        <SkeletonBlock
-                            width={80}
-                            height={28}
-                            rounded="rounded-full"
-                        />
+            <View className="gap-6 px-4 pb-8 mt-4">
+                {/* Greeting Skeleton */}
+                <View className="flex-row justify-between items-center">
+                    <View>
+                        <SkeletonBlock width={160} height={28} className="mb-2" />
+                        <SkeletonBlock width={180} height={16} />
                     </View>
-                    <OrderCardSkeleton />
+                    <SkeletonBlock
+                        width={110}
+                        height={36}
+                        rounded="rounded-full"
+                    />
                 </View>
 
-                {/* Favorites Section Skeleton */}
+                {/* Summary Card Skeleton */}
+                <View className="flex-row rounded-2xl border border-muted bg-card overflow-hidden">
+                    {[1, 2, 3].map((i) => (
+                        <React.Fragment key={i}>
+                            {i > 1 && (
+                                <View className="my-3 border-l border-muted" />
+                            )}
+                            <View className="flex-1 items-center py-4 gap-1.5">
+                                <SkeletonBlock
+                                    width={40}
+                                    height={40}
+                                    rounded="rounded-full"
+                                />
+                                <SkeletonBlock
+                                    width={30}
+                                    height={28}
+                                />
+                                <SkeletonBlock width={45} height={14} />
+                            </View>
+                        </React.Fragment>
+                    ))}
+                </View>
+
+                {/* Settlement Skeleton */}
                 <View>
-                    <View className="flex-row gap-2 items-center mb-4">
+                    <View className="flex-row gap-2 items-center mb-3">
                         <SkeletonBlock width={20} height={20} />
-                        <SkeletonBlock width={120} height={24} />
+                        <SkeletonBlock width={100} height={22} />
+                    </View>
+                    <View className="p-4 rounded-2xl border border-muted bg-card">
+                        <View className="flex-row gap-3">
+                            <View className="flex-1 p-3 rounded-xl">
+                                <SkeletonBlock
+                                    width={70}
+                                    height={14}
+                                    className="mb-2"
+                                />
+                                <SkeletonBlock width={90} height={24} />
+                            </View>
+                            <View className="flex-1 p-3 rounded-xl">
+                                <SkeletonBlock
+                                    width={55}
+                                    height={14}
+                                    className="mb-2"
+                                />
+                                <SkeletonBlock width={70} height={24} />
+                            </View>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Squads Skeleton */}
+                <View>
+                    <View className="flex-row gap-2 items-center mb-3">
+                        <SkeletonBlock width={20} height={20} />
+                        <SkeletonBlock width={100} height={22} />
                     </View>
                     <ScrollView
                         horizontal
@@ -614,53 +880,66 @@ function HomeSkeleton() {
                         scrollEnabled={false}
                         className="px-4 -mx-4">
                         <View className="flex-row gap-3">
-                            {[1, 2, 3].map((i) => (
-                                <FavoriteItemSkeleton key={i} />
+                            {[1, 2].map((i) => (
+                                <View
+                                    key={i}
+                                    style={{ width: 200 }}
+                                    className="p-4 rounded-2xl border border-muted bg-card">
+                                    <View className="flex-row mb-3">
+                                        {[1, 2, 3].map((j) => (
+                                            <SkeletonBlock
+                                                key={j}
+                                                width={36}
+                                                height={36}
+                                                rounded="rounded-full"
+                                                style={{
+                                                    marginLeft:
+                                                        j > 1 ? -10 : 0,
+                                                }}
+                                            />
+                                        ))}
+                                    </View>
+                                    <SkeletonBlock
+                                        width={140}
+                                        height={16}
+                                        className="mb-1"
+                                    />
+                                    <SkeletonBlock width={100} height={12} />
+                                </View>
                             ))}
                         </View>
                     </ScrollView>
                 </View>
 
-                {/* Past Orders Section Skeleton */}
+                {/* Recent Orders Skeleton */}
                 <View>
-                    <View className="flex-row gap-2 items-center mb-4">
+                    <View className="flex-row gap-2 items-center mb-3">
                         <SkeletonBlock width={20} height={20} />
-                        <SkeletonBlock width={130} height={24} />
+                        <SkeletonBlock width={120} height={22} />
                     </View>
                     <View className="gap-3">
-                        {[1, 2, 3].map((i) => (
-                            <PastOrderSkeleton key={i} />
+                        {[1, 2].map((i) => (
+                            <View
+                                key={i}
+                                className="p-4 rounded-2xl border border-muted bg-card">
+                                <View>
+                                    <SkeletonBlock
+                                        width={100}
+                                        height={16}
+                                        className="mb-2"
+                                    />
+                                    <SkeletonBlock width={180} height={22} />
+                                </View>
+                                <View className="flex-row gap-3 items-center pt-3 mt-3 border-t border-muted">
+                                    <SkeletonBlock width={60} height={16} />
+                                    <SkeletonBlock width={50} height={16} />
+                                    <SkeletonBlock width={70} height={16} />
+                                </View>
+                            </View>
                         ))}
                     </View>
                 </View>
             </View>
         </Skeleton>
-    );
-}
-
-function FavoriteItemSkeleton() {
-    return (
-        <View className="p-4 w-44 rounded-2xl border border-muted bg-card">
-            <SkeletonBlock width={120} height={20} className="mb-2" />
-            <SkeletonBlock width={100} height={16} className="mb-2" />
-            <SkeletonBlock width={80} height={14} />
-        </View>
-    );
-}
-
-function PastOrderSkeleton() {
-    return (
-        <View className="p-4 rounded-2xl border border-muted bg-card">
-            <View>
-                <SkeletonBlock width={100} height={16} className="mb-2" />
-                <SkeletonBlock width={180} height={22} />
-            </View>
-            <View className="flex-row gap-3 items-center pt-3 mt-3 border-t border-muted">
-                <SkeletonBlock width={60} height={16} />
-                <SkeletonBlock width={50} height={16} />
-                <SkeletonBlock width={70} height={16} />
-                <SkeletonBlock width={80} height={24} rounded="rounded-full" />
-            </View>
-        </View>
     );
 }

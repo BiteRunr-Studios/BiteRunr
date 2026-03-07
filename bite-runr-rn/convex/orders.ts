@@ -108,6 +108,18 @@ export const getWithDetails = query({
           itemsCount += items.reduce((sum, item) => sum + item.quantity, 0);
         }
 
+        // Enrich order locations with location names
+        const enrichedOrderLocations = await Promise.all(
+          orderLocations.map(async (ol) => {
+            const location = await ctx.db.get(ol.locationId);
+            return {
+              id: ol._id,
+              locationId: ol.locationId,
+              locationName: location?.name ?? "Unknown",
+            };
+          })
+        );
+
         return {
           order: {
             id: order._id,
@@ -119,10 +131,7 @@ export const getWithDetails = query({
             createdAt: order._creationTime,
           },
           orderUsers: enrichedOrderUsers,
-          orderLocations: orderLocations.map((ol) => ({
-            id: ol._id,
-            locationId: ol.locationId,
-          })),
+          orderLocations: enrichedOrderLocations,
           itemsCount,
           peopleCount: orderUsers.length,
         };
@@ -462,7 +471,7 @@ export const getPastOrders = query({
       userOrderUsers.map(async (userOrderUser) => {
         const order = await ctx.db.get(userOrderUser.orderId);
         if (!order) return null;
-        if (order.status !== "completed" && order.status !== "cancelled") return null;
+        if (order.status !== "completed") return null;
 
         const orderUsers = await ctx.db
           .query("orderUsers")
@@ -590,6 +599,329 @@ export const getFrequentItems = query({
     );
 
     return enrichedItems.filter((item) => item !== null);
+  },
+});
+
+// Get settlement summary across all orders
+export const getSettlementSummary = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    const userOrderUsers = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+
+    let owedToMe = 0n;
+    let iOwe = 0n;
+
+    for (const userOU of userOrderUsers) {
+      const order = await ctx.db.get(userOU.orderId);
+      if (!order || order.status === "cancelled") continue;
+
+      if (order.creatorId === userId) {
+        // I created this order — sum what others owe me (unsettled)
+        const allOrderUsers = await ctx.db
+          .query("orderUsers")
+          .withIndex("by_orderId", (q) => q.eq("orderId", order._id))
+          .collect();
+        for (const ou of allOrderUsers) {
+          if (ou.userId === userId) continue;
+          if (ou.settlementStatus !== "confirmed" && ou.settlementStatus !== "settled_in_person") {
+            owedToMe += ou.amountOwed;
+          }
+        }
+      } else {
+        // I'm invited — sum what I owe (if unsettled)
+        if (userOU.settlementStatus === "unpaid" || userOU.settlementStatus === "claimed") {
+          iOwe += userOU.amountOwed;
+        }
+      }
+    }
+
+    return {
+      owedToMe: Number(owedToMe),
+      iOwe: Number(iOwe),
+    };
+  },
+});
+
+// Get per-order breakdown of who owes you money
+export const getOutstandingDebts = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    const userOrderUsers = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+
+    const debts: {
+      orderId: string;
+      orderName: string;
+      userId: string;
+      firstName: string;
+      lastName: string;
+      avatarUrl: string | null;
+      amountOwed: number;
+    }[] = [];
+
+    for (const userOU of userOrderUsers) {
+      const order = await ctx.db.get(userOU.orderId);
+      if (!order || order.status === "cancelled" || order.creatorId !== userId) continue;
+
+      const allOrderUsers = await ctx.db
+        .query("orderUsers")
+        .withIndex("by_orderId", (q) => q.eq("orderId", order._id))
+        .collect();
+
+      for (const ou of allOrderUsers) {
+        if (ou.userId === userId) continue;
+        if (ou.settlementStatus === "confirmed" || ou.settlementStatus === "settled_in_person") continue;
+        if (ou.amountOwed <= 0n) continue;
+
+        const user = await ctx.db.get(ou.userId);
+        debts.push({
+          orderId: order._id,
+          orderName: order.name,
+          userId: ou.userId,
+          firstName: user?.firstName ?? "",
+          lastName: user?.lastName ?? "",
+          avatarUrl: user?.avatarUrl ?? null,
+          amountOwed: Number(ou.amountOwed),
+        });
+      }
+    }
+
+    return debts.sort((a, b) => b.amountOwed - a.amountOwed);
+  },
+});
+
+// Get completed order details for the completed order detail screen
+export const getCompletedOrderDetails = query({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
+
+    const order = await ctx.db.get(args.orderId);
+    if (!order) return null;
+    if (order.status !== "completed") return null;
+
+    // Get all order users
+    const orderUsers = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
+      .collect();
+
+    // Verify user is part of this order
+    const isParticipant = orderUsers.some((ou) => ou.userId === userId);
+    if (!isParticipant) return null;
+
+    const isCreator = order.creatorId === userId;
+
+    // Get order locations with names
+    const orderLocations = await ctx.db
+      .query("orderLocations")
+      .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
+      .collect();
+
+    const locations = await Promise.all(
+      orderLocations.map(async (ol) => {
+        const location = await ctx.db.get(ol.locationId);
+        return {
+          id: ol._id,
+          name: location?.name ?? "Unknown",
+        };
+      })
+    );
+
+    // Enrich each participant with profile, items, and settlement info
+    let totalItems = 0;
+    let totalAmount = 0n;
+
+    const participants = await Promise.all(
+      orderUsers.map(async (ou) => {
+        const user = await ctx.db.get(ou.userId);
+
+        // Get all items for this order user
+        const userItems = await ctx.db
+          .query("orderItems")
+          .withIndex("by_orderUserId", (q) => q.eq("orderUserId", ou._id))
+          .collect();
+
+        // Enrich items with item names
+        const items = await Promise.all(
+          userItems.map(async (oi) => {
+            const item = await ctx.db.get(oi.itemId);
+            return {
+              name: item?.name ?? "Unknown Item",
+              quantity: oi.quantity,
+              comments: oi.comments,
+              priceInCents: oi.priceInCents ? Number(oi.priceInCents) : null,
+            };
+          })
+        );
+
+        const itemCount = userItems.reduce((sum, item) => sum + item.quantity, 0);
+        totalItems += itemCount;
+        totalAmount += ou.amountOwed;
+
+        return {
+          orderUserId: ou._id,
+          userId: ou.userId,
+          firstName: user?.firstName ?? "",
+          lastName: user?.lastName ?? "",
+          avatarUrl: user?.avatarUrl ?? null,
+          isCreator: ou.userId === order.creatorId,
+          items,
+          itemCount,
+          amountOwed: Number(ou.amountOwed),
+          settlementStatus: ou.settlementStatus,
+        };
+      })
+    );
+
+    // Sort: creator first, then alphabetically
+    participants.sort((a, b) => {
+      if (a.isCreator) return -1;
+      if (b.isCreator) return 1;
+      return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+    });
+
+    const callerOrderUser = orderUsers.find((ou) => ou.userId === userId);
+
+    return {
+      order: {
+        id: order._id,
+        name: order.name,
+        createdAt: order._creationTime,
+        status: order.status,
+      },
+      isCreator,
+      locations,
+      participants,
+      callerAmountOwed: Number(callerOrderUser?.amountOwed ?? 0),
+      stats: {
+        totalItems,
+        totalAmount: Number(totalAmount),
+        participantCount: orderUsers.length,
+      },
+    };
+  },
+});
+
+// Get squads - groups of people who have ordered together multiple times
+export const getFrequentGroups = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return { squads: [] };
+
+    const limit = args.limit ?? 3;
+
+    const userOrderUsers = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+
+    // For each order, collect co-orderer userIds and track the order
+    const groupOccurrences = new Map<string, { count: number; orderIds: Id<"orders">[] }>();
+
+    for (const userOU of userOrderUsers) {
+      const orderUsers = await ctx.db
+        .query("orderUsers")
+        .withIndex("by_orderId", (q) => q.eq("orderId", userOU.orderId))
+        .collect();
+
+      const coOrdererIds = orderUsers
+        .map((ou) => ou.userId as string)
+        .filter((uid) => uid !== userId)
+        .sort();
+
+      // Skip orders with fewer than 2 co-orderers (need 3+ people total including current user)
+      if (coOrdererIds.length < 2) continue;
+
+      const fingerprint = coOrdererIds.join(",");
+      const existing = groupOccurrences.get(fingerprint);
+      if (existing) {
+        existing.count++;
+        existing.orderIds.push(userOU.orderId);
+      } else {
+        groupOccurrences.set(fingerprint, { count: 1, orderIds: [userOU.orderId] });
+      }
+    }
+
+    // Filter to groups that appear 2+ times, sort by frequency
+    const topGroups = [...groupOccurrences.entries()]
+      .filter(([, data]) => data.count >= 2)
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, limit);
+
+    // Enrich each group with member profiles and most recent order info
+    const squads = await Promise.all(
+      topGroups.map(async ([fingerprint, data]) => {
+        const memberIds = fingerprint.split(",");
+
+        const members = (
+          await Promise.all(
+            memberIds.map(async (uid) => {
+              const user = await ctx.db.get(uid as Id<"users">);
+              return user
+                ? {
+                    id: user._id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    avatarUrl: user.avatarUrl,
+                  }
+                : null;
+            })
+          )
+        ).filter((m) => m !== null);
+
+        // Get most recent order for context
+        let lastOrderName = "";
+        let locationNames: string[] = [];
+
+        // Find the most recent order by fetching them and sorting by creation time
+        const orders = (
+          await Promise.all(data.orderIds.map((id) => ctx.db.get(id)))
+        ).filter((o) => o !== null);
+        orders.sort((a, b) => b._creationTime - a._creationTime);
+
+        if (orders.length > 0) {
+          const mostRecent = orders[0];
+          lastOrderName = mostRecent.name ?? "";
+          const orderLocs = await ctx.db
+            .query("orderLocations")
+            .withIndex("by_orderId", (q) => q.eq("orderId", mostRecent._id))
+            .collect();
+          locationNames = (
+            await Promise.all(
+              orderLocs.map(async (ol) => {
+                const loc = await ctx.db.get(ol.locationId);
+                return loc?.name ?? null;
+              })
+            )
+          ).filter((n) => n !== null);
+        }
+
+        return {
+          id: fingerprint,
+          members,
+          orderCount: data.count,
+          lastOrderName,
+          locationNames,
+          memberIds: fingerprint,
+        };
+      })
+    );
+
+    return { squads };
   },
 });
 

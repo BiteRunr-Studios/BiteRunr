@@ -28,7 +28,7 @@ export default function TabLayout() {
                     }
                 />
             </NativeTabs.Trigger>
-            <NativeTabs.Trigger name="account">
+<NativeTabs.Trigger name="account">
                 <Label>Account</Label>
                 <Icon
                     sf="person.fill"

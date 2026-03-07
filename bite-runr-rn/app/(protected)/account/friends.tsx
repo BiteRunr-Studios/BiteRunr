@@ -179,14 +179,14 @@ function FriendsList() {
 
     if (!friends || friends.length === 0) {
         return (
-            <View className="items-center justify-center flex-1 px-6">
-                <View className="items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-green-500/10">
-                    <Icon name="Users" size={40} color="#22c55e" />
+            <View className="items-center px-6 pt-12">
+                <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-green-500/10">
+                    <Icon name="Users" size={32} color="#22c55e" />
                 </View>
-                <Text className="text-lg font-semibold text-foreground">
+                <Text className="text-base font-semibold text-foreground">
                     No friends yet
                 </Text>
-                <Text className="mt-2 text-center text-muted-foreground">
+                <Text className="mt-1 text-sm text-center text-muted-foreground">
                     Search for people to add them as friends and start ordering
                     together
                 </Text>
@@ -294,14 +294,14 @@ function FriendRequests() {
 
     if (!requests || requests.length === 0) {
         return (
-            <View className="items-center justify-center flex-1 px-6">
-                <View className="items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-orange-500/10">
-                    <Icon name="Bell" size={40} color="#f97316" />
+            <View className="items-center px-6 pt-12">
+                <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-orange-500/10">
+                    <Icon name="Bell" size={32} color="#f97316" />
                 </View>
-                <Text className="text-lg font-semibold text-foreground">
+                <Text className="text-base font-semibold text-foreground">
                     No pending requests
                 </Text>
-                <Text className="mt-2 text-center text-muted-foreground">
+                <Text className="mt-1 text-sm text-center text-muted-foreground">
                     When someone sends you a friend request, it will appear here
                 </Text>
             </View>
@@ -427,14 +427,14 @@ function SearchUsers() {
 
             {/* Search Results */}
             {searchQuery.length < 2 && (
-                <View className="items-center justify-center flex-1">
-                    <View className="items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-blue-500/10">
-                        <Icon name="Search" size={40} color="#3b82f6" />
+                <View className="items-center pt-12">
+                    <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-blue-500/10">
+                        <Icon name="Search" size={32} color="#3b82f6" />
                     </View>
-                    <Text className="text-lg font-semibold text-foreground">
+                    <Text className="text-base font-semibold text-foreground">
                         Find Friends
                     </Text>
-                    <Text className="mt-2 text-center text-muted-foreground">
+                    <Text className="mt-1 text-sm text-center text-muted-foreground">
                         Enter at least 2 characters to search
                     </Text>
                 </View>
@@ -455,14 +455,14 @@ function SearchUsers() {
             {searchQuery.length >= 2 &&
                 searchResults &&
                 searchResults.length === 0 && (
-                    <View className="items-center justify-center flex-1">
-                        <View className="items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-purple-500/10">
-                            <Icon name="UserX" size={40} color="#a855f7" />
+                    <View className="items-center pt-12">
+                        <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-purple-500/10">
+                            <Icon name="UserX" size={32} color="#a855f7" />
                         </View>
-                        <Text className="text-lg font-semibold text-foreground">
+                        <Text className="text-base font-semibold text-foreground">
                             No users found
                         </Text>
-                        <Text className="mt-2 text-center text-muted-foreground">
+                        <Text className="mt-1 text-sm text-center text-muted-foreground">
                             Try a different search term
                         </Text>
                     </View>

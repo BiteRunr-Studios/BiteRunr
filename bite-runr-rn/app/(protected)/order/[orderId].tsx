@@ -23,6 +23,7 @@ import ReAnimated, {
     SharedValue,
     interpolate,
     Extrapolation,
+    FadeInUp,
     FadeOutRight,
     LinearTransition,
 } from "react-native-reanimated";
@@ -33,6 +34,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { QRCodeModal } from "@/components/qr-code-modal";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
 
 type ButtonState = "readyToRun" | "enabled" | "disabled";
 
@@ -425,9 +427,66 @@ export default function SpecificOrder() {
 
     if (isPending) {
         return (
-            <View className="items-center justify-center flex-1 px-6">
-                <Text className="text-foreground">Loading...</Text>
-            </View>
+            <Skeleton>
+                <SafeAreaView edges={["top"]} />
+                {/* Header skeleton */}
+                <View className="flex-row items-center px-4 py-3 border-b border-border">
+                    <SkeletonBlock width={32} height={32} rounded="rounded-full" />
+                    <View className="ml-2">
+                        <SkeletonBlock width={120} height={22} />
+                    </View>
+                </View>
+
+                {/* Order info card skeleton */}
+                <View className="mx-4 mt-4">
+                    <View className="p-5 border rounded-2xl border-muted bg-card">
+                        <View className="flex-row items-start justify-between mb-3">
+                            <View>
+                                <SkeletonBlock width={100} height={14} className="mb-2" />
+                                <SkeletonBlock width={180} height={28} />
+                            </View>
+                            <SkeletonBlock width={90} height={28} rounded="rounded-full" />
+                        </View>
+                        <View className="flex-row gap-4 pt-3 mt-1 border-t border-muted">
+                            <View className="flex-row items-center gap-2">
+                                <SkeletonBlock width={32} height={32} rounded="rounded-full" />
+                                <SkeletonBlock width={60} height={16} />
+                            </View>
+                            <View className="flex-row items-center gap-2">
+                                <SkeletonBlock width={32} height={32} rounded="rounded-full" />
+                                <SkeletonBlock width={50} height={16} />
+                            </View>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Progress skeleton */}
+                <View className="px-4 mt-6">
+                    <View className="flex-row items-center justify-between mb-3">
+                        <SkeletonBlock width={120} height={18} />
+                        <SkeletonBlock width={80} height={14} />
+                    </View>
+                    <SkeletonBlock width="100%" height={8} rounded="rounded-full" />
+                </View>
+
+                {/* Participants skeleton */}
+                <View className="px-4 mt-6">
+                    <SkeletonBlock width={110} height={18} className="mb-3" />
+                    <View className="gap-3">
+                        {[1, 2, 3].map((i) => (
+                            <View
+                                key={i}
+                                className="flex-row items-center p-4 border rounded-xl border-muted bg-card">
+                                <SkeletonBlock width={48} height={48} rounded="rounded-full" />
+                                <View className="flex-1 ml-3">
+                                    <SkeletonBlock width={130} height={16} className="mb-2" />
+                                    <SkeletonBlock width={90} height={14} />
+                                </View>
+                            </View>
+                        ))}
+                    </View>
+                </View>
+            </Skeleton>
         );
     }
 
@@ -487,7 +546,9 @@ export default function SpecificOrder() {
 
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
                 {/* Order Info Card */}
-                <View className="mx-4 mt-4">
+                <ReAnimated.View
+                    entering={FadeInUp.duration(500).easing(Easing.out(Easing.ease))}
+                    className="mx-4 mt-4">
                     <View className="p-5 border rounded-2xl border-muted bg-card">
                         <View className="flex-row items-start justify-between mb-3">
                             <View className="flex-1">
@@ -567,11 +628,13 @@ export default function SpecificOrder() {
                             </View>
                         </View>
                     </View>
-                </View>
+                </ReAnimated.View>
 
                 {/* Progress Section */}
                 {!data.order.paused && (
-                    <View className="px-4 mt-6">
+                    <ReAnimated.View
+                        entering={FadeInUp.duration(500).delay(100).easing(Easing.out(Easing.ease))}
+                        className="px-4 mt-6">
                         <View className="flex-row items-center justify-between mb-3">
                             <Text className="text-base font-semibold text-foreground">
                                 Order Progress
@@ -603,11 +666,13 @@ export default function SpecificOrder() {
                                 </Text>
                             </View>
                         )}
-                    </View>
+                    </ReAnimated.View>
                 )}
 
                 {/* Participants Section */}
-                <View className="px-4 mt-6 mb-4">
+                <ReAnimated.View
+                    entering={FadeInUp.duration(500).delay(200).easing(Easing.out(Easing.ease))}
+                    className="px-4 mt-6 mb-4">
                     <Text className="mb-3 text-base font-semibold text-foreground">
                         Participants
                     </Text>
@@ -789,7 +854,7 @@ export default function SpecificOrder() {
                             );
                         })}
                     </View>
-                </View>
+                </ReAnimated.View>
             </ScrollView>
 
             {/* Footer */}
