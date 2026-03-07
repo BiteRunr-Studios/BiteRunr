@@ -14,8 +14,7 @@ function getStripe() {
     });
 }
 
-// Platform fee: 1%. Change as needed.
-const APPLICATION_FEE_PERCENT = 0.05;
+import { calculatePlatformFee } from "./fees";
 
 // --- SELLER ONBOARDING ---
 // Creates a Stripe Connect Express account and returns the onboarding URL.
@@ -181,7 +180,7 @@ export const createPaymentSheetParams = action({
 
         const stripe = getStripe();
         const amountOwed: number = Number(data.amountOwed);
-        const platformFee = Math.round(amountOwed * APPLICATION_FEE_PERCENT);
+        const platformFee = calculatePlatformFee(amountOwed);
         const amount = amountOwed + platformFee;
 
         // Get or create a Stripe Customer for the buyer

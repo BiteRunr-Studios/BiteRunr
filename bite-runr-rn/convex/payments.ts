@@ -8,6 +8,7 @@ import {
 import { internal } from "./_generated/api";
 import { getUserId } from "./authHelper";
 import { stripePaymentStatusValidator } from "./schema";
+import { calculatePlatformFee } from "./fees";
 
 // ---- CONNECTED ACCOUNTS ----
 
@@ -502,12 +503,17 @@ export const getMySettlementStatus = query({
                   )
                 : null;
 
+        const amountOwed = Number(myOrderUser.amountOwed);
+        const serviceFee = calculatePlatformFee(amountOwed);
+
         return {
             orderName: order.name,
             creatorFirstName: creator?.firstName ?? "Unknown",
             creatorLastName: creator?.lastName ?? "",
             orderUserId: myOrderUser._id,
             amountOwed: myOrderUser.amountOwed,
+            serviceFee,
+            totalWithFee: amountOwed + serviceFee,
             settlementStatus: myOrderUser.settlementStatus,
             stripePayment: latestPayment
                 ? {

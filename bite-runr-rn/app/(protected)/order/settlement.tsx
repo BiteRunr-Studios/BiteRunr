@@ -290,6 +290,14 @@ export default function Settlement() {
                                             {statusText}
                                         </Text>
                                     </View>
+                                    {member.stripePayment &&
+                                        member.stripePayment.amount > amount && (
+                                            <Text className="mt-1 text-xs text-muted-foreground">
+                                                Buyer charged{" "}
+                                                {formatCents(member.stripePayment.amount)}{" "}
+                                                (incl. service fee)
+                                            </Text>
+                                        )}
                                     {amount > 0 &&
                                         member.settlementStatus !== "confirmed" &&
                                         member.settlementStatus !== "settled_in_person" && (
