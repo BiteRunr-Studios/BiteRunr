@@ -6,7 +6,14 @@ import {
     View,
     TouchableOpacity,
 } from "react-native";
-import Animated, { FadeInUp, SlideInDown, SlideOutDown, FadeIn, FadeOut, Easing } from "react-native-reanimated";
+import Animated, {
+    FadeInUp,
+    SlideInDown,
+    SlideOutDown,
+    FadeIn,
+    FadeOut,
+    Easing,
+} from "react-native-reanimated";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { OrderCard, OrderCardSkeleton } from "@/components/order-card";
 import { Link, router, useLocalSearchParams } from "expo-router";
@@ -85,6 +92,7 @@ export default function GroupsTab() {
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const { colorScheme } = useColorScheme();
     const insets = useSafeAreaInsets();
+    const listBottomPadding = 84 + insets.bottom;
 
     // Get current user
     const currentUser = useQuery(api.users.getCurrentUser);
@@ -118,7 +126,8 @@ export default function GroupsTab() {
                 if (item.order.status !== "completed") return false;
             } else if (activeFilter === "needs_payment") {
                 // Only show orders where the current user still owes money.
-                if (item.order.status !== "active" || !item.order.paused) return false;
+                if (item.order.status !== "active" || !item.order.paused)
+                    return false;
                 if (item.order.creatorId === userId) return false;
                 if (Number(myOrderUser.amountOwed) <= 0) return false;
                 if (
@@ -217,25 +226,30 @@ export default function GroupsTab() {
                 <ScrollView
                     className="flex-1"
                     contentContainerStyle={{
-                        paddingBottom: 50 + insets.bottom,
+                        paddingBottom: listBottomPadding,
                     }}
                     showsVerticalScrollIndicator={false}>
                     <View className="px-4">
                         {/* Filter + New Order Row */}
                         <Animated.View
                             entering={FadeInUp.duration(400)}
-                            className="flex-row items-center gap-3 mt-4 mb-4 justify-between">
+                            className="flex-row gap-3 justify-between items-center mt-4 mb-4">
                             {/* Filter Dropdown Button */}
                             <Pressable
                                 onPress={() => setShowFilterMenu(true)}
                                 className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl bg-muted active:opacity-80">
                                 <Icon
-                                    name={FILTERS.find((f) => f.key === activeFilter)?.icon ?? "LayoutGrid"}
+                                    name={
+                                        FILTERS.find(
+                                            (f) => f.key === activeFilter,
+                                        )?.icon ?? "LayoutGrid"
+                                    }
                                     size={16}
                                     color={NAV_THEME[colorScheme].text}
                                 />
                                 <Text className="text-sm font-medium text-foreground">
-                                    {FILTERS.find((f) => f.key === activeFilter)?.label ?? "All"}
+                                    {FILTERS.find((f) => f.key === activeFilter)
+                                        ?.label ?? "All"}
                                 </Text>
                                 <Icon
                                     name="ChevronDown"
@@ -267,10 +281,11 @@ export default function GroupsTab() {
                         )}
 
                         {!isPending && filteredOrders && (
-                            <Animated.View entering={FadeInUp.duration(400).delay(100)}>
+                            <Animated.View
+                                entering={FadeInUp.duration(400).delay(100)}>
                                 {filteredOrders.length === 0 ? (
                                     <View className="items-center p-8 mt-4 rounded-2xl border border-dashed border-muted bg-card">
-                                        <View className="items-center justify-center w-16 h-16 mb-4 rounded-2xl bg-yellow-500/10">
+                                        <View className="justify-center items-center mb-4 w-16 h-16 rounded-2xl bg-yellow-500/10">
                                             <Icon
                                                 name="Crown"
                                                 size={32}
@@ -281,7 +296,8 @@ export default function GroupsTab() {
                                             No orders yet
                                         </Text>
                                         <Text className="mt-1 text-sm text-center text-muted-foreground">
-                                            Start a new order to get your group together
+                                            Start a new order to get your group
+                                            together
                                         </Text>
                                         <TouchableOpacity
                                             onPress={handleCreateOrder}
@@ -372,10 +388,14 @@ export default function GroupsTab() {
                     </Animated.View>
                     <View className="flex-1 justify-end">
                         <Animated.View
-                            entering={SlideInDown.duration(300).easing(Easing.out(Easing.ease))}
-                            exiting={SlideOutDown.duration(200).easing(Easing.in(Easing.ease))}
+                            entering={SlideInDown.duration(300).easing(
+                                Easing.out(Easing.ease),
+                            )}
+                            exiting={SlideOutDown.duration(200).easing(
+                                Easing.in(Easing.ease),
+                            )}
                             style={{ marginBottom: insets.bottom + 60 }}
-                            className="mx-4 rounded-2xl bg-card border border-muted overflow-hidden">
+                            className="overflow-hidden mx-4 rounded-2xl border bg-card border-muted">
                             <View className="p-4 border-b border-muted">
                                 <Text className="text-base font-semibold text-foreground">
                                     Filter Orders
@@ -398,8 +418,10 @@ export default function GroupsTab() {
                                             size={18}
                                             color={
                                                 isActive
-                                                    ? NAV_THEME[colorScheme].primary
-                                                    : NAV_THEME[colorScheme].text
+                                                    ? NAV_THEME[colorScheme]
+                                                          .primary
+                                                    : NAV_THEME[colorScheme]
+                                                          .text
                                             }
                                         />
                                         <Text
@@ -414,7 +436,10 @@ export default function GroupsTab() {
                                             <Icon
                                                 name="Check"
                                                 size={18}
-                                                color={NAV_THEME[colorScheme].primary}
+                                                color={
+                                                    NAV_THEME[colorScheme]
+                                                        .primary
+                                                }
                                             />
                                         )}
                                     </Pressable>
