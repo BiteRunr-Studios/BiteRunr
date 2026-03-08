@@ -25,11 +25,11 @@ const config: ExpoConfig = {
             light: "./assets/images/icon.png",
         },
         splash: {
-            image: "./assets/images/splash-screen-icon.png",
+            image: "./assets/images/icon.png",
             resizeMode: "contain",
             backgroundColor: "#FFFFFF",
             dark: {
-                image: "./assets/images/splash-screen-icon.png",
+                image: "./assets/images/icon.png",
                 resizeMode: "contain",
                 backgroundColor: "#000000",
             },
@@ -50,11 +50,11 @@ const config: ExpoConfig = {
         },
         icon: "./assets/images/icon.png",
         splash: {
-            image: "./assets/images/splash-screen-icon.png",
+            image: "./assets/images/icon.png",
             resizeMode: "contain",
             backgroundColor: "#FFFFFF",
             dark: {
-                image: "./assets/images/splash-screen-icon.png",
+                image: "./assets/images/icon.png",
                 resizeMode: "contain",
                 backgroundColor: "#000000",
             },

@@ -236,29 +236,49 @@ export default function HomeTab() {
 
                                     <View className="my-3 border-l border-muted" />
 
-                                    <AnimatedPressable
-                                        className="flex-1"
-                                        onPress={() =>
-                                            router.push("/account/friends")
-                                        }>
-                                        <View className="items-center py-4 gap-1.5">
-                                            <View className="items-center justify-center w-10 h-10 rounded-full bg-blue-500/10">
-                                                <Icon
-                                                    name="Users"
-                                                    size={18}
-                                                    color="#3b82f6"
-                                                />
-                                            </View>
-                                            <Text className="text-2xl font-bold text-foreground">
-                                                {friendCount}
-                                            </Text>
-                                            <Text className="text-xs text-muted-foreground">
-                                                Friends
-                                            </Text>
-                                        </View>
-                                    </AnimatedPressable>
+                                    {hasStripe && (
+                                        <>
+                                            <AnimatedPressable
+                                                className="flex-1"
+                                                onPress={() =>
+                                                    router.push(
+                                                        "/account/payments",
+                                                    )
+                                                }>
+                                                <View className="items-center py-4 gap-1.5">
+                                                    <View className="items-center justify-center w-10 h-10 rounded-full bg-green-500/10">
+                                                        <Icon
+                                                            name="Wallet"
+                                                            size={18}
+                                                            color="#22c55e"
+                                                        />
+                                                    </View>
+                                                    {balanceAmount !== null ? (
+                                                        <Animated.Text
+                                                            entering={FadeInUp.duration(300).easing(Easing.out(Easing.ease))}
+                                                            className={`font-bold text-green-600 ${balanceAmount >= 100000 ? "text-base" : balanceAmount >= 10000 ? "text-lg" : "text-2xl"}`}
+                                                            numberOfLines={1}
+                                                            adjustsFontSizeToFit>
+                                                            $
+                                                            {(
+                                                                balanceAmount /
+                                                                100
+                                                            ).toFixed(2)}
+                                                        </Animated.Text>
+                                                    ) : (
+                                                        <Skeleton>
+                                                            <SkeletonBlock width={50} height={24} rounded="rounded-md" />
+                                                        </Skeleton>
+                                                    )}
+                                                    <Text className="text-xs text-muted-foreground">
+                                                        Balance
+                                                    </Text>
+                                                </View>
+                                            </AnimatedPressable>
 
-                                    <View className="my-3 border-l border-muted" />
+                                            <View className="my-3 border-l border-muted" />
+                                        </>
+                                    )}
 
                                     <AnimatedPressable
                                         className="flex-1"
@@ -288,49 +308,6 @@ export default function HomeTab() {
                                             </Text>
                                         </View>
                                     </AnimatedPressable>
-
-                                    {hasStripe && (
-                                            <>
-                                                <View className="my-3 border-l border-muted" />
-                                                <AnimatedPressable
-                                                    className="flex-1"
-                                                    onPress={() =>
-                                                        router.push(
-                                                            "/account/payments",
-                                                        )
-                                                    }>
-                                                    <View className="items-center py-4 gap-1.5">
-                                                        <View className="items-center justify-center w-10 h-10 rounded-full bg-green-500/10">
-                                                            <Icon
-                                                                name="Wallet"
-                                                                size={18}
-                                                                color="#22c55e"
-                                                            />
-                                                        </View>
-                                                        {balanceAmount !== null ? (
-                                                            <Animated.Text
-                                                                entering={FadeInUp.duration(300).easing(Easing.out(Easing.ease))}
-                                                                className={`font-bold text-green-600 ${balanceAmount >= 100000 ? "text-base" : balanceAmount >= 10000 ? "text-lg" : "text-2xl"}`}
-                                                                numberOfLines={1}
-                                                                adjustsFontSizeToFit>
-                                                                $
-                                                                {(
-                                                                    balanceAmount /
-                                                                    100
-                                                                ).toFixed(2)}
-                                                            </Animated.Text>
-                                                        ) : (
-                                                            <Skeleton>
-                                                                <SkeletonBlock width={50} height={24} rounded="rounded-md" />
-                                                            </Skeleton>
-                                                        )}
-                                                        <Text className="text-xs text-muted-foreground">
-                                                            Balance
-                                                        </Text>
-                                                    </View>
-                                                </AnimatedPressable>
-                                            </>
-                                        )}
 
                                 </View>
                             </Animated.View>

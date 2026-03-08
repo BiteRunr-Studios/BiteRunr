@@ -88,7 +88,13 @@ export function QRCodeModal({
                 className="flex-1 justify-center items-center bg-black/50 px-6"
                 onPress={onClose}>
                 <Pressable
-                    className="w-full bg-card rounded-3xl p-6 items-center"
+                    className="w-full rounded-3xl p-6 items-center border border-border"
+                    style={{
+                        backgroundColor:
+                            colorScheme === "dark"
+                                ? "hsl(0, 0%, 7%)"
+                                : "hsl(0, 0%, 96%)",
+                    }}
                     onPress={(e) => e.stopPropagation()}>
                     {/* Close button */}
                     <Pressable

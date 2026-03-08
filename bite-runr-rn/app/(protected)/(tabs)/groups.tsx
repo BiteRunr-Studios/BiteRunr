@@ -107,6 +107,8 @@ export default function GroupsTab() {
 
     const filteredOrders = data?.filter((item) => {
         if (!userId) return false;
+        const myOrderUser = item.orderUsers.find((ou) => ou.userId === userId);
+        if (!myOrderUser) return false;
 
         // Filter by status chip
         if (activeFilter !== "all") {
@@ -115,15 +117,16 @@ export default function GroupsTab() {
             } else if (activeFilter === "completed") {
                 if (item.order.status !== "completed") return false;
             } else if (activeFilter === "needs_payment") {
-                // Only show active+paused orders where prices have been set via receipt scanning
+                // Only show orders where the current user still owes money.
                 if (item.order.status !== "active" || !item.order.paused) return false;
-                const hasUnsettled = item.orderUsers.some(
-                    (ou) =>
-                        (ou.settlementStatus === "unpaid" ||
-                            ou.settlementStatus === "claimed") &&
-                        Number(ou.amountOwed) > 0,
-                );
-                if (!hasUnsettled) return false;
+                if (item.order.creatorId === userId) return false;
+                if (Number(myOrderUser.amountOwed) <= 0) return false;
+                if (
+                    myOrderUser.settlementStatus !== "unpaid" &&
+                    myOrderUser.settlementStatus !== "claimed"
+                ) {
+                    return false;
+                }
             }
         }
 
