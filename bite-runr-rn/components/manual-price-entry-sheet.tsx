@@ -6,15 +6,17 @@ import {
     ScrollView,
     TextInput,
     Modal,
-    SafeAreaView,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import Icon from "@/components/common/icon";
 import { Button } from "@/components/common/button";
+import { groupOrderItemsByParticipant } from "@/lib/order-item-grouping";
 
 interface OrderItem {
     id: string;
+    orderUserId: string;
     itemName: string;
     quantity: number;
     userName: string;
@@ -155,20 +157,12 @@ export function ManualPriceEntrySheet({
     isSaving,
 }: ManualPriceEntrySheetProps) {
     const { colorScheme } = useColorScheme();
+    const insets = useSafeAreaInsets();
 
-    const personGroups = useMemo(() => {
-        if (!orderItems) return [];
-        const groupMap = new Map<string, OrderItem[]>();
-        for (const oi of orderItems) {
-            const existing = groupMap.get(oi.userName);
-            if (existing) {
-                existing.push(oi);
-            } else {
-                groupMap.set(oi.userName, [oi]);
-            }
-        }
-        return [...groupMap.entries()].map(([name, items]) => ({ name, items }));
-    }, [orderItems]);
+    const personGroups = useMemo(
+        () => groupOrderItemsByParticipant(orderItems),
+        [orderItems],
+    );
 
     const totalItems = orderItems?.length ?? 0;
     const pricedCount = orderItems
@@ -183,15 +177,18 @@ export function ManualPriceEntrySheet({
             visible={visible}
             animationType="slide"
             presentationStyle="fullScreen"
+            statusBarTranslucent
             onRequestClose={onDismiss}
         >
-            <SafeAreaView
+            <View
                 className="flex-1"
                 style={{
                     backgroundColor:
                         colorScheme === "dark"
                             ? "hsl(0, 0%, 7%)"
                             : "hsl(0, 0%, 96%)",
+                    paddingTop: insets.top,
+                    paddingBottom: insets.bottom,
                 }}
             >
                 {/* Header */}
@@ -225,16 +222,16 @@ export function ManualPriceEntrySheet({
                     contentContainerStyle={{ paddingBottom: 24 }}
                     keyboardShouldPersistTaps="handled"
                 >
-                    {personGroups.map(({ name, items }) => {
+                    {personGroups.map(({ key, displayName, items }) => {
                         const groupPriced = items.filter((oi) => {
                             const price = prices.get(oi.id);
                             return price !== null && price !== undefined && price > 0;
                         }).length;
 
                         return (
-                            <React.Fragment key={name}>
+                            <React.Fragment key={key}>
                                 <SectionHeader
-                                    title={name}
+                                    title={displayName}
                                     pricedCount={groupPriced}
                                     totalCount={items.length}
                                 />
@@ -270,7 +267,7 @@ export function ManualPriceEntrySheet({
                         loading={isSaving}
                     />
                 </View>
-            </SafeAreaView>
+            </View>
         </Modal>
     );
 }

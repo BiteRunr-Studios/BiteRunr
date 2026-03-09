@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
     View,
     Text,
@@ -7,20 +7,23 @@ import {
     TextInput,
     Pressable,
     Modal,
-    SafeAreaView,
     Animated,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import Icon from "@/components/common/icon";
 import { Button } from "@/components/common/button";
 import type { MatchedItem } from "@/hooks/useReceiptScanning";
+import { groupOrderItemsByParticipant } from "@/lib/order-item-grouping";
 
 interface OrderItem {
     id: string;
+    orderUserId: string;
     itemName: string;
     quantity: number;
     userName: string;
+    comments?: string | null;
     priceInCents: number | null;
 }
 
@@ -45,6 +48,16 @@ function formatPrice(cents: number | null): string {
     return `$${(cents / 100).toFixed(2)}`;
 }
 
+function getEffectivePrice(item: MatchedItem | null | undefined): number | null {
+    if (!item) return null;
+    return item.manualPriceInCents ?? item.receiptItem.priceInCents;
+}
+
+function getOrderItemComment(orderItem: OrderItem): string | null {
+    const trimmedComment = orderItem.comments?.trim();
+    return trimmedComment ? trimmedComment : null;
+}
+
 // --- Unmatched Receipt Item Card ---
 function UnmatchedCard({
     item,
@@ -57,6 +70,8 @@ function UnmatchedCard({
     isSelected: boolean;
     onSelect: (index: number) => void;
 }) {
+    const comboLabel = item.receiptItem.comboName;
+
     return (
         <Pressable
             onPress={() => onSelect(matchedIndex)}
@@ -81,6 +96,11 @@ function UnmatchedCard({
                     <Text className="text-xs text-muted-foreground">
                         Qty: {item.receiptItem.quantity} · {formatPrice(item.receiptItem.priceInCents)}
                     </Text>
+                    {comboLabel && (
+                        <Text className="mt-1 text-[11px] text-muted-foreground">
+                            Split from {comboLabel}
+                        </Text>
+                    )}
                 </View>
                 {isSelected && (
                     <Text className="text-xs font-medium text-primary">
@@ -113,6 +133,7 @@ function OrderItemCard({
     colorScheme: "light" | "dark";
 }) {
     const [manualPrice, setManualPrice] = useState("");
+    const itemComment = getOrderItemComment(orderItem);
 
     const handlePriceChange = (text: string) => {
         let cleaned = text.replace(/[^0-9.]/g, "");
@@ -133,9 +154,7 @@ function OrderItemCard({
         }
     };
 
-    const effectivePrice = linkedReceiptItem
-        ? (linkedReceiptItem.manualPriceInCents ?? linkedReceiptItem.receiptItem.priceInCents)
-        : null;
+    const effectivePrice = getEffectivePrice(linkedReceiptItem);
 
     return (
         <Pressable
@@ -172,6 +191,17 @@ function OrderItemCard({
                             <Text className="text-xs text-muted-foreground">
                                 Qty: {orderItem.quantity}
                             </Text>
+                            {itemComment && (
+                                <Text
+                                    className={`mt-1 text-[11px] ${
+                                        !linkedReceiptItem && hasSelectedItem
+                                            ? "text-primary"
+                                            : "text-muted-foreground"
+                                    }`}
+                                >
+                                    Comment: {itemComment}
+                                </Text>
+                            )}
                         </View>
                     </View>
 
@@ -219,8 +249,24 @@ function OrderItemCard({
                                               : "Review"}
                                     </Text>
                                 </View>
-                            )}
+                                )}
                         </View>
+
+                        {linkedReceiptItem.receiptItem.comboName && (
+                            <View className="mt-2 ml-8 rounded-lg border border-primary/15 bg-primary/5 px-2.5 py-2">
+                                <Text className="text-[11px] font-medium text-primary">
+                                    Split from {linkedReceiptItem.receiptItem.comboName}
+                                    {linkedReceiptItem.receiptItem.comboTotalInCents !== null &&
+                                        linkedReceiptItem.receiptItem.comboTotalInCents !== undefined &&
+                                        ` · ${formatPrice(linkedReceiptItem.receiptItem.comboTotalInCents)} combo`}
+                                </Text>
+                                {!!linkedReceiptItem.receiptItem.comboItems?.length && (
+                                    <Text className="mt-0.5 text-[11px] text-muted-foreground">
+                                        Includes {linkedReceiptItem.receiptItem.comboItems.join(" · ")}
+                                    </Text>
+                                )}
+                            </View>
+                        )}
 
                         {/* Price edit + Unlink */}
                         <View className="flex-row items-center gap-2 mt-2 ml-8">
@@ -302,7 +348,7 @@ function PersonSection({
     onToggle: () => void;
     children: React.ReactNode;
 }) {
-    const rotation = useRef(new Animated.Value(collapsed ? 1 : 0)).current;
+    const [rotation] = useState(() => new Animated.Value(collapsed ? 1 : 0));
 
     useEffect(() => {
         Animated.timing(rotation, {
@@ -367,24 +413,17 @@ export function ReceiptConfirmationSheet({
     isSaving,
 }: ReceiptConfirmationSheetProps) {
     const { colorScheme } = useColorScheme();
+    const insets = useSafeAreaInsets();
     const [selectedReceiptIndex, setSelectedReceiptIndex] = useState<number | null>(null);
-    const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
-    const prevAllMatchedRef = useRef<Set<string>>(new Set());
+    const [sectionCollapseOverrides, setSectionCollapseOverrides] = useState<
+        Map<string, boolean>
+    >(new Map());
 
     // Group order items by person
-    const personGroups = useMemo(() => {
-        if (!orderItems) return [];
-        const groupMap = new Map<string, OrderItem[]>();
-        for (const oi of orderItems) {
-            const existing = groupMap.get(oi.userName);
-            if (existing) {
-                existing.push(oi);
-            } else {
-                groupMap.set(oi.userName, [oi]);
-            }
-        }
-        return [...groupMap.entries()].map(([name, items]) => ({ name, items }));
-    }, [orderItems]);
+    const personGroups = useMemo(
+        () => groupOrderItemsByParticipant(orderItems),
+        [orderItems],
+    );
 
     // Build a lookup: orderItemId → { matchedItem, matchedIndex }
     const matchByOrderItemId = useMemo(() => {
@@ -397,46 +436,25 @@ export function ReceiptConfirmationSheet({
         return map;
     }, [matchedItems]);
 
-    // Auto-collapse person sections when all their items become matched
-    useEffect(() => {
-        const nowAllMatched = new Set<string>();
-        for (const { name, items } of personGroups) {
-            if (items.length > 0 && items.every((oi) => matchByOrderItemId.has(oi.id))) {
-                nowAllMatched.add(name);
-            }
-        }
+    const toggleSection = useCallback(
+        (participantKey: string, defaultCollapsed: boolean) => {
+            setSectionCollapseOverrides((prev) => {
+                const next = new Map(prev);
+                const currentCollapsed =
+                    next.get(participantKey) ?? defaultCollapsed;
+                const nextCollapsed = !currentCollapsed;
 
-        const newlyCompleted: string[] = [];
-        for (const name of nowAllMatched) {
-            if (!prevAllMatchedRef.current.has(name)) {
-                newlyCompleted.push(name);
-            }
-        }
-
-        if (newlyCompleted.length > 0) {
-            setCollapsedSections((prev) => {
-                const next = new Set(prev);
-                for (const name of newlyCompleted) {
-                    next.add(name);
+                if (nextCollapsed === defaultCollapsed) {
+                    next.delete(participantKey);
+                } else {
+                    next.set(participantKey, nextCollapsed);
                 }
+
                 return next;
             });
-        }
-
-        prevAllMatchedRef.current = nowAllMatched;
-    }, [personGroups, matchByOrderItemId]);
-
-    const toggleSection = useCallback((name: string) => {
-        setCollapsedSections((prev) => {
-            const next = new Set(prev);
-            if (next.has(name)) {
-                next.delete(name);
-            } else {
-                next.add(name);
-            }
-            return next;
-        });
-    }, []);
+        },
+        [],
+    );
 
     // Unmatched receipt items
     const unmatchedItems = useMemo(() => {
@@ -445,19 +463,22 @@ export function ReceiptConfirmationSheet({
             .filter(({ item }) => !item.matchedOrderItemId);
     }, [matchedItems]);
 
-    const validMatchCount = matchedItems.filter(
-        (m) =>
-            m.matchedOrderItemId &&
-            (m.manualPriceInCents ?? m.receiptItem.priceInCents) !== null,
+    const totalOrderItems = orderItems?.length ?? 0;
+    const pricedOrderItemCount = orderItems
+        ? orderItems.filter((orderItem) => {
+              const linkedMatch = matchByOrderItemId.get(orderItem.id);
+              return getEffectivePrice(linkedMatch?.item) !== null;
+          }).length
+        : 0;
+    const comboSplitCount = matchedItems.filter(
+        (item) => !!item.receiptItem.comboName,
     ).length;
+    const allOrderItemsPriced =
+        totalOrderItems > 0 && pricedOrderItemCount === totalOrderItems;
 
     const totalToSave = matchedItems
         .filter((m) => m.matchedOrderItemId)
-        .reduce(
-            (sum, m) =>
-                sum + (m.manualPriceInCents ?? m.receiptItem.priceInCents ?? 0),
-            0,
-        );
+        .reduce((sum, m) => sum + (getEffectivePrice(m) ?? 0), 0);
 
     const handleSelectUnmatched = (matchedIndex: number) => {
         setSelectedReceiptIndex(
@@ -489,15 +510,18 @@ export function ReceiptConfirmationSheet({
             visible={visible}
             animationType="slide"
             presentationStyle="fullScreen"
+            statusBarTranslucent
             onRequestClose={onClose}
         >
-            <SafeAreaView
+            <View
                 className="flex-1"
                 style={{
                     backgroundColor:
                         colorScheme === "dark"
                             ? "hsl(0, 0%, 7%)"
                             : "hsl(0, 0%, 96%)",
+                    paddingTop: insets.top,
+                    paddingBottom: insets.bottom,
                 }}
             >
                 {/* Header */}
@@ -540,7 +564,7 @@ export function ReceiptConfirmationSheet({
                     <View className="flex-row items-center px-4 py-2.5 bg-primary/10 border-b border-primary/20">
                         <Icon name="Link" size={14} color={NAV_THEME[colorScheme].primary} />
                         <Text className="flex-1 ml-2 text-xs font-medium text-primary" numberOfLines={1}>
-                            Linking "{matchedItems[selectedReceiptIndex]?.receiptItem.name}" — tap an order item
+                            Tap an order item to link the selected receipt item
                         </Text>
                         <TouchableOpacity
                             onPress={() => setSelectedReceiptIndex(null)}
@@ -548,6 +572,28 @@ export function ReceiptConfirmationSheet({
                         >
                             <Text className="text-xs font-medium text-muted-foreground">Cancel</Text>
                         </TouchableOpacity>
+                    </View>
+                )}
+
+                {comboSplitCount > 0 && (
+                    <View className="mx-4 mt-3 rounded-2xl border border-primary/15 bg-primary/5 p-3">
+                        <View className="flex-row items-start">
+                            <View className="items-center justify-center w-8 h-8 mr-3 rounded-full bg-primary/10">
+                                <Icon
+                                    name="PackageOpen"
+                                    size={16}
+                                    color={NAV_THEME[colorScheme].primary}
+                                />
+                            </View>
+                            <View className="flex-1">
+                                <Text className="text-sm font-medium text-foreground">
+                                    Combo items were split out
+                                </Text>
+                                <Text className="mt-1 text-xs leading-5 text-muted-foreground">
+                                    Included items from a meal or trio were separated so you can match them one by one. Prices start as an even split, and you can edit any price before saving.
+                                </Text>
+                            </View>
+                        </View>
                     </View>
                 )}
 
@@ -560,7 +606,19 @@ export function ReceiptConfirmationSheet({
                     {/* Unmatched section (only if there are unmatched items) */}
                     {unmatchedItems.length > 0 && (
                         <>
-                            <SectionHeader title="Needs Attention" count={unmatchedItems.length} />
+                            <SectionHeader
+                                title={
+                                    allOrderItemsPriced
+                                        ? "Unlinked Receipt Lines"
+                                        : "Needs Attention"
+                                }
+                                count={unmatchedItems.length}
+                            />
+                            {allOrderItemsPriced && (
+                                <Text className="mb-2 text-xs leading-5 text-muted-foreground">
+                                    These can be left unmatched if they are extras, sauces, or receipt-only modifiers.
+                                </Text>
+                            )}
                             {unmatchedItems.map(({ item, index }) => (
                                 <UnmatchedCard
                                     key={item.id}
@@ -574,18 +632,20 @@ export function ReceiptConfirmationSheet({
                     )}
 
                     {/* Person sections */}
-                    {personGroups.map(({ name, items }) => {
+                    {personGroups.map(({ key, displayName, items }) => {
                         const matchedCount = items.filter((oi) => matchByOrderItemId.has(oi.id)).length;
                         const allMatched = items.length > 0 && matchedCount === items.length;
+                        const collapsed =
+                            sectionCollapseOverrides.get(key) ?? allMatched;
                         return (
                             <PersonSection
-                                key={name}
-                                name={name}
+                                key={key}
+                                name={displayName}
                                 matchedCount={matchedCount}
                                 totalCount={items.length}
                                 allMatched={allMatched}
-                                collapsed={collapsedSections.has(name)}
-                                onToggle={() => toggleSection(name)}
+                                collapsed={collapsed}
+                                onToggle={() => toggleSection(key, allMatched)}
                             >
                                 {items.map((oi) => {
                                     const match = matchByOrderItemId.get(oi.id);
@@ -608,21 +668,23 @@ export function ReceiptConfirmationSheet({
                     })}
 
                     {/* All matched empty state */}
-                    {unmatchedItems.length === 0 && personGroups.length > 0 && (
+                    {allOrderItemsPriced &&
+                        unmatchedItems.length === 0 &&
+                        personGroups.length > 0 && (
                         <View className="items-center py-6 mt-2 border border-dashed rounded-xl border-green-500/30 bg-green-500/5">
                             <Icon name="CircleCheck" size={28} color="#22c55e" />
                             <Text className="mt-2 text-sm font-medium text-foreground">
-                                All receipt items matched!
+                                All order items priced!
                             </Text>
                         </View>
-                    )}
+                        )}
                 </ScrollView>
 
                 {/* Footer */}
                 <View className="px-4 py-3 border-t border-border">
                     <View className="flex-row items-center justify-between mb-3">
                         <Text className="text-sm text-muted-foreground">
-                            {validMatchCount} of {matchedItems.length} matched
+                            {pricedOrderItemCount} of {totalOrderItems} order items priced
                         </Text>
                         <Text className="text-base font-semibold text-foreground">
                             Saving: {formatPrice(totalToSave)}
@@ -632,14 +694,17 @@ export function ReceiptConfirmationSheet({
                         label={
                             isSaving
                                 ? "Saving..."
-                                : `Save ${validMatchCount} Price${validMatchCount !== 1 ? "s" : ""}`
+                                : totalOrderItems > 0 &&
+                                    pricedOrderItemCount === totalOrderItems
+                                  ? "Save Prices"
+                                  : `Save ${pricedOrderItemCount} Price${pricedOrderItemCount !== 1 ? "s" : ""}`
                         }
                         onPress={onConfirm}
-                        disabled={isSaving || validMatchCount === 0}
+                        disabled={isSaving || pricedOrderItemCount === 0}
                         loading={isSaving}
                     />
                 </View>
-            </SafeAreaView>
+            </View>
         </Modal>
     );
 }
