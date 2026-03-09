@@ -25,6 +25,8 @@ export const receiptMatchValidator = v.object({
     priceInCents: v.union(v.number(), v.null()),
 });
 
+const MAX_INCLUDED_ITEMS = 20;
+
 const receiptLineSchema = z.object({
     name: z
         .string()
@@ -60,7 +62,7 @@ const receiptLineSchema = z.object({
         )
         .default([])
         .describe(
-            "If this line is a combo/meal/trio header, list the included items here. Leave empty for standalone items.",
+            `If this line is a combo/meal/trio header, list the included items here. Leave empty for standalone items. Return at most ${MAX_INCLUDED_ITEMS} included items.`,
         ),
 });
 
@@ -180,6 +182,58 @@ function allocatePerUnitPrices(
         return [];
     }
 
+    if (componentQuantities.length > MAX_INCLUDED_ITEMS) {
+        const totalUnits = componentQuantities.reduce(
+            (sum, qty) => sum + qty,
+            0,
+        );
+        if (totalUnits <= 0) {
+            return componentQuantities.map(() => comboUnitPriceInCents);
+        }
+
+        const baseUnitPrice = Math.floor(comboUnitPriceInCents / totalUnits);
+        let remainingRemainder =
+            comboUnitPriceInCents - baseUnitPrice * totalUnits;
+        const roundedIndexes = new Set<number>();
+        const componentsByQuantity = componentQuantities
+            .map((quantity, index) => ({ index, quantity }))
+            .sort(
+                (left, right) =>
+                    right.quantity - left.quantity || left.index - right.index,
+            );
+
+        for (const component of componentsByQuantity) {
+            if (component.quantity <= remainingRemainder) {
+                roundedIndexes.add(component.index);
+                remainingRemainder -= component.quantity;
+            }
+
+            if (remainingRemainder === 0) {
+                break;
+            }
+        }
+
+        if (remainingRemainder > 0) {
+            const closestComponent = componentsByQuantity
+                .filter((component) => !roundedIndexes.has(component.index))
+                .sort(
+                    (left, right) =>
+                        Math.abs(left.quantity - remainingRemainder) -
+                            Math.abs(right.quantity - remainingRemainder) ||
+                        right.quantity - left.quantity ||
+                        left.index - right.index,
+                )[0];
+            if (closestComponent) {
+                roundedIndexes.add(closestComponent.index);
+            }
+        }
+
+        return componentQuantities.map((_, index) => {
+            const shouldRoundUp = roundedIndexes.has(index);
+            return baseUnitPrice + (shouldRoundUp ? 1 : 0);
+        });
+    }
+
     const totalUnits = componentQuantities.reduce((sum, qty) => sum + qty, 0);
     if (totalUnits <= 0) {
         return componentQuantities.map(() => comboUnitPriceInCents);
@@ -234,6 +288,7 @@ function normalizeParsedReceiptItems(
         const itemName = item.name.trim();
         const itemQuantity = sanitizeQuantity(item.quantity);
         let includedItems = (item.includedItems ?? [])
+            .slice(0, MAX_INCLUDED_ITEMS)
             .map((includedItem) => ({
                 name: includedItem.name.trim(),
                 quantity: sanitizeQuantity(includedItem.quantity),

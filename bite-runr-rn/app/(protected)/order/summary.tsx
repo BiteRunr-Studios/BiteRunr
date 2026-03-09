@@ -420,9 +420,12 @@ export default function OrderSummary() {
                                                     </View>
                                                 )}
                                                 {item.subItems.map(
-                                                    (subItem) => (
+                                                    (
+                                                        subItem,
+                                                        subItemIndex,
+                                                    ) => (
                                                         <View
-                                                            key={`${item.itemId}-${subItem.comment}-${subItem.quantity}`}
+                                                            key={`${item.itemId}-${subItem.comment}-${subItem.quantity}-${subItemIndex}`}
                                                             className="flex-row items-center justify-between gap-2 py-1.5">
                                                             <Text
                                                                 numberOfLines={
