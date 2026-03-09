@@ -168,6 +168,10 @@ export const get = query({
     const enrichedOrderUsers = await Promise.all(
       orderUsers.map(async (ou) => {
         const user = await ctx.db.get(ou.userId);
+        const connectedAccount = await ctx.db
+          .query("connectedAccounts")
+          .withIndex("by_userId", (q) => q.eq("userId", ou.userId))
+          .first();
 
         // Get item count for this user
         const userItems = await ctx.db
@@ -184,6 +188,7 @@ export const get = query({
           amountOwed: ou.amountOwed,
           itemCount,
           isCreator: ou.userId === order.creatorId,
+          hasStripePaymentsEnabled: connectedAccount?.chargesEnabled ?? false,
           createdAt: ou._creationTime,
           user: user
             ? {
@@ -248,6 +253,88 @@ export const get = query({
         locationId: ol.locationId,
         createdAt: ol._creationTime,
       })),
+    };
+  },
+});
+
+// Transfer an active order to another participant
+export const transferRunner = mutation({
+  args: {
+    orderId: v.id("orders"),
+    newCreatorId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const order = await ctx.db.get(args.orderId);
+    if (!order) throw new Error("Order not found");
+
+    if (order.creatorId !== userId) {
+      throw new Error("Only the current runner can transfer this order");
+    }
+
+    if (order.status !== "active" && order.status !== "created") {
+      throw new Error("Only active orders can be transferred");
+    }
+
+    if (order.paused) {
+      throw new Error("Transfer the runner before the run starts");
+    }
+
+    if (args.newCreatorId === order.creatorId) {
+      throw new Error("This person is already the runner");
+    }
+
+    const orderUsers = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
+      .collect();
+
+    const nextRunner = orderUsers.find((ou) => ou.userId === args.newCreatorId);
+    if (!nextRunner) {
+      throw new Error("The new runner must already be part of this order");
+    }
+
+    await ctx.db.patch(args.orderId, { creatorId: args.newCreatorId });
+
+    const previousRunner = await ctx.db.get(userId);
+    const nextRunnerUser = await ctx.db.get(args.newCreatorId);
+    const nextRunnerName =
+      nextRunnerUser?.firstName?.trim() || nextRunnerUser?.email || "A group member";
+    const previousRunnerName =
+      previousRunner?.firstName?.trim() || previousRunner?.email || "The current runner";
+
+    await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUser, {
+      userId: args.newCreatorId,
+      title: "You're the New Runner",
+      body: `You are now the runner for ${order.name}.`,
+      data: { type: "runner_transferred", orderId: args.orderId },
+    });
+
+    const otherParticipantIds = orderUsers
+      .map((ou) => ou.userId)
+      .filter((participantId) =>
+        participantId !== userId && participantId !== args.newCreatorId,
+      );
+
+    if (otherParticipantIds.length > 0) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.pushNotifications.sendToUsers,
+        {
+          userIds: otherParticipantIds,
+          title: "Runner Updated",
+          body: `${nextRunnerName} is now the runner for ${order.name}.`,
+          data: { type: "runner_transferred", orderId: args.orderId },
+        },
+      );
+    }
+
+    return {
+      orderId: args.orderId,
+      previousRunnerName,
+      nextRunnerName,
     };
   },
 });

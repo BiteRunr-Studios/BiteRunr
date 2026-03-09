@@ -12,6 +12,7 @@ import { Flow } from "react-native-animated-spinkit";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
+import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import ReAnimated, {
     useSharedValue,
@@ -93,6 +94,8 @@ export default function SpecificOrder() {
     const [isSelectingItems, setIsSelectingItems] = useState(false);
     const [removingUserId, setRemovingUserId] = useState<string | null>(null);
     const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
+    const [isTransferringRunner, setIsTransferringRunner] = useState(false);
+    const transferRunnerSheetRef = useRef<ActionSheetRef>(null);
 
     const toggleExpanded = useCallback((orderUserId: string) => {
         setExpandedUserId((prev) => (prev === orderUserId ? null : orderUserId));
@@ -137,6 +140,7 @@ export default function SpecificOrder() {
     // Mutations
     const setStatus = useMutation(api.orderUsers.setStatus);
     const updateOrder = useMutation(api.orders.update);
+    const transferRunner = useMutation(api.orders.transferRunner);
     const leaveOrder = useMutation(api.orderUsers.leaveOrder);
     const removeFromOrder = useMutation(api.orderUsers.removeFromOrder);
 
@@ -252,6 +256,8 @@ export default function SpecificOrder() {
     const buttonText =
         buttonState === "readyToRun" ? "Start Run" : "Start Run Anyway";
     const isButtonDisabled = buttonState === "disabled";
+    const transferCandidates =
+        data?.orderUsers.filter((orderUser) => !orderUser.isCreator) ?? [];
 
     async function handleStartRun() {
         const startRun = async () => {
@@ -317,6 +323,67 @@ export default function SpecificOrder() {
                 },
             ],
         );
+    }
+
+    function handleOpenTransferRunnerSheet() {
+        transferRunnerSheetRef.current?.show();
+    }
+
+    function runAfterSheetClose(action: () => void) {
+        // Let the sheet fully dismiss before opening another modal/alert.
+        setTimeout(action, 250);
+    }
+
+    function handleTransferRunner(
+        nextRunner: NonNullable<typeof data>["orderUsers"][number],
+    ) {
+        transferRunnerSheetRef.current?.hide();
+
+        runAfterSheetClose(() => {
+            const nextRunnerName =
+                `${nextRunner.user?.firstName ?? ""} ${nextRunner.user?.lastName ?? ""}`.trim() ||
+                "this person";
+            const transferMessage = nextRunner.hasStripePaymentsEnabled
+                ? `Make ${nextRunnerName} the new runner for this order? Future card payments will go to them instead of you.`
+                : `Make ${nextRunnerName} the new runner for this order? They do not have Stripe payments set up, so members will need to use cash settlement until they do.`;
+
+            Alert.alert(
+                "Transfer Runner",
+                transferMessage,
+                [
+                    {
+                        text: "Cancel",
+                        style: "cancel",
+                    },
+                    {
+                        text: "Transfer",
+                        onPress: async () => {
+                            setIsTransferringRunner(true);
+                            try {
+                                await transferRunner({
+                                    orderId: orderId as Id<"orders">,
+                                    newCreatorId: nextRunner.userId as Id<"users">,
+                                });
+                                Alert.alert(
+                                    "Runner Updated",
+                                    `${nextRunnerName} is now the runner for this order.`,
+                                );
+                            } catch (error) {
+                                console.error("Failed to transfer runner:", error);
+                                Alert.alert(
+                                    "Error",
+                                    error instanceof Error
+                                        ? error.message
+                                        : "Failed to transfer the runner. Please try again.",
+                                );
+                            } finally {
+                                setIsTransferringRunner(false);
+                            }
+                        },
+                    },
+                ],
+            );
+        });
     }
 
     function confirmRemoveMember(
@@ -517,28 +584,50 @@ export default function SpecificOrder() {
                         color={NAV_THEME[colorScheme].primary}
                     />
                 </Pressable>
-                <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
+                <Text
+                    numberOfLines={1}
+                    className="flex-1 ml-2 mr-2 text-xl font-semibold text-foreground">
                     Order Details
                 </Text>
                 {isCreator && (
                     <View className="flex-row items-center gap-2">
                         {!data.order.paused && (
-                            <TouchableOpacity
-                                onPress={() => setShowQRModal(true)}
-                                className="p-2 rounded-full bg-primary/10">
-                                <Icon
-                                    name="QrCode"
-                                    size={20}
-                                    color={NAV_THEME[colorScheme].primary}
-                                />
-                            </TouchableOpacity>
+                            <>
+                                <TouchableOpacity
+                                    onPress={() => setShowQRModal(true)}
+                                    className="items-center justify-center w-9 h-9 rounded-full bg-primary/10">
+                                    <Icon
+                                        name="QrCode"
+                                        size={18}
+                                        color={NAV_THEME[colorScheme].primary}
+                                    />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={handleOpenTransferRunnerSheet}
+                                    disabled={isTransferringRunner}
+                                    className="items-center justify-center w-9 h-9 rounded-full bg-primary/10">
+                                    {isTransferringRunner ? (
+                                        <Flow size={16} color="#888" />
+                                    ) : (
+                                        <Icon
+                                            name="RefreshCw"
+                                            size={18}
+                                            color={
+                                                NAV_THEME[colorScheme].primary
+                                            }
+                                        />
+                                    )}
+                                </TouchableOpacity>
+                            </>
                         )}
                         <TouchableOpacity
                             onPress={handleCancelOrder}
-                            className="px-3 py-1.5 rounded-full bg-destructive/10">
-                            <Text className="text-sm font-medium text-destructive">
-                                Cancel
-                            </Text>
+                            className="items-center justify-center w-9 h-9 rounded-full bg-destructive/10">
+                            <Icon
+                                name="CircleX"
+                                size={18}
+                                color={NAV_THEME[colorScheme].notification}
+                            />
                         </TouchableOpacity>
                     </View>
                 )}
@@ -1015,6 +1104,108 @@ export default function SpecificOrder() {
                     onClose={() => setShowQRModal(false)}
                 />
             )}
+
+            <ActionSheet
+                ref={transferRunnerSheetRef}
+                gestureEnabled
+                indicatorStyle={{
+                    width: 48,
+                    height: 5,
+                    backgroundColor:
+                        colorScheme === "dark"
+                            ? "rgba(255,255,255,0.18)"
+                            : "rgba(15,23,42,0.12)",
+                }}
+                containerStyle={{
+                    backgroundColor:
+                        colorScheme === "dark"
+                            ? "hsl(0, 0%, 7%)"
+                            : "hsl(0, 0%, 96%)",
+                    borderTopLeftRadius: 24,
+                    borderTopRightRadius: 24,
+                    paddingBottom: 24,
+                }}>
+                <View className="px-5 pt-2">
+                    <Text className="text-xl font-semibold text-foreground">
+                        Choose a New Runner
+                    </Text>
+                    <Text className="mt-2 text-sm leading-5 text-muted-foreground">
+                        Anyone in the group can take over. If they do not have
+                        Stripe payments set up yet, members can still settle in
+                        cash.
+                    </Text>
+                </View>
+
+                <View className="px-5 mt-5">
+                    {transferCandidates.length === 0 ? (
+                        <View className="p-4 rounded-2xl border border-border bg-card">
+                            <Text className="text-sm text-muted-foreground">
+                                There isn&apos;t anyone else in this order yet.
+                            </Text>
+                        </View>
+                    ) : (
+                        <View className="gap-3">
+                            {transferCandidates.map((candidate) => {
+                                const candidateName =
+                                    `${candidate.user?.firstName ?? ""} ${candidate.user?.lastName ?? ""}`.trim() ||
+                                    "Unknown member";
+                                const isEligible =
+                                    candidate.hasStripePaymentsEnabled;
+
+                                return (
+                                    <TouchableOpacity
+                                        key={candidate.id}
+                                        className="p-4 border rounded-2xl border-border bg-card"
+                                        onPress={() =>
+                                            handleTransferRunner(candidate)
+                                        }
+                                        disabled={isTransferringRunner}>
+                                        <View className="flex-row items-center justify-between gap-3">
+                                            <View className="flex-1">
+                                                <Text className="text-base font-semibold text-foreground">
+                                                    {candidateName}
+                                                </Text>
+                                                <Text className="mt-1 text-sm text-muted-foreground">
+                                                    {isEligible
+                                                        ? "Stripe payments ready"
+                                                        : "Stripe payments not set up"}
+                                                </Text>
+                                            </View>
+                                            <View
+                                                className={`px-3 py-1 rounded-full ${
+                                                    isEligible
+                                                        ? "bg-green-500/15"
+                                                        : "bg-orange-500/15"
+                                                }`}>
+                                                <Text
+                                                    className={`text-xs font-medium ${
+                                                        isEligible
+                                                            ? "text-green-600"
+                                                            : "text-orange-500"
+                                                    }`}>
+                                                    {isEligible
+                                                        ? "Stripe ready"
+                                                        : "Cash only"}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+                    )}
+                </View>
+
+                <View className="px-5 mt-5">
+                    <TouchableOpacity
+                        onPress={() => transferRunnerSheetRef.current?.hide()}
+                        className="items-center justify-center py-4 rounded-2xl bg-muted">
+                        <Text className="text-base font-medium text-foreground">
+                            Close
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </ActionSheet>
 
         </>
     );
