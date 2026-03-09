@@ -1122,7 +1122,10 @@ export default function SpecificOrder() {
                             : "rgba(15,23,42,0.12)",
                 }}
                 containerStyle={{
-                    backgroundColor: NAV_THEME[colorScheme].background,
+                    backgroundColor:
+                        colorScheme === "dark"
+                            ? "hsl(0, 0%, 7%)"
+                            : "hsl(0, 0%, 96%)",
                     borderTopLeftRadius: 24,
                     borderTopRightRadius: 24,
                     paddingBottom: 24,

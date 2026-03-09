@@ -115,19 +115,13 @@ export default function CreateOrder() {
         }
 
         try {
-            await createOrderMutation.mutateAsync({
+            const orderId = await createOrderMutation.mutateAsync({
                 name: name.trim(),
                 comments: comments.trim() || null,
                 locationIds: selectedLocationIds,
                 friendIds: selectedFriendIds,
             });
-
-            Alert.alert("Success", "Order created successfully!", [
-                {
-                    text: "OK",
-                    onPress: () => router.back(),
-                },
-            ]);
+            router.replace(`/(protected)/order/${orderId}`);
         } catch (error: any) {
             const apiErrors = parseApiErrors(error);
 
