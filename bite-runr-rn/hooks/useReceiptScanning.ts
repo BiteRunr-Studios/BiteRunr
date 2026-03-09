@@ -24,6 +24,9 @@ export interface ParsedReceiptItem {
     name: string;
     quantity: number;
     priceInCents: number | null;
+    comboName?: string | null;
+    comboItems?: string[];
+    comboTotalInCents?: number | null;
 }
 
 export interface MatchedItem {

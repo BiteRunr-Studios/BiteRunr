@@ -11,6 +11,9 @@ export const parsedReceiptItemValidator = v.object({
     name: v.string(),
     quantity: v.number(),
     priceInCents: v.union(v.number(), v.null()),
+    comboName: v.optional(v.union(v.string(), v.null())),
+    comboItems: v.optional(v.array(v.string())),
+    comboTotalInCents: v.optional(v.union(v.number(), v.null())),
 });
 
 // Match structure for confirmation
@@ -22,6 +25,56 @@ export const receiptMatchValidator = v.object({
     priceInCents: v.union(v.number(), v.null()),
 });
 
+const receiptLineSchema = z.object({
+    name: z
+        .string()
+        .describe(
+            "Clean, human-readable item name. Decode abbreviations and translate non-English names to English.",
+        ),
+    quantity: z
+        .number()
+        .int()
+        .describe("Quantity purchased. Default to 1 if not shown."),
+    priceInCents: z
+        .number()
+        .int()
+        .nullable()
+        .describe(
+            "Unit price in cents for one purchased unit, not the extended line total. Example: if quantity is 2 and the receipt shows $10.00 total, return 500 cents per unit.",
+        ),
+    includedItems: z
+        .array(
+            z.object({
+                name: z
+                    .string()
+                    .describe(
+                        "Included item name inside a combo/meal/trio. Decode abbreviations and translate to English.",
+                    ),
+                quantity: z
+                    .number()
+                    .int()
+                    .describe(
+                        "How many of this included item come with one combo. Default to 1 if not shown.",
+                    ),
+            }),
+        )
+        .default([])
+        .describe(
+            "If this line is a combo/meal/trio header, list the included items here. Leave empty for standalone items.",
+        ),
+});
+
+type ParsedReceiptLine = z.infer<typeof receiptLineSchema>;
+
+interface NormalizedReceiptItem {
+    name: string;
+    quantity: number;
+    priceInCents: number | null;
+    comboName?: string | null;
+    comboItems?: string[];
+    comboTotalInCents?: number | null;
+}
+
 // Zod schema for structured receipt parsing output
 const receiptResponseSchema = z.object({
     status: z
@@ -29,28 +82,7 @@ const receiptResponseSchema = z.object({
         .describe(
             "Set to 'not_a_receipt' if the image is not a receipt/invoice. Set to 'unreadable_receipt' if it's a receipt but too blurry/dark to read. Otherwise 'success'.",
         ),
-    items: z
-        .array(
-            z.object({
-                name: z
-                    .string()
-                    .describe(
-                        "Clean, human-readable item name. Decode abbreviations and translate non-English names to English.",
-                    ),
-                quantity: z
-                    .number()
-                    .int()
-                    .describe("Quantity purchased. Default to 1 if not shown."),
-                priceInCents: z
-                    .number()
-                    .int()
-                    .nullable()
-                    .describe(
-                        "Price in cents (e.g. $12.99 = 1299). Null if unclear.",
-                    ),
-            }),
-        )
-        .describe("Empty array if status is not 'success'."),
+    items: z.array(receiptLineSchema).describe("Empty array if status is not 'success'."),
     storeName: z
         .string()
         .nullable()
@@ -84,8 +116,233 @@ Keep proper nouns and brand names as-is.
 ## Rules
 - Skip taxes, totals, subtotals, discounts, tips — only extract purchased items
 - Include modifiers/customizations with the item name
+- Return priceInCents as the price for ONE purchased unit, not the full line total
+- If a combo/meal/trio line has included items listed underneath, return ONE top-level item for the priced combo and put the included items in includedItems
+- Do not duplicate combo children as separate top-level items unless they are clearly separately charged
 - Handle partial or unclear text with reasonable assumptions
 - Always return prices in CENTS as integers`;
+
+function sanitizeQuantity(quantity: number): number {
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+        return 1;
+    }
+    return Math.max(1, Math.round(quantity));
+}
+
+function normalizeReceiptName(name: string): string {
+    return name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .replace(
+            /\b(combo|meal|trio|deal|bundle|includes|included|with|and|the)\b/g,
+            " ",
+        )
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function looksLikeComboHeader(name: string): boolean {
+    return /\b(combo|meal|trio|box|bundle|deal|pack)\b/i.test(name);
+}
+
+function namesLookSimilar(left: string, right: string): boolean {
+    const normalizedLeft = normalizeReceiptName(left);
+    const normalizedRight = normalizeReceiptName(right);
+
+    if (!normalizedLeft || !normalizedRight) {
+        return false;
+    }
+
+    if (normalizedLeft === normalizedRight) {
+        return true;
+    }
+
+    if (
+        normalizedLeft.includes(normalizedRight) ||
+        normalizedRight.includes(normalizedLeft)
+    ) {
+        return true;
+    }
+
+    const leftWords = new Set(normalizedLeft.split(" "));
+    const rightWords = normalizedRight.split(" ").filter(Boolean);
+    const overlap = rightWords.filter((word) => leftWords.has(word)).length;
+    const minWordCount = Math.min(leftWords.size, rightWords.length);
+
+    return minWordCount > 0 && overlap >= minWordCount;
+}
+
+function allocatePerUnitPrices(
+    comboUnitPriceInCents: number,
+    componentQuantities: number[],
+): number[] {
+    if (componentQuantities.length === 0) {
+        return [];
+    }
+
+    const totalUnits = componentQuantities.reduce((sum, qty) => sum + qty, 0);
+    if (totalUnits <= 0) {
+        return componentQuantities.map(() => comboUnitPriceInCents);
+    }
+
+    const baseUnitPrice = Math.floor(comboUnitPriceInCents / totalUnits);
+    const remainder = comboUnitPriceInCents - baseUnitPrice * totalUnits;
+
+    let bestMask = 0;
+    let bestSum = 0;
+
+    for (let mask = 0; mask < 1 << componentQuantities.length; mask++) {
+        let currentSum = 0;
+        for (let index = 0; index < componentQuantities.length; index++) {
+            if (mask & (1 << index)) {
+                currentSum += componentQuantities[index];
+            }
+        }
+
+        const currentDistance = Math.abs(remainder - currentSum);
+        const bestDistance = Math.abs(remainder - bestSum);
+        if (
+            currentDistance < bestDistance ||
+            (currentDistance === bestDistance && currentSum > bestSum)
+        ) {
+            bestMask = mask;
+            bestSum = currentSum;
+            if (currentSum === remainder) {
+                break;
+            }
+        }
+    }
+
+    return componentQuantities.map((_, index) => {
+        const shouldRoundUp = (bestMask & (1 << index)) !== 0;
+        return baseUnitPrice + (shouldRoundUp ? 1 : 0);
+    });
+}
+
+function normalizeParsedReceiptItems(
+    parsedItems: ParsedReceiptLine[],
+): NormalizedReceiptItem[] {
+    const normalizedItems: NormalizedReceiptItem[] = [];
+    const skippedIndexes = new Set<number>();
+
+    for (let index = 0; index < parsedItems.length; index++) {
+        if (skippedIndexes.has(index)) {
+            continue;
+        }
+
+        const item = parsedItems[index];
+        const itemName = item.name.trim();
+        const itemQuantity = sanitizeQuantity(item.quantity);
+        let includedItems = (item.includedItems ?? [])
+            .map((includedItem) => ({
+                name: includedItem.name.trim(),
+                quantity: sanitizeQuantity(includedItem.quantity),
+            }))
+            .filter((includedItem) => includedItem.name.length > 0);
+
+        if (
+            includedItems.length === 0 &&
+            item.priceInCents !== null &&
+            looksLikeComboHeader(itemName)
+        ) {
+            const inferredIncludedItems: Array<{ name: string; quantity: number }> = [];
+            for (
+                let lookAheadIndex = index + 1;
+                lookAheadIndex < parsedItems.length &&
+                lookAheadIndex <= index + 6 &&
+                inferredIncludedItems.length < 4;
+                lookAheadIndex++
+            ) {
+                const candidate = parsedItems[lookAheadIndex];
+                const candidateName = candidate.name.trim();
+                if (!candidateName) {
+                    continue;
+                }
+
+                const candidatePrice = candidate.priceInCents ?? 0;
+                if (candidatePrice > 0) {
+                    break;
+                }
+
+                inferredIncludedItems.push({
+                    name: candidateName,
+                    quantity: sanitizeQuantity(candidate.quantity),
+                });
+            }
+
+            if (inferredIncludedItems.length >= 2) {
+                includedItems = inferredIncludedItems;
+            }
+        }
+
+        if (includedItems.length === 0) {
+            normalizedItems.push({
+                name: itemName,
+                quantity: itemQuantity,
+                priceInCents: item.priceInCents,
+            });
+            continue;
+        }
+
+        const remainingIncludedItems = includedItems.map((includedItem) => ({
+            ...includedItem,
+            remainingQuantity: includedItem.quantity,
+        }));
+
+        for (
+            let lookAheadIndex = index + 1;
+            lookAheadIndex < parsedItems.length && lookAheadIndex <= index + 6;
+            lookAheadIndex++
+        ) {
+            if (remainingIncludedItems.every((includedItem) => includedItem.remainingQuantity <= 0)) {
+                break;
+            }
+
+            const candidate = parsedItems[lookAheadIndex];
+            const candidatePrice = candidate.priceInCents ?? 0;
+            if (candidatePrice > 0) {
+                continue;
+            }
+
+            const matchingIncludedItem = remainingIncludedItems.find(
+                (includedItem) =>
+                    includedItem.remainingQuantity > 0 &&
+                    namesLookSimilar(candidate.name, includedItem.name),
+            );
+
+            if (!matchingIncludedItem) {
+                continue;
+            }
+
+            skippedIndexes.add(lookAheadIndex);
+            matchingIncludedItem.remainingQuantity -= sanitizeQuantity(
+                candidate.quantity,
+            );
+        }
+
+        const comboItems = includedItems.map((includedItem) => includedItem.name);
+        const splitUnitPrices =
+            item.priceInCents !== null
+                ? allocatePerUnitPrices(
+                      item.priceInCents,
+                      includedItems.map((includedItem) => includedItem.quantity),
+                  )
+                : includedItems.map(() => null);
+
+        includedItems.forEach((includedItem, includedIndex) => {
+            normalizedItems.push({
+                name: includedItem.name,
+                quantity: includedItem.quantity * itemQuantity,
+                priceInCents: splitUnitPrices[includedIndex],
+                comboName: itemName,
+                comboItems,
+                comboTotalInCents: item.priceInCents,
+            });
+        });
+    }
+
+    return normalizedItems;
+}
 
 // Generate upload URL for receipt images
 export const generateReceiptUploadUrl = mutation({
@@ -169,6 +426,9 @@ export const parseReceipt = action({
             name: string;
             quantity: number;
             priceInCents: number | null;
+            comboName?: string | null;
+            comboItems?: string[];
+            comboTotalInCents?: number | null;
         }>;
         storeName?: string;
         date?: string;
@@ -259,9 +519,11 @@ export const parseReceipt = action({
                 };
             }
 
+            const normalizedItems = normalizeParsedReceiptItems(parsed.items);
+
             return {
                 success: true,
-                items: parsed.items,
+                items: normalizedItems,
                 storeName: parsed.storeName ?? undefined,
                 date: parsed.date ?? undefined,
                 totalInCents: parsed.totalInCents ?? undefined,

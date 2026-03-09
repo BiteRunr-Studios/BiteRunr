@@ -25,6 +25,7 @@ export interface UseManualPriceEntryResult {
     prices: Map<string, number | null>;
     orderItems: Array<{
         id: string;
+        orderUserId: string;
         itemName: string;
         quantity: number;
         userName: string;
