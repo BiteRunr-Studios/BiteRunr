@@ -257,7 +257,7 @@ export const get = query({
   },
 });
 
-// Transfer an active order to another participant who can accept Stripe payments
+// Transfer an active order to another participant
 export const transferRunner = mutation({
   args: {
     orderId: v.id("orders"),
@@ -294,17 +294,6 @@ export const transferRunner = mutation({
     const nextRunner = orderUsers.find((ou) => ou.userId === args.newCreatorId);
     if (!nextRunner) {
       throw new Error("The new runner must already be part of this order");
-    }
-
-    const connectedAccount = await ctx.db
-      .query("connectedAccounts")
-      .withIndex("by_userId", (q) => q.eq("userId", args.newCreatorId))
-      .first();
-
-    if (!connectedAccount?.chargesEnabled) {
-      throw new Error(
-        "The new runner must finish Stripe payment setup before taking over",
-      );
     }
 
     await ctx.db.patch(args.orderId, { creatorId: args.newCreatorId });

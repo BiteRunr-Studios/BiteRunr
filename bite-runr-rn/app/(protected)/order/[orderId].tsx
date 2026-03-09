@@ -340,21 +340,16 @@ export default function SpecificOrder() {
         transferRunnerSheetRef.current?.hide();
 
         runAfterSheetClose(() => {
-            if (!nextRunner.hasStripePaymentsEnabled) {
-                Alert.alert(
-                    "Stripe Required",
-                    `${nextRunner.user?.firstName ?? "This person"} needs to finish Stripe payments setup before becoming the runner.`,
-                );
-                return;
-            }
-
             const nextRunnerName =
                 `${nextRunner.user?.firstName ?? ""} ${nextRunner.user?.lastName ?? ""}`.trim() ||
                 "this person";
+            const transferMessage = nextRunner.hasStripePaymentsEnabled
+                ? `Make ${nextRunnerName} the new runner for this order? Future card payments will go to them instead of you.`
+                : `Make ${nextRunnerName} the new runner for this order? They do not have Stripe payments set up, so members will need to use cash settlement until they do.`;
 
             Alert.alert(
                 "Transfer Runner",
-                `Make ${nextRunnerName} the new runner for this order? Future card payments will go to them instead of you.`,
+                transferMessage,
                 [
                     {
                         text: "Cancel",
@@ -1135,9 +1130,9 @@ export default function SpecificOrder() {
                         Choose a New Runner
                     </Text>
                     <Text className="mt-2 text-sm leading-5 text-muted-foreground">
-                        Only members with Stripe payments already set up can
-                        take over. New card payments for this order will go to
-                        the person you select.
+                        Anyone in the group can take over. If they do not have
+                        Stripe payments set up yet, members can still settle in
+                        cash.
                     </Text>
                 </View>
 
@@ -1189,8 +1184,8 @@ export default function SpecificOrder() {
                                                             : "text-orange-500"
                                                     }`}>
                                                     {isEligible
-                                                        ? "Eligible"
-                                                        : "Not ready"}
+                                                        ? "Stripe ready"
+                                                        : "Cash only"}
                                                 </Text>
                                             </View>
                                         </View>
