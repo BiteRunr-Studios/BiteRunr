@@ -69,6 +69,7 @@ export default function HomeTab() {
     const pastOrders = useQuery(api.orders.getPastOrders, { limit: 3 });
     const settlementSummary = useQuery(api.orders.getSettlementSummary);
     const outstandingDebts = useQuery(api.orders.getOutstandingDebts);
+    const outstandingPayments = useQuery(api.orders.getOutstandingPayments);
     const frequentGroups = useQuery(api.orders.getFrequentGroups, {});
     const friends = useQuery(api.friends.list);
     const pendingRequests = useQuery(api.friends.pendingRequestCount);
@@ -110,6 +111,8 @@ export default function HomeTab() {
         activeOrders !== undefined &&
         pastOrders !== undefined &&
         settlementSummary !== undefined &&
+        outstandingDebts !== undefined &&
+        outstandingPayments !== undefined &&
         frequentGroups !== undefined &&
         friends !== undefined &&
         pendingRequests !== undefined;
@@ -373,6 +376,82 @@ export default function HomeTab() {
                                     </View>
                                 </Animated.View>
                             )}
+
+                            {outstandingPayments &&
+                                outstandingPayments.length > 0 && (
+                                    <Animated.View
+                                        entering={FadeInUp.duration(500).delay(
+                                            175,
+                                        )}>
+                                        <View className="flex-row gap-2 items-center mb-3">
+                                            <Icon
+                                                name="CreditCard"
+                                                size={20}
+                                                color="#ef4444"
+                                            />
+                                            <Text className="text-lg font-semibold text-foreground">
+                                                Payments Due
+                                            </Text>
+                                            <View className="px-2 py-0.5 rounded-full bg-red-500/10">
+                                                <Text className="text-xs font-medium text-red-500">
+                                                    {
+                                                        outstandingPayments.length
+                                                    }
+                                                </Text>
+                                            </View>
+                                        </View>
+
+                                        <View className="gap-2">
+                                            {outstandingPayments.map(
+                                                (payment) => (
+                                                    <AnimatedPressable
+                                                        key={`${payment.orderId}-${payment.creatorId}`}
+                                                        onPress={() =>
+                                                            router.push(
+                                                                `/order/my-settlement?orderId=${payment.orderId}`,
+                                                            )
+                                                        }>
+                                                        <View className="flex-row items-center p-3 rounded-xl border border-muted bg-card">
+                                                            <Avatar
+                                                                name={`${payment.creatorFirstName} ${payment.creatorLastName}`}
+                                                                avatarUrl={
+                                                                    payment.creatorAvatarUrl
+                                                                }
+                                                                size={40}
+                                                            />
+                                                            <View className="flex-1 ml-3">
+                                                                <Text className="text-sm font-semibold text-foreground">
+                                                                    {
+                                                                        payment.creatorFirstName
+                                                                    }{" "}
+                                                                    {
+                                                                        payment.creatorLastName
+                                                                    }
+                                                                </Text>
+                                                                <Text
+                                                                    className="text-xs text-muted-foreground"
+                                                                    numberOfLines={
+                                                                        1
+                                                                    }>
+                                                                    {
+                                                                        payment.orderName
+                                                                    }
+                                                                </Text>
+                                                            </View>
+                                                            <Text className="text-base font-bold text-red-500">
+                                                                $
+                                                                {(
+                                                                    payment.amountOwed /
+                                                                    100
+                                                                ).toFixed(2)}
+                                                            </Text>
+                                                        </View>
+                                                    </AnimatedPressable>
+                                                ),
+                                            )}
+                                        </View>
+                                    </Animated.View>
+                                )}
 
                             {/* Your Squads Section */}
                             {hasAnyData && <Animated.View

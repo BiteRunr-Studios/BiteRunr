@@ -701,6 +701,57 @@ export const getOutstandingDebts = query({
   },
 });
 
+// Get per-order breakdown of what you still owe to other runners
+export const getOutstandingPayments = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    const userOrderUsers = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+
+    const payments: {
+      orderId: string;
+      orderName: string;
+      creatorId: string;
+      creatorFirstName: string;
+      creatorLastName: string;
+      creatorAvatarUrl: string | null;
+      amountOwed: number;
+    }[] = [];
+
+    for (const userOU of userOrderUsers) {
+      const order = await ctx.db.get(userOU.orderId);
+      if (!order || order.status === "cancelled" || order.creatorId === userId) {
+        continue;
+      }
+      if (userOU.amountOwed <= 0n) continue;
+      if (
+        userOU.settlementStatus !== "unpaid" &&
+        userOU.settlementStatus !== "claimed"
+      ) {
+        continue;
+      }
+
+      const creator = await ctx.db.get(order.creatorId);
+      payments.push({
+        orderId: order._id,
+        orderName: order.name,
+        creatorId: order.creatorId,
+        creatorFirstName: creator?.firstName ?? "",
+        creatorLastName: creator?.lastName ?? "",
+        creatorAvatarUrl: creator?.avatarUrl ?? null,
+        amountOwed: Number(userOU.amountOwed),
+      });
+    }
+
+    return payments.sort((a, b) => b.amountOwed - a.amountOwed);
+  },
+});
+
 // Get completed order details for the completed order detail screen
 export const getCompletedOrderDetails = query({
   args: { orderId: v.id("orders") },
@@ -924,4 +975,3 @@ export const getFrequentGroups = query({
     return { squads };
   },
 });
-
