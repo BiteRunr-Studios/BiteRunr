@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Image, StyleSheet, Dimensions } from "react-native";
+import { Image, StyleSheet, useWindowDimensions } from "react-native";
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -8,9 +8,10 @@ import Animated, {
     runOnJS,
     Easing,
 } from "react-native-reanimated";
+import { useColorScheme } from "@/lib/use-color-scheme";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const ICON_SIZE = SCREEN_WIDTH * 0.35;
+const LIGHT_SPLASH_BACKGROUND = "#FFFFFF";
+const DARK_SPLASH_BACKGROUND = "#000000";
 
 interface AnimatedSplashScreenProps {
     onAnimationComplete: () => void;
@@ -19,9 +20,16 @@ interface AnimatedSplashScreenProps {
 export default function AnimatedSplashScreen({
     onAnimationComplete,
 }: AnimatedSplashScreenProps) {
+    const { width } = useWindowDimensions();
+    const { colorScheme } = useColorScheme();
     const logoScale = useSharedValue(1);
     const logoOpacity = useSharedValue(0);
     const screenOpacity = useSharedValue(1);
+    const iconSize = width * 0.35;
+    const backgroundColor =
+        colorScheme === "dark"
+            ? DARK_SPLASH_BACKGROUND
+            : LIGHT_SPLASH_BACKGROUND;
 
     useEffect(() => {
         // Phase 1: Icon fades in and scales from 1x to 1.5x
@@ -37,9 +45,13 @@ export default function AnimatedSplashScreen({
         // Phase 2: Entire screen fades out
         screenOpacity.value = withDelay(
             1600,
-            withTiming(0, { duration: 400, easing: Easing.in(Easing.cubic) }, () => {
-                runOnJS(onAnimationComplete)();
-            }),
+            withTiming(
+                0,
+                { duration: 400, easing: Easing.in(Easing.cubic) },
+                () => {
+                    runOnJS(onAnimationComplete)();
+                },
+            ),
         );
     }, []);
 
@@ -53,10 +65,20 @@ export default function AnimatedSplashScreen({
     }));
 
     return (
-        <Animated.View style={[styles.container, screenAnimatedStyle]}>
-            <Animated.View style={[styles.iconContainer, logoAnimatedStyle]}>
+        <Animated.View
+            style={[
+                styles.container,
+                { backgroundColor },
+                screenAnimatedStyle,
+            ]}>
+            <Animated.View
+                style={[
+                    styles.iconContainer,
+                    { width: iconSize, height: iconSize },
+                    logoAnimatedStyle,
+                ]}>
                 <Image
-                    source={require("@/assets/images/icon-dark.png")}
+                    source={require("@/assets/images/icon-no-bg.png")}
                     style={styles.icon}
                     resizeMode="contain"
                 />
@@ -68,14 +90,12 @@ export default function AnimatedSplashScreen({
 const styles = StyleSheet.create({
     container: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: "#000000",
+        backgroundColor: LIGHT_SPLASH_BACKGROUND,
         justifyContent: "center",
         alignItems: "center",
         zIndex: 999,
     },
     iconContainer: {
-        width: ICON_SIZE,
-        height: ICON_SIZE,
         justifyContent: "center",
         alignItems: "center",
     },
