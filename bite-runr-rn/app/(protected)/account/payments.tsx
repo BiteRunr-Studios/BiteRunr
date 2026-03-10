@@ -40,6 +40,23 @@ const ONBOARDING_STEPS = [
     },
 ];
 
+type PayoutBalanceData = {
+    available: number;
+    pending: number;
+    instantAvailable: number;
+    instantPayoutAmount: number;
+    instantPayoutFee: number;
+    hasInstantPayoutCard: boolean;
+    hasBankPayoutAccount: boolean;
+    instantPayoutsEnabled: boolean;
+    currency: string;
+};
+
+function sanitizeCurrencyAmount(value: number | null | undefined): number {
+    if (typeof value !== "number" || !Number.isFinite(value)) return 0;
+    return Math.max(0, Math.round(value));
+}
+
 export default function PaymentsScreen() {
     const { colorScheme } = useColorScheme();
     const [isSettingUp, setIsSettingUp] = useState(false);
@@ -49,13 +66,9 @@ export default function PaymentsScreen() {
     const [isRequestingPayout, setIsRequestingPayout] = useState(false);
     const [isRequestingStandardPayout, setIsRequestingStandardPayout] =
         useState(false);
-    const [balanceData, setBalanceData] = useState<{
-        available: number;
-        pending: number;
-        instantAvailable: number;
-        instantPayoutsEnabled: boolean;
-        currency: string;
-    } | null>(null);
+    const [balanceData, setBalanceData] = useState<PayoutBalanceData | null>(
+        null,
+    );
 
     const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
     const createConnectAccount = useAction(
@@ -153,7 +166,27 @@ export default function PaymentsScreen() {
         setIsLoadingBalance(true);
         try {
             const result = await getPayoutBalance({});
-            setBalanceData(result);
+            const instantPayoutAmount = sanitizeCurrencyAmount(
+                result.instantPayoutAmount,
+            );
+
+            setBalanceData({
+                available: sanitizeCurrencyAmount(result.available),
+                pending: sanitizeCurrencyAmount(result.pending),
+                instantAvailable: sanitizeCurrencyAmount(
+                    result.instantAvailable,
+                ),
+                instantPayoutAmount,
+                instantPayoutFee: sanitizeCurrencyAmount(
+                    result.instantPayoutFee,
+                ),
+                hasInstantPayoutCard: result.hasInstantPayoutCard === true,
+                hasBankPayoutAccount: result.hasBankPayoutAccount === true,
+                instantPayoutsEnabled:
+                    result.instantPayoutsEnabled === true &&
+                    instantPayoutAmount > 0,
+                currency: result.currency || "cad",
+            });
         } catch {
             // Silently fail — balance card just won't show
         } finally {
@@ -166,22 +199,15 @@ export default function PaymentsScreen() {
     }, [fetchBalance]);
 
     const formatCurrency = (amount: number) => {
-        return `$${(amount / 100).toFixed(2)}`;
-    };
-
-    const estimatePayoutFee = (amount: number) => {
-        return Math.max(Math.ceil(amount * 0.01), 60);
+        return `$${(sanitizeCurrencyAmount(amount) / 100).toFixed(2)}`;
     };
 
     const handleInstantPayout = async () => {
-        if (!balanceData || balanceData.instantAvailable <= 0) return;
-
-        const fee = estimatePayoutFee(balanceData.instantAvailable);
-        const estimatedPayout = balanceData.instantAvailable - fee;
+        if (!balanceData || balanceData.instantPayoutAmount <= 0) return;
 
         Alert.alert(
             "Instant Payout",
-            `Cash out to your debit card?\n\nBalance: ${formatCurrency(balanceData.instantAvailable)}\nStripe fee: -${formatCurrency(fee)}\nYou'll receive: ~${formatCurrency(estimatedPayout)}`,
+            `Cash out to your debit card?\n\nBalance: ${formatCurrency(balanceData.instantAvailable)}\nStripe fee: -${formatCurrency(balanceData.instantPayoutFee)}\nYou'll receive: ${formatCurrency(balanceData.instantPayoutAmount)}`,
             [
                 { text: "Cancel", style: "cancel" },
                 {
@@ -213,7 +239,13 @@ export default function PaymentsScreen() {
     };
 
     const handleStandardPayout = async () => {
-        if (!balanceData || balanceData.available <= 0) return;
+        if (
+            !balanceData ||
+            balanceData.available <= 0 ||
+            !balanceData.hasBankPayoutAccount
+        ) {
+            return;
+        }
 
         Alert.alert(
             "Payout to Bank",
@@ -269,6 +301,11 @@ export default function PaymentsScreen() {
     const isOnboarded = connectedAccount?.onboardingComplete;
     const isLoading = connectedAccount === undefined;
     const hasNoAccount = connectedAccount === null;
+    const showInstantPayout =
+        !!balanceData?.instantPayoutsEnabled &&
+        (balanceData?.instantPayoutAmount ?? 0) > 0;
+    const showBankTransfer =
+        !!balanceData?.hasBankPayoutAccount && (balanceData?.available ?? 0) > 0;
 
     // Derive step completion from actual Stripe account state
     const getStepStatus = (index: number) => {
@@ -589,22 +626,20 @@ export default function PaymentsScreen() {
                                             </View>
                                         )}
 
-                                        {balanceData.available > 0 &&
-                                        balanceData.instantPayoutsEnabled ? (
+                                        {showInstantPayout &&
+                                        showBankTransfer ? (
                                             <View className="gap-2">
                                                 <Button
-                                                    label={`Instant Payout — ~${formatCurrency(balanceData.instantAvailable - estimatePayoutFee(balanceData.instantAvailable))}`}
+                                                    label={`Instant Payout: ${formatCurrency(balanceData.instantPayoutAmount)}`}
                                                     icon="Zap"
                                                     onPress={
                                                         handleInstantPayout
                                                     }
-                                                    loading={
-                                                        isRequestingPayout
-                                                    }
+                                                    loading={isRequestingPayout}
                                                     color="#22c55e"
                                                 />
                                                 <Button
-                                                    label={`Bank Transfer — ${formatCurrency(balanceData.available)}`}
+                                                    label={`Bank Transfer: ${formatCurrency(balanceData.available)}`}
                                                     icon="Building"
                                                     variant="outline"
                                                     onPress={
@@ -619,12 +654,30 @@ export default function PaymentsScreen() {
                                                     }
                                                 />
                                                 <Text className="text-xs text-center text-muted-foreground">
-                                                    Bank transfers are free
-                                                    and arrive in 1-2
-                                                    business days.
+                                                    Bank transfers are free and
+                                                    arrive in 1-2 business days.
                                                 </Text>
                                             </View>
-                                        ) : balanceData.available > 0 ? (
+                                        ) : showInstantPayout ? (
+                                            <View className="gap-2">
+                                                <Button
+                                                    label={`Instant Payout: ${formatCurrency(balanceData.instantPayoutAmount)}`}
+                                                    icon="Zap"
+                                                    onPress={
+                                                        handleInstantPayout
+                                                    }
+                                                    loading={isRequestingPayout}
+                                                    color="#22c55e"
+                                                />
+                                                <Text className="text-xs text-center text-muted-foreground">
+                                                    Instant payouts go to your
+                                                    debit card. Add a bank
+                                                    account in Stripe if you
+                                                    also want free standard
+                                                    transfers.
+                                                </Text>
+                                            </View>
+                                        ) : showBankTransfer ? (
                                             <View className="gap-2">
                                                 <Button
                                                     label={`Payout to Bank — ${formatCurrency(balanceData.available)}`}
@@ -639,9 +692,17 @@ export default function PaymentsScreen() {
                                                 />
                                                 <Text className="text-xs text-center text-muted-foreground">
                                                     No fees — arrives in 1-2
-                                                    business days. Add a
-                                                    debit card in Stripe for
-                                                    instant payouts.
+                                                    business days. Add a debit
+                                                    card in Stripe for instant
+                                                    payouts.
+                                                </Text>
+                                            </View>
+                                        ) : balanceData.available > 0 ? (
+                                            <View>
+                                                <Text className="text-xs text-center text-muted-foreground">
+                                                    Add a payout method in
+                                                    Stripe to cash out your
+                                                    balance.
                                                 </Text>
                                             </View>
                                         ) : (

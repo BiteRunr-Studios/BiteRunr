@@ -1,106 +1,281 @@
-import React, { useEffect } from "react";
-import { Image, StyleSheet, useWindowDimensions } from "react-native";
+"use no memo";
+
+import React from "react";
+import {
+  AccessibilityInfo,
+  Image,
+  LayoutChangeEvent,
+  StyleSheet,
+  useWindowDimensions,
+} from "react-native";
 import Animated, {
-    useSharedValue,
-    useAnimatedStyle,
-    withTiming,
-    withDelay,
-    runOnJS,
-    Easing,
+  Easing,
+  makeMutable,
+  runOnJS,
+  useAnimatedStyle,
+  withTiming,
 } from "react-native-reanimated";
 import { useColorScheme } from "@/lib/use-color-scheme";
 
+const MINIMUM_VISIBLE_MS = 900;
 const LIGHT_SPLASH_BACKGROUND = "#FFFFFF";
 const DARK_SPLASH_BACKGROUND = "#000000";
 
 interface AnimatedSplashScreenProps {
-    onAnimationComplete: () => void;
+  ready: boolean;
+  onHidden: () => void;
+  onFirstFrame: () => void;
+}
+
+function useSplashAnimations(onHidden: () => void) {
+  "use no memo";
+
+  const mutables = React.useMemo(
+    () => ({
+      screenOpacity: makeMutable(1),
+      iconOpacity: makeMutable(0),
+      iconScale: makeMutable(0.97),
+      iconTranslateY: makeMutable(8),
+    }),
+    [],
+  );
+
+  const startEntrance = React.useCallback(
+    (reduceMotionEnabled: boolean) => {
+      const entranceDuration = reduceMotionEnabled ? 150 : 240;
+
+      mutables.iconOpacity.value = withTiming(1, {
+        duration: entranceDuration,
+        easing: Easing.out(Easing.cubic),
+      });
+      mutables.iconTranslateY.value = withTiming(0, {
+        duration: entranceDuration,
+        easing: Easing.out(Easing.cubic),
+      });
+      mutables.iconScale.value = withTiming(1, {
+        duration: entranceDuration,
+        easing: Easing.out(Easing.cubic),
+      });
+    },
+    [mutables],
+  );
+
+  const startExit = React.useCallback(
+    (reduceMotionEnabled: boolean) => {
+      const exitDuration = reduceMotionEnabled ? 160 : 220;
+
+      mutables.iconOpacity.value = withTiming(0.92, {
+        duration: exitDuration,
+        easing: Easing.out(Easing.cubic),
+      });
+      mutables.iconTranslateY.value = withTiming(-4, {
+        duration: exitDuration,
+        easing: Easing.out(Easing.cubic),
+      });
+      mutables.iconScale.value = withTiming(0.985, {
+        duration: exitDuration,
+        easing: Easing.out(Easing.cubic),
+      });
+      mutables.screenOpacity.value = withTiming(
+        0,
+        {
+          duration: exitDuration,
+          easing: Easing.out(Easing.cubic),
+        },
+        (finished) => {
+          if (finished) {
+            runOnJS(onHidden)();
+          }
+        },
+      );
+    },
+    [mutables, onHidden],
+  );
+
+  const screenAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: mutables.screenOpacity.value,
+  }));
+
+  const iconAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: mutables.iconOpacity.value,
+    transform: [
+      { translateY: mutables.iconTranslateY.value },
+      { scale: mutables.iconScale.value },
+    ],
+  }));
+
+  return {
+    screenAnimatedStyle,
+    iconAnimatedStyle,
+    startEntrance,
+    startExit,
+  };
 }
 
 export default function AnimatedSplashScreen({
-    onAnimationComplete,
+  ready,
+  onHidden,
+  onFirstFrame,
 }: AnimatedSplashScreenProps) {
-    const { width } = useWindowDimensions();
-    const { colorScheme } = useColorScheme();
-    const logoScale = useSharedValue(1);
-    const logoOpacity = useSharedValue(0);
-    const screenOpacity = useSharedValue(1);
-    const iconSize = width * 0.35;
-    const backgroundColor =
-        colorScheme === "dark"
-            ? DARK_SPLASH_BACKGROUND
-            : LIGHT_SPLASH_BACKGROUND;
+  "use no memo";
 
-    useEffect(() => {
-        // Phase 1: Icon fades in and scales from 1x to 1.5x
-        logoOpacity.value = withTiming(1, {
-            duration: 400,
-            easing: Easing.out(Easing.cubic),
-        });
-        logoScale.value = withTiming(1.5, {
-            duration: 1600,
-            easing: Easing.out(Easing.cubic),
-        });
+  const { width } = useWindowDimensions();
+  const { colorScheme } = useColorScheme();
+  const backgroundColor =
+    colorScheme === "dark" ? DARK_SPLASH_BACKGROUND : LIGHT_SPLASH_BACKGROUND;
+  const iconSize = Math.min(Math.max(width * 0.34, 140), 180);
+  const [reduceMotionEnabled, setReduceMotionEnabled] = React.useState<
+    boolean | null
+  >(null);
+  const startedAtRef = React.useRef(0);
+  const hasReportedFirstFrameRef = React.useRef(false);
+  const hasStartedEntranceRef = React.useRef(false);
+  const hasStartedExitRef = React.useRef(false);
+  const reduceMotionRef = React.useRef(false);
+  const exitTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { screenAnimatedStyle, iconAnimatedStyle, startEntrance, startExit } =
+    useSplashAnimations(onHidden);
 
-        // Phase 2: Entire screen fades out
-        screenOpacity.value = withDelay(
-            1600,
-            withTiming(
-                0,
-                { duration: 400, easing: Easing.in(Easing.cubic) },
-                () => {
-                    runOnJS(onAnimationComplete)();
-                },
-            ),
-        );
-    }, []);
+  const clearExitTimer = React.useCallback(() => {
+    if (!exitTimerRef.current) {
+      return;
+    }
 
-    const logoAnimatedStyle = useAnimatedStyle(() => ({
-        opacity: logoOpacity.value,
-        transform: [{ scale: logoScale.value }],
-    }));
+    clearTimeout(exitTimerRef.current);
+    exitTimerRef.current = null;
+  }, []);
 
-    const screenAnimatedStyle = useAnimatedStyle(() => ({
-        opacity: screenOpacity.value,
-    }));
+  React.useEffect(() => {
+    let isMounted = true;
 
-    return (
-        <Animated.View
-            style={[
-                styles.container,
-                { backgroundColor },
-                screenAnimatedStyle,
-            ]}>
-            <Animated.View
-                style={[
-                    styles.iconContainer,
-                    { width: iconSize, height: iconSize },
-                    logoAnimatedStyle,
-                ]}>
-                <Image
-                    source={require("@/assets/images/icon-no-bg.png")}
-                    style={styles.icon}
-                    resizeMode="contain"
-                />
-            </Animated.View>
-        </Animated.View>
+    AccessibilityInfo.isReduceMotionEnabled()
+      .then((enabled) => {
+        if (!isMounted) {
+          return;
+        }
+
+        reduceMotionRef.current = enabled;
+        setReduceMotionEnabled(enabled);
+      })
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        reduceMotionRef.current = false;
+        setReduceMotionEnabled(false);
+      });
+
+    const subscription = AccessibilityInfo.addEventListener(
+      "reduceMotionChanged",
+      (enabled) => {
+        reduceMotionRef.current = enabled;
+        setReduceMotionEnabled(enabled);
+      },
     );
+
+    return () => {
+      isMounted = false;
+      subscription.remove();
+    };
+  }, []);
+
+  React.useEffect(() => {
+    startedAtRef.current = Date.now();
+  }, []);
+
+  React.useEffect(() => {
+    if (reduceMotionEnabled === null || hasStartedEntranceRef.current) {
+      return;
+    }
+
+    hasStartedEntranceRef.current = true;
+    startEntrance(reduceMotionEnabled);
+  }, [reduceMotionEnabled, startEntrance]);
+
+  React.useEffect(() => {
+    if (!ready || hasStartedExitRef.current) {
+      return;
+    }
+
+    const remainingVisibleMs = Math.max(
+      MINIMUM_VISIBLE_MS - (Date.now() - startedAtRef.current),
+      0,
+    );
+
+    const runExit = () => {
+      if (hasStartedExitRef.current) {
+        return;
+      }
+
+      hasStartedExitRef.current = true;
+      clearExitTimer();
+      startExit(reduceMotionRef.current);
+    };
+
+    if (remainingVisibleMs === 0) {
+      runExit();
+      return;
+    }
+
+    exitTimerRef.current = setTimeout(runExit, remainingVisibleMs);
+    return clearExitTimer;
+  }, [clearExitTimer, ready, startExit]);
+
+  React.useEffect(() => {
+    return clearExitTimer;
+  }, [clearExitTimer]);
+
+  const handleLayout = React.useCallback(
+    (_event: LayoutChangeEvent) => {
+      if (hasReportedFirstFrameRef.current) {
+        return;
+      }
+
+      hasReportedFirstFrameRef.current = true;
+      onFirstFrame();
+    },
+    [onFirstFrame],
+  );
+
+  return (
+    <Animated.View
+      onLayout={handleLayout}
+      style={[styles.container, { backgroundColor }, screenAnimatedStyle]}
+    >
+      <Animated.View
+        style={[
+          styles.iconContainer,
+          {
+            width: iconSize,
+            height: iconSize,
+          },
+          iconAnimatedStyle,
+        ]}
+      >
+        <Image
+          source={require("@/assets/images/icon-no-bg.png")}
+          style={styles.icon}
+          resizeMode="contain"
+        />
+      </Animated.View>
+    </Animated.View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: LIGHT_SPLASH_BACKGROUND,
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 999,
-    },
-    iconContainer: {
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    icon: {
-        width: "100%",
-        height: "100%",
-    },
+  container: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
+  },
+  iconContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  icon: {
+    width: "100%",
+    height: "100%",
+  },
 });
