@@ -27,6 +27,91 @@ interface AnimatedSplashScreenProps {
   onFirstFrame: () => void;
 }
 
+function useSplashAnimations(onHidden: () => void) {
+  "use no memo";
+
+  const mutables = React.useMemo(
+    () => ({
+      screenOpacity: makeMutable(1),
+      iconOpacity: makeMutable(0),
+      iconScale: makeMutable(0.97),
+      iconTranslateY: makeMutable(8),
+    }),
+    [],
+  );
+
+  const startEntrance = React.useCallback(
+    (reduceMotionEnabled: boolean) => {
+      const entranceDuration = reduceMotionEnabled ? 150 : 240;
+
+      mutables.iconOpacity.value = withTiming(1, {
+        duration: entranceDuration,
+        easing: Easing.out(Easing.cubic),
+      });
+      mutables.iconTranslateY.value = withTiming(0, {
+        duration: entranceDuration,
+        easing: Easing.out(Easing.cubic),
+      });
+      mutables.iconScale.value = withTiming(1, {
+        duration: entranceDuration,
+        easing: Easing.out(Easing.cubic),
+      });
+    },
+    [mutables],
+  );
+
+  const startExit = React.useCallback(
+    (reduceMotionEnabled: boolean) => {
+      const exitDuration = reduceMotionEnabled ? 160 : 220;
+
+      mutables.iconOpacity.value = withTiming(0.92, {
+        duration: exitDuration,
+        easing: Easing.out(Easing.cubic),
+      });
+      mutables.iconTranslateY.value = withTiming(-4, {
+        duration: exitDuration,
+        easing: Easing.out(Easing.cubic),
+      });
+      mutables.iconScale.value = withTiming(0.985, {
+        duration: exitDuration,
+        easing: Easing.out(Easing.cubic),
+      });
+      mutables.screenOpacity.value = withTiming(
+        0,
+        {
+          duration: exitDuration,
+          easing: Easing.out(Easing.cubic),
+        },
+        (finished) => {
+          if (finished) {
+            runOnJS(onHidden)();
+          }
+        },
+      );
+    },
+    [mutables, onHidden],
+  );
+
+  const screenAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: mutables.screenOpacity.value,
+  }));
+
+  const iconAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: mutables.iconOpacity.value,
+    transform: [
+      { translateY: mutables.iconTranslateY.value },
+      { scale: mutables.iconScale.value },
+    ],
+  }));
+
+  return {
+    screenAnimatedStyle,
+    iconAnimatedStyle,
+    startEntrance,
+    startExit,
+  };
+}
+
 export default function AnimatedSplashScreen({
   ready,
   onHidden,
@@ -39,10 +124,6 @@ export default function AnimatedSplashScreen({
   const backgroundColor =
     colorScheme === "dark" ? DARK_SPLASH_BACKGROUND : LIGHT_SPLASH_BACKGROUND;
   const iconSize = Math.min(Math.max(width * 0.34, 140), 180);
-  const screenOpacity = React.useRef(makeMutable(1)).current;
-  const iconOpacity = React.useRef(makeMutable(0)).current;
-  const iconScale = React.useRef(makeMutable(0.97)).current;
-  const iconTranslateY = React.useRef(makeMutable(8)).current;
   const [reduceMotionEnabled, setReduceMotionEnabled] = React.useState<
     boolean | null
   >(null);
@@ -52,6 +133,8 @@ export default function AnimatedSplashScreen({
   const hasStartedExitRef = React.useRef(false);
   const reduceMotionRef = React.useRef(false);
   const exitTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { screenAnimatedStyle, iconAnimatedStyle, startEntrance, startExit } =
+    useSplashAnimations(onHidden);
 
   const clearExitTimer = React.useCallback(() => {
     if (!exitTimerRef.current) {
@@ -61,49 +144,6 @@ export default function AnimatedSplashScreen({
     clearTimeout(exitTimerRef.current);
     exitTimerRef.current = null;
   }, []);
-
-  const startExit = React.useCallback(() => {
-    if (hasStartedExitRef.current) {
-      return;
-    }
-
-    hasStartedExitRef.current = true;
-    clearExitTimer();
-
-    const exitDuration = reduceMotionRef.current ? 160 : 220;
-
-    iconOpacity.value = withTiming(0.92, {
-      duration: exitDuration,
-      easing: Easing.out(Easing.cubic),
-    });
-    iconTranslateY.value = withTiming(-4, {
-      duration: exitDuration,
-      easing: Easing.out(Easing.cubic),
-    });
-    iconScale.value = withTiming(0.985, {
-      duration: exitDuration,
-      easing: Easing.out(Easing.cubic),
-    });
-    screenOpacity.value = withTiming(
-      0,
-      {
-        duration: exitDuration,
-        easing: Easing.out(Easing.cubic),
-      },
-      (finished) => {
-        if (finished) {
-          runOnJS(onHidden)();
-        }
-      },
-    );
-  }, [
-    clearExitTimer,
-    iconOpacity,
-    iconScale,
-    iconTranslateY,
-    onHidden,
-    screenOpacity,
-  ]);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -150,22 +190,8 @@ export default function AnimatedSplashScreen({
     }
 
     hasStartedEntranceRef.current = true;
-
-    const entranceDuration = reduceMotionEnabled ? 150 : 240;
-
-    iconOpacity.value = withTiming(1, {
-      duration: entranceDuration,
-      easing: Easing.out(Easing.cubic),
-    });
-    iconTranslateY.value = withTiming(0, {
-      duration: entranceDuration,
-      easing: Easing.out(Easing.cubic),
-    });
-    iconScale.value = withTiming(1, {
-      duration: entranceDuration,
-      easing: Easing.out(Easing.cubic),
-    });
-  }, [iconOpacity, iconScale, iconTranslateY, reduceMotionEnabled]);
+    startEntrance(reduceMotionEnabled);
+  }, [reduceMotionEnabled, startEntrance]);
 
   React.useEffect(() => {
     if (!ready || hasStartedExitRef.current) {
@@ -177,15 +203,22 @@ export default function AnimatedSplashScreen({
       0,
     );
 
+    const runExit = () => {
+      if (hasStartedExitRef.current) {
+        return;
+      }
+
+      hasStartedExitRef.current = true;
+      clearExitTimer();
+      startExit(reduceMotionRef.current);
+    };
+
     if (remainingVisibleMs === 0) {
-      startExit();
+      runExit();
       return;
     }
 
-    exitTimerRef.current = setTimeout(() => {
-      startExit();
-    }, remainingVisibleMs);
-
+    exitTimerRef.current = setTimeout(runExit, remainingVisibleMs);
     return clearExitTimer;
   }, [clearExitTimer, ready, startExit]);
 
@@ -204,18 +237,6 @@ export default function AnimatedSplashScreen({
     },
     [onFirstFrame],
   );
-
-  const screenAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: screenOpacity.value,
-  }));
-
-  const iconAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: iconOpacity.value,
-    transform: [
-      { translateY: iconTranslateY.value },
-      { scale: iconScale.value },
-    ],
-  }));
 
   return (
     <Animated.View
