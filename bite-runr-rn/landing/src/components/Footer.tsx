@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import Logo from "./Logo";
+import WaitlistForm from "./WaitlistForm";
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden snap-start">
+    <footer className="relative overflow-hidden">
       {/* CTA Section */}
       <section className="relative py-36 md:py-48 px-6" id="early-access">
         {/* Background */}
@@ -38,15 +39,7 @@ export default function Footer() {
             get exclusive perks.
           </p>
 
-          <motion.a
-            href="#early-access"
-            className="group inline-flex items-center gap-3 bg-primary hover:bg-primary-dark text-black font-bold px-12 py-5 rounded-full text-lg transition-all shadow-[0_0_50px_rgba(255,136,0,0.3)] hover:shadow-[0_0_80px_rgba(255,136,0,0.5)]"
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            Get Early Access
-            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-          </motion.a>
+          <WaitlistForm />
         </motion.div>
       </section>
 

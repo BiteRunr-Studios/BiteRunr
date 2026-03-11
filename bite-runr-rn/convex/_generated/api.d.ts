@@ -29,6 +29,7 @@ import type * as stripeConnect from "../stripeConnect.js";
 import type * as typesense from "../typesense.js";
 import type * as typesenseHelpers from "../typesenseHelpers.js";
 import type * as users from "../users.js";
+import type * as waitlist from "../waitlist.js";
 
 import type {
   ApiFromModules,
@@ -58,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   typesense: typeof typesense;
   typesenseHelpers: typeof typesenseHelpers;
   users: typeof users;
+  waitlist: typeof waitlist;
 }>;
 
 /**

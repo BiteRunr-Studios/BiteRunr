@@ -3,7 +3,7 @@ import { MessageCircle } from "lucide-react";
 
 export default function SocialProof() {
   return (
-    <section className="relative min-h-screen flex flex-col justify-center py-36 md:py-48 px-6 overflow-hidden snap-start">
+    <section className="relative min-h-screen flex flex-col justify-center py-36 md:py-48 px-6 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-[#0a0a0a]" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/[0.04] rounded-full blur-[120px] pointer-events-none" />

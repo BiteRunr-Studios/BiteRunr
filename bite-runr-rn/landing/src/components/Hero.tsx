@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Users, Receipt, CreditCard } from "lucide-react";
+import { Users, Receipt, CreditCard } from "lucide-react";
+import WaitlistForm from "./WaitlistForm";
 
 const DELAY = 1.9; // wait for splash intro to finish
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-24 snap-start">
+    <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-24">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-black via-[#060606] to-[#0a0a0a]" />
 
@@ -53,19 +54,15 @@ export default function Hero() {
           Order together. Split fairly. No more awkward math.
         </motion.p>
 
-        {/* CTA */}
-        <motion.a
-          href="#early-access"
-          className="group inline-flex items-center gap-3 bg-primary hover:bg-primary-dark text-black font-bold px-10 py-5 rounded-full text-lg transition-all shadow-[0_0_40px_rgba(255,136,0,0.3)] hover:shadow-[0_0_60px_rgba(255,136,0,0.45)]"
+        {/* Waitlist CTA */}
+        <motion.div
+          className="w-full max-w-lg"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: DELAY + 0.45 }}
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.97 }}
         >
-          Get Early Access
-          <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-        </motion.a>
+          <WaitlistForm />
+        </motion.div>
 
         {/* Floating UI cards */}
         <div className="relative mt-24 md:mt-36 w-full max-w-3xl h-56 md:h-72">

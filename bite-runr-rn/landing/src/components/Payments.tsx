@@ -21,7 +21,7 @@ const points = [
 
 export default function Payments() {
   return (
-    <section className="relative min-h-screen flex flex-col justify-center py-36 md:py-48 px-6 overflow-hidden snap-start">
+    <section className="relative min-h-screen flex flex-col justify-center py-36 md:py-48 px-6 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-black to-[#0a0a0a]" />
 

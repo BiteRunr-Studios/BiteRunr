@@ -46,7 +46,7 @@ const features = [
 
 export default function Features() {
   return (
-    <section className="relative py-36 md:py-48 px-6 overflow-hidden snap-start">
+    <section className="relative py-36 md:py-48 px-6 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-black to-[#0a0a0a]" />
 

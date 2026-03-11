@@ -33,7 +33,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section className="relative min-h-screen flex flex-col justify-center py-36 md:py-48 px-6 overflow-hidden snap-start">
+    <section className="relative min-h-screen flex flex-col justify-center py-36 md:py-48 px-6 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-[#0a0a0a]" />
 
