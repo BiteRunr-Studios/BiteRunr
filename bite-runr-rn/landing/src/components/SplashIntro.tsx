@@ -8,11 +8,10 @@ export default function SplashIntro({ onComplete }: SplashIntroProps) {
   return (
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black"
-      initial={{ opacity: 1 }}
-      animate={{ opacity: 0 }}
+      initial={{ opacity: 1, pointerEvents: "auto" as const }}
+      animate={{ opacity: 0, pointerEvents: "none" as const }}
       transition={{ duration: 0.3, delay: 1.6, ease: "easeIn" }}
       onAnimationComplete={onComplete}
-      style={{ pointerEvents: "none" }}
     >
       <motion.img
         src="/icon.png"
