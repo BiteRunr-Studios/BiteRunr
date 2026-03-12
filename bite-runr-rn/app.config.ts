@@ -72,6 +72,14 @@ const config: ExpoConfig = {
   plugins: [
     "expo-router",
     [
+      "expo-build-properties",
+      {
+        ios: {
+          ccacheEnabled: true,
+        },
+      },
+    ],
+    [
       "expo-splash-screen",
       {
         image: SPLASH_IMAGE,

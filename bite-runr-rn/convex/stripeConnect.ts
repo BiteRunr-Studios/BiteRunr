@@ -380,12 +380,11 @@ export const getPayoutBalance = action({
             balance.instant_available?.find((b) => b.currency === "cad") ??
             balance.instant_available?.[0];
 
-        // instant_available is supposed to be a subset of available, but
-        // Stripe can sometimes report instant_available > 0 while available
-        // is 0 (race / pending settlement). Cap it so the UI stays sane.
         const availableAmount = availableEntry?.amount ?? 0;
-        const rawInstant = instantEntry?.amount ?? 0;
-        const instantAmount = Math.min(rawInstant, availableAmount);
+        // Stripe instant payouts are based on `instant_available`, which can
+        // exceed the standard available balance while funds are still queued
+        // for the regular payout schedule.
+        const instantAmount = instantEntry?.amount ?? 0;
         const {
             amount: instantPayoutAmount,
             fee: instantPayoutFee,
@@ -406,7 +405,11 @@ export const getPayoutBalance = action({
                 hasInstantCapability &&
                 payoutDestinations.hasInstantPayoutCard &&
                 instantPayoutAmount > 0,
-            currency: availableEntry?.currency ?? "cad",
+            currency:
+                availableEntry?.currency ??
+                instantEntry?.currency ??
+                pendingEntry?.currency ??
+                "cad",
         };
     },
 });
@@ -452,15 +455,10 @@ export const requestInstantPayout = action({
             stripeAccount: account.stripeAccountId,
         });
 
-        const availableEntry =
-            balance.available.find((b) => b.currency === "cad") ??
-            balance.available[0];
         const instantEntry =
             balance.instant_available?.find((b) => b.currency === "cad") ??
             balance.instant_available?.[0];
-        const availableAmount = availableEntry?.amount ?? 0;
-        const rawInstantAmount = instantEntry?.amount ?? 0;
-        const instantAvailableAmount = Math.min(rawInstantAmount, availableAmount);
+        const instantAvailableAmount = instantEntry?.amount ?? 0;
 
         if (!instantEntry || instantAvailableAmount <= 0) {
             // Check if there are pending funds to give a better message
