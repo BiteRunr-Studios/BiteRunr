@@ -6,6 +6,11 @@ try {
   localConfig = require("./app.config.local").default;
 } catch {}
 
+const SPLASH_IMAGE = "./assets/images/icon-no-bg.png";
+const LIGHT_SPLASH_BACKGROUND = "#FFFFFF";
+const DARK_SPLASH_BACKGROUND = "#000000";
+const SPLASH_IMAGE_WIDTH = 140;
+
 const config: ExpoConfig = {
   name: "BiteRunr",
   owner: localConfig.owner ?? "",
@@ -25,20 +30,17 @@ const config: ExpoConfig = {
       light: "./assets/images/icon.png",
     },
     splash: {
-      image: "./assets/images/icon-no-bg.png",
+      image: SPLASH_IMAGE,
       resizeMode: "contain",
-      backgroundColor: "#FFFFFF",
+      backgroundColor: LIGHT_SPLASH_BACKGROUND,
       dark: {
-        image: "./assets/images/icon-no-bg.png",
+        image: SPLASH_IMAGE,
         resizeMode: "contain",
-        backgroundColor: "#000000",
+        backgroundColor: DARK_SPLASH_BACKGROUND,
       },
     },
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
-    },
-    entitlements: {
-      "com.apple.developer.applesignin": ["Default"],
     },
   },
   android: {
@@ -50,13 +52,13 @@ const config: ExpoConfig = {
     },
     icon: "./assets/images/icon.png",
     splash: {
-      image: "./assets/images/icon-no-bg.png",
+      image: SPLASH_IMAGE,
       resizeMode: "contain",
-      backgroundColor: "#FFFFFF",
+      backgroundColor: LIGHT_SPLASH_BACKGROUND,
       dark: {
-        image: "./assets/images/icon-no-bg.png",
+        image: SPLASH_IMAGE,
         resizeMode: "contain",
-        backgroundColor: "#000000",
+        backgroundColor: DARK_SPLASH_BACKGROUND,
       },
     },
     edgeToEdgeEnabled: true,
@@ -69,6 +71,19 @@ const config: ExpoConfig = {
   },
   plugins: [
     "expo-router",
+    [
+      "expo-splash-screen",
+      {
+        image: SPLASH_IMAGE,
+        resizeMode: "contain",
+        backgroundColor: LIGHT_SPLASH_BACKGROUND,
+        imageWidth: SPLASH_IMAGE_WIDTH,
+        dark: {
+          image: SPLASH_IMAGE,
+          backgroundColor: DARK_SPLASH_BACKGROUND,
+        },
+      },
+    ],
     [
       "expo-image-picker",
       {
