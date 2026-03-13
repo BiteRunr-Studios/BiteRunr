@@ -414,7 +414,7 @@ export default function WriteOrder() {
                                                         setSaveError(null);
                                                     }
                                                 }}
-                                                autoCapitalize="sentences"
+                                                autoCapitalize="none"
                                                 returnKeyType="done"
                                                 blurOnSubmit={false}
                                                 onSubmitEditing={addItem}

@@ -327,7 +327,7 @@ export default function OrderSummary() {
             <SafeAreaView edges={["top"]} />
             <View className="flex-1 bg-background">
                 <View className="px-4 pt-4 pb-3 border-b border-border">
-                    <View className="flex-row items-center mb-1">
+                    <View className="flex-row gap-3 items-center mb-1">
                         <Pressable
                             onPress={() => router.back()}
                             className="p-2 -ml-2 rounded-full active:opacity-70">
@@ -340,75 +340,6 @@ export default function OrderSummary() {
                         <Text className="flex-1 ml-2 text-xl font-bold text-foreground">
                             {summary.order.name || "Order Summary"}
                         </Text>
-                    </View>
-                    <Text className="mb-3 ml-1 text-sm text-muted-foreground">
-                        {summary.totalPeople} people · {summary.totalItems}{" "}
-                        lines
-                    </Text>
-                    <View className="flex-row gap-3 items-center">
-                        <View className="overflow-hidden flex-1">
-                            <ScrollView
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={{ gap: 8 }}>
-                                {summary.locations.map(
-                                    (location: SummaryLocation) => {
-                                        const locationSummary =
-                                            summary.locationSummaries.find(
-                                                (value) =>
-                                                    value.orderLocationId ===
-                                                    location.orderLocationId,
-                                            );
-                                        const isSelected =
-                                            selectedLocation?.orderLocationId ===
-                                            location.orderLocationId;
-                                        const hasPrices =
-                                            locationSummary?.subtotalInCents !==
-                                            null;
-
-                                        return (
-                                            <Pressable
-                                                key={location.orderLocationId}
-                                                onPress={() =>
-                                                    setSelectedLocationId(
-                                                        location.orderLocationId,
-                                                    )
-                                                }
-                                                className={`flex-row items-center justify-center px-8 py-2 rounded-full ${
-                                                    isSelected
-                                                        ? "bg-primary"
-                                                        : "bg-muted"
-                                                }`}>
-                                                {hasPrices ? (
-                                                    <View
-                                                        style={{
-                                                            marginRight: 6,
-                                                        }}>
-                                                        <Icon
-                                                            name="CircleCheck"
-                                                            size={14}
-                                                            color={
-                                                                isSelected
-                                                                    ? "#fff"
-                                                                    : "#22c55e"
-                                                            }
-                                                        />
-                                                    </View>
-                                                ) : null}
-                                                <Text
-                                                    className={`text-sm ${
-                                                        isSelected
-                                                            ? "text-white"
-                                                            : "text-muted-foreground"
-                                                    }`}>
-                                                    {location.name}
-                                                </Text>
-                                            </Pressable>
-                                        );
-                                    },
-                                )}
-                            </ScrollView>
-                        </View>
                         <View className="p-1 rounded-full bg-muted">
                             <View className="flex-row gap-1 items-center">
                                 {(["items", "people"] as GroupMode[]).map(
@@ -440,6 +371,66 @@ export default function OrderSummary() {
                             </View>
                         </View>
                     </View>
+                    <Text className="mb-3 ml-1 text-sm text-muted-foreground">
+                        {summary.totalPeople} people · {summary.totalItems}{" "}
+                        items
+                    </Text>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ gap: 8 }}>
+                        {summary.locations.map((location: SummaryLocation) => {
+                            const locationSummary =
+                                summary.locationSummaries.find(
+                                    (value) =>
+                                        value.orderLocationId ===
+                                        location.orderLocationId,
+                                );
+                            const isSelected =
+                                selectedLocation?.orderLocationId ===
+                                location.orderLocationId;
+                            const hasPrices =
+                                locationSummary?.subtotalInCents !== null;
+
+                            return (
+                                <Pressable
+                                    key={location.orderLocationId}
+                                    onPress={() =>
+                                        setSelectedLocationId(
+                                            location.orderLocationId,
+                                        )
+                                    }
+                                    className={`flex-row items-center justify-center px-8 py-2 rounded-full ${
+                                        isSelected ? "bg-primary" : "bg-muted"
+                                    }`}>
+                                    {hasPrices ? (
+                                        <View
+                                            style={{
+                                                marginRight: 6,
+                                            }}>
+                                            <Icon
+                                                name="CircleCheck"
+                                                size={14}
+                                                color={
+                                                    isSelected
+                                                        ? "#fff"
+                                                        : "#22c55e"
+                                                }
+                                            />
+                                        </View>
+                                    ) : null}
+                                    <Text
+                                        className={`text-sm ${
+                                            isSelected
+                                                ? "text-white"
+                                                : "text-muted-foreground"
+                                        }`}>
+                                        {location.name}
+                                    </Text>
+                                </Pressable>
+                            );
+                        })}
+                    </ScrollView>
                 </View>
 
                 {scanState === "error" && scanError ? (
@@ -544,7 +535,7 @@ export default function OrderSummary() {
                             <>
                                 <View className="flex-row justify-between items-center">
                                     <Text className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-                                        Order Lines
+                                        Order Items
                                     </Text>
                                     <View className="px-2.5 py-0.5 rounded-full bg-muted">
                                         <Text className="text-xs font-medium text-muted-foreground">
@@ -559,31 +550,14 @@ export default function OrderSummary() {
                                               key={group.key}
                                               className="p-4 rounded-2xl border border-muted bg-card">
                                               <View className="flex-row gap-3 justify-between items-center">
-                                                  <View className="flex-1">
-                                                      <Text className="text-sm font-semibold text-foreground">
-                                                          {group.displayName}
-                                                      </Text>
-                                                      <Text className="mt-1 text-xs text-muted-foreground">
-                                                          {group.lineCount === 1
-                                                              ? "1 line"
-                                                              : `${group.lineCount} lines`}{" "}
-                                                          ·{" "}
-                                                          {group.peopleCount ===
-                                                          1
-                                                              ? "1 person"
-                                                              : `${group.peopleCount} people`}
+                                                  <Text className="flex-1 text-sm font-semibold text-foreground">
+                                                      {group.displayName}
+                                                  </Text>
+                                                  <View className="px-2.5 py-1 rounded-full bg-primary/10">
+                                                      <Text className="text-xs font-semibold text-primary">
+                                                          {group.lineCount}
                                                       </Text>
                                                   </View>
-                                                  {group.subtotalInCents !==
-                                                  null ? (
-                                                      <Text className="text-sm font-semibold text-primary">
-                                                          $
-                                                          {(
-                                                              group.subtotalInCents /
-                                                              100
-                                                          ).toFixed(2)}
-                                                      </Text>
-                                                  ) : null}
                                               </View>
                                           </View>
                                       ))
@@ -681,7 +655,7 @@ export default function OrderSummary() {
                                     color={NAV_THEME[colorScheme].border}
                                 />
                                 <Text className="mt-3 text-muted-foreground">
-                                    No lines from this location yet
+                                    No items from this location yet
                                 </Text>
                             </View>
                         )}
