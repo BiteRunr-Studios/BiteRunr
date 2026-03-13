@@ -74,7 +74,7 @@ export default function SupportScreen() {
     const faqs: FAQItemProps[] = [
         {
             question: "How do I create a group order?",
-            answer: "Tap the '+' button on the home screen, give your order a name, select the restaurants you want to order from, and invite your friends. Everyone can then add their items to the shared order.",
+            answer: "Tap the '+' button on the home screen, give your order a name, add the pickup locations for that order, and invite your friends. Everyone can then write their order lines under each location.",
         },
         {
             question: "How do I invite friends to an order?",
@@ -86,7 +86,7 @@ export default function SupportScreen() {
         },
         {
             question: "Can I order from multiple restaurants?",
-            answer: "Yes! When creating an order, you can add multiple locations. Each participant can then add items from any of the selected restaurants.",
+            answer: "Yes. Each order can have multiple pickup locations, and everyone can add separate order lines for each one.",
         },
         {
             question: "How do I add friends?",

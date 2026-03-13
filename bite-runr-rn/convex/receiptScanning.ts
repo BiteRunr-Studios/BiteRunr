@@ -42,7 +42,7 @@ const receiptLineSchema = z.object({
         .int()
         .nullable()
         .describe(
-            "Unit price in cents for one purchased unit, not the extended line total. Example: if quantity is 2 and the receipt shows $10.00 total, return 500 cents per unit.",
+            "Extended line total in cents for the full receipt line. Example: if quantity is 2 and the receipt shows $10.00 total, return 1000.",
         ),
     includedItems: z
         .array(
@@ -118,7 +118,7 @@ Keep proper nouns and brand names as-is.
 ## Rules
 - Skip taxes, totals, subtotals, discounts, tips — only extract purchased items
 - Include modifiers/customizations with the item name
-- Return priceInCents as the price for ONE purchased unit, not the full line total
+- Return priceInCents as the full total for that receipt line, not a unit price
 - If a combo/meal/trio line has included items listed underneath, return ONE top-level item for the priced combo and put the included items in includedItems
 - Do not duplicate combo children as separate top-level items unless they are clearly separately charged
 - Handle partial or unclear text with reasonable assumptions
@@ -376,19 +376,25 @@ function normalizeParsedReceiptItems(
         }
 
         const comboItems = includedItems.map((includedItem) => includedItem.name);
+        const totalIncludedQuantities = includedItems.map(
+            (includedItem) => includedItem.quantity * itemQuantity,
+        );
         const splitUnitPrices =
             item.priceInCents !== null
                 ? allocatePerUnitPrices(
                       item.priceInCents,
-                      includedItems.map((includedItem) => includedItem.quantity),
+                      totalIncludedQuantities,
                   )
                 : includedItems.map(() => null);
 
         includedItems.forEach((includedItem, includedIndex) => {
+            const totalQuantity = totalIncludedQuantities[includedIndex];
+            const unitPrice = splitUnitPrices[includedIndex];
             normalizedItems.push({
                 name: includedItem.name,
-                quantity: includedItem.quantity * itemQuantity,
-                priceInCents: splitUnitPrices[includedIndex],
+                quantity: totalQuantity,
+                priceInCents:
+                    unitPrice !== null ? unitPrice * totalQuantity : null,
                 comboName: itemName,
                 comboItems,
                 comboTotalInCents: item.priceInCents,
@@ -438,31 +444,29 @@ export const getOrderItemsForLocation = query({
             .collect();
 
         // Enrich with item details and user info
-        const enrichedItems = await Promise.all(
-            orderItems.map(async (oi) => {
-                const item = await ctx.db.get(oi.itemId);
-                const orderUser = await ctx.db.get(oi.orderUserId);
-                const user = orderUser
-                    ? await ctx.db.get(orderUser.userId)
-                    : null;
+        return Promise.all(
+            [...orderItems]
+                .sort((left, right) => left.sortOrder - right.sortOrder)
+                .map(async (orderItem) => {
+                    const orderUser = await ctx.db.get(orderItem.orderUserId);
+                    const user = orderUser
+                        ? await ctx.db.get(orderUser.userId)
+                        : null;
 
-                return {
-                    id: oi._id,
-                    itemName: item?.name ?? "Unknown Item",
-                    quantity: oi.quantity,
-                    comments: oi.comments,
-                    priceInCents: oi.priceInCents
-                        ? Number(oi.priceInCents)
-                        : null,
-                    userName: user
-                        ? `${user.firstName} ${user.lastName}`
-                        : "Unknown User",
-                    orderUserId: oi.orderUserId,
-                };
-            }),
+                    return {
+                        id: orderItem._id,
+                        text: orderItem.text,
+                        priceInCents:
+                            orderItem.priceInCents !== undefined
+                                ? Number(orderItem.priceInCents)
+                                : null,
+                        userName: user
+                            ? `${user.firstName} ${user.lastName}`
+                            : "Unknown User",
+                        orderUserId: orderItem.orderUserId,
+                    };
+                }),
         );
-
-        return enrichedItems;
     },
 });
 
@@ -518,7 +522,7 @@ export const parseReceipt = action({
             // Build context about expected order items to help decode abbreviations
             const itemContext =
                 orderItems && orderItems.length > 0
-                    ? `\n\nThe order is expected to contain these items (use these to help decode receipt abbreviations and short codes):\n${orderItems.map((oi) => `- ${oi.itemName} (qty: ${oi.quantity})`).join("\n")}`
+                    ? `\n\nThe order is expected to contain these items (use these to help decode receipt abbreviations and short codes):\n${orderItems.map((oi) => `- ${oi.text}`).join("\n")}`
                     : "";
 
             const openrouter = createOpenRouter();
@@ -680,10 +684,7 @@ export const confirmReceiptMatches = mutation({
             .map((ou) => ou!.userId);
 
         if (memberUserIds.length > 0) {
-            const location = orderLocation.locationId
-                ? await ctx.db.get(orderLocation.locationId)
-                : null;
-            const locationName = location ? location.name : "the restaurant";
+            const locationName = orderLocation.name || "the restaurant";
 
             await ctx.scheduler.runAfter(
                 0,
@@ -739,8 +740,8 @@ export const recalculateAmountsOwed = internalMutation({
 
             let locSubtotal = BigInt(0);
             for (const item of locItems) {
-                if (item.priceInCents) {
-                    locSubtotal += BigInt(item.quantity) * item.priceInCents;
+                if (item.priceInCents !== undefined) {
+                    locSubtotal += item.priceInCents;
                 }
             }
 
@@ -773,10 +774,8 @@ export const recalculateAmountsOwed = internalMutation({
             // Group user's item subtotals by location, then apply tax multiplier
             const subtotalByLocation = new Map<string, number>();
             for (const item of userItems) {
-                if (item.priceInCents) {
-                    const itemTotal = Number(
-                        BigInt(item.quantity) * item.priceInCents,
-                    );
+                if (item.priceInCents !== undefined) {
+                    const itemTotal = Number(item.priceInCents);
                     const prev =
                         subtotalByLocation.get(item.orderLocationId) ?? 0;
                     subtotalByLocation.set(
