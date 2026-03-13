@@ -322,8 +322,7 @@ export function useReceiptScanning(
                         parseResult.items,
                         orderItems.map((oi) => ({
                             id: oi.id,
-                            itemName: oi.itemName,
-                            quantity: oi.quantity,
+                            text: oi.text,
                             userName: oi.userName,
                         })),
                     );
@@ -391,7 +390,7 @@ export function useReceiptScanning(
                     updated[index] = {
                         ...updated[index],
                         matchedOrderItemId: orderItemId,
-                        matchedItemName: matchedOrderItem?.itemName ?? null,
+                        matchedItemName: matchedOrderItem?.text ?? null,
                         matchedUserName: matchedOrderItem?.userName ?? null,
                         confidence: orderItemId ? 1 : 0, // Manual selection = 100% confidence
                         manualPriceInCents:

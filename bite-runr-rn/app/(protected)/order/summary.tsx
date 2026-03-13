@@ -1,33 +1,34 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-    View,
-    Text,
-    ScrollView,
-    Pressable,
-    TouchableOpacity,
     ActivityIndicator,
+    Pressable,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
+import * as Haptics from "expo-haptics";
+import Toast from "react-native-toast-message";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
-import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { useReceiptScanning } from "@/hooks/useReceiptScanning";
 import { useManualPriceEntry } from "@/hooks/useManualPriceEntry";
 import { ReceiptConfirmationSheet } from "@/components/receipt-confirmation-sheet";
 import { ManualPriceEntrySheet } from "@/components/manual-price-entry-sheet";
 import { ListItem } from "@/components/profile/list-item";
 import { Button } from "@/components/common/button";
-import Toast from "react-native-toast-message";
-import * as Haptics from "expo-haptics";
+import { groupOrderItemsByParticipant } from "@/lib/order-item-grouping";
 
-type Location = {
+type SummaryLocation = {
+    id: string;
     orderLocationId: string;
-    locationId: string;
     name: string;
 };
 
@@ -44,19 +45,11 @@ export default function OrderSummary() {
         orderId ? { orderId: orderId as Id<"orders"> } : "skip",
     );
 
-    const selectedLocation = (() => {
-        if (!summary?.locations || summary.locations.length === 0) {
-            return null;
-        }
+    const selectedLocation =
+        summary?.locations.find(
+            (location) => location.orderLocationId === selectedLocationId,
+        ) ?? summary?.locations[0] ?? null;
 
-        return (
-            summary.locations.find(
-                (location) => location.orderLocationId === selectedLocationId,
-            ) ?? summary.locations[0]
-        );
-    })();
-
-    // Receipt scanning hook
     const {
         state: scanState,
         error: scanError,
@@ -75,7 +68,6 @@ export default function OrderSummary() {
         orderId as Id<"orders"> | null,
     );
 
-    // Manual price entry hook
     const {
         state: manualState,
         error: manualError,
@@ -91,7 +83,6 @@ export default function OrderSummary() {
         orderId as Id<"orders"> | null,
     );
 
-    // Get order items for the confirmation sheet
     const orderItems = useQuery(
         api.receiptScanning.getOrderItemsForLocation,
         selectedLocation?.orderLocationId
@@ -102,7 +93,6 @@ export default function OrderSummary() {
             : "skip",
     );
 
-    // Show toast on scan success and reset
     useEffect(() => {
         if (scanState !== "success") return;
 
@@ -113,14 +103,10 @@ export default function OrderSummary() {
             visibilityTime: 2500,
         });
 
-        const resetTimer = setTimeout(() => {
-            resetScan();
-        }, 0);
+        const timer = setTimeout(() => resetScan(), 0);
+        return () => clearTimeout(timer);
+    }, [resetScan, scanState]);
 
-        return () => clearTimeout(resetTimer);
-    }, [scanState, resetScan]);
-
-    // Show toast on manual entry success and reset
     useEffect(() => {
         if (manualState !== "success") return;
 
@@ -131,29 +117,23 @@ export default function OrderSummary() {
             visibilityTime: 2500,
         });
 
-        const resetTimer = setTimeout(() => {
-            resetManual();
-        }, 0);
-
-        return () => clearTimeout(resetTimer);
+        const timer = setTimeout(() => resetManual(), 0);
+        return () => clearTimeout(timer);
     }, [manualState, resetManual]);
 
-    const handleSourceSelect = async (source: "camera" | "library") => {
-        sourceActionSheetRef.current?.hide();
-        await startScan(source);
-    };
+    const currentLocationSummary = summary?.locationSummaries.find(
+        (locationSummary) =>
+            locationSummary.orderLocationId === selectedLocation?.orderLocationId,
+    );
 
-    const handleConfirmClose = () => {
-        dismissScan();
-    };
-
-    const handleConfirm = async () => {
-        await confirmMatches();
-    };
+    const participantGroups = useMemo(
+        () => groupOrderItemsByParticipant(currentLocationSummary?.lines),
+        [currentLocationSummary?.lines],
+    );
 
     if (summary === undefined) {
         return (
-            <View className="flex-1 justify-center items-center bg-background">
+            <View className="flex-1 items-center justify-center bg-background">
                 <Text className="text-foreground">Loading...</Text>
             </View>
         );
@@ -161,7 +141,7 @@ export default function OrderSummary() {
 
     if (summary === null) {
         return (
-            <View className="flex-1 justify-center items-center bg-background">
+            <View className="flex-1 items-center justify-center bg-background">
                 <Text className="text-destructive">
                     Not authorized to view this summary
                 </Text>
@@ -169,21 +149,15 @@ export default function OrderSummary() {
         );
     }
 
-    // Get the current location's items
-    const currentLocationSummary = summary.locationSummaries.find(
-        (ls) => ls.orderLocationId === selectedLocation?.orderLocationId,
-    );
-
     const isScanning = scanState === "uploading" || scanState === "parsing";
     const allLocationsPriced = summary.locationSummaries.every(
-        (ls) => ls.subtotalInCents !== null,
+        (locationSummary) => locationSummary.subtotalInCents !== null,
     );
-
     const locationsWithPrices = summary.locationSummaries.filter(
-        (ls) => ls.subtotalInCents !== null,
+        (locationSummary) => locationSummary.subtotalInCents !== null,
     );
     const locationsMissingPrices = summary.locationSummaries.filter(
-        (ls) => ls.subtotalInCents === null,
+        (locationSummary) => locationSummary.subtotalInCents === null,
     );
     const someLocationsPriced =
         locationsWithPrices.length > 0 && locationsMissingPrices.length > 0;
@@ -192,7 +166,6 @@ export default function OrderSummary() {
         <>
             <SafeAreaView edges={["top"]} />
             <View className="flex-1 bg-background">
-                {/* Header */}
                 <View className="px-4 pt-4 pb-3 border-b border-border">
                     <View className="flex-row items-center mb-1">
                         <Pressable
@@ -209,24 +182,23 @@ export default function OrderSummary() {
                         </Text>
                     </View>
                     <Text className="mb-3 ml-1 text-sm text-muted-foreground">
-                        {summary.totalPeople} people · {summary.totalItems}{" "}
-                        items
+                        {summary.totalPeople} people · {summary.totalItems} lines
                     </Text>
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={{ gap: 8 }}>
-                        {summary.locations.map((location) => {
-                            const locSummary = summary.locationSummaries.find(
-                                (ls) =>
-                                    ls.orderLocationId ===
+                        {summary.locations.map((location: SummaryLocation) => {
+                            const locationSummary = summary.locationSummaries.find(
+                                (value) =>
+                                    value.orderLocationId ===
                                     location.orderLocationId,
                             );
-                            const hasPrices =
-                                locSummary?.subtotalInCents !== null;
                             const isSelected =
                                 selectedLocation?.orderLocationId ===
                                 location.orderLocationId;
+                            const hasPrices =
+                                locationSummary?.subtotalInCents !== null;
 
                             return (
                                 <Pressable
@@ -239,19 +211,17 @@ export default function OrderSummary() {
                                     className={`flex-row items-center justify-center px-8 py-2 rounded-full ${
                                         isSelected ? "bg-primary" : "bg-muted"
                                     }`}>
-                                    {hasPrices && (
+                                    {hasPrices ? (
                                         <View style={{ marginRight: 6 }}>
                                             <Icon
                                                 name="CircleCheck"
                                                 size={14}
                                                 color={
-                                                    isSelected
-                                                        ? "#fff"
-                                                        : "#22c55e"
+                                                    isSelected ? "#fff" : "#22c55e"
                                                 }
                                             />
                                         </View>
-                                    )}
+                                    ) : null}
                                     <Text
                                         className={`text-sm ${
                                             isSelected
@@ -266,24 +236,15 @@ export default function OrderSummary() {
                     </ScrollView>
                 </View>
 
-                {/* Scan Error Banner */}
-                {scanState === "error" && scanError && (
+                {scanState === "error" && scanError ? (
                     <View className="gap-2 px-4 py-3 mx-4 mt-4 rounded-xl bg-destructive/10">
-                        <View className="flex-row gap-3 items-center">
-                            <Icon
-                                name="CircleAlert"
-                                size={20}
-                                color={NAV_THEME[colorScheme].notification}
-                            />
+                        <View className="flex-row items-center gap-3">
+                            <Icon name="CircleAlert" size={20} color="#ef4444" />
                             <Text className="flex-1 text-sm text-destructive">
                                 {scanError}
                             </Text>
                             <Pressable onPress={resetScan}>
-                                <Icon
-                                    name="X"
-                                    size={16}
-                                    color={NAV_THEME[colorScheme].notification}
-                                />
+                                <Icon name="X" size={16} color="#ef4444" />
                             </Pressable>
                         </View>
                         <Pressable
@@ -297,26 +258,17 @@ export default function OrderSummary() {
                             </Text>
                         </Pressable>
                     </View>
-                )}
+                ) : null}
 
-                {/* Manual Entry Error Banner */}
-                {manualState === "error" && manualError && (
+                {manualState === "error" && manualError ? (
                     <View className="gap-2 px-4 py-3 mx-4 mt-4 rounded-xl bg-destructive/10">
-                        <View className="flex-row gap-3 items-center">
-                            <Icon
-                                name="CircleAlert"
-                                size={20}
-                                color={NAV_THEME[colorScheme].notification}
-                            />
+                        <View className="flex-row items-center gap-3">
+                            <Icon name="CircleAlert" size={20} color="#ef4444" />
                             <Text className="flex-1 text-sm text-destructive">
                                 {manualError}
                             </Text>
                             <Pressable onPress={resetManual}>
-                                <Icon
-                                    name="X"
-                                    size={16}
-                                    color={NAV_THEME[colorScheme].notification}
-                                />
+                                <Icon name="X" size={16} color="#ef4444" />
                             </Pressable>
                         </View>
                         <Pressable
@@ -330,49 +282,52 @@ export default function OrderSummary() {
                             </Text>
                         </Pressable>
                     </View>
-                )}
+                ) : null}
 
-                {/* Remaining Locations Banner */}
-                {someLocationsPriced && (
+                {someLocationsPriced ? (
                     <Pressable
                         onPress={() => {
-                            const nextUnpriced = summary.locations.find((loc) =>
+                            const nextUnpriced = summary.locations.find((location) =>
                                 locationsMissingPrices.some(
-                                    (ls) =>
-                                        ls.orderLocationId ===
-                                        loc.orderLocationId,
+                                    (locationSummary) =>
+                                        locationSummary.orderLocationId ===
+                                        location.orderLocationId,
                                 ),
                             );
+
                             if (nextUnpriced) {
-                                setSelectedLocationId(
-                                    nextUnpriced.orderLocationId,
-                                );
+                                setSelectedLocationId(nextUnpriced.orderLocationId);
                             }
                         }}
-                        className="flex-row gap-3 items-center px-4 py-3 mx-4 mt-4 rounded-xl bg-yellow-500/10">
+                        className="flex-row items-center gap-3 px-4 py-3 mx-4 mt-4 rounded-xl bg-yellow-500/10">
                         <Icon name="CircleAlert" size={18} color="#eab308" />
                         <Text className="flex-1 text-sm text-yellow-700 dark:text-yellow-400">
                             {locationsMissingPrices.length === 1
-                                ? `Still need prices for ${summary.locations.find((l) => l.orderLocationId === locationsMissingPrices[0].orderLocationId)?.name ?? "1 location"}`
+                                ? `Still need prices for ${
+                                      summary.locations.find(
+                                          (location) =>
+                                              location.orderLocationId ===
+                                              locationsMissingPrices[0]
+                                                  .orderLocationId,
+                                      )?.name ?? "1 location"
+                                  }`
                                 : `Still need prices for ${locationsMissingPrices.length} locations`}
                         </Text>
                         <Icon name="ChevronRight" size={16} color="#eab308" />
                     </Pressable>
-                )}
+                ) : null}
 
-                {/* Items List */}
                 <View className="flex-1 px-4 pt-4">
                     <ScrollView
                         className="flex-1"
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ gap: 12, paddingBottom: 32 }}>
                         {currentLocationSummary &&
-                        currentLocationSummary.items.length > 0 ? (
+                        currentLocationSummary.lines.length > 0 ? (
                             <>
-                                {/* Section Header */}
-                                <View className="flex-row justify-between items-center">
+                                <View className="flex-row items-center justify-between">
                                     <Text className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-                                        Items
+                                        Order Lines
                                     </Text>
                                     <View className="px-2.5 py-0.5 rounded-full bg-muted">
                                         <Text className="text-xs font-medium text-muted-foreground">
@@ -381,84 +336,45 @@ export default function OrderSummary() {
                                     </View>
                                 </View>
 
-                                {currentLocationSummary.items.map((item) => (
+                                {participantGroups.map((group) => (
                                     <View
-                                        key={item.itemId}
+                                        key={group.key}
                                         className="p-4 rounded-2xl border border-muted bg-card">
-                                        <View className="flex-row gap-3 items-center">
-                                            <View className="justify-center items-center w-8 h-8 rounded-full bg-primary/10">
-                                                <Text className="text-xs font-semibold text-primary">
-                                                    x{item.totalQuantity}
-                                                </Text>
-                                            </View>
-                                            <View className="flex-1">
-                                                <Text className="text-base font-medium text-foreground">
-                                                    {item.itemName}
-                                                </Text>
-                                                {item.priceInCents !== null && (
-                                                    <Text className="text-sm text-muted-foreground">
-                                                        $
-                                                        {(
-                                                            item.priceInCents /
-                                                            100
-                                                        ).toFixed(2)}{" "}
-                                                        each
+                                        <Text className="mb-3 text-sm font-semibold text-foreground">
+                                            {group.displayName}
+                                        </Text>
+                                        <View className="gap-2">
+                                            {group.items.map((line) => (
+                                                <View
+                                                    key={line.id}
+                                                    className="flex-row items-start justify-between gap-3">
+                                                    <Text className="flex-1 text-sm text-foreground">
+                                                        {line.text}
                                                     </Text>
-                                                )}
-                                            </View>
+                                                    {line.priceInCents !== null ? (
+                                                        <Text className="text-sm text-muted-foreground">
+                                                            $
+                                                            {(
+                                                                line.priceInCents /
+                                                                100
+                                                            ).toFixed(2)}
+                                                        </Text>
+                                                    ) : null}
+                                                </View>
+                                            ))}
                                         </View>
-                                        {item.subItems.length > 0 && (
-                                            <View className="pt-2 mt-3 ml-11 border-t border-muted">
-                                                {item.baseQuantity > 0 && (
-                                                    <View className="flex-row items-center justify-between py-1.5">
-                                                        <Text className="flex-1 text-xs text-muted-foreground">
-                                                            Standard
-                                                        </Text>
-                                                        <Text className="ml-2 text-xs font-medium text-muted-foreground">
-                                                            x{item.baseQuantity}
-                                                        </Text>
-                                                    </View>
-                                                )}
-                                                {item.subItems.map(
-                                                    (
-                                                        subItem,
-                                                        subItemIndex,
-                                                    ) => (
-                                                        <View
-                                                            key={`${item.itemId}-${subItem.comment}-${subItem.quantity}-${subItemIndex}`}
-                                                            className="flex-row items-center justify-between gap-2 py-1.5">
-                                                            <Text
-                                                                numberOfLines={
-                                                                    1
-                                                                }
-                                                                className="flex-1 text-xs text-muted-foreground">
-                                                                {subItem.comment.trim()}
-                                                            </Text>
-                                                            <Text className="ml-2 text-xs font-medium text-muted-foreground">
-                                                                x
-                                                                {
-                                                                    subItem.quantity
-                                                                }
-                                                            </Text>
-                                                        </View>
-                                                    ),
-                                                )}
-                                            </View>
-                                        )}
                                     </View>
                                 ))}
 
-                                {/* Price Breakdown */}
-                                {currentLocationSummary.subtotalInCents !==
-                                    null && (
+                                {currentLocationSummary.subtotalInCents !== null ? (
                                     <>
-                                        <View className="flex-row justify-between items-center mt-2">
+                                        <View className="flex-row items-center justify-between mt-2">
                                             <Text className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
                                                 Price Summary
                                             </Text>
                                         </View>
                                         <View className="p-4 rounded-2xl border border-primary/30 bg-primary/5">
-                                            <View className="flex-row justify-between items-center mb-2">
+                                            <View className="flex-row items-center justify-between mb-2">
                                                 <Text className="text-sm text-muted-foreground">
                                                     Subtotal
                                                 </Text>
@@ -470,9 +386,8 @@ export default function OrderSummary() {
                                                     ).toFixed(2)}
                                                 </Text>
                                             </View>
-                                            {currentLocationSummary.taxInCents !==
-                                                null && (
-                                                <View className="flex-row justify-between items-center mb-2">
+                                            {currentLocationSummary.taxInCents !== null ? (
+                                                <View className="flex-row items-center justify-between mb-2">
                                                     <Text className="text-sm text-muted-foreground">
                                                         Tax
                                                     </Text>
@@ -484,10 +399,9 @@ export default function OrderSummary() {
                                                         ).toFixed(2)}
                                                     </Text>
                                                 </View>
-                                            )}
-                                            {currentLocationSummary.totalInCents !==
-                                                null && (
-                                                <View className="flex-row justify-between items-center pt-2 border-t border-primary/20">
+                                            ) : null}
+                                            {currentLocationSummary.totalInCents !== null ? (
+                                                <View className="flex-row items-center justify-between pt-2 border-t border-primary/20">
                                                     <Text className="text-base font-semibold text-foreground">
                                                         Total
                                                     </Text>
@@ -499,33 +413,32 @@ export default function OrderSummary() {
                                                         ).toFixed(2)}
                                                     </Text>
                                                 </View>
-                                            )}
+                                            ) : null}
                                         </View>
                                     </>
-                                )}
+                                ) : null}
                             </>
                         ) : (
-                            <View className="justify-center items-center py-12">
+                            <View className="items-center justify-center py-12">
                                 <Icon
                                     name="ShoppingBag"
                                     size={32}
                                     color={NAV_THEME[colorScheme].border}
                                 />
                                 <Text className="mt-3 text-muted-foreground">
-                                    No items from this location
+                                    No lines from this location yet
                                 </Text>
                             </View>
                         )}
                     </ScrollView>
                 </View>
 
-                {/* Footer */}
                 <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
                     {isScanning ? (
                         <TouchableOpacity
-                            className="py-3 w-full rounded-xl border border-primary bg-primary/5"
+                            className="w-full py-3 border rounded-xl border-primary bg-primary/5"
                             disabled>
-                            <View className="flex-row gap-2 justify-center items-center">
+                            <View className="flex-row items-center justify-center gap-2">
                                 <ActivityIndicator
                                     size="small"
                                     color={NAV_THEME[colorScheme].primary}
@@ -539,16 +452,16 @@ export default function OrderSummary() {
                         </TouchableOpacity>
                     ) : hasScanDraft ? (
                         <TouchableOpacity
-                            className="py-3 w-full rounded-xl bg-primary"
+                            className="w-full py-3 rounded-xl bg-primary"
                             onPress={resumeDraft}>
                             <Text className="text-sm font-semibold text-center text-white">
                                 Continue receipt review
                             </Text>
                         </TouchableOpacity>
                     ) : allLocationsPriced ? (
-                        <View className="gap-2 items-center">
+                        <View className="items-center gap-2">
                             <TouchableOpacity
-                                className="py-3 w-full rounded-xl bg-primary"
+                                className="w-full py-3 rounded-xl bg-primary"
                                 onPress={() =>
                                     router.push(
                                         `/order/settlement?orderId=${orderId}` as never,
@@ -559,9 +472,7 @@ export default function OrderSummary() {
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                                onPress={() =>
-                                    sourceActionSheetRef.current?.show()
-                                }
+                                onPress={() => sourceActionSheetRef.current?.show()}
                                 className="py-2">
                                 <Text className="text-sm font-medium text-primary">
                                     Edit prices
@@ -570,10 +481,8 @@ export default function OrderSummary() {
                         </View>
                     ) : (
                         <TouchableOpacity
-                            className="py-3 w-full rounded-xl bg-primary"
-                            onPress={() =>
-                                sourceActionSheetRef.current?.show()
-                            }>
+                            className="w-full py-3 rounded-xl bg-primary"
+                            onPress={() => sourceActionSheetRef.current?.show()}>
                             <Text className="text-sm font-semibold text-center text-white">
                                 Add Prices
                             </Text>
@@ -582,7 +491,6 @@ export default function OrderSummary() {
                 </View>
             </View>
 
-            {/* Source Selection Action Sheet */}
             <ActionSheet
                 ref={sourceActionSheetRef}
                 containerStyle={{
@@ -593,9 +501,9 @@ export default function OrderSummary() {
                     borderTopLeftRadius: 24,
                     borderTopRightRadius: 24,
                 }}
-                gestureEnabled={true}
+                gestureEnabled
                 defaultOverlayOpacity={0.3}
-                useBottomSafeAreaPadding={true}>
+                useBottomSafeAreaPadding>
                 <View className="gap-3 p-4">
                     <Text className="mb-1 text-lg font-bold text-center text-foreground">
                         Add Prices
@@ -608,20 +516,26 @@ export default function OrderSummary() {
                         iconName="Camera"
                         title="Take Photo"
                         subtitle="Use your camera to capture the receipt"
-                        onPress={() => handleSourceSelect("camera")}
+                        onPress={() => {
+                            sourceActionSheetRef.current?.hide();
+                            void startScan("camera");
+                        }}
                     />
 
                     <ListItem
                         iconName="Image"
                         title="Choose from Library"
                         subtitle="Select an existing photo"
-                        onPress={() => handleSourceSelect("library")}
+                        onPress={() => {
+                            sourceActionSheetRef.current?.hide();
+                            void startScan("library");
+                        }}
                     />
 
                     <ListItem
                         iconName="DollarSign"
                         title="Enter Manually"
-                        subtitle="Type in prices for each item"
+                        subtitle="Type in prices for each order line"
                         onPress={() => {
                             sourceActionSheetRef.current?.hide();
                             setTimeout(() => startManualEntry(), 400);
@@ -636,11 +550,10 @@ export default function OrderSummary() {
                 </View>
             </ActionSheet>
 
-            {/* Receipt Confirmation Sheet */}
             <ReceiptConfirmationSheet
                 visible={scanState === "confirming" || scanState === "saving"}
-                onClose={handleConfirmClose}
-                onConfirm={handleConfirm}
+                onClose={dismissScan}
+                onConfirm={() => void confirmMatches()}
                 matchedItems={matchedItems}
                 orderItems={orderItems}
                 onUpdateMatch={updateMatch}
@@ -649,11 +562,10 @@ export default function OrderSummary() {
                 isSaving={scanState === "saving"}
             />
 
-            {/* Manual Price Entry Sheet */}
             <ManualPriceEntrySheet
                 visible={manualState === "entering" || manualState === "saving"}
                 onDismiss={dismissManual}
-                onSave={saveManualPrices}
+                onSave={() => void saveManualPrices()}
                 orderItems={manualOrderItems}
                 prices={manualPrices}
                 onUpdatePrice={updatePrice}

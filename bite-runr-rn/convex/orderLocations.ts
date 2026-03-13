@@ -2,18 +2,17 @@ import { v } from "convex/values";
 import { query } from "./_generated/server";
 import { getUserId } from "./authHelper";
 
-// List all locations for an order (for item selection)
+// List all order-local pickup locations for an order
 export const listForOrder = query({
   args: { orderId: v.id("orders") },
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx);
     if (!userId) return [];
 
-    // Verify user is a participant
     const orderUser = await ctx.db
       .query("orderUsers")
       .withIndex("by_userId_orderId", (q) =>
-        q.eq("userId", userId).eq("orderId", args.orderId)
+        q.eq("userId", userId).eq("orderId", args.orderId),
       )
       .first();
 
@@ -24,23 +23,15 @@ export const listForOrder = query({
       .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
       .collect();
 
-    // Enrich with location details
-    const enrichedLocations = await Promise.all(
-      orderLocations.map(async (ol) => {
-        const location = await ctx.db.get(ol.locationId);
-        return {
-          locationId: ol.locationId,
-          orderLocationId: ol._id,
-          locationName: location?.name ?? "Unknown",
-        };
-      })
-    );
-
-    return enrichedLocations;
+    return orderLocations.map((orderLocation) => ({
+      id: orderLocation._id,
+      orderId: orderLocation.orderId,
+      name: orderLocation.name,
+      createdAt: orderLocation._creationTime,
+    }));
   },
 });
 
-// Get a single order location by ID
 export const get = query({
   args: { id: v.id("orderLocations") },
   handler: async (ctx, args) => {
@@ -50,11 +41,10 @@ export const get = query({
     const orderLocation = await ctx.db.get(args.id);
     if (!orderLocation) return null;
 
-    // Verify user is a participant in this order
     const orderUser = await ctx.db
       .query("orderUsers")
       .withIndex("by_userId_orderId", (q) =>
-        q.eq("userId", userId).eq("orderId", orderLocation.orderId)
+        q.eq("userId", userId).eq("orderId", orderLocation.orderId),
       )
       .first();
 

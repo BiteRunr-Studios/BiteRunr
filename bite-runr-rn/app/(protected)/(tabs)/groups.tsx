@@ -151,7 +151,7 @@ export default function GroupsTab() {
         }));
 
         const locationNames = item.orderLocations
-            ?.map((ol) => ol.locationName)
+            ?.map((ol) => ol.name)
             .filter(Boolean);
 
         if (item.order.status === "active") {
@@ -188,16 +188,17 @@ export default function GroupsTab() {
                 itemCount={item.itemsCount}
                 locationNames={locationNames}
                 onReorder={() => {
-                    const locationIds =
-                        item.orderLocations
-                            ?.map((ol) => ol.locationId)
-                            .join(",") ?? "";
+                    const locationNamesParam = encodeURIComponent(
+                        JSON.stringify(
+                            item.orderLocations?.map((ol) => ol.name) ?? [],
+                        ),
+                    );
                     const friendIds = item.orderUsers
                         .filter((ou) => ou.userId !== userId)
                         .map((ou) => ou.userId)
                         .join(",");
                     router.push(
-                        `/order/create?reorderName=${encodeURIComponent(item.order.name)}&reorderLocationIds=${locationIds}&reorderFriendIds=${friendIds}`,
+                        `/order/create?reorderName=${encodeURIComponent(item.order.name)}&reorderLocationNames=${locationNamesParam}&reorderFriendIds=${friendIds}`,
                     );
                 }}
             />
