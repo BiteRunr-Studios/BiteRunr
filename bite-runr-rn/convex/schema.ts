@@ -107,29 +107,25 @@ export default defineSchema({
     // Order locations (which locations are part of an order)
     orderLocations: defineTable({
         orderId: v.id("orders"),
-        locationId: v.id("locations"),
+        name: v.string(),
         receiptTotalInCents: v.optional(v.int64()), // Receipt total including tax (set from receipt scanning)
-    })
-        .index("by_orderId", ["orderId"])
-        .index("by_locationId", ["locationId"]),
+    }).index("by_orderId", ["orderId"]),
 
     // Order items (individual items ordered by users)
     orderItems: defineTable({
         orderLocationId: v.id("orderLocations"),
         orderUserId: v.id("orderUsers"),
-        itemId: v.id("items"),
-        comments: v.optional(v.string()),
-        quantity: v.number(),
-        priceInCents: v.optional(v.int64()), // Price per item in cents (set from receipt scanning)
+        text: v.string(),
+        sortOrder: v.number(),
+        priceInCents: v.optional(v.int64()), // Line total in cents (set from receipt scanning/manual entry)
     })
         .index("by_orderLocationId", ["orderLocationId"])
         .index("by_orderUserId", ["orderUserId"])
-        .index("by_itemId", ["itemId"])
-        .index("by_orderUserId_itemId_comments", [
+        .index("by_orderUserId_orderLocationId", [
             "orderUserId",
-            "itemId",
-            "comments",
-        ]),
+            "orderLocationId",
+        ])
+        .index("by_orderLocationId_sortOrder", ["orderLocationId", "sortOrder"]),
 
     // Stripe Connect accounts (runners who receive card payments)
     connectedAccounts: defineTable({

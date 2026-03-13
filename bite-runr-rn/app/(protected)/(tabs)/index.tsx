@@ -720,17 +720,18 @@ export default function HomeTab() {
                                                         </View>
                                                         <TouchableOpacity
                                                             onPress={() => {
-                                                                const locationIds =
-                                                                    order.orderLocations
-                                                                        ?.map(
-                                                                            (
-                                                                                ol,
-                                                                            ) =>
-                                                                                ol.locationId,
-                                                                        )
-                                                                        .join(
-                                                                            ",",
-                                                                        ) ?? "";
+                                                                const locationNamesParam =
+                                                                    encodeURIComponent(
+                                                                        JSON.stringify(
+                                                                            order.orderLocations?.map(
+                                                                                (
+                                                                                    ol,
+                                                                                ) =>
+                                                                                    ol.name,
+                                                                            ) ??
+                                                                                [],
+                                                                        ),
+                                                                    );
                                                                 const friendIds =
                                                                     order.orderUsers
                                                                         .filter(
@@ -750,7 +751,7 @@ export default function HomeTab() {
                                                                             ",",
                                                                         );
                                                                 router.push(
-                                                                    `/order/create?reorderName=${encodeURIComponent(order.name)}&reorderLocationIds=${locationIds}&reorderFriendIds=${friendIds}`,
+                                                                    `/order/create?reorderName=${encodeURIComponent(order.name)}&reorderLocationNames=${locationNamesParam}&reorderFriendIds=${friendIds}`,
                                                                 );
                                                             }}
                                                             className="flex-row items-center gap-1 px-3 py-1.5 ml-auto rounded-full bg-primary/10">

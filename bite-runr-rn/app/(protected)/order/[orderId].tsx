@@ -62,25 +62,31 @@ function UserItemsList({ orderUserId }: { orderUserId: Id<"orderUsers"> }) {
 
     return (
         <View className="px-4 pt-2 pb-3">
-            {items.map((item) => (
-                <View
-                    key={item.id}
-                    className="flex-row items-start justify-between py-1.5">
-                    <View className="flex-1">
-                        <Text className="text-sm text-foreground">
-                            {item.itemName}
-                        </Text>
-                        {item.comments ? (
-                            <Text className="mt-0.5 text-xs text-muted-foreground">
-                                {item.comments}
+            {items.map((item, index) => {
+                const showLocation =
+                    index === 0 ||
+                    items[index - 1].orderLocationId !== item.orderLocationId;
+
+                return (
+                    <View key={item.id} className="py-1.5">
+                        {showLocation ? (
+                            <Text className="mb-1 text-xs font-semibold tracking-wide uppercase text-muted-foreground">
+                                {item.locationName}
                             </Text>
                         ) : null}
+                        <View className="flex-row items-start justify-between">
+                            <Text className="flex-1 text-sm text-foreground">
+                                {item.text}
+                            </Text>
+                            {item.priceInCents !== null ? (
+                                <Text className="ml-3 text-sm text-muted-foreground">
+                                    ${(item.priceInCents / 100).toFixed(2)}
+                                </Text>
+                            ) : null}
+                        </View>
                     </View>
-                    <Text className="ml-3 text-sm text-muted-foreground">
-                        x{item.quantity}
-                    </Text>
-                </View>
-            ))}
+                );
+            })}
         </View>
     );
 }
@@ -712,7 +718,7 @@ export default function SpecificOrder() {
                                     <Text className="font-semibold text-foreground">
                                         {data.count}
                                     </Text>{" "}
-                                    {data.count === 1 ? "item" : "items"}
+                                    {data.count === 1 ? "line" : "lines"}
                                 </Text>
                             </View>
                         </View>
@@ -859,8 +865,8 @@ export default function SpecificOrder() {
                                                 <Text className="text-sm text-muted-foreground">
                                                     {orderUser.itemCount}{" "}
                                                     {orderUser.itemCount === 1
-                                                        ? "item"
-                                                        : "items"}
+                                                        ? "line"
+                                                        : "lines"}
                                                 </Text>
                                             </View>
                                         </View>

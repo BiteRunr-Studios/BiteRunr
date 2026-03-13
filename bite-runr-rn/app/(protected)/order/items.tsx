@@ -1,633 +1,373 @@
+import type { NavigationAction } from "@react-navigation/routers";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-    View,
-    Text,
-    ScrollView,
-    Pressable,
-    TouchableOpacity,
-    Alert,
     ActivityIndicator,
+    Alert,
+    Pressable,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AddItemSheet } from "@/components/add-item-sheet";
-import { EditItemSheet } from "@/components/edit-item-sheet";
-import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
-import Animated, {
-    useAnimatedStyle,
-    interpolate,
-    SharedValue,
-    Extrapolation,
-} from "react-native-reanimated";
-import { Input } from "@/components/common/input";
+import { useNavigation, usePreventRemove } from "@react-navigation/native";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
-import { useQuery, useMutation, useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 
-type OrderLocation = {
-    locationId: Id<"locations">;
-    orderLocationId: Id<"orderLocations">;
-    locationName: string;
-};
+function normalizeOrderText(text: string) {
+    return text
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .join("\n");
+}
 
-type OrderUserLocationItem = {
-    id: Id<"orderItems">;
-    orderLocationId: Id<"orderLocations">;
-    orderUserId: Id<"orderUsers">;
-    itemId: Id<"items">;
-    comments: string | undefined;
-    quantity: number;
-    createdAt: number;
-    item: {
-        id: Id<"items">;
-        name: string;
-        locationId: Id<"locations">;
-        createdAt: number;
-    } | null;
-};
+type PendingExit =
+    | { kind: "dismiss" }
+    | { kind: "action"; action: NavigationAction };
 
-export default function SelectItems() {
-    const { orderUserId, orderId } = useLocalSearchParams();
-    const [selectedLocation, setSelectedLocation] =
-        useState<OrderLocation | null>(null);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-    const [addSheetVisible, setAddSheetVisible] = useState(false);
-    const [editSheetVisible, setEditSheetVisible] = useState(false);
-    const [selectedItem, setSelectedItem] = useState<{
-        name: string;
-        id: string;
-    } | null>(null);
-    const [selectedOrderUserLocationItem, setSelectedOrderUserLocationItem] =
-        useState<OrderUserLocationItem | null>(null);
+export default function WriteOrder() {
+    const { orderUserId, orderId } = useLocalSearchParams<{
+        orderUserId?: string;
+        orderId?: string;
+    }>();
     const { colorScheme } = useColorScheme();
+    const navigation = useNavigation();
+    const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
+        null,
+    );
+    const [currentText, setCurrentText] = useState("");
+    const [loadedText, setLoadedText] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
+    const [preventRemove, setPreventRemove] = useState(true);
+    const [pendingExit, setPendingExit] = useState<PendingExit | null>(null);
+    const leaveInFlightRef = useRef(false);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearchQuery(searchQuery);
-        }, 150);
-
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
-
-    // Queries
     const orderLocations = useQuery(
         api.orderLocations.listForOrder,
-        orderId ? { orderId: orderId as Id<"orders"> } : "skip"
+        orderId ? { orderId: orderId as Id<"orders"> } : "skip",
     );
-    const isOrderLocationsPending = orderLocations === undefined;
+    const replaceForUserLocation = useMutation(
+        api.orderItems.replaceForUserLocation,
+    );
+    const setStatus = useMutation(api.orderUsers.setStatus);
 
-    const orderUserLocationItems = useQuery(
-        api.orderItems.listForUserLocation,
-        orderUserId && selectedLocation && !searchQuery
+    const selectedLocation = useMemo(() => {
+        if (!orderLocations || orderLocations.length === 0) {
+            return null;
+        }
+
+        return (
+            orderLocations.find((location) => location.id === selectedLocationId) ??
+            orderLocations[0]
+        );
+    }, [orderLocations, selectedLocationId]);
+
+    const locationEntries = useQuery(
+        api.orderItems.getForUserLocation,
+        orderUserId && selectedLocation
             ? {
                   orderUserId: orderUserId as Id<"orderUsers">,
-                  orderLocationId: selectedLocation.orderLocationId,
+                  orderLocationId: selectedLocation.id as Id<"orderLocations">,
               }
-            : "skip"
+            : "skip",
     );
-    const isItemsPending = orderUserLocationItems === undefined;
-
-    const [searchResults, setSearchResults] = useState<
-        { _id: string; name: string; locationId: string }[] | null
-    >(null);
-    const [isSearchPending, setIsSearchPending] = useState(false);
-    const [searchResultsQuery, setSearchResultsQuery] = useState("");
-    const typesenseSearch = useAction(api.typesense.searchItems);
 
     useEffect(() => {
-        if (!selectedLocation || debouncedSearchQuery.length === 0) {
-            setSearchResults(null);
-            setIsSearchPending(false);
-            setSearchResultsQuery("");
+        if (!selectedLocationId && orderLocations && orderLocations.length > 0) {
+            setSelectedLocationId(orderLocations[0].id);
+        }
+    }, [orderLocations, selectedLocationId]);
+
+    useEffect(() => {
+        if (!selectedLocation) {
+            setCurrentText("");
+            setLoadedText("");
             return;
         }
 
-        let cancelled = false;
-        setIsSearchPending(true);
+        if (locationEntries === undefined) {
+            return;
+        }
 
-        typesenseSearch({
-            locationId: selectedLocation.locationId,
-            query: debouncedSearchQuery,
-        })
-            .then((results) => {
-                if (!cancelled) {
-                    setSearchResults(results);
-                    setSearchResultsQuery(debouncedSearchQuery);
-                    setIsSearchPending(false);
-                }
-            })
-            .catch((error) => {
-                console.error("Search error:", error);
-                if (!cancelled) {
-                    setSearchResults([]);
-                    setSearchResultsQuery(debouncedSearchQuery);
-                    setIsSearchPending(false);
-                }
+        const nextText = locationEntries.text ?? "";
+        setCurrentText(nextText);
+        setLoadedText(nextText);
+    }, [selectedLocation?.id, locationEntries]);
+
+    const saveCurrentLocation = useCallback(async () => {
+        if (!selectedLocation || !orderUserId) {
+            return true;
+        }
+
+        const normalizedCurrentText = normalizeOrderText(currentText);
+        const normalizedLoadedText = normalizeOrderText(loadedText);
+        if (normalizedCurrentText === normalizedLoadedText) {
+            return true;
+        }
+
+        setIsSaving(true);
+        setSaveError(null);
+
+        try {
+            await replaceForUserLocation({
+                orderUserId: orderUserId as Id<"orderUsers">,
+                orderLocationId: selectedLocation.id as Id<"orderLocations">,
+                text: currentText,
             });
 
-        return () => {
-            cancelled = true;
-        };
-    }, [debouncedSearchQuery, selectedLocation?.locationId]);
+            setCurrentText(normalizedCurrentText);
+            setLoadedText(normalizedCurrentText);
+            setIsSaving(false);
+            return true;
+        } catch (error: any) {
+            const message =
+                error?.message ?? "We couldn't save your order. Please try again.";
+            setSaveError(message);
+            Alert.alert("Couldn't save order", message);
+            setIsSaving(false);
+            return false;
+        }
+    }, [
+        currentText,
+        loadedText,
+        orderUserId,
+        replaceForUserLocation,
+        selectedLocation,
+    ]);
 
-    const allLocationItems = useQuery(
-        api.items.listByLocation,
-        selectedLocation && !searchQuery
-            ? { locationId: selectedLocation.locationId }
-            : "skip"
-    );
+    const completeOrder = useCallback(async () => {
+        if (!orderId) {
+            return false;
+        }
 
-    // Mutations
-    const setStatus = useMutation(api.orderUsers.setStatus);
-    const removeItem = useMutation(api.orderItems.remove);
-
-    // Set status to "done" when leaving the items page (swipe back, button, etc.)
-    useEffect(() => {
-        return () => {
-            if (orderId) {
-                setStatus({
-                    orderId: orderId as Id<"orders">,
-                    status: "done",
-                }).catch((error) => {
-                    console.error("Failed to set status on leave:", error);
-                });
-            }
-        };
+        try {
+            await setStatus({
+                orderId: orderId as Id<"orders">,
+                status: "done",
+            });
+            return true;
+        } catch (error: any) {
+            const message =
+                error?.message ??
+                "We couldn't finish your order. Please try again.";
+            setSaveError(message);
+            Alert.alert("Couldn't finish ordering", message);
+            return false;
+        }
     }, [orderId, setStatus]);
 
+    const requestExit = useCallback(
+        async (nextExit: PendingExit) => {
+            if (leaveInFlightRef.current || isSaving) {
+                return;
+            }
+
+            leaveInFlightRef.current = true;
+
+            const didSave = await saveCurrentLocation();
+            if (!didSave) {
+                leaveInFlightRef.current = false;
+                return;
+            }
+
+            const didComplete = await completeOrder();
+            if (!didComplete) {
+                leaveInFlightRef.current = false;
+                return;
+            }
+
+            setPendingExit(nextExit);
+            setPreventRemove(false);
+            leaveInFlightRef.current = false;
+        },
+        [completeOrder, isSaving, saveCurrentLocation],
+    );
+
+    const finishOrderingAndLeave = useCallback(() => {
+        void requestExit({ kind: "dismiss" });
+    }, [requestExit]);
+
+    const handleLocationPress = useCallback(
+        async (nextLocationId: string) => {
+            if (selectedLocation?.id === nextLocationId || isSaving) {
+                return;
+            }
+
+            const didSave = await saveCurrentLocation();
+            if (!didSave) {
+                return;
+            }
+
+            setCurrentText("");
+            setLoadedText("");
+            setSelectedLocationId(nextLocationId);
+        },
+        [isSaving, saveCurrentLocation, selectedLocation?.id],
+    );
+
     useEffect(() => {
-        if (
-            orderLocations &&
-            orderLocations.length > 0 &&
-            !selectedLocation?.locationId
-        ) {
-            setSelectedLocation(orderLocations[0]);
+        if (preventRemove || !pendingExit) {
+            return;
         }
-    }, [orderLocations, selectedLocation?.locationId]);
 
-    function handleDone() {
+        if (pendingExit.kind === "action") {
+            const action = pendingExit.action;
+            setPendingExit(null);
+            navigation.dispatch(action);
+            return;
+        }
+
+        setPendingExit(null);
         router.dismiss();
-    }
+    }, [navigation, pendingExit, preventRemove]);
 
-    function handleSearchItemPress(item: { name: string; id: string }) {
-        setSelectedItem(item);
-        setAddSheetVisible(true);
-    }
+    usePreventRemove(preventRemove, ({ data }) => {
+        void requestExit({ kind: "action", action: data.action });
+    });
 
-    function handleCreateNewItem() {
-        setSelectedItem({ name: searchQuery.trim(), id: "" });
-        setAddSheetVisible(true);
-    }
-
-    function handleExistingItemPress(
-        orderUserLocationItem: OrderUserLocationItem
-    ) {
-        setSelectedOrderUserLocationItem(orderUserLocationItem);
-        setEditSheetVisible(true);
-    }
-
-    function handleAddItem() {
-        // Convex will automatically update the UI
-        setSearchQuery("");
-        setAddSheetVisible(false);
-    }
-
-    function handleUpdateItem() {
-        // Convex will automatically update the UI
-        setEditSheetVisible(false);
-    }
-
-    function handleCloseAddSheet() {
-        setAddSheetVisible(false);
-        setSelectedItem(null);
-    }
-
-    function handleCloseEditSheet() {
-        setEditSheetVisible(false);
-        setSelectedOrderUserLocationItem(null);
-    }
-
-    async function handleDeleteItem(orderItemId: string) {
-        try {
-            await removeItem({
-                orderItemId: orderItemId as Id<"orderItems">,
-            });
-        } catch (error) {
-            console.error("Error deleting item:", error);
-        }
-    }
-
-    function confirmDelete(
-        orderItemId: string,
-        itemName: string,
-        swipeable: any
-    ) {
-        Alert.alert(
-            "Delete Item",
-            `Are you sure you want to delete ${itemName}?`,
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel",
-                    onPress: () => swipeable.close(),
-                },
-                {
-                    text: "Delete",
-                    style: "destructive",
-                    onPress: () => {
-                        handleDeleteItem(orderItemId);
-                        swipeable.close();
-                    },
-                },
-            ]
-        );
-    }
-
-    function RightAction({
-        progress,
-        orderItemId,
-        itemName,
-        swipeable,
-    }: {
-        progress: SharedValue<number>;
-        orderItemId: string;
-        itemName: string;
-        swipeable: any;
-    }) {
-        const animatedStyle = useAnimatedStyle(() => {
-            const scale = interpolate(
-                progress.value,
-                [0, 1],
-                [0.5, 1],
-                Extrapolation.CLAMP
-            );
-            const opacity = interpolate(
-                progress.value,
-                [0, 0.5, 1],
-                [0, 0.5, 1],
-                Extrapolation.CLAMP
-            );
-
-            return {
-                transform: [{ scale }],
-                opacity,
-            };
-        });
-
+    if (orderLocations === undefined) {
         return (
-            <View className="justify-center pl-4">
-                <Animated.View style={animatedStyle}>
-                    <TouchableOpacity
-                        onPress={() =>
-                            confirmDelete(orderItemId, itemName, swipeable)
-                        }
-                        className="items-center justify-center w-16 h-16 rounded-full"
-                        style={{ backgroundColor: "hsl(0, 84%, 60%)" }}
-                        activeOpacity={0.7}>
-                        <Icon name="Trash2" size={22} color="white" />
-                    </TouchableOpacity>
-                </Animated.View>
+            <View className="flex-1 items-center justify-center bg-background">
+                <ActivityIndicator
+                    size="large"
+                    color={NAV_THEME[colorScheme].primary}
+                />
             </View>
         );
     }
 
-    const renderRightActions = useCallback(
-        (orderItemId: string, itemName: string) => {
-            return (
-                progress: SharedValue<number>,
-                _drag: SharedValue<number>,
-                swipeable: any
-            ) => (
-                <RightAction
-                    progress={progress}
-                    orderItemId={orderItemId}
-                    itemName={itemName}
-                    swipeable={swipeable}
-                />
-            );
-        },
-        []
-    );
-
     return (
         <>
-            <SafeAreaView edges={["top"]}></SafeAreaView>
+            <SafeAreaView edges={["top"]} />
             <View className="flex-1 bg-background">
-                {/* Header */}
                 <View className="px-4 pt-4 pb-3 border-b border-border">
                     <Text className="text-xl font-bold text-foreground">
-                        Select Items
+                        Write Your Order
                     </Text>
                     <Text className="text-sm text-muted-foreground">
-                        {orderLocations?.length
-                            ? orderLocations?.length == 1
-                                ? "Choose from 1 location"
-                                : `Choose from ${orderLocations?.length} locations`
-                            : "No locations found"}
+                        {orderLocations.length === 1
+                            ? "Write one item per line."
+                            : `Write one item per line for each of the ${orderLocations.length} pickup locations.`}
                     </Text>
+
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         className="pt-4"
                         contentContainerStyle={{ gap: 8 }}>
-                        {orderLocations?.map((item) => (
-                            <Pressable
-                                key={item.locationId}
-                                onPress={() => setSelectedLocation(item)}
-                                className={`flex-row items-center justify-center px-8 py-2 rounded-full ${
-                                    selectedLocation?.locationId ===
-                                    item.locationId
-                                        ? "bg-primary"
-                                        : "bg-muted"
-                                }`}>
-                                <Text
-                                    className={`text-sm ${
-                                        selectedLocation?.locationId ===
-                                        item.locationId
-                                            ? "text-white"
-                                            : "text-muted-foreground"
+                        {orderLocations.map((location) => {
+                            const isSelected = selectedLocation?.id === location.id;
+
+                            return (
+                                <Pressable
+                                    key={location.id}
+                                    onPress={() =>
+                                        void handleLocationPress(location.id)
+                                    }
+                                    className={`flex-row items-center justify-center px-5 py-2 rounded-full ${
+                                        isSelected ? "bg-primary" : "bg-muted"
                                     }`}>
-                                    {item.locationName}
-                                </Text>
-                            </Pressable>
-                        ))}
+                                    <Text
+                                        className={`text-sm ${
+                                            isSelected
+                                                ? "text-white"
+                                                : "text-muted-foreground"
+                                        }`}>
+                                        {location.name}
+                                    </Text>
+                                </Pressable>
+                            );
+                        })}
                     </ScrollView>
                 </View>
 
-                {/* Main Content */}
-                <View className="px-4 pt-4 pb-2">
-                    <Input
-                        value={searchQuery}
-                        placeholder="Search"
-                        leftIcon="Search"
-                        autoCapitalize="none"
-                        returnKeyType="search"
-                        errorMessage=""
-                        onChangeText={setSearchQuery}
-                    />
-                </View>
-                <View className="flex-1 px-4 py-2 bg-background">
-                    <ScrollView
-                        className="flex-1"
-                        contentContainerStyle={{ gap: 16, paddingBottom: 16 }}
-                        showsVerticalScrollIndicator={false}>
-                        {searchQuery ? (
-                            // Search results
-                            searchQuery !== debouncedSearchQuery || isSearchPending || (debouncedSearchQuery.length > 0 && searchResultsQuery !== debouncedSearchQuery) ? (
-                                <View className="items-center justify-center py-12">
+                {saveError ? (
+                    <View className="flex-row items-center gap-2 px-4 py-3 mx-4 mt-4 rounded-xl bg-destructive/10">
+                        <Icon name="CircleAlert" size={18} color="#ef4444" />
+                        <Text className="flex-1 text-sm text-destructive">
+                            {saveError}
+                        </Text>
+                        <Pressable onPress={() => setSaveError(null)}>
+                            <Icon name="X" size={16} color="#ef4444" />
+                        </Pressable>
+                    </View>
+                ) : null}
+
+                <View className="flex-1 px-4 pt-4">
+                    <View className="p-4 border rounded-2xl border-muted bg-card">
+                        <View className="flex-row items-center gap-2 mb-3">
+                            <View className="items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                                <Icon
+                                    name="MapPin"
+                                    size={16}
+                                    color={NAV_THEME[colorScheme].primary}
+                                />
+                            </View>
+                            <View className="flex-1">
+                                <Text className="text-sm font-medium text-muted-foreground">
+                                    {selectedLocation?.name ?? "Pickup Location"}
+                                </Text>
+                                <Text className="text-xs text-muted-foreground">
+                                    One item per line
+                                </Text>
+                            </View>
+                            {isSaving ? (
+                                <View className="flex-row items-center gap-2">
                                     <ActivityIndicator
-                                        size="large"
+                                        size="small"
                                         color={NAV_THEME[colorScheme].primary}
                                     />
-                                </View>
-                            ) : searchResults && searchResults.length > 0 ? (
-                                <>
-                                    {searchResults.map((item, idx) => (
-                                        <Pressable
-                                            key={idx}
-                                            onPress={() =>
-                                                handleSearchItemPress({
-                                                    name: item.name,
-                                                    id: item._id,
-                                                })
-                                            }
-                                            className="flex-row items-center w-full gap-3 p-4 border rounded-2xl border-muted bg-card active:opacity-70">
-                                            <View className="items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-                                                <Icon
-                                                    name="UtensilsCrossed"
-                                                    size={20}
-                                                    color={NAV_THEME[colorScheme].primary}
-                                                />
-                                            </View>
-                                            <View className="flex-1">
-                                                <Text className="text-lg text-foreground">
-                                                    {item.name}
-                                                </Text>
-                                                <Text className="text-sm text-muted-foreground">
-                                                    From{" "}
-                                                    {selectedLocation?.locationName}
-                                                </Text>
-                                            </View>
-                                            <Icon
-                                                name="Plus"
-                                                size={20}
-                                                color={NAV_THEME[colorScheme].primary}
-                                            />
-                                        </Pressable>
-                                    ))}
-                                    {/* Allow creating a new item even when search found similar results */}
-                                    <TouchableOpacity
-                                        onPress={handleCreateNewItem}
-                                        className="flex-row items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-muted">
-                                        <Icon
-                                            name="Plus"
-                                            size={16}
-                                            color={NAV_THEME[colorScheme].primary}
-                                        />
-                                        <Text className="text-sm font-medium text-primary">
-                                            Create "{searchQuery.trim()}"
-                                        </Text>
-                                    </TouchableOpacity>
-                                </>
-                            ) : (
-                                <View className="items-center justify-center py-12">
-                                    <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-primary/10">
-                                        <Icon
-                                            name="SearchX"
-                                            size={28}
-                                            color={NAV_THEME[colorScheme].primary}
-                                        />
-                                    </View>
-                                    <Text className="text-base font-medium text-muted-foreground">
-                                        No items found
+                                    <Text className="text-xs font-medium text-primary">
+                                        Saving
                                     </Text>
-                                    <Text className="mt-1 mb-4 text-sm text-muted-foreground">
-                                        Create a new item to add it to your order
-                                    </Text>
-                                    <TouchableOpacity
-                                        onPress={handleCreateNewItem}
-                                        className="flex-row items-center gap-2 px-6 py-3 rounded-full bg-primary">
-                                        <Icon
-                                            name="Plus"
-                                            size={18}
-                                            color="white"
-                                        />
-                                        <Text className="text-sm font-semibold text-white">
-                                            Create "{searchQuery.trim()}"
-                                        </Text>
-                                    </TouchableOpacity>
                                 </View>
-                            )
+                            ) : null}
+                        </View>
+
+                        {locationEntries === undefined && selectedLocation ? (
+                            <View className="items-center justify-center py-12">
+                                <ActivityIndicator
+                                    size="large"
+                                    color={NAV_THEME[colorScheme].primary}
+                                />
+                            </View>
                         ) : (
-                            <>
-                                {/* Your existing order items */}
-                                {orderUserLocationItems && orderUserLocationItems.length > 0 && (
-                                    <>
-                                        <Text className="text-sm font-semibold tracking-wider uppercase text-muted-foreground">
-                                            Your Items
-                                        </Text>
-                                        {orderUserLocationItems.map(
-                                            (orderUserLocationItem, idx) => (
-                                                <Swipeable
-                                                    key={idx}
-                                                    renderRightActions={renderRightActions(
-                                                        orderUserLocationItem.id,
-                                                        orderUserLocationItem.item?.name ??
-                                                            "this item"
-                                                    )}>
-                                                    <Pressable
-                                                        onPress={() =>
-                                                            handleExistingItemPress(
-                                                                orderUserLocationItem
-                                                            )
-                                                        }
-                                                        className="flex-row items-center w-full gap-3 p-4 border rounded-2xl border-muted bg-card active:opacity-70">
-                                                        <View className="items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-                                                            <Icon
-                                                                name="UtensilsCrossed"
-                                                                size={20}
-                                                                color={NAV_THEME[colorScheme].primary}
-                                                            />
-                                                        </View>
-                                                        <View className="flex-1">
-                                                            <Text className="text-lg text-foreground">
-                                                                {orderUserLocationItem.item?.name}
-                                                            </Text>
-                                                            <Text className="text-sm text-muted-foreground">
-                                                                From{" "}
-                                                                {selectedLocation?.locationName}
-                                                            </Text>
-                                                        </View>
-                                                        <View className="px-3 py-1 rounded-full bg-primary/20">
-                                                            <Text className="text-sm font-semibold text-primary">
-                                                                x{orderUserLocationItem.quantity}
-                                                            </Text>
-                                                        </View>
-                                                    </Pressable>
-                                                </Swipeable>
-                                            )
-                                        )}
-                                    </>
-                                )}
-
-                                {/* All available items at this location */}
-                                {allLocationItems === undefined ? (
-                                    <View className="items-center justify-center py-12">
-                                        <ActivityIndicator
-                                            size="large"
-                                            color={NAV_THEME[colorScheme].primary}
-                                        />
-                                    </View>
-                                ) : allLocationItems.length > 0 ? (
-                                    <>
-                                        <Text className="text-sm font-semibold tracking-wider uppercase text-muted-foreground">
-                                            All Items
-                                        </Text>
-                                        {allLocationItems.map((item, idx) => (
-                                            <Pressable
-                                                key={idx}
-                                                onPress={() =>
-                                                    handleSearchItemPress({
-                                                        name: item.name,
-                                                        id: item._id,
-                                                    })
-                                                }
-                                                className="flex-row items-center w-full gap-3 p-4 border rounded-2xl border-muted bg-card active:opacity-70">
-                                                <View className="items-center justify-center w-12 h-12 rounded-full bg-primary/10">
-                                                    <Icon
-                                                        name="UtensilsCrossed"
-                                                        size={20}
-                                                        color={NAV_THEME[colorScheme].primary}
-                                                    />
-                                                </View>
-                                                <View className="flex-1">
-                                                    <Text className="text-lg text-foreground">
-                                                        {item.name}
-                                                    </Text>
-                                                    <Text className="text-sm text-muted-foreground">
-                                                        From{" "}
-                                                        {selectedLocation?.locationName}
-                                                    </Text>
-                                                </View>
-                                                <Icon
-                                                    name="Plus"
-                                                    size={20}
-                                                    color={NAV_THEME[colorScheme].primary}
-                                                />
-                                            </Pressable>
-                                        ))}
-                                    </>
-                                ) : (
-                                    <View className="items-center justify-center py-12">
-                                        <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-primary/10">
-                                            <Icon
-                                                name="ShoppingBag"
-                                                size={28}
-                                                color={NAV_THEME[colorScheme].primary}
-                                            />
-                                        </View>
-                                        <Text className="text-base font-medium text-foreground">
-                                            No items at this location
-                                        </Text>
-                                        <Text className="mt-1 text-sm text-muted-foreground">
-                                            Search above to add a new item
-                                        </Text>
-                                    </View>
-                                )}
-                            </>
+                            <TextInput
+                                value={currentText}
+                                onChangeText={setCurrentText}
+                                placeholder={"Burger with no onions\nFries\nLarge iced tea"}
+                                placeholderTextColor={NAV_THEME[colorScheme].border}
+                                multiline
+                                autoCapitalize="sentences"
+                                textAlignVertical="top"
+                                className="min-h-[280px] px-4 py-4 text-base border rounded-xl border-muted bg-background text-foreground"
+                                style={{ minHeight: 280 }}
+                            />
                         )}
-                    </ScrollView>
-                </View>
-
-                {/* Footer - Fixed at bottom */}
-                <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
-                    <View className="flex-col gap-2">
-                        <TouchableOpacity
-                            className="w-full py-3 rounded-xl bg-primary"
-                            onPress={handleDone}>
-                            <Text className="text-sm font-semibold text-center text-white">
-                                I'm Done Ordering
-                            </Text>
-                        </TouchableOpacity>
                     </View>
                 </View>
+
+                <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
+                    <TouchableOpacity
+                        className={`w-full py-3 rounded-xl ${
+                            isSaving ? "bg-primary/50" : "bg-primary"
+                        }`}
+                        disabled={isSaving}
+                        onPress={() => void finishOrderingAndLeave()}>
+                        <Text className="text-sm font-semibold text-center text-white">
+                            I'm Done Ordering
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-
-            {/* Add Item Sheet */}
-            <AddItemSheet
-                visible={addSheetVisible}
-                onClose={handleCloseAddSheet}
-                onAdd={handleAddItem}
-                itemName={selectedItem?.name || ""}
-                locationName={selectedLocation?.locationName || ""}
-                itemId={selectedItem?.id || ""}
-                orderUserId={orderUserId as string}
-                orderLocationId={selectedLocation?.orderLocationId || ""}
-                locationId={selectedLocation?.locationId || ""}
-            />
-
-            {/* Edit Item Sheet */}
-            <EditItemSheet
-                visible={editSheetVisible}
-                onClose={handleCloseEditSheet}
-                onUpdate={handleUpdateItem}
-                onDelete={() => {
-                    const id = selectedOrderUserLocationItem?.id;
-                    handleCloseEditSheet();
-                    if (id) handleDeleteItem(id);
-                }}
-                itemName={selectedOrderUserLocationItem?.item?.name || ""}
-                locationName={selectedLocation?.locationName || ""}
-                orderItemId={selectedOrderUserLocationItem?.id || ""}
-                initialQuantity={selectedOrderUserLocationItem?.quantity || 1}
-                initialComments={
-                    selectedOrderUserLocationItem?.comments || null
-                }
-            />
         </>
     );
 }
