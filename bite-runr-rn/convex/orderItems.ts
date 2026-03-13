@@ -1,6 +1,15 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { generateText } from "ai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { z } from "zod";
+import { action, query, mutation } from "./_generated/server";
+import { api } from "./_generated/api";
 import { getUserId } from "./authHelper";
+import {
+  analyzeOrderItemTextGroups,
+  buildOrderSummaryTextSignature,
+  ResolvedOrderItemTextGroup,
+} from "../lib/order-item-grouping";
 
 function normalizeEntryLines(text: string): string[] {
   return text
@@ -12,6 +21,332 @@ function normalizeEntryLines(text: string): string[] {
 function buildParticipantName(firstName?: string, lastName?: string) {
   const name = [firstName, lastName].filter(Boolean).join(" ").trim();
   return name || "Unknown User";
+}
+
+function normalizeLabel(text: string): string {
+  return text.trim().replace(/\s+/g, " ");
+}
+
+type SummaryLine = {
+  id: string;
+  orderUserId: string;
+  text: string;
+  sortOrder: number;
+  userName: string;
+  priceInCents: number | null;
+};
+
+type SummaryLocation = {
+  id: string;
+  orderLocationId: string;
+  name: string;
+};
+
+type LocationSummary = {
+  orderLocationId: string;
+  locationName: string;
+  lines: SummaryLine[];
+  itemCount: number;
+  subtotalInCents: number | null;
+  taxInCents: number | null;
+  totalInCents: number | null;
+};
+
+type OrderSummaryData = {
+  order: {
+    id: string;
+    name: string;
+    comments?: string | null;
+    paused: boolean;
+    createdAt: number;
+  };
+  locations: SummaryLocation[];
+  locationSummaries: LocationSummary[];
+  totalItems: number;
+  totalPeople: number;
+};
+
+type AiOrderSummary = {
+  signature: string;
+  locations: Array<{
+    orderLocationId: string;
+    groups: ResolvedOrderItemTextGroup[];
+  }>;
+};
+
+type AiSeedGroup = {
+  seedGroupId: string;
+  displayName: string;
+  orderItemIds: string[];
+  variants: string[];
+  lineCount: number;
+  peopleCount: number;
+};
+
+type AiLocationSeedSummary = {
+  orderLocationId: string;
+  locationName: string;
+  seedGroups: AiSeedGroup[];
+};
+
+const aiOrderSummarySchema = z.object({
+  locations: z.array(
+    z.object({
+      orderLocationId: z.string().min(1),
+      groups: z.array(
+        z.object({
+          displayName: z.string().min(1),
+          seedGroupIds: z.array(z.string()).min(1),
+        }),
+      ).min(1),
+    }),
+  ).min(1),
+});
+
+const AI_ORDER_SUMMARY_SYSTEM_PROMPT = `You are organizing a pickup summary for a group food order.
+
+Rules:
+- You will receive seed groups for each location. Each seed group already merges exact text variants.
+- Group seed groups that clearly refer to the same pickup item.
+- Merge abbreviations, spacing variants, and common menu shorthand only when they describe the same item.
+- Never merge different sizes, quantities, flavors, toppings, modifiers, combo variants, or customizations.
+- Keep locations separate.
+- Assign every seedGroupId to exactly one group within its location.
+- Return clean, human-readable display labels.
+- Use only the provided orderLocationId and seedGroupIds.`;
+
+function extractJsonObject(text: string): string {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    throw new Error("AI returned an empty summary response");
+  }
+
+  const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fencedMatch?.[1]) {
+    return fencedMatch[1].trim();
+  }
+
+  const firstBrace = trimmed.indexOf("{");
+  const lastBrace = trimmed.lastIndexOf("}");
+  if (firstBrace >= 0 && lastBrace > firstBrace) {
+    return trimmed.slice(firstBrace, lastBrace + 1);
+  }
+
+  throw new Error("AI returned invalid summary JSON");
+}
+
+async function buildOrderSummary(
+  orderId: string,
+  rawSummary: OrderSummaryData | null,
+): Promise<OrderSummaryData | null> {
+  if (!rawSummary || rawSummary.order.id !== orderId) {
+    return null;
+  }
+
+  return rawSummary;
+}
+
+function buildSummarySignature(summary: OrderSummaryData): string {
+  return buildOrderSummaryTextSignature(
+    summary.locationSummaries.map((locationSummary) => ({
+      orderLocationId: locationSummary.orderLocationId,
+      lines: locationSummary.lines,
+    })),
+  );
+}
+
+function buildAiSeedGroupsForLocation(
+  locationSummary: LocationSummary,
+): AiLocationSeedSummary {
+  const analysis = analyzeOrderItemTextGroups(locationSummary.lines);
+
+  return {
+    orderLocationId: locationSummary.orderLocationId,
+    locationName: locationSummary.locationName,
+    seedGroups: analysis.groups.map((group, index) => ({
+      seedGroupId: `g${index + 1}`,
+      displayName: normalizeLabel(group.displayName),
+      orderItemIds: group.items.map((item) => item.id),
+      variants: [...new Set(group.items.map((item) => normalizeLabel(item.text)))].slice(
+        0,
+        3,
+      ),
+      lineCount: group.lineCount,
+      peopleCount: group.peopleCount,
+    })),
+  };
+}
+
+function validateAiGroupsForLocation(
+  locationSummary: AiLocationSeedSummary,
+  groups: Array<{
+    displayName: string;
+    seedGroupIds: string[];
+  }>,
+): ResolvedOrderItemTextGroup[] {
+  if (groups.length === 0) {
+    throw new Error(`AI returned no groups for ${locationSummary.locationName}`);
+  }
+
+  const seedGroupById = new Map(
+    locationSummary.seedGroups.map((group) => [group.seedGroupId, group]),
+  );
+  const seenSeedGroupIds = new Set<string>();
+
+  return groups.map((group) => {
+    const displayName = normalizeLabel(group.displayName);
+    if (!displayName) {
+      throw new Error(
+        `AI returned an empty group label for ${locationSummary.locationName}`,
+      );
+    }
+
+    const uniqueSeedGroupIds = [...new Set(group.seedGroupIds)];
+    if (uniqueSeedGroupIds.length !== group.seedGroupIds.length) {
+      throw new Error(
+        `AI returned duplicate seed groups for ${locationSummary.locationName}`,
+      );
+    }
+
+    if (uniqueSeedGroupIds.length === 0) {
+      throw new Error(
+        `AI returned an empty group for ${locationSummary.locationName}`,
+      );
+    }
+
+    const orderItemIds = uniqueSeedGroupIds.flatMap((seedGroupId) => {
+      const seedGroup = seedGroupById.get(seedGroupId);
+      if (!seedGroup) {
+        throw new Error(
+          `AI returned an unknown seed group for ${locationSummary.locationName}`,
+        );
+      }
+
+      if (seenSeedGroupIds.has(seedGroupId)) {
+        throw new Error(
+          `AI assigned a seed group multiple times for ${locationSummary.locationName}`,
+        );
+      }
+
+      seenSeedGroupIds.add(seedGroupId);
+      return seedGroup.orderItemIds;
+    });
+
+    return {
+      displayName,
+      orderItemIds,
+    };
+  });
+}
+
+async function generateAiOrderSummaryResult(
+  seedSummaries: AiLocationSeedSummary[],
+): Promise<AiOrderSummary["locations"]> {
+  const openrouter = createOpenRouter();
+  const abortController = new AbortController();
+  const timeout = setTimeout(() => abortController.abort(), 12_000);
+  const totalSeedGroups = seedSummaries.reduce(
+    (sum, locationSummary) => sum + locationSummary.seedGroups.length,
+    0,
+  );
+
+  try {
+    const result = await generateText({
+      model: openrouter.chat("qwen/qwen-turbo"),
+      temperature: 0,
+      maxOutputTokens: Math.min(2400, Math.max(500, totalSeedGroups * 60)),
+      abortSignal: abortController.signal,
+      system: AI_ORDER_SUMMARY_SYSTEM_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: `Return JSON only. Do not use markdown fences.
+
+Expected shape:
+{
+  "locations": [
+    {
+      "orderLocationId": "string",
+      "groups": [
+        {
+          "displayName": "string",
+          "seedGroupIds": ["g1", "g2"]
+        }
+      ]
+    }
+  ]
+}
+
+Input:
+${JSON.stringify({
+  locations: seedSummaries.map((locationSummary) => ({
+    orderLocationId: locationSummary.orderLocationId,
+    locationName: locationSummary.locationName,
+    seedGroups: locationSummary.seedGroups.map((group) => ({
+      seedGroupId: group.seedGroupId,
+      displayName: group.displayName,
+      variants: group.variants,
+      lineCount: group.lineCount,
+      peopleCount: group.peopleCount,
+    })),
+  })),
+})}`,
+        },
+      ],
+      providerOptions: {
+        openrouter: { reasoning: { exclude: true } },
+      },
+    });
+    const parsedJson = JSON.parse(extractJsonObject(result.text));
+    const parsedResult = aiOrderSummarySchema.parse(parsedJson);
+
+    const resultByLocationId = new Map(
+      parsedResult.locations.map((location) => [
+        location.orderLocationId,
+        location,
+      ]),
+    );
+
+    if (resultByLocationId.size !== seedSummaries.length) {
+      throw new Error("AI returned an invalid number of summarized locations");
+    }
+
+    return seedSummaries.map((locationSummary) => {
+      const aiLocation = resultByLocationId.get(locationSummary.orderLocationId);
+      if (!aiLocation) {
+        throw new Error(
+          `AI missed location ${locationSummary.locationName}`,
+        );
+      }
+
+      const groups = validateAiGroupsForLocation(
+        locationSummary,
+        aiLocation.groups.map((group) => ({
+          displayName: group.displayName,
+          seedGroupIds: group.seedGroupIds,
+        })),
+      );
+
+      const assignedOrderItemIds = new Set(
+        groups.flatMap((group) => group.orderItemIds),
+      );
+      const expectedOrderItemIds = locationSummary.seedGroups.flatMap(
+        (group) => group.orderItemIds,
+      );
+      if (assignedOrderItemIds.size !== expectedOrderItemIds.length) {
+        throw new Error(
+          `AI missed order items for ${locationSummary.locationName}`,
+        );
+      }
+
+      return {
+        orderLocationId: locationSummary.orderLocationId,
+        groups,
+      };
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export const getForUserLocation = query({
@@ -174,9 +509,41 @@ export const listForOrderUser = query({
   },
 });
 
+export const generateAiOrderSummary = action({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, args): Promise<AiOrderSummary> => {
+    const rawSummary = (await ctx.runQuery(api.orderItems.getOrderSummary, {
+      orderId: args.orderId,
+    })) as OrderSummaryData | null;
+    const summary = await buildOrderSummary(args.orderId, rawSummary);
+
+    if (!summary) {
+      throw new Error("Not authorized");
+    }
+
+    const signature = buildSummarySignature(summary);
+    if (summary.locationSummaries.length === 0) {
+      return {
+        signature,
+        locations: [],
+      };
+    }
+
+    const seedSummaries = summary.locationSummaries.map((locationSummary) =>
+      buildAiSeedGroupsForLocation(locationSummary),
+    );
+    const locations = await generateAiOrderSummaryResult(seedSummaries);
+
+    return {
+      signature,
+      locations,
+    };
+  },
+});
+
 export const getOrderSummary = query({
   args: { orderId: v.id("orders") },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<OrderSummaryData | null> => {
     const userId = await getUserId(ctx);
     if (!userId) return null;
 
