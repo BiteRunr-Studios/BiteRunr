@@ -89,31 +89,25 @@ type AiLocationSeedSummary = {
   seedGroups: AiSeedGroup[];
 };
 
-const aiOrderSummarySchema = z.object({
-  locations: z.array(
+const aiLocationSummarySchema = z.object({
+  groups: z.array(
     z.object({
-      orderLocationId: z.string().min(1),
-      groups: z.array(
-        z.object({
-          displayName: z.string().min(1),
-          seedGroupIds: z.array(z.string()).min(1),
-        }),
-      ).min(1),
+      displayName: z.string().min(1),
+      seedGroupIds: z.array(z.string()).min(1),
     }),
   ).min(1),
 });
 
-const AI_ORDER_SUMMARY_SYSTEM_PROMPT = `You are organizing a pickup summary for a group food order.
+const AI_ORDER_SUMMARY_SYSTEM_PROMPT = `You are organizing a pickup summary for a single pickup location in a group food order.
 
 Rules:
-- You will receive seed groups for each location. Each seed group already merges exact text variants.
+- You will receive seed groups for one location. Each seed group already merges exact text variants.
 - Group seed groups that clearly refer to the same pickup item.
 - Merge abbreviations, spacing variants, and common menu shorthand only when they describe the same item.
 - Never merge different sizes, quantities, flavors, toppings, modifiers, combo variants, or customizations.
-- Keep locations separate.
-- Assign every seedGroupId to exactly one group within its location.
+- Assign every seedGroupId to exactly one group.
 - Return clean, human-readable display labels.
-- Use only the provided orderLocationId and seedGroupIds.`;
+- Use only the provided seedGroupIds.`;
 
 function extractJsonObject(text: string): string {
   const trimmed = text.trim();
@@ -239,22 +233,19 @@ function validateAiGroupsForLocation(
   });
 }
 
-async function generateAiOrderSummaryResult(
-  seedSummaries: AiLocationSeedSummary[],
-): Promise<AiOrderSummary["locations"]> {
+async function generateAiSummaryForLocation(
+  locationSummary: AiLocationSeedSummary,
+): Promise<AiOrderSummary["locations"][number]> {
   const openrouter = createOpenRouter();
   const abortController = new AbortController();
-  const timeout = setTimeout(() => abortController.abort(), 12_000);
-  const totalSeedGroups = seedSummaries.reduce(
-    (sum, locationSummary) => sum + locationSummary.seedGroups.length,
-    0,
-  );
+  const timeout = setTimeout(() => abortController.abort(), 10_000);
+  const totalSeedGroups = locationSummary.seedGroups.length;
 
   try {
     const result = await generateText({
       model: openrouter.chat("qwen/qwen-turbo"),
       temperature: 0,
-      maxOutputTokens: Math.min(2400, Math.max(500, totalSeedGroups * 60)),
+      maxOutputTokens: Math.min(1200, Math.max(250, totalSeedGroups * 50)),
       abortSignal: abortController.signal,
       system: AI_ORDER_SUMMARY_SYSTEM_PROMPT,
       messages: [
@@ -264,31 +255,24 @@ async function generateAiOrderSummaryResult(
 
 Expected shape:
 {
-  "locations": [
+  "groups": [
     {
-      "orderLocationId": "string",
-      "groups": [
-        {
-          "displayName": "string",
-          "seedGroupIds": ["g1", "g2"]
-        }
-      ]
+      "displayName": "string",
+      "seedGroupIds": ["g1", "g2"]
     }
   ]
 }
 
 Input:
 ${JSON.stringify({
-  locations: seedSummaries.map((locationSummary) => ({
-    orderLocationId: locationSummary.orderLocationId,
-    locationName: locationSummary.locationName,
-    seedGroups: locationSummary.seedGroups.map((group) => ({
-      seedGroupId: group.seedGroupId,
-      displayName: group.displayName,
-      variants: group.variants,
-      lineCount: group.lineCount,
-      peopleCount: group.peopleCount,
-    })),
+  orderLocationId: locationSummary.orderLocationId,
+  locationName: locationSummary.locationName,
+  seedGroups: locationSummary.seedGroups.map((group) => ({
+    seedGroupId: group.seedGroupId,
+    displayName: group.displayName,
+    variants: group.variants,
+    lineCount: group.lineCount,
+    peopleCount: group.peopleCount,
   })),
 })}`,
         },
@@ -297,56 +281,55 @@ ${JSON.stringify({
         openrouter: { reasoning: { exclude: true } },
       },
     });
-    const parsedJson = JSON.parse(extractJsonObject(result.text));
-    const parsedResult = aiOrderSummarySchema.parse(parsedJson);
+    let parsedJson: unknown;
+    try {
+      parsedJson = JSON.parse(extractJsonObject(result.text));
+    } catch (error) {
+      throw new Error(
+        `AI returned invalid JSON for ${locationSummary.locationName}: ${
+          error instanceof Error ? error.message : "Unknown parse error"
+        }`,
+      );
+    }
+    const parsedResult = aiLocationSummarySchema.parse(parsedJson);
 
-    const resultByLocationId = new Map(
-      parsedResult.locations.map((location) => [
-        location.orderLocationId,
-        location,
-      ]),
+    const groups = validateAiGroupsForLocation(
+      locationSummary,
+      parsedResult.groups.map((group) => ({
+        displayName: group.displayName,
+        seedGroupIds: group.seedGroupIds,
+      })),
     );
 
-    if (resultByLocationId.size !== seedSummaries.length) {
-      throw new Error("AI returned an invalid number of summarized locations");
+    const assignedOrderItemIds = new Set(
+      groups.flatMap((group) => group.orderItemIds),
+    );
+    const expectedOrderItemIds = locationSummary.seedGroups.flatMap(
+      (group) => group.orderItemIds,
+    );
+    if (assignedOrderItemIds.size !== expectedOrderItemIds.length) {
+      throw new Error(
+        `AI missed order items for ${locationSummary.locationName}`,
+      );
     }
 
-    return seedSummaries.map((locationSummary) => {
-      const aiLocation = resultByLocationId.get(locationSummary.orderLocationId);
-      if (!aiLocation) {
-        throw new Error(
-          `AI missed location ${locationSummary.locationName}`,
-        );
-      }
-
-      const groups = validateAiGroupsForLocation(
-        locationSummary,
-        aiLocation.groups.map((group) => ({
-          displayName: group.displayName,
-          seedGroupIds: group.seedGroupIds,
-        })),
-      );
-
-      const assignedOrderItemIds = new Set(
-        groups.flatMap((group) => group.orderItemIds),
-      );
-      const expectedOrderItemIds = locationSummary.seedGroups.flatMap(
-        (group) => group.orderItemIds,
-      );
-      if (assignedOrderItemIds.size !== expectedOrderItemIds.length) {
-        throw new Error(
-          `AI missed order items for ${locationSummary.locationName}`,
-        );
-      }
-
-      return {
-        orderLocationId: locationSummary.orderLocationId,
-        groups,
-      };
-    });
+    return {
+      orderLocationId: locationSummary.orderLocationId,
+      groups,
+    };
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function generateAiOrderSummaryResult(
+  seedSummaries: AiLocationSeedSummary[],
+): Promise<AiOrderSummary["locations"]> {
+  return Promise.all(
+    seedSummaries.map((locationSummary) =>
+      generateAiSummaryForLocation(locationSummary),
+    ),
+  );
 }
 
 export const getForUserLocation = query({
