@@ -1,36 +1,38 @@
-import type { NavigationAction } from "@react-navigation/routers";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
+    KeyboardAvoidingView,
+    Platform,
     Pressable,
     ScrollView,
     Text,
-    TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation, usePreventRemove } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
+import { Input } from "@/components/common/input";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 
-function normalizeOrderText(text: string) {
-    return text
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .join("\n");
+function normalizeOrderItems(items: string[]) {
+    return items.map((item) => item.trim()).filter(Boolean);
 }
 
-type PendingExit =
-    | { kind: "dismiss" }
-    | { kind: "action"; action: NavigationAction };
+function areOrderItemsEqual(left: string[], right: string[]) {
+    if (left.length !== right.length) {
+        return false;
+    }
+
+    return left.every((item, index) => item === right[index]);
+}
 
 export default function WriteOrder() {
     const { orderUserId, orderId } = useLocalSearchParams<{
@@ -42,13 +44,13 @@ export default function WriteOrder() {
     const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
         null,
     );
-    const [currentText, setCurrentText] = useState("");
-    const [loadedText, setLoadedText] = useState("");
+    const [currentItems, setCurrentItems] = useState<string[]>([]);
+    const [loadedItems, setLoadedItems] = useState<string[]>([]);
+    const [itemInput, setItemInput] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
-    const [preventRemove, setPreventRemove] = useState(true);
-    const [pendingExit, setPendingExit] = useState<PendingExit | null>(null);
     const leaveInFlightRef = useRef(false);
+    const isMountedRef = useRef(true);
 
     const orderLocations = useQuery(
         api.orderLocations.listForOrder,
@@ -65,8 +67,9 @@ export default function WriteOrder() {
         }
 
         return (
-            orderLocations.find((location) => location.id === selectedLocationId) ??
-            orderLocations[0]
+            orderLocations.find(
+                (location) => location.id === selectedLocationId,
+            ) ?? orderLocations[0]
         );
     }, [orderLocations, selectedLocationId]);
 
@@ -81,119 +84,172 @@ export default function WriteOrder() {
     );
 
     useEffect(() => {
-        if (!selectedLocationId && orderLocations && orderLocations.length > 0) {
-            setSelectedLocationId(orderLocations[0].id);
-        }
-    }, [orderLocations, selectedLocationId]);
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     useEffect(() => {
-        if (!selectedLocation) {
-            setCurrentText("");
-            setLoadedText("");
+        if (!selectedLocation || locationEntries === undefined) {
             return;
         }
 
-        if (locationEntries === undefined) {
-            return;
-        }
-
-        const nextText = locationEntries.text ?? "";
-        setCurrentText(nextText);
-        setLoadedText(nextText);
+        const nextItems = normalizeOrderItems(
+            locationEntries.entries.map((entry) => entry.text),
+        );
+        setCurrentItems(nextItems);
+        setLoadedItems(nextItems);
+        setItemInput("");
     }, [selectedLocation?.id, locationEntries]);
 
-    const saveCurrentLocation = useCallback(async () => {
-        if (!selectedLocation || !orderUserId) {
-            return true;
-        }
-
-        const normalizedCurrentText = normalizeOrderText(currentText);
-        const normalizedLoadedText = normalizeOrderText(loadedText);
-        if (normalizedCurrentText === normalizedLoadedText) {
-            return true;
-        }
-
-        setIsSaving(true);
-        setSaveError(null);
-
-        try {
-            await replaceForUserLocation({
-                orderUserId: orderUserId as Id<"orderUsers">,
-                orderLocationId: selectedLocation.id as Id<"orderLocations">,
-                text: currentText,
-            });
-
-            setCurrentText(normalizedCurrentText);
-            setLoadedText(normalizedCurrentText);
-            setIsSaving(false);
-            return true;
-        } catch (error: any) {
-            const message =
-                error?.message ?? "We couldn't save your order. Please try again.";
-            setSaveError(message);
-            Alert.alert("Couldn't save order", message);
-            setIsSaving(false);
-            return false;
-        }
-    }, [
-        currentText,
-        loadedText,
-        orderUserId,
-        replaceForUserLocation,
-        selectedLocation,
-    ]);
-
-    const completeOrder = useCallback(async () => {
-        if (!orderId) {
-            return false;
-        }
-
-        try {
-            await setStatus({
-                orderId: orderId as Id<"orders">,
-                status: "done",
-            });
-            return true;
-        } catch (error: any) {
-            const message =
-                error?.message ??
-                "We couldn't finish your order. Please try again.";
-            setSaveError(message);
-            Alert.alert("Couldn't finish ordering", message);
-            return false;
-        }
-    }, [orderId, setStatus]);
-
-    const requestExit = useCallback(
-        async (nextExit: PendingExit) => {
-            if (leaveInFlightRef.current || isSaving) {
-                return;
+    const saveCurrentLocation = useCallback(
+        async ({ background = false }: { background?: boolean } = {}) => {
+            if (!selectedLocation || !orderUserId) {
+                return true;
             }
 
-            leaveInFlightRef.current = true;
-
-            const didSave = await saveCurrentLocation();
-            if (!didSave) {
-                leaveInFlightRef.current = false;
-                return;
+            const normalizedCurrentItems = normalizeOrderItems([
+                ...currentItems,
+                itemInput,
+            ]);
+            const normalizedLoadedItems = normalizeOrderItems(loadedItems);
+            if (
+                areOrderItemsEqual(
+                    normalizedCurrentItems,
+                    normalizedLoadedItems,
+                )
+            ) {
+                return true;
             }
 
-            const didComplete = await completeOrder();
-            if (!didComplete) {
-                leaveInFlightRef.current = false;
-                return;
+            if (!background && isMountedRef.current) {
+                setIsSaving(true);
+            }
+            if (isMountedRef.current) {
+                setSaveError(null);
             }
 
-            setPendingExit(nextExit);
-            setPreventRemove(false);
-            leaveInFlightRef.current = false;
+            try {
+                await replaceForUserLocation({
+                    orderUserId: orderUserId as Id<"orderUsers">,
+                    orderLocationId:
+                        selectedLocation.id as Id<"orderLocations">,
+                    text: normalizedCurrentItems.join("\n"),
+                });
+
+                if (isMountedRef.current) {
+                    setCurrentItems(normalizedCurrentItems);
+                    setLoadedItems(normalizedCurrentItems);
+                    setItemInput("");
+                }
+                return true;
+            } catch (error: any) {
+                const message =
+                    error?.message ??
+                    "We couldn't save your order. Please try again.";
+                if (isMountedRef.current) {
+                    setSaveError(message);
+                }
+                if (background) {
+                    Toast.show({
+                        type: "error",
+                        text1: "Couldn't save your order",
+                        text2: message,
+                        visibilityTime: 4000,
+                    });
+                } else {
+                    Alert.alert("Couldn't save order", message);
+                }
+                return false;
+            } finally {
+                if (!background && isMountedRef.current) {
+                    setIsSaving(false);
+                }
+            }
         },
-        [completeOrder, isSaving, saveCurrentLocation],
+        [
+            currentItems,
+            itemInput,
+            loadedItems,
+            orderUserId,
+            replaceForUserLocation,
+            selectedLocation,
+        ],
     );
 
+    const completeOrder = useCallback(
+        async ({ background = false }: { background?: boolean } = {}) => {
+            if (!orderId) {
+                return false;
+            }
+
+            try {
+                await setStatus({
+                    orderId: orderId as Id<"orders">,
+                    status: "done",
+                });
+                return true;
+            } catch (error: any) {
+                const message =
+                    error?.message ??
+                    "We couldn't finish your order. Please try again.";
+                if (isMountedRef.current) {
+                    setSaveError(message);
+                }
+                if (background) {
+                    Toast.show({
+                        type: "error",
+                        text1: "Couldn't finish ordering",
+                        text2: message,
+                        visibilityTime: 4000,
+                    });
+                } else {
+                    Alert.alert("Couldn't finish ordering", message);
+                }
+                return false;
+            }
+        },
+        [orderId, setStatus],
+    );
+
+    const queueBackgroundExitPersist = useCallback(() => {
+        if (leaveInFlightRef.current) {
+            return;
+        }
+
+        leaveInFlightRef.current = true;
+
+        void (async () => {
+            const didSave = await saveCurrentLocation({ background: true });
+            if (didSave) {
+                await completeOrder({ background: true });
+            }
+            leaveInFlightRef.current = false;
+        })();
+    }, [completeOrder, saveCurrentLocation]);
+
     const finishOrderingAndLeave = useCallback(() => {
-        void requestExit({ kind: "dismiss" });
-    }, [requestExit]);
+        queueBackgroundExitPersist();
+        router.dismiss();
+    }, [queueBackgroundExitPersist]);
+
+    const addItem = useCallback(() => {
+        const nextItem = itemInput.trim();
+        if (!nextItem) {
+            return;
+        }
+
+        setCurrentItems((prev) => [...prev, nextItem]);
+        setItemInput("");
+        setSaveError(null);
+    }, [itemInput]);
+
+    const removeItem = useCallback((itemIndex: number) => {
+        setCurrentItems((prev) =>
+            prev.filter((_, index) => index !== itemIndex),
+        );
+        setSaveError(null);
+    }, []);
 
     const handleLocationPress = useCallback(
         async (nextLocationId: string) => {
@@ -206,36 +262,23 @@ export default function WriteOrder() {
                 return;
             }
 
-            setCurrentText("");
-            setLoadedText("");
+            setCurrentItems([]);
+            setLoadedItems([]);
+            setItemInput("");
             setSelectedLocationId(nextLocationId);
         },
         [isSaving, saveCurrentLocation, selectedLocation?.id],
     );
 
     useEffect(() => {
-        if (preventRemove || !pendingExit) {
-            return;
-        }
-
-        if (pendingExit.kind === "action") {
-            const action = pendingExit.action;
-            setPendingExit(null);
-            navigation.dispatch(action);
-            return;
-        }
-
-        setPendingExit(null);
-        router.dismiss();
-    }, [navigation, pendingExit, preventRemove]);
-
-    usePreventRemove(preventRemove, ({ data }) => {
-        void requestExit({ kind: "action", action: data.action });
-    });
+        return navigation.addListener("beforeRemove", () => {
+            queueBackgroundExitPersist();
+        });
+    }, [navigation, queueBackgroundExitPersist]);
 
     if (orderLocations === undefined) {
         return (
-            <View className="flex-1 items-center justify-center bg-background">
+            <View className="flex-1 justify-center items-center bg-background">
                 <ActivityIndicator
                     size="large"
                     color={NAV_THEME[colorScheme].primary}
@@ -243,6 +286,8 @@ export default function WriteOrder() {
             </View>
         );
     }
+
+    const itemKeyCounts = new Map<string, number>();
 
     return (
         <>
@@ -254,8 +299,8 @@ export default function WriteOrder() {
                     </Text>
                     <Text className="text-sm text-muted-foreground">
                         {orderLocations.length === 1
-                            ? "Write one item per line."
-                            : `Write one item per line for each of the ${orderLocations.length} pickup locations.`}
+                            ? "Add each item separately, including any modifiers."
+                            : `Add each item under the right pickup location across ${orderLocations.length} pickup spots.`}
                     </Text>
 
                     <ScrollView
@@ -264,7 +309,8 @@ export default function WriteOrder() {
                         className="pt-4"
                         contentContainerStyle={{ gap: 8 }}>
                         {orderLocations.map((location) => {
-                            const isSelected = selectedLocation?.id === location.id;
+                            const isSelected =
+                                selectedLocation?.id === location.id;
 
                             return (
                                 <Pressable
@@ -290,7 +336,7 @@ export default function WriteOrder() {
                 </View>
 
                 {saveError ? (
-                    <View className="flex-row items-center gap-2 px-4 py-3 mx-4 mt-4 rounded-xl bg-destructive/10">
+                    <View className="flex-row gap-2 items-center px-4 py-3 mx-4 mt-4 rounded-xl bg-destructive/10">
                         <Icon name="CircleAlert" size={18} color="#ef4444" />
                         <Text className="flex-1 text-sm text-destructive">
                             {saveError}
@@ -301,68 +347,172 @@ export default function WriteOrder() {
                     </View>
                 ) : null}
 
-                <View className="flex-1 px-4 pt-4">
-                    <View className="p-4 border rounded-2xl border-muted bg-card">
-                        <View className="flex-row items-center gap-2 mb-3">
-                            <View className="items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
-                                <Icon
-                                    name="MapPin"
-                                    size={16}
-                                    color={NAV_THEME[colorScheme].primary}
-                                />
-                            </View>
-                            <View className="flex-1">
-                                <Text className="text-sm font-medium text-muted-foreground">
-                                    {selectedLocation?.name ?? "Pickup Location"}
-                                </Text>
-                                <Text className="text-xs text-muted-foreground">
-                                    One item per line
-                                </Text>
-                            </View>
-                            {isSaving ? (
-                                <View className="flex-row items-center gap-2">
-                                    <ActivityIndicator
-                                        size="small"
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === "ios" ? "padding" : undefined}
+                    className="flex-1">
+                    <ScrollView
+                        className="flex-1"
+                        contentContainerStyle={{
+                            padding: 16,
+                            paddingBottom: 40,
+                        }}
+                        keyboardShouldPersistTaps="handled"
+                        showsVerticalScrollIndicator={false}>
+                        <View className="p-4 rounded-2xl border border-muted bg-card">
+                            <View className="flex-row gap-2 items-center mb-3">
+                                <View className="justify-center items-center w-8 h-8 rounded-lg bg-primary/10">
+                                    <Icon
+                                        name="MapPin"
+                                        size={16}
                                         color={NAV_THEME[colorScheme].primary}
                                     />
-                                    <Text className="text-xs font-medium text-primary">
-                                        Saving
+                                </View>
+                                <View className="flex-1">
+                                    <Text className="text-sm font-semibold text-foreground">
+                                        Add items one at a time
+                                    </Text>
+                                    <Text className="text-xs text-muted-foreground">
+                                        Include sizes, modifiers, or special
+                                        requests in each line.
                                     </Text>
                                 </View>
-                            ) : null}
-                        </View>
-
-                        {locationEntries === undefined && selectedLocation ? (
-                            <View className="items-center justify-center py-12">
-                                <ActivityIndicator
-                                    size="large"
-                                    color={NAV_THEME[colorScheme].primary}
-                                />
+                                {isSaving ? (
+                                    <View className="flex-row gap-2 items-center">
+                                        <ActivityIndicator
+                                            size="small"
+                                            color={
+                                                NAV_THEME[colorScheme].primary
+                                            }
+                                        />
+                                        <Text className="text-xs font-medium text-primary">
+                                            Saving
+                                        </Text>
+                                    </View>
+                                ) : null}
                             </View>
-                        ) : (
-                            <TextInput
-                                value={currentText}
-                                onChangeText={setCurrentText}
-                                placeholder={"Burger with no onions\nFries\nLarge iced tea"}
-                                placeholderTextColor={NAV_THEME[colorScheme].border}
-                                multiline
-                                autoCapitalize="sentences"
-                                textAlignVertical="top"
-                                className="min-h-[280px] px-4 py-4 text-base border rounded-xl border-muted bg-background text-foreground"
-                                style={{ minHeight: 280 }}
-                            />
-                        )}
-                    </View>
-                </View>
+
+                            {locationEntries === undefined &&
+                            selectedLocation ? (
+                                <View className="justify-center items-center py-12">
+                                    <ActivityIndicator
+                                        size="large"
+                                        color={NAV_THEME[colorScheme].primary}
+                                    />
+                                </View>
+                            ) : (
+                                <View className="gap-3">
+                                    <View className="flex-row gap-2 items-center">
+                                        <View className="flex-1">
+                                            <Input
+                                                value={itemInput}
+                                                placeholder="Add an item"
+                                                errorMessage={null}
+                                                inputClassName="flex-1 h-full text-base font-regular text-foreground placeholder:text-muted-foreground"
+                                                onChangeText={(text) => {
+                                                    setItemInput(text);
+                                                    if (saveError) {
+                                                        setSaveError(null);
+                                                    }
+                                                }}
+                                                autoCapitalize="sentences"
+                                                returnKeyType="done"
+                                                blurOnSubmit={false}
+                                                onSubmitEditing={addItem}
+                                            />
+                                        </View>
+                                        <TouchableOpacity
+                                            onPress={addItem}
+                                            disabled={isSaving}
+                                            className={`flex-row items-center justify-center min-w-[96px] h-[55px] px-4 rounded-xl gap-2 ${
+                                                isSaving
+                                                    ? "bg-primary/50"
+                                                    : "bg-primary"
+                                            }`}>
+                                            <Icon
+                                                name="Plus"
+                                                size={18}
+                                                color="white"
+                                            />
+                                            <Text className="text-sm font-semibold text-white">
+                                                Add
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    <Text className="text-xs text-muted-foreground">
+                                        Use one line per item so the summary
+                                        stays easy to scan.
+                                    </Text>
+
+                                    {currentItems.length > 0 ? (
+                                        <View className="gap-2">
+                                            {currentItems.map((item, index) => {
+                                                const occurrence =
+                                                    itemKeyCounts.get(item) ??
+                                                    0;
+                                                itemKeyCounts.set(
+                                                    item,
+                                                    occurrence + 1,
+                                                );
+
+                                                return (
+                                                    <View
+                                                        key={`${selectedLocation?.id ?? "location"}-${item}-${occurrence}`}
+                                                        className="flex-row gap-3 items-center p-3 rounded-xl border border-muted bg-background">
+                                                        <View className="justify-center items-center w-7 h-7 rounded-full bg-primary/10">
+                                                            <Text className="text-xs font-semibold text-primary">
+                                                                {index + 1}
+                                                            </Text>
+                                                        </View>
+                                                        <Text className="flex-1 text-sm text-foreground">
+                                                            {item}
+                                                        </Text>
+                                                        <View className="justify-center items-center self-center">
+                                                            <Pressable
+                                                                onPress={() =>
+                                                                    removeItem(
+                                                                        index,
+                                                                    )
+                                                                }
+                                                                hitSlop={10}
+                                                                accessibilityRole="button"
+                                                                accessibilityLabel="Remove item"
+                                                                className="justify-center items-center w-9 h-9 rounded-full border border-destructive/20 bg-destructive/10 active:opacity-70">
+                                                                <Icon
+                                                                    name="Trash2"
+                                                                    size={16}
+                                                                    color={
+                                                                        NAV_THEME[
+                                                                            colorScheme
+                                                                        ]
+                                                                            .notification
+                                                                    }
+                                                                />
+                                                            </Pressable>
+                                                        </View>
+                                                    </View>
+                                                );
+                                            })}
+                                        </View>
+                                    ) : (
+                                        <View className="justify-center items-center py-6 rounded-xl border border-dashed border-muted">
+                                            <Text className="text-sm text-muted-foreground">
+                                                No items added for this location
+                                                yet
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                            )}
+                        </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
 
                 <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
                     <TouchableOpacity
-                        className={`w-full py-3 rounded-xl ${
-                            isSaving ? "bg-primary/50" : "bg-primary"
-                        }`}
-                        disabled={isSaving}
-                        onPress={() => void finishOrderingAndLeave()}>
-                        <Text className="text-sm font-semibold text-center text-white">
+                        className="items-center justify-center w-full h-[55px] rounded-xl bg-primary"
+                        onPress={finishOrderingAndLeave}>
+                        <Text className="text-base font-semibold text-center text-white">
                             I'm Done Ordering
                         </Text>
                     </TouchableOpacity>

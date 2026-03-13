@@ -30,12 +30,13 @@ import ReAnimated, {
 } from "react-native-reanimated";
 import { NAV_THEME } from "@/lib/constants";
 import Icon from "@/components/common/icon";
-import { useQuery, useMutation } from "convex/react";
+import { useAction, useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { QRCodeModal } from "@/components/qr-code-modal";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
+import { primeAiOrderSummaryRequest } from "@/hooks/useAiOrderSummary";
 
 type ButtonState = "readyToRun" | "enabled" | "disabled";
 
@@ -149,6 +150,7 @@ export default function SpecificOrder() {
     const transferRunner = useMutation(api.orders.transferRunner);
     const leaveOrder = useMutation(api.orderUsers.leaveOrder);
     const removeFromOrder = useMutation(api.orderUsers.removeFromOrder);
+    const generateAiOrderSummary = useAction(api.orderItems.generateAiOrderSummary);
 
     const prevStatusRef = useRef<string | null>(null);
 
@@ -272,6 +274,10 @@ export default function SpecificOrder() {
                     orderId: orderId as Id<"orders">,
                     paused: true,
                 });
+                void primeAiOrderSummaryRequest(
+                    generateAiOrderSummary,
+                    orderId as Id<"orders">,
+                );
                 // Navigate to order summary page
                 router.push(`/order/summary?orderId=${orderId}`);
             } catch (error) {
@@ -1005,11 +1011,15 @@ export default function SpecificOrder() {
                             {data.order.paused && isCreator ? (
                                 <TouchableOpacity
                                     className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
-                                    onPress={() =>
+                                    onPress={() => {
+                                        void primeAiOrderSummaryRequest(
+                                            generateAiOrderSummary,
+                                            orderId as Id<"orders">,
+                                        );
                                         router.push(
                                             `/order/summary?orderId=${orderId}`,
-                                        )
-                                    }>
+                                        );
+                                    }}>
                                     <Icon
                                         name="ClipboardList"
                                         size={20}
