@@ -1,9 +1,9 @@
 import { v } from "convex/values";
-import { generateText } from "ai";
+import { generateObject, generateText } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { z } from "zod";
-import { action, query, mutation } from "./_generated/server";
-import { api } from "./_generated/api";
+import { action, internalQuery, query, mutation } from "./_generated/server";
+import { api, internal } from "./_generated/api";
 import { getUserId } from "./authHelper";
 import {
   analyzeOrderItemTextGroups,
@@ -98,6 +98,27 @@ const aiLocationSummarySchema = z.object({
   ).min(1),
 });
 
+const voiceOrderItemsSchema = z.object({
+  items: z.array(
+    z.string()
+      .trim()
+      .min(1)
+      .max(120)
+      .describe(
+        "One clean food order line item. Preserve size, flavor, modifiers, combo names, sauces, and special instructions.",
+      ),
+  )
+    .max(25)
+    .describe(
+      "The complete updated order after applying spokenUpdate to existingItems. Return existingItems unchanged when spokenUpdate has no actionable order content.",
+    ),
+});
+
+const VOICE_ORDER_ITEMS_MODEL = "google/gemini-2.5-flash-lite";
+const VOICE_ORDER_ITEMS_SCHEMA_NAME = "updated_order_items";
+const VOICE_ORDER_ITEMS_SCHEMA_DESCRIPTION =
+  "Return the complete updated order after applying spokenUpdate to existingItems. The response must be a single object with an items array of clean order line strings. Use exact quantity notation like 2x Burger.";
+
 const AI_ORDER_SUMMARY_SYSTEM_PROMPT = `You are organizing a pickup summary for a single pickup location in a group food order.
 
 Rules:
@@ -108,6 +129,130 @@ Rules:
 - Assign every seedGroupId to exactly one group.
 - Return clean, human-readable display labels.
 - Use only the provided seedGroupIds.`;
+
+const VOICE_ORDER_ITEMS_SYSTEM_PROMPT = `You convert speech transcripts into updated food order line items for a group food order.
+
+Task
+- You will receive pickupLocation, existingItems, and spokenUpdate.
+- Return the complete updated order after applying spokenUpdate to existingItems.
+- Output must match the schema exactly.
+- Use pickupLocation only as menu context. Do not include the pickup location in item labels unless it is explicitly part of the spoken item name.
+
+Default behavior
+- Treat spoken updates as additive by default.
+- Preserve all existing items unless spokenUpdate clearly asks to change or remove something.
+- Keep only actual order items.
+
+Explicit correction phrases
+- Only replace or remove an existing item when correction intent is explicit, such as "actually", "instead", "change", "remove", "cancel", "scratch", or "no".
+- If correction intent is unclear, keep the existing item and treat the new mention as additive.
+
+Merge rules
+- Merge lines only when they clearly refer to the same menu item with the same size, flavor, combo variant, toppings, sauces, and special instructions.
+- Never merge items that differ by size, flavor, combo variant, toppings, sauces, or special instructions.
+- Preserve useful modifiers in the returned label.
+
+Quantity rules
+- Understand additive phrases like "another", "one more", "make that two", "add one more fry", and explicit numeric quantities.
+- When the quantity of an existing matching item increases, return one quantity line such as "2x Fries" instead of near-duplicate lines.
+- Use exact quantity notation like "2x Fries". Do not use formats like "Fries (2)" or "2 Fries".
+- If an existing item already uses quantity notation, increment that line.
+- Never return both "Fries" and "2x Fries" in the same order. Keep only the quantity version.
+- Keep quantity-updated items in their original position.
+
+Noise filtering
+- Ignore greetings, pauses, filler, courtesy phrases, "that's it", "thank you", and other non-order chatter.
+- Do not invent items that were not said.
+
+Output rules
+- Use concise, human-friendly labels.
+- Keep unchanged items in their current order.
+- Append brand-new items at the end.
+- If spokenUpdate has no actionable order content, return existingItems unchanged.
+- Return an empty items array only when existingItems is empty and spokenUpdate has no actionable order content.`;
+
+function normalizeVoiceOrderItems(items: string[]): string[] {
+  return items
+    .map((item) => normalizeLabel(item))
+    .filter((item) => item.length > 0);
+}
+
+function parseQuantityPrefixedItem(item: string): {
+  quantity: number;
+  baseLabel: string;
+  displayLabel: string;
+  hasExplicitQuantity: boolean;
+} {
+  const normalizedItem = normalizeLabel(item);
+  const quantityMatch = normalizedItem.match(/^(\d+)\s*x\s+(.+)$/i);
+
+  if (!quantityMatch) {
+    return {
+      quantity: 1,
+      baseLabel: normalizedItem.toLowerCase(),
+      displayLabel: normalizedItem,
+      hasExplicitQuantity: false,
+    };
+  }
+
+  const quantity = Number(quantityMatch[1]);
+  const displayLabel = normalizeLabel(quantityMatch[2] ?? "");
+
+  return {
+    quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+    baseLabel: displayLabel.toLowerCase(),
+    displayLabel,
+    hasExplicitQuantity: true,
+  };
+}
+
+function reconcileVoiceOrderItems(items: string[]): string[] {
+  const normalizedItems = normalizeVoiceOrderItems(items);
+  const groups = new Map<
+    string,
+    Array<{
+      originalIndex: number;
+      originalItem: string;
+      quantity: number;
+      displayLabel: string;
+      hasExplicitQuantity: boolean;
+    }>
+  >();
+
+  normalizedItems.forEach((item, index) => {
+    const parsed = parseQuantityPrefixedItem(item);
+    const existing = groups.get(parsed.baseLabel) ?? [];
+    existing.push({
+      originalIndex: index,
+      originalItem: item,
+      quantity: parsed.quantity,
+      displayLabel: parsed.displayLabel,
+      hasExplicitQuantity: parsed.hasExplicitQuantity,
+    });
+    groups.set(parsed.baseLabel, existing);
+  });
+
+  return [...groups.values()]
+    .map((entries) => {
+      const quantityEntries = entries.filter((entry) => entry.hasExplicitQuantity);
+      if (quantityEntries.length === 0) {
+        return entries
+          .sort((left, right) => left.originalIndex - right.originalIndex)
+          .map((entry) => entry.originalItem);
+      }
+
+      const bestQuantityEntry = quantityEntries.reduce((best, entry) =>
+        entry.quantity > best.quantity ? entry : best,
+      );
+
+      return [
+        bestQuantityEntry.quantity > 1
+          ? `${bestQuantityEntry.quantity}x ${bestQuantityEntry.displayLabel}`
+          : bestQuantityEntry.displayLabel,
+      ];
+    })
+    .flat();
+}
 
 function extractJsonObject(text: string): string {
   const trimmed = text.trim();
@@ -332,6 +477,56 @@ async function generateAiOrderSummaryResult(
   );
 }
 
+async function parseVoiceOrderItemsWithAi(args: {
+  locationName: string;
+  existingItems: string[];
+  transcript: string;
+}): Promise<string[]> {
+  const openrouter = createOpenRouter();
+  const abortController = new AbortController();
+  const timeout = setTimeout(() => abortController.abort(), 12_000);
+  const userMessage = JSON.stringify(
+    {
+      pickupLocation: args.locationName,
+      existingItems: args.existingItems,
+      spokenUpdate: args.transcript,
+    },
+    null,
+    2,
+  );
+
+  try {
+    const result = await generateObject({
+      model: openrouter.chat(VOICE_ORDER_ITEMS_MODEL, {
+        provider: {
+          require_parameters: true,
+          allow_fallbacks: true,
+        },
+      }),
+      temperature: 0,
+      maxOutputTokens: 800,
+      abortSignal: abortController.signal,
+      schema: voiceOrderItemsSchema,
+      schemaName: VOICE_ORDER_ITEMS_SCHEMA_NAME,
+      schemaDescription: VOICE_ORDER_ITEMS_SCHEMA_DESCRIPTION,
+      system: VOICE_ORDER_ITEMS_SYSTEM_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: userMessage,
+        },
+      ],
+      providerOptions: {
+        openrouter: { reasoning: { exclude: true } },
+      },
+    });
+
+    return reconcileVoiceOrderItems(result.object.items);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export const getForUserLocation = query({
   args: {
     orderUserId: v.id("orderUsers"),
@@ -433,6 +628,120 @@ export const replaceForUserLocation = mutation({
       count: normalizedLines.length,
       text: normalizedLines.join("\n"),
     };
+  },
+});
+
+export const getOrderVoiceParseState = internalQuery({
+  args: {
+    orderId: v.id("orders"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) {
+      return null;
+    }
+
+    const orderUser = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_userId_orderId", (q) =>
+        q.eq("userId", userId).eq("orderId", args.orderId),
+      )
+      .first();
+    if (!orderUser) {
+      return null;
+    }
+
+    const order = await ctx.db.get(args.orderId);
+    if (!order) {
+      return null;
+    }
+
+    return {
+      paused: order.paused,
+    };
+  },
+});
+
+export const parseVoiceOrderItems = action({
+  args: {
+    orderUserId: v.id("orderUsers"),
+    orderLocationId: v.id("orderLocations"),
+    existingItems: v.array(v.string()),
+    transcript: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const transcript = normalizeLabel(args.transcript);
+    if (!transcript) {
+      return {
+        transcript: "",
+        items: [],
+      };
+    }
+
+    const orderLocation = await ctx.runQuery(api.orderLocations.get, {
+      id: args.orderLocationId,
+    });
+    if (!orderLocation) {
+      throw new Error("Invalid order location");
+    }
+
+    const orderUser = await ctx.runQuery(api.orderUsers.getForOrder, {
+      orderId: orderLocation.orderId,
+    });
+    if (!orderUser || orderUser._id !== args.orderUserId) {
+      throw new Error("Not authorized");
+    }
+
+    if (orderLocation.orderId !== orderUser.orderId) {
+      throw new Error("Invalid order location");
+    }
+
+    const orderState = await ctx.runQuery(
+      internal.orderItems.getOrderVoiceParseState,
+      {
+        orderId: orderLocation.orderId,
+      },
+    );
+    if (!orderState) {
+      throw new Error("Order not found");
+    }
+    if (orderState.paused) {
+      throw new Error("Cannot update items - the run has already started");
+    }
+
+    try {
+      const items = await parseVoiceOrderItemsWithAi({
+        locationName: orderLocation.name,
+        existingItems: normalizeVoiceOrderItems(args.existingItems),
+        transcript,
+      });
+
+      return {
+        transcript,
+        items,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+
+      console.error("parseVoiceOrderItems failed", error);
+
+      if (
+        message.includes("aborted") ||
+        message.includes("timed out") ||
+        message.includes("timeout") ||
+        message.includes("fetch") ||
+        message.includes("network") ||
+        message.includes("ECONNREFUSED")
+      ) {
+        throw new Error(
+          "We couldn't process your voice order right now. Please try again.",
+        );
+      }
+
+      throw new Error(
+        "We couldn't understand that order yet. Please try again or type it in.",
+      );
+    }
   },
 });
 
