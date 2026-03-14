@@ -99,8 +99,25 @@ const aiLocationSummarySchema = z.object({
 });
 
 const voiceOrderItemsSchema = z.object({
-  items: z.array(z.string().min(1)).max(25),
+  items: z.array(
+    z.string()
+      .trim()
+      .min(1)
+      .max(120)
+      .describe(
+        "One clean food order line item. Preserve size, flavor, modifiers, combo names, sauces, and special instructions.",
+      ),
+  )
+    .max(25)
+    .describe(
+      "The complete updated order after applying spokenUpdate to existingItems. Return existingItems unchanged when spokenUpdate has no actionable order content.",
+    ),
 });
+
+const VOICE_ORDER_ITEMS_MODEL = "google/gemini-2.5-flash-lite";
+const VOICE_ORDER_ITEMS_SCHEMA_NAME = "updated_order_items";
+const VOICE_ORDER_ITEMS_SCHEMA_DESCRIPTION =
+  "Return the complete updated order after applying spokenUpdate to existingItems. The response must be a single object with an items array of clean order line strings. Use exact quantity notation like 2x Burger.";
 
 const AI_ORDER_SUMMARY_SYSTEM_PROMPT = `You are organizing a pickup summary for a single pickup location in a group food order.
 
@@ -113,23 +130,46 @@ Rules:
 - Return clean, human-readable display labels.
 - Use only the provided seedGroupIds.`;
 
-const VOICE_ORDER_ITEMS_SYSTEM_PROMPT = `You convert spoken food orders into clean order item lines for a group food order.
+const VOICE_ORDER_ITEMS_SYSTEM_PROMPT = `You convert speech transcripts into updated food order line items for a group food order.
 
-Rules:
-- Return JSON only through the schema.
-- You will receive the current order plus a new spoken update.
-- Return the complete updated order after applying the spoken update.
+Task
+- You will receive pickupLocation, existingItems, and spokenUpdate.
+- Return the complete updated order after applying spokenUpdate to existingItems.
+- Output must match the schema exactly.
+- Use pickupLocation only as menu context. Do not include the pickup location in item labels unless it is explicitly part of the spoken item name.
+
+Default behavior
+- Treat spoken updates as additive by default.
+- Preserve all existing items unless spokenUpdate clearly asks to change or remove something.
 - Keep only actual order items.
-- Remove filler speech like greetings, pauses, "that's it", or "thank you".
-- Preserve sizes, flavors, modifiers, combo names, and special instructions.
-- Understand additive phrases like "another", "one more", "make that two", or "add one more fry".
-- If the spoken update increases quantity of an existing matching item, merge it into that line using quantity notation like "2x Fries" instead of creating a near-duplicate line.
-- If an existing line already has quantity notation, increment it.
-- Never return both "Fries" and "2x Fries" in the same updated order. The quantity line should replace the single-item line.
-- Only merge lines when they clearly refer to the same menu item and same modifiers. Keep different sizes, flavors, toppings, or customizations separate.
-- Use concise, human-friendly labels.
+
+Explicit correction phrases
+- Only replace or remove an existing item when correction intent is explicit, such as "actually", "instead", "change", "remove", "cancel", "scratch", or "no".
+- If correction intent is unclear, keep the existing item and treat the new mention as additive.
+
+Merge rules
+- Merge lines only when they clearly refer to the same menu item with the same size, flavor, combo variant, toppings, sauces, and special instructions.
+- Never merge items that differ by size, flavor, combo variant, toppings, sauces, or special instructions.
+- Preserve useful modifiers in the returned label.
+
+Quantity rules
+- Understand additive phrases like "another", "one more", "make that two", "add one more fry", and explicit numeric quantities.
+- When the quantity of an existing matching item increases, return one quantity line such as "2x Fries" instead of near-duplicate lines.
+- Use exact quantity notation like "2x Fries". Do not use formats like "Fries (2)" or "2 Fries".
+- If an existing item already uses quantity notation, increment that line.
+- Never return both "Fries" and "2x Fries" in the same order. Keep only the quantity version.
+- Keep quantity-updated items in their original position.
+
+Noise filtering
+- Ignore greetings, pauses, filler, courtesy phrases, "that's it", "thank you", and other non-order chatter.
 - Do not invent items that were not said.
-- If no food order can be determined, return an empty items array.`;
+
+Output rules
+- Use concise, human-friendly labels.
+- Keep unchanged items in their current order.
+- Append brand-new items at the end.
+- If spokenUpdate has no actionable order content, return existingItems unchanged.
+- Return an empty items array only when existingItems is empty and spokenUpdate has no actionable order content.`;
 
 function normalizeVoiceOrderItems(items: string[]): string[] {
   return items
@@ -445,23 +485,35 @@ async function parseVoiceOrderItemsWithAi(args: {
   const openrouter = createOpenRouter();
   const abortController = new AbortController();
   const timeout = setTimeout(() => abortController.abort(), 12_000);
+  const userMessage = JSON.stringify(
+    {
+      pickupLocation: args.locationName,
+      existingItems: args.existingItems,
+      spokenUpdate: args.transcript,
+    },
+    null,
+    2,
+  );
 
   try {
     const result = await generateObject({
-      model: openrouter.chat("qwen/qwen-turbo"),
+      model: openrouter.chat(VOICE_ORDER_ITEMS_MODEL, {
+        provider: {
+          require_parameters: true,
+          allow_fallbacks: true,
+        },
+      }),
       temperature: 0,
       maxOutputTokens: 800,
       abortSignal: abortController.signal,
       schema: voiceOrderItemsSchema,
+      schemaName: VOICE_ORDER_ITEMS_SCHEMA_NAME,
+      schemaDescription: VOICE_ORDER_ITEMS_SCHEMA_DESCRIPTION,
       system: VOICE_ORDER_ITEMS_SYSTEM_PROMPT,
       messages: [
         {
           role: "user",
-          content: `Return the full updated order after applying this spoken update.
-
-Pickup location: ${args.locationName}
-Current order items: ${JSON.stringify(args.existingItems)}
-Spoken update: ${args.transcript}`,
+          content: userMessage,
         },
       ],
       providerOptions: {
@@ -670,6 +722,8 @@ export const parseVoiceOrderItems = action({
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : "";
+
+      console.error("parseVoiceOrderItems failed", error);
 
       if (
         message.includes("aborted") ||

@@ -53,6 +53,35 @@ function normalizeVoiceTranscript(text: string) {
     return text.replace(/\s+/g, " ").trim();
 }
 
+function mergeVoiceTranscriptSegments(committed: string, incoming: string) {
+    const normalizedCommitted = normalizeVoiceTranscript(committed);
+    const normalizedIncoming = normalizeVoiceTranscript(incoming);
+
+    if (!normalizedIncoming) {
+        return normalizedCommitted;
+    }
+
+    if (!normalizedCommitted) {
+        return normalizedIncoming;
+    }
+
+    if (normalizedIncoming === normalizedCommitted) {
+        return normalizedCommitted;
+    }
+
+    if (normalizedIncoming.startsWith(normalizedCommitted)) {
+        return normalizedIncoming;
+    }
+
+    if (normalizedCommitted.startsWith(normalizedIncoming)) {
+        return normalizedCommitted;
+    }
+
+    return normalizeVoiceTranscript(
+        `${normalizedCommitted} ${normalizedIncoming}`,
+    );
+}
+
 function extractSpeechTranscript(event: any) {
     const transcripts: string[] = [];
 
@@ -229,11 +258,18 @@ function VoicePulseOrb({
                 style={coreStyle}
                 className="justify-center items-center w-[92px] h-[92px] rounded-full border border-primary/20 bg-primary">
                 <View className="justify-center items-center w-[72px] h-[72px] rounded-full bg-white/15">
-                    <Icon
-                        name={isProcessingVoice ? "Sparkles" : "Mic"}
-                        size={30}
-                        color="white"
-                    />
+                    {isListening ? (
+                        <VoiceBars
+                            active={isListening || isProcessingVoice}
+                            colorScheme={colorScheme}
+                        />
+                    ) : (
+                        <Icon
+                            name={isProcessingVoice ? "Sparkles" : "Mic"}
+                            size={30}
+                            color="white"
+                        />
+                    )}
                 </View>
             </Animated.View>
             <View className="absolute top-5 right-10 px-2 py-1 rounded-full bg-white/10">
@@ -350,7 +386,8 @@ export default function WriteOrder() {
     const [saveError, setSaveError] = useState<string | null>(null);
     const [voiceModalVisible, setVoiceModalVisible] = useState(false);
     const [voiceTranscript, setVoiceTranscript] = useState("");
-    const [displayedVoiceTranscript, setDisplayedVoiceTranscript] = useState("");
+    const [displayedVoiceTranscript, setDisplayedVoiceTranscript] =
+        useState("");
     const [voiceError, setVoiceError] = useState<string | null>(null);
     const [isListening, setIsListening] = useState(false);
     const [isProcessingVoice, setIsProcessingVoice] = useState(false);
@@ -359,6 +396,7 @@ export default function WriteOrder() {
     const shouldProcessVoiceResultRef = useRef(false);
     const hasProcessedVoiceResultRef = useRef(false);
     const voiceTranscriptRef = useRef("");
+    const committedVoiceTranscriptRef = useRef("");
 
     const orderLocations = useQuery(
         api.orderLocations.listForOrder,
@@ -506,7 +544,8 @@ export default function WriteOrder() {
             try {
                 const result = await parseVoiceOrderItems({
                     orderUserId: orderUserId as Id<"orderUsers">,
-                    orderLocationId: selectedLocation.id as Id<"orderLocations">,
+                    orderLocationId:
+                        selectedLocation.id as Id<"orderLocations">,
                     existingItems: currentItems,
                     transcript: normalizedTranscript,
                 });
@@ -560,16 +599,36 @@ export default function WriteOrder() {
 
     useSpeechRecognitionEvent("result", (event: any) => {
         const transcript = extractSpeechTranscript(event);
-        if (transcript) {
-            voiceTranscriptRef.current = transcript;
-            setVoiceTranscript(transcript);
+        if (!transcript) {
+            return;
         }
+
+        if (event?.isFinal) {
+            const nextCommittedTranscript = mergeVoiceTranscriptSegments(
+                committedVoiceTranscriptRef.current,
+                transcript,
+            );
+
+            committedVoiceTranscriptRef.current = nextCommittedTranscript;
+            voiceTranscriptRef.current = nextCommittedTranscript;
+            setVoiceTranscript(nextCommittedTranscript);
+            return;
+        }
+
+        const nextTranscript = mergeVoiceTranscriptSegments(
+            committedVoiceTranscriptRef.current,
+            transcript,
+        );
+
+        voiceTranscriptRef.current = nextTranscript;
+        setVoiceTranscript(nextTranscript);
     });
 
     useSpeechRecognitionEvent("error", (event: any) => {
         setIsListening(false);
         shouldProcessVoiceResultRef.current = false;
         hasProcessedVoiceResultRef.current = true;
+        committedVoiceTranscriptRef.current = "";
         setIsProcessingVoice(false);
         setVoiceError(getSpeechErrorMessage(event));
     });
@@ -772,6 +831,7 @@ export default function WriteOrder() {
         setVoiceTranscript("");
         setDisplayedVoiceTranscript("");
         voiceTranscriptRef.current = "";
+        committedVoiceTranscriptRef.current = "";
         setVoiceError(null);
         setIsProcessingVoice(false);
         shouldProcessVoiceResultRef.current = true;
@@ -792,12 +852,18 @@ export default function WriteOrder() {
                 lang: "en-US",
                 interimResults: true,
                 addsPunctuation: true,
-                continuous: false,
+                continuous: true,
                 contextualStrings: currentItems.slice(0, 10),
+                androidIntentOptions: {
+                    EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: 60_000,
+                    EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS:
+                        15_000,
+                },
             });
         } catch (error) {
             shouldProcessVoiceResultRef.current = false;
             hasProcessedVoiceResultRef.current = true;
+            committedVoiceTranscriptRef.current = "";
             setIsListening(false);
             setIsProcessingVoice(false);
             setVoiceError(getSpeechErrorMessage(error));
@@ -820,6 +886,7 @@ export default function WriteOrder() {
         setVoiceTranscript("");
         setDisplayedVoiceTranscript("");
         voiceTranscriptRef.current = "";
+        committedVoiceTranscriptRef.current = "";
         setVoiceError(null);
         setIsProcessingVoice(false);
         setIsListening(false);
@@ -858,56 +925,30 @@ export default function WriteOrder() {
     return (
         <>
             <SafeAreaView edges={["top"]} />
+            {/* Header */}
+            <View className="flex-row justify-between items-center px-4 py-3 border-b border-border">
+                <Pressable
+                    onPress={() => router.back()}
+                    className="p-2 -ml-2 rounded-full active:opacity-70">
+                    <Icon
+                        name="ChevronLeft"
+                        size={24}
+                        color={NAV_THEME[colorScheme].primary}
+                    />
+                </Pressable>
+                <Text
+                    numberOfLines={1}
+                    className="flex-1 mr-2 ml-2 text-xl font-semibold text-foreground">
+                    Write Your Order
+                </Text>
+            </View>
             <View className="flex-1 bg-background">
-                <View className="pt-4 pb-4">
-                    <View className="overflow-hidden border-y border-primary/15 bg-card">
-                        <View className="px-4 pt-4 pb-3 bg-card">
-                            <View className="flex-row items-start justify-between">
-                                <View className="flex-1 pr-3">
-                                    <Text className="text-2xl font-bold text-foreground">
-                                        Write Your Order
-                                    </Text>
-                                    <Text className="mt-2 text-sm leading-5 text-muted-foreground">
-                                        {headerDescription}
-                                    </Text>
-                                </View>
-                                <View className="justify-center items-center w-12 h-12 rounded-2xl bg-primary/10">
-                                    <Icon
-                                        name="NotebookPen"
-                                        size={20}
-                                        color={NAV_THEME[colorScheme].primary}
-                                    />
-                                </View>
-                            </View>
-
-                        </View>
-
-                        <View className="px-4 py-4">
-                            <View className="flex-row items-center justify-between mb-3">
-                                <View>
-                                    <Text className="text-xs font-semibold tracking-[1px] uppercase text-primary">
-                                        Pickup spots
-                                    </Text>
-                                    <Text className="mt-1 text-sm text-muted-foreground">
-                                        Tap a location to add the right items there.
-                                    </Text>
-                                </View>
-                                <View className="flex-row gap-2 items-center px-3 py-2 rounded-full bg-primary/10">
-                                    <Icon
-                                        name="Route"
-                                        size={14}
-                                        color={NAV_THEME[colorScheme].primary}
-                                    />
-                                    <Text className="text-xs font-semibold text-primary">
-                                        {totalLocations} total
-                                    </Text>
-                                </View>
-                            </View>
-
+                <View className="pt-4">
+                    <View className="overflow-hidden">
+                        <View className="px-4">
                             <ScrollView
                                 horizontal
                                 showsHorizontalScrollIndicator={false}
-                                className="pt-1"
                                 contentContainerStyle={{ gap: 8 }}>
                                 {orderLocations.map((location) => {
                                     const isSelected =
@@ -967,30 +1008,14 @@ export default function WriteOrder() {
                         showsVerticalScrollIndicator={false}>
                         <View className="p-4 rounded-[28px] border border-muted bg-card">
                             <View className="flex-row gap-2 items-center mb-3">
-                                <View className="justify-center items-center w-10 h-10 rounded-2xl bg-primary/10">
-                                    <Icon
-                                        name="MapPin"
-                                        size={18}
-                                        color={NAV_THEME[colorScheme].primary}
-                                    />
-                                </View>
                                 <View className="flex-1">
                                     <View className="flex-row flex-wrap gap-2 items-center">
                                         <Text className="text-base font-semibold text-foreground">
                                             Add items manually or by voice
                                         </Text>
-                                        <View className="px-2.5 py-1 rounded-full bg-primary/10">
-                                            <Text className="text-[10px] font-semibold tracking-[1px] uppercase text-primary">
-                                                {selectedLocationName}
-                                            </Text>
-                                        </View>
                                     </View>
-                                    <Text className="mt-1 text-xs text-muted-foreground">
-                                        Speak naturally or type each item with
-                                        sizes, modifiers, and special requests.
-                                    </Text>
                                 </View>
-                                {isSaving ? (
+                                {isSaving ?? (
                                     <View className="flex-row gap-2 items-center px-3 py-2 rounded-full bg-primary/10">
                                         <ActivityIndicator
                                             size="small"
@@ -1002,23 +1027,11 @@ export default function WriteOrder() {
                                             Saving
                                         </Text>
                                     </View>
-                                ) : (
-                                    <View className="flex-row gap-2 items-center px-3 py-2 rounded-full bg-primary/10">
-                                        <Icon
-                                            name="Sparkles"
-                                            size={14}
-                                            color={
-                                                NAV_THEME[colorScheme].primary
-                                            }
-                                        />
-                                        <Text className="text-xs font-medium text-primary">
-                                            AI enabled
-                                        </Text>
-                                    </View>
                                 )}
                             </View>
 
-                            {locationEntries === undefined && selectedLocation ? (
+                            {locationEntries === undefined &&
+                            selectedLocation ? (
                                 <View className="justify-center items-center py-12">
                                     <ActivityIndicator
                                         size="large"
@@ -1094,12 +1107,15 @@ export default function WriteOrder() {
 
                                     {currentItems.length > 0 ? (
                                         <View className="gap-3 pt-1">
-                                            <View className="flex-row items-center justify-between">
+                                            <View className="flex-row justify-between items-center">
                                                 <Text className="text-xs font-semibold tracking-[1px] uppercase text-primary">
                                                     Current order
                                                 </Text>
                                                 <Text className="text-xs text-muted-foreground">
-                                                    {totalItems} {totalItems === 1 ? "item" : "items"}
+                                                    {totalItems}{" "}
+                                                    {totalItems === 1
+                                                        ? "item"
+                                                        : "items"}
                                                 </Text>
                                             </View>
                                             {currentItems.map((item, index) => {
@@ -1168,9 +1184,9 @@ export default function WriteOrder() {
                                                 Nothing added yet
                                             </Text>
                                             <Text className="mt-2 text-sm text-center text-muted-foreground">
-                                                Type your first item or use voice
-                                                to have AI build the list for{" "}
-                                                {selectedLocationName}.
+                                                Type your first item or use
+                                                voice to have AI build the list
+                                                for {selectedLocationName}.
                                             </Text>
                                         </View>
                                     )}
@@ -1198,7 +1214,7 @@ export default function WriteOrder() {
                     <View className="flex-1 justify-center px-6 bg-black/50">
                         <View className="overflow-hidden rounded-[28px] border border-border bg-card">
                             <View className="px-5 pt-5 pb-4 bg-primary">
-                                <View className="flex-row items-start justify-between">
+                                <View className="flex-row justify-between items-start">
                                     <View className="flex-1">
                                         <View className="self-start px-3 py-1 mb-3 rounded-full bg-white/15">
                                             <Text className="text-[11px] font-semibold tracking-[1.2px] uppercase text-white">
@@ -1238,33 +1254,8 @@ export default function WriteOrder() {
                             </View>
 
                             <View className="p-5">
-                                <View className="flex-row items-center justify-between px-4 py-3 rounded-2xl bg-primary/5">
-                                    <View>
-                                        <Text className="text-xs font-semibold tracking-[1px] uppercase text-primary">
-                                            {isListening
-                                                ? "Realtime capture"
-                                                : isProcessingVoice
-                                                  ? "AI interpretation"
-                                                  : "Voice ready"}
-                                        </Text>
-                                        <Text className="mt-1 text-sm text-muted-foreground">
-                                            {isListening
-                                                ? "Speak your full order in one sentence."
-                                                : isProcessingVoice
-                                                  ? "Matching items and splitting lines."
-                                                : "Try: two burgers, large fry, and a Diet Coke."}
-                                        </Text>
-                                    </View>
-                                    <VoiceBars
-                                        active={
-                                            isListening || isProcessingVoice
-                                        }
-                                        colorScheme={colorScheme}
-                                    />
-                                </View>
-
                                 <View className="p-4 mt-4 rounded-2xl border border-primary/10 bg-background">
-                                    <View className="flex-row items-center gap-2 mb-3">
+                                    <View className="flex-row gap-2 items-center mb-3">
                                         <Icon
                                             name={
                                                 isProcessingVoice
@@ -1353,10 +1344,7 @@ export default function WriteOrder() {
                                                     : "bg-primary"
                                             }`}>
                                             {isProcessingVoice ? (
-                                                <Flow
-                                                    size={22}
-                                                    color="white"
-                                                />
+                                                <Flow size={22} color="white" />
                                             ) : (
                                                 <Icon
                                                     name="Mic"
