@@ -2,8 +2,8 @@ import { v } from "convex/values";
 import { generateObject, generateText } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { z } from "zod";
-import { action, query, mutation } from "./_generated/server";
-import { api } from "./_generated/api";
+import { action, internalQuery, query, mutation } from "./_generated/server";
+import { api, internal } from "./_generated/api";
 import { getUserId } from "./authHelper";
 import {
   analyzeOrderItemTextGroups,
@@ -579,6 +579,37 @@ export const replaceForUserLocation = mutation({
   },
 });
 
+export const getOrderVoiceParseState = internalQuery({
+  args: {
+    orderId: v.id("orders"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) {
+      return null;
+    }
+
+    const orderUser = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_userId_orderId", (q) =>
+        q.eq("userId", userId).eq("orderId", args.orderId),
+      )
+      .first();
+    if (!orderUser) {
+      return null;
+    }
+
+    const order = await ctx.db.get(args.orderId);
+    if (!order) {
+      return null;
+    }
+
+    return {
+      paused: order.paused,
+    };
+  },
+});
+
 export const parseVoiceOrderItems = action({
   args: {
     orderUserId: v.id("orderUsers"),
@@ -611,6 +642,19 @@ export const parseVoiceOrderItems = action({
 
     if (orderLocation.orderId !== orderUser.orderId) {
       throw new Error("Invalid order location");
+    }
+
+    const orderState = await ctx.runQuery(
+      internal.orderItems.getOrderVoiceParseState,
+      {
+        orderId: orderLocation.orderId,
+      },
+    );
+    if (!orderState) {
+      throw new Error("Order not found");
+    }
+    if (orderState.paused) {
+      throw new Error("Cannot update items - the run has already started");
     }
 
     try {

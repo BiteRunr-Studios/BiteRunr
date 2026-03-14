@@ -561,6 +561,7 @@ export default function WriteOrder() {
     useSpeechRecognitionEvent("result", (event: any) => {
         const transcript = extractSpeechTranscript(event);
         if (transcript) {
+            voiceTranscriptRef.current = transcript;
             setVoiceTranscript(transcript);
         }
     });
