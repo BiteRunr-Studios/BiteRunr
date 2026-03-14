@@ -114,6 +114,15 @@ const config: ExpoConfig = {
       },
     ],
     [
+      "expo-speech-recognition",
+      {
+        microphonePermission:
+          "Allow $(PRODUCT_NAME) to access your microphone so you can speak your order items.",
+        speechRecognitionPermission:
+          "Allow $(PRODUCT_NAME) to recognize your speech so you can add order items by voice.",
+      },
+    ],
+    [
       "@stripe/stripe-react-native",
       {
         merchantIdentifier: "merchant.com.RunrStudios.BiteRunrRN",
