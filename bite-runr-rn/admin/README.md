@@ -1,3 +1,3 @@
-# TanStack Start + shadcn/ui
+# BiteRunr Admin
 
-This is a template for a new TanStack Start project with React, TypeScript, and shadcn/ui.
+This workspace only serves the public BiteRunr privacy page.

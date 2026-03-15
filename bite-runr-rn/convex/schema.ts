@@ -66,7 +66,6 @@ export default defineSchema({
         friendId: v.id("users"),
     })
         .index("by_userId", ["userId"])
-        .index("by_friendId", ["friendId"])
         .index("by_userId_friendId", ["userId", "friendId"]),
 
     // Friend requests (pending only - rows are deleted on accept/decline)
@@ -78,23 +77,6 @@ export default defineSchema({
         .index("by_receiverId", ["receiverId"])
         .index("by_senderId_receiverId", ["senderId", "receiverId"]),
 
-    // Locations (restaurants, etc.)
-    locations: defineTable({
-        name: v.string(),
-    }).index("by_name", ["name"]),
-
-    // Menu items at locations
-    items: defineTable({
-        name: v.string(),
-        locationId: v.id("locations"),
-    })
-        .index("by_locationId", ["locationId"])
-        .index("by_name_locationId", ["name", "locationId"])
-        .searchIndex("search_name", {
-            searchField: "name",
-            filterFields: ["locationId"],
-        }),
-
     // Orders
     orders: defineTable({
         name: v.string(),
@@ -103,10 +85,7 @@ export default defineSchema({
         status: orderStatusValidator,
         paused: v.boolean(),
         pausedAiSummary: v.optional(pausedAiSummaryValidator),
-    })
-        .index("by_creatorId", ["creatorId"])
-        .index("by_status", ["status"])
-        .index("by_creatorId_status", ["creatorId", "status"]),
+    }),
 
     // Order users (participants in an order)
     orderUsers: defineTable({
@@ -118,8 +97,7 @@ export default defineSchema({
     })
         .index("by_userId", ["userId"])
         .index("by_orderId", ["orderId"])
-        .index("by_userId_orderId", ["userId", "orderId"])
-        .index("by_orderId_settlementStatus", ["orderId", "settlementStatus"]),
+        .index("by_userId_orderId", ["userId", "orderId"]),
 
     // Order locations (which locations are part of an order)
     orderLocations: defineTable({
@@ -174,11 +152,8 @@ export default defineSchema({
         createdAt: v.number(),
         updatedAt: v.number(),
     })
-        .index("by_buyerId", ["buyerId"])
-        .index("by_sellerId", ["sellerId"])
         .index("by_stripeSessionId", ["stripeSessionId"])
         .index("by_orderUserId", ["orderUserId"])
-        .index("by_status", ["status"])
         .index("by_stripePaymentIntentId", ["stripePaymentIntentId"]),
 
     // Device push token ownership (tracks which user owns which device token)

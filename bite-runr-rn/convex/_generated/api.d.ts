@@ -8,15 +8,12 @@
  * @module
  */
 
-import type * as admin from "../admin.js";
 import type * as auth from "../auth.js";
 import type * as authHelper from "../authHelper.js";
 import type * as fees from "../fees.js";
 import type * as friends from "../friends.js";
 import type * as http from "../http.js";
-import type * as items from "../items.js";
 import type * as lib_utils from "../lib/utils.js";
-import type * as locations from "../locations.js";
 import type * as orderInvites from "../orderInvites.js";
 import type * as orderItems from "../orderItems.js";
 import type * as orderLocations from "../orderLocations.js";
@@ -26,8 +23,6 @@ import type * as payments from "../payments.js";
 import type * as pushNotifications from "../pushNotifications.js";
 import type * as receiptScanning from "../receiptScanning.js";
 import type * as stripeConnect from "../stripeConnect.js";
-import type * as typesense from "../typesense.js";
-import type * as typesenseHelpers from "../typesenseHelpers.js";
 import type * as users from "../users.js";
 
 import type {
@@ -37,15 +32,12 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  admin: typeof admin;
   auth: typeof auth;
   authHelper: typeof authHelper;
   fees: typeof fees;
   friends: typeof friends;
   http: typeof http;
-  items: typeof items;
   "lib/utils": typeof lib_utils;
-  locations: typeof locations;
   orderInvites: typeof orderInvites;
   orderItems: typeof orderItems;
   orderLocations: typeof orderLocations;
@@ -55,8 +47,6 @@ declare const fullApi: ApiFromModules<{
   pushNotifications: typeof pushNotifications;
   receiptScanning: typeof receiptScanning;
   stripeConnect: typeof stripeConnect;
-  typesense: typeof typesense;
-  typesenseHelpers: typeof typesenseHelpers;
   users: typeof users;
 }>;
 

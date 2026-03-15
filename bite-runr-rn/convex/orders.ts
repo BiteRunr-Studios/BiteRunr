@@ -74,41 +74,6 @@ async function countLinesForOrder(
   return totalLines;
 }
 
-export const list = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getUserId(ctx);
-    if (!userId) return [];
-
-    const orderUsers = await ctx.db
-      .query("orderUsers")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .collect();
-
-    const orders = await Promise.all(
-      orderUsers.map(async (orderUser) => {
-        const order = await ctx.db.get(orderUser.orderId);
-        if (!order) return null;
-
-        const creator = await ctx.db.get(order.creatorId);
-        return {
-          ...order,
-          creator: creator
-            ? {
-                id: creator._id,
-                firstName: creator.firstName,
-                lastName: creator.lastName,
-                avatarUrl: creator.avatarUrl,
-              }
-            : null,
-        };
-      }),
-    );
-
-    return orders.filter((order) => order !== null);
-  },
-});
-
 export const getWithDetails = query({
   args: {},
   handler: async (ctx) => {
@@ -478,23 +443,6 @@ export const update = mutation({
   },
 });
 
-export const cancel = mutation({
-  args: { orderId: v.id("orders") },
-  handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
-    const order = await ctx.db.get(args.orderId);
-    if (!order) throw new Error("Order not found");
-    if (order.creatorId !== userId) {
-      throw new Error("Not authorized");
-    }
-
-    await ctx.db.patch(args.orderId, { status: "cancelled" });
-    return true;
-  },
-});
-
 export const getActiveOrders = query({
   args: {},
   handler: async (ctx) => {
@@ -612,74 +560,6 @@ export const getPastOrders = query({
       .filter((result) => result !== null)
       .sort((left, right) => right.createdAt - left.createdAt)
       .slice(0, limit);
-  },
-});
-
-export const getFrequentItems = query({
-  args: { limit: v.optional(v.number()) },
-  handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) return [];
-
-    const limit = args.limit ?? 6;
-    const userOrderUsers = await ctx.db
-      .query("orderUsers")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .collect();
-
-    const lineCounts = new Map<
-      string,
-      {
-        id: string;
-        text: string;
-        locationName: string;
-        totalOrdered: number;
-        lastOrderedAt: number;
-      }
-    >();
-
-    for (const userOrderUser of userOrderUsers) {
-      const orderItems = await ctx.db
-        .query("orderItems")
-        .withIndex("by_orderUserId", (q) =>
-          q.eq("orderUserId", userOrderUser._id),
-        )
-        .collect();
-
-      for (const orderItem of orderItems) {
-        const orderLocation = await ctx.db.get(orderItem.orderLocationId);
-        const locationName = orderLocation?.name ?? "Unknown";
-        const dedupeKey = `${locationName.toLowerCase()}::${orderItem.text.toLowerCase()}`;
-        const existing = lineCounts.get(dedupeKey);
-
-        if (existing) {
-          existing.totalOrdered += 1;
-          existing.lastOrderedAt = Math.max(
-            existing.lastOrderedAt,
-            orderItem._creationTime,
-          );
-        } else {
-          lineCounts.set(dedupeKey, {
-            id: orderItem._id,
-            text: orderItem.text,
-            locationName,
-            totalOrdered: 1,
-            lastOrderedAt: orderItem._creationTime,
-          });
-        }
-      }
-    }
-
-    return [...lineCounts.values()]
-      .sort((left, right) => right.totalOrdered - left.totalOrdered)
-      .slice(0, limit)
-      .map((line) => ({
-        id: line.id,
-        name: line.text,
-        locationName: line.locationName,
-        totalOrdered: line.totalOrdered,
-        lastOrderedAt: line.lastOrderedAt,
-      }));
   },
 });
 
