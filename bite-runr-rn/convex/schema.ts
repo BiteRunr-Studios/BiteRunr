@@ -28,6 +28,22 @@ export const stripePaymentStatusValidator = v.union(
     v.literal("expired"),
 );
 
+const pausedAiSummaryValidator = v.object({
+    signature: v.string(),
+    generatedAt: v.number(),
+    locations: v.array(
+        v.object({
+            orderLocationId: v.id("orderLocations"),
+            groups: v.array(
+                v.object({
+                    displayName: v.string(),
+                    orderItemIds: v.array(v.id("orderItems")),
+                }),
+            ),
+        }),
+    ),
+});
+
 export default defineSchema({
     // Users table - managed by Better Auth component but we define the schema for our code
     // Better Auth adds the core fields, we add our custom fields
@@ -86,6 +102,7 @@ export default defineSchema({
         comments: v.optional(v.string()),
         status: orderStatusValidator,
         paused: v.boolean(),
+        pausedAiSummary: v.optional(pausedAiSummaryValidator),
     })
         .index("by_creatorId", ["creatorId"])
         .index("by_status", ["status"])

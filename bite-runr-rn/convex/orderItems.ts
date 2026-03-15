@@ -2,8 +2,15 @@ import { v } from "convex/values";
 import { generateObject, generateText } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { z } from "zod";
-import { action, internalQuery, query, mutation } from "./_generated/server";
+import {
+  action,
+  internalMutation,
+  internalQuery,
+  query,
+  mutation,
+} from "./_generated/server";
 import { api, internal } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
 import { getUserId } from "./authHelper";
 import {
   analyzeOrderItemTextGroups,
@@ -28,8 +35,8 @@ function normalizeLabel(text: string): string {
 }
 
 type SummaryLine = {
-  id: string;
-  orderUserId: string;
+  id: Id<"orderItems">;
+  orderUserId: Id<"orderUsers">;
   text: string;
   sortOrder: number;
   userName: string;
@@ -37,13 +44,13 @@ type SummaryLine = {
 };
 
 type SummaryLocation = {
-  id: string;
-  orderLocationId: string;
+  id: Id<"orderLocations">;
+  orderLocationId: Id<"orderLocations">;
   name: string;
 };
 
 type LocationSummary = {
-  orderLocationId: string;
+  orderLocationId: Id<"orderLocations">;
   locationName: string;
   lines: SummaryLine[];
   itemCount: number;
@@ -54,12 +61,13 @@ type LocationSummary = {
 
 type OrderSummaryData = {
   order: {
-    id: string;
+    id: Id<"orders">;
     name: string;
     comments?: string | null;
     paused: boolean;
     createdAt: number;
   };
+  pausedAiSummary: AiOrderSummary | null;
   locations: SummaryLocation[];
   locationSummaries: LocationSummary[];
   totalItems: number;
@@ -69,7 +77,7 @@ type OrderSummaryData = {
 type AiOrderSummary = {
   signature: string;
   locations: Array<{
-    orderLocationId: string;
+    orderLocationId: Id<"orderLocations">;
     groups: ResolvedOrderItemTextGroup[];
   }>;
 };
@@ -77,17 +85,37 @@ type AiOrderSummary = {
 type AiSeedGroup = {
   seedGroupId: string;
   displayName: string;
-  orderItemIds: string[];
+  orderItemIds: Id<"orderItems">[];
   variants: string[];
   lineCount: number;
   peopleCount: number;
 };
 
 type AiLocationSeedSummary = {
-  orderLocationId: string;
+  orderLocationId: Id<"orderLocations">;
   locationName: string;
   seedGroups: AiSeedGroup[];
 };
+
+type PersistedAiSummaryLocation = {
+  orderLocationId: Id<"orderLocations">;
+  groups: Array<{
+    displayName: string;
+    orderItemIds: Id<"orderItems">[];
+  }>;
+};
+
+const pausedAiSummaryLocationsValidator = v.array(
+  v.object({
+    orderLocationId: v.id("orderLocations"),
+    groups: v.array(
+      v.object({
+        displayName: v.string(),
+        orderItemIds: v.array(v.id("orderItems")),
+      }),
+    ),
+  }),
+);
 
 const aiLocationSummarySchema = z.object({
   groups: z.array(
@@ -376,6 +404,20 @@ function validateAiGroupsForLocation(
       orderItemIds,
     };
   });
+}
+
+function toPersistedAiSummaryLocations(
+  locations: AiOrderSummary["locations"],
+): PersistedAiSummaryLocation[] {
+  return locations.map((location) => ({
+    orderLocationId: location.orderLocationId,
+    groups: location.groups.map((group) => ({
+      displayName: group.displayName,
+      orderItemIds: group.orderItemIds.map(
+        (orderItemId) => orderItemId as Id<"orderItems">,
+      ),
+    })),
+  }));
 }
 
 async function generateAiSummaryForLocation(
@@ -814,7 +856,23 @@ export const generateAiOrderSummary = action({
     }
 
     const signature = buildSummarySignature(summary);
+    if (
+      summary.order.paused &&
+      summary.pausedAiSummary &&
+      summary.pausedAiSummary.signature === signature
+    ) {
+      return summary.pausedAiSummary;
+    }
+
     if (summary.locationSummaries.length === 0) {
+      if (summary.order.paused) {
+        await ctx.runMutation(internal.orderItems.savePausedAiOrderSummary, {
+          orderId: args.orderId,
+          signature,
+          locations: [],
+        });
+      }
+
       return {
         signature,
         locations: [],
@@ -825,11 +883,42 @@ export const generateAiOrderSummary = action({
       buildAiSeedGroupsForLocation(locationSummary),
     );
     const locations = await generateAiOrderSummaryResult(seedSummaries);
+    if (summary.order.paused) {
+      await ctx.runMutation(internal.orderItems.savePausedAiOrderSummary, {
+        orderId: args.orderId,
+        signature,
+        locations: toPersistedAiSummaryLocations(locations),
+      });
+    }
 
     return {
       signature,
       locations,
     };
+  },
+});
+
+export const savePausedAiOrderSummary = internalMutation({
+  args: {
+    orderId: v.id("orders"),
+    signature: v.string(),
+    locations: pausedAiSummaryLocationsValidator,
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId);
+    if (!order || !order.paused) {
+      return null;
+    }
+
+    await ctx.db.patch(args.orderId, {
+      pausedAiSummary: {
+        signature: args.signature,
+        generatedAt: Date.now(),
+        locations: args.locations,
+      },
+    });
+
+    return null;
   },
 });
 
@@ -939,6 +1028,12 @@ export const getOrderSummary = query({
         paused: order.paused,
         createdAt: order._creationTime,
       },
+      pausedAiSummary: order.pausedAiSummary
+        ? {
+            signature: order.pausedAiSummary.signature,
+            locations: order.pausedAiSummary.locations,
+          }
+        : null,
       locations: activeLocations,
       locationSummaries: activeLocationSummaries,
       totalItems: activeLocationSummaries.reduce(

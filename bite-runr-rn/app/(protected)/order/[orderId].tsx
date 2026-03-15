@@ -271,6 +271,17 @@ export default function SpecificOrder() {
     const transferCandidates =
         data?.orderUsers.filter((orderUser) => !orderUser.isCreator) ?? [];
 
+    function openOrderSummary(aiHint: "cached" | "generate") {
+        if (aiHint === "generate") {
+            void primeAiOrderSummaryRequest(
+                generateAiOrderSummary,
+                orderId as Id<"orders">,
+            );
+        }
+
+        router.push(`/order/summary?orderId=${orderId}&aiHint=${aiHint}`);
+    }
+
     async function handleStartRun() {
         const startRun = async () => {
             try {
@@ -278,12 +289,7 @@ export default function SpecificOrder() {
                     orderId: orderId as Id<"orders">,
                     paused: true,
                 });
-                void primeAiOrderSummaryRequest(
-                    generateAiOrderSummary,
-                    orderId as Id<"orders">,
-                );
-                // Navigate to order summary page
-                router.push(`/order/summary?orderId=${orderId}`);
+                openOrderSummary("generate");
             } catch (error) {
                 console.error("Failed to start run:", error);
                 Alert.alert("Error", "Failed to start run. Please try again.");
@@ -1041,15 +1047,13 @@ export default function SpecificOrder() {
                             {data.order.paused && isCreator ? (
                                 <TouchableOpacity
                                     className="flex-row gap-2 justify-center items-center py-4 w-full rounded-xl bg-primary"
-                                    onPress={() => {
-                                        void primeAiOrderSummaryRequest(
-                                            generateAiOrderSummary,
-                                            orderId as Id<"orders">,
-                                        );
-                                        router.push(
-                                            `/order/summary?orderId=${orderId}`,
-                                        );
-                                    }}>
+                                    onPress={() =>
+                                        openOrderSummary(
+                                            data.order.hasPausedAiSummary
+                                                ? "cached"
+                                                : "generate",
+                                        )
+                                    }>
                                     <Icon
                                         name="ClipboardList"
                                         size={20}

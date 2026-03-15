@@ -31,6 +31,7 @@ export type RawOrderSummaryData = {
         paused: boolean;
         createdAt: number;
     };
+    pausedAiSummary: AiOrderSummary | null;
     locations: Array<{
         id: string;
         orderLocationId: string;
@@ -175,6 +176,12 @@ export function useAiOrderSummary(
             : rawSummary === null
               ? "missing"
               : "ready";
+    const persistedAiSummary =
+        rawSummary?.order.paused &&
+        rawSummary.pausedAiSummary &&
+        rawSummary.pausedAiSummary.signature === signature
+            ? rawSummary.pausedAiSummary
+            : null;
 
     useEffect(() => {
         if (!orderId || rawSummaryState === "missing") {
@@ -182,6 +189,14 @@ export function useAiOrderSummary(
         }
 
         if (rawSummaryState === "loading" || signature === null) {
+            return;
+        }
+
+        if (persistedAiSummary) {
+            requestIdRef.current += 1;
+            setStatus("ready");
+            setAiSummary(persistedAiSummary);
+            setError(null);
             return;
         }
 
@@ -237,7 +252,14 @@ export function useAiOrderSummary(
         return () => {
             isCancelled = true;
         };
-    }, [attempt, generateAiOrderSummary, orderId, rawSummaryState, signature]);
+    }, [
+        attempt,
+        generateAiOrderSummary,
+        orderId,
+        persistedAiSummary,
+        rawSummaryState,
+        signature,
+    ]);
 
     return {
         status,

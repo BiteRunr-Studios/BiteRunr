@@ -263,6 +263,7 @@ export const get = query({
         comments: order.comments,
         status: order.status,
         paused: order.paused,
+        hasPausedAiSummary: Boolean(order.pausedAiSummary),
         createdAt: order._creationTime,
       },
       orderLocations: orderLocations.map((orderLocation) => ({
@@ -447,6 +448,7 @@ export const update = mutation({
     if (args.comments !== undefined) updates.comments = args.comments;
     if (args.status !== undefined) updates.status = args.status;
     if (args.paused !== undefined) updates.paused = args.paused;
+    if (args.paused === false) updates.pausedAiSummary = undefined;
 
     await ctx.db.patch(args.orderId, updates);
 

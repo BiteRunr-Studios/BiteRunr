@@ -35,6 +35,7 @@ import {
 } from "@/lib/order-item-grouping";
 
 type GroupMode = "items" | "people";
+type SummaryAiHint = "cached" | "generate" | null;
 type SummaryLocation = RawOrderSummaryData["locations"][number];
 
 function SummaryStateLayout({
@@ -70,7 +71,7 @@ function SummaryStateLayout({
     );
 }
 
-function SummaryLoadingScreen({
+function SummaryAiLoadingScreen({
     colorScheme,
 }: {
     colorScheme: "light" | "dark";
@@ -106,6 +107,72 @@ function SummaryLoadingScreen({
                     </View>
                 </View>
             </ScrollView>
+        </SummaryStateLayout>
+    );
+}
+
+function SummaryDataLoadingScreen({
+    colorScheme,
+}: {
+    colorScheme: "light" | "dark";
+}) {
+    return (
+        <SummaryStateLayout colorScheme={colorScheme} title="Order Summary">
+            <Skeleton>
+                <ScrollView
+                    className="flex-1"
+                    contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+                    showsVerticalScrollIndicator={false}>
+                    <View className="p-5 rounded-[28px] border border-muted bg-card">
+                        <SkeletonBlock
+                            width={180}
+                            height={28}
+                            className="mb-3"
+                        />
+                        <SkeletonBlock
+                            width={140}
+                            height={16}
+                            className="mb-4"
+                        />
+                        <View className="flex-row gap-2 mb-5">
+                            <SkeletonBlock
+                                width={92}
+                                height={34}
+                                rounded="rounded-full"
+                            />
+                            <SkeletonBlock
+                                width={118}
+                                height={34}
+                                rounded="rounded-full"
+                            />
+                            <SkeletonBlock
+                                width={104}
+                                height={34}
+                                rounded="rounded-full"
+                            />
+                        </View>
+                        <View className="gap-3">
+                            {[1, 2, 3].map((index) => (
+                                <View
+                                    key={index}
+                                    className="p-4 rounded-2xl border border-muted bg-background">
+                                    <View className="flex-row justify-between items-center">
+                                        <SkeletonBlock
+                                            width={index === 1 ? "58%" : "46%"}
+                                            height={16}
+                                        />
+                                        <SkeletonBlock
+                                            width={34}
+                                            height={24}
+                                            rounded="rounded-full"
+                                        />
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+                </ScrollView>
+            </Skeleton>
         </SummaryStateLayout>
     );
 }
@@ -147,8 +214,14 @@ function SummaryAiErrorScreen({
 }
 
 export default function OrderSummary() {
-    const params = useLocalSearchParams<{ orderId?: string }>();
+    const params = useLocalSearchParams<{ orderId?: string; aiHint?: string }>();
     const orderId = params.orderId ? (params.orderId as Id<"orders">) : null;
+    const aiHint: SummaryAiHint =
+        params.aiHint === "cached"
+            ? "cached"
+            : params.aiHint === "generate"
+              ? "generate"
+              : null;
     const { colorScheme } = useColorScheme();
     const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
         null,
@@ -278,7 +351,11 @@ export default function OrderSummary() {
     }, [currentAiLocationSummary, currentLocationLines]);
 
     if (summary === undefined) {
-        return <SummaryLoadingScreen colorScheme={colorScheme} />;
+        return aiHint === "generate" ? (
+            <SummaryAiLoadingScreen colorScheme={colorScheme} />
+        ) : (
+            <SummaryDataLoadingScreen colorScheme={colorScheme} />
+        );
     }
 
     if (summary === null) {
@@ -292,7 +369,7 @@ export default function OrderSummary() {
     }
 
     if (aiSummaryStatus === "loading-data") {
-        return <SummaryLoadingScreen colorScheme={colorScheme} />;
+        return <SummaryDataLoadingScreen colorScheme={colorScheme} />;
     }
 
     if (aiSummaryStatus === "ai-error") {
@@ -305,8 +382,12 @@ export default function OrderSummary() {
         );
     }
 
-    if (aiSummaryStatus === "summarizing" || !aiSummary) {
-        return <SummaryLoadingScreen colorScheme={colorScheme} />;
+    if (aiSummaryStatus === "summarizing") {
+        return <SummaryAiLoadingScreen colorScheme={colorScheme} />;
+    }
+
+    if (!aiSummary) {
+        return <SummaryDataLoadingScreen colorScheme={colorScheme} />;
     }
 
     const isScanning = scanState === "uploading" || scanState === "parsing";
