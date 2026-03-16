@@ -37,6 +37,9 @@ const appleCredentials =
               clientId: process.env.AUTH_APPLE_ID,
               clientSecret: process.env.AUTH_APPLE_SECRET,
               redirectURI: `${siteUrl}/api/auth/callback/apple`,
+              appBundleIdentifier:
+                  process.env.AUTH_APPLE_BUNDLE_ID ??
+                  "com.RunrStudios.BiteRunrRN",
           }
         : null;
 
