@@ -24,6 +24,7 @@ const config: ExpoConfig = {
   ios: {
     bundleIdentifier: "com.RunrStudios.BiteRunrRN",
     supportsTablet: true,
+    usesAppleSignIn: true,
     appleTeamId: "6K8R8337BL",
     icon: {
       dark: "./assets/images/icon-dark.png",
