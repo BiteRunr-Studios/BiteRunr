@@ -1,4 +1,10 @@
-import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import React, {
+    useMemo,
+    useState,
+    useEffect,
+    useRef,
+    useCallback,
+} from "react";
 import { Pressable, Text, Animated, Alert } from "react-native";
 import { Flow } from "react-native-animated-spinkit";
 import { useColorScheme } from "@/lib/use-color-scheme";
@@ -95,7 +101,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
                       : "GitHub";
             Alert.alert(
                 "Sign In Failed",
-                `Unable to sign in with ${providerName}. Please try again.`
+                `Unable to sign in with ${providerName}. Please try again.`,
             );
         } finally {
             setLoading(false);
@@ -108,7 +114,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
             disabled={isDisabled}
             className={
                 className ??
-                "w-full flex-row items-center h-[55px] justify-center gap-2 rounded-2xl p-4 border border-muted active:opacity-80"
+                "flex-row gap-2 justify-center items-center p-4 w-full rounded-2xl border h-[55px] border-muted active:opacity-80"
             }
             accessibilityRole="button"
             accessibilityLabel={label ?? defaultLabel}>
@@ -129,7 +135,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
                 size={24}
             />
 
-            <Text className={"text-foreground font-semibold text-lg"}>
+            <Text className={"text-lg font-semibold text-foreground"}>
                 {label ?? defaultLabel}
             </Text>
         </Pressable>

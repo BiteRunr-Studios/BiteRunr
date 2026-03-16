@@ -61,6 +61,7 @@ export const createAuth = (ctx: any) => {
         trustedOrigins: [
             "biterunr://",
             "biterunr://*",
+            "https://appleid.apple.com",
             // Development Expo URLs
             ...(process.env.NODE_ENV === "development"
                 ? ["exp://", "exp://**"]

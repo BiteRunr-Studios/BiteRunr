@@ -128,10 +128,10 @@ export default function SignInScreen() {
     }, [form.email?.value, form.password?.value, syncUser, refreshSession]);
 
     return (
-        <SafeAreaView className="justify-center flex-1 px-4 transition-all duration-200">
+        <SafeAreaView className="flex-1 justify-center px-4 transition-all duration-200">
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
-                className="justify-center flex-1">
+                className="flex-1 justify-center">
                 <View className="mt-10"></View>
                 {/* Title */}
                 <Text className="mb-2 text-3xl font-bold text-foreground">
@@ -185,7 +185,7 @@ export default function SignInScreen() {
 
                 <View className="mt-8" />
 
-                <View className="flex-row items-center justify-between gap-3">
+                <View className="flex-row gap-3 justify-between items-center">
                     <View className="bg-muted h-[1px] flex-grow"></View>
                     <Text className="italic text-muted-foreground">OR</Text>
                     <View className="bg-muted h-[1px] flex-grow"></View>
@@ -198,18 +198,13 @@ export default function SignInScreen() {
 
                 <View className="mt-3" />
 
-                {/* GitHub Auth Button */}
-                <OAuthButton provider="github" disabled={loading} />
-
-                <View className="mt-3" />
-
                 {/* Google Auth Button */}
                 <OAuthButton provider="google" disabled={loading} />
 
-                <View className="flex-row items-center justify-center gap-2 mt-4">
+                <View className="flex-row gap-2 justify-center items-center mt-4">
                     <Text className="text-muted-foreground">No account?</Text>
                     <Pressable
-                        className="flex-row items-center gap-1"
+                        className="flex-row gap-1 items-center"
                         onPress={() => router.push("/(auth)/sign-up")}>
                         <Text className="font-semibold text-primary">
                             Sign up
