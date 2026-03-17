@@ -6,17 +6,21 @@ import Features from "./components/Features";
 import Payments from "./components/Payments";
 import Footer from "./components/Footer";
 
-function App() {
+type AppProps = {
+  waitlistEnabled: boolean;
+};
+
+function App({ waitlistEnabled }: AppProps) {
   const [splashDone, setSplashDone] = useState(false);
 
   return (
     <div className="h-screen overflow-y-auto bg-black text-white">
       {!splashDone && <SplashIntro onComplete={() => setSplashDone(true)} />}
-      <Hero />
+      <Hero waitlistEnabled={waitlistEnabled} />
       <HowItWorks />
       <Features />
       <Payments />
-      <Footer />
+      <Footer waitlistEnabled={waitlistEnabled} />
     </div>
   );
 }

@@ -3,7 +3,11 @@ import { Sparkles } from "lucide-react";
 import Logo from "./Logo";
 import WaitlistForm from "./WaitlistForm";
 
-export default function Footer() {
+type FooterProps = {
+  waitlistEnabled: boolean;
+};
+
+export default function Footer({ waitlistEnabled }: FooterProps) {
   return (
     <footer className="relative overflow-hidden">
       {/* CTA Section */}
@@ -39,7 +43,7 @@ export default function Footer() {
             get exclusive perks.
           </p>
 
-          <WaitlistForm />
+          <WaitlistForm enabled={waitlistEnabled} />
         </motion.div>
       </section>
 

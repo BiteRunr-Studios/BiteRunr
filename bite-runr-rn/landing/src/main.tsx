@@ -4,12 +4,24 @@ import { ConvexProvider, ConvexReactClient } from "convex/react";
 import "./index.css";
 import App from "./App.tsx";
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+const convexUrl = import.meta.env.VITE_CONVEX_URL?.trim();
+
+const app = (
+  <StrictMode>
+    <App waitlistEnabled={Boolean(convexUrl)} />
+  </StrictMode>
+);
+
+if (!convexUrl) {
+  console.warn(
+    "VITE_CONVEX_URL is not set. Rendering landing page without waitlist submission.",
+  );
+}
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <ConvexProvider client={convex}>
-      <App />
-    </ConvexProvider>
-  </StrictMode>
+  convexUrl ? (
+    <ConvexProvider client={new ConvexReactClient(convexUrl)}>{app}</ConvexProvider>
+  ) : (
+    app
+  ),
 );

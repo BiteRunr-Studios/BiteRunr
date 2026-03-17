@@ -4,7 +4,11 @@ import WaitlistForm from "./WaitlistForm";
 
 const DELAY = 1.9; // wait for splash intro to finish
 
-export default function Hero() {
+type HeroProps = {
+  waitlistEnabled: boolean;
+};
+
+export default function Hero({ waitlistEnabled }: HeroProps) {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-6 py-24">
       {/* Background gradient */}
@@ -61,7 +65,7 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: DELAY + 0.45 }}
         >
-          <WaitlistForm />
+          <WaitlistForm enabled={waitlistEnabled} />
         </motion.div>
 
         {/* Floating UI cards */}

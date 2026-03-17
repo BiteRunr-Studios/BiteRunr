@@ -10,7 +10,29 @@ const joinWaitlistReference = makeFunctionReference<
   { alreadyJoined: boolean }
 >("waitlist:join");
 
-export default function WaitlistForm() {
+type WaitlistFormProps = {
+  enabled: boolean;
+};
+
+export default function WaitlistForm({ enabled }: WaitlistFormProps) {
+  if (!enabled) {
+    return (
+      <div className="w-full max-w-md mx-auto rounded-3xl border border-white/[0.08] bg-white/[0.04] px-5 py-4 text-center">
+        <p className="text-sm font-medium text-white/80">
+          Waitlist signup is temporarily unavailable.
+        </p>
+        <p className="mt-2 text-sm text-white/45">
+          Add <code>VITE_CONVEX_URL</code> to the Railway service variables and
+          redeploy to enable submissions.
+        </p>
+      </div>
+    );
+  }
+
+  return <ConfiguredWaitlistForm />;
+}
+
+function ConfiguredWaitlistForm() {
   const joinWaitlist = useAction(joinWaitlistReference);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<
