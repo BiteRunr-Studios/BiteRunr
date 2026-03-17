@@ -1,7 +1,30 @@
 import { v } from "convex/values";
 import { Resend } from "resend";
-import { mutation, query, action, internalMutation } from "./_generated/server";
+import {
+    query,
+    action,
+    internalMutation,
+    internalQuery,
+} from "./_generated/server";
 import { api, internal } from "./_generated/api";
+
+function getWaitlistAdminEmails(): Set<string> {
+    const rawAdminEmails = process.env.WAITLIST_ADMIN_EMAILS;
+    if (!rawAdminEmails) {
+        throw new Error("WAITLIST_ADMIN_EMAILS not configured");
+    }
+
+    const adminEmails = rawAdminEmails
+        .split(",")
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean);
+
+    if (adminEmails.length === 0) {
+        throw new Error("WAITLIST_ADMIN_EMAILS not configured");
+    }
+
+    return new Set(adminEmails);
+}
 
 export const insertEntry = internalMutation({
     args: {
@@ -65,7 +88,7 @@ export const getCount = query({
     },
 });
 
-export const list = query({
+export const listEntries = internalQuery({
     args: {},
     handler: async (ctx) => {
         return await ctx.db.query("waitlist").collect();
@@ -78,8 +101,18 @@ export const sendLaunchEmail = action({
         html: v.string(),
     },
     handler: async (ctx, args) => {
+        const user = await ctx.runQuery(api.users.getCurrentUser, {});
+        if (!user) {
+            throw new Error("Not authenticated");
+        }
+
+        const adminEmails = getWaitlistAdminEmails();
+        if (!adminEmails.has(user.email.toLowerCase())) {
+            throw new Error("Not authorized");
+        }
+
         const resend = new Resend(process.env.AUTH_RESEND_KEY);
-        const entries = await ctx.runQuery(api.waitlist.list);
+        const entries = await ctx.runQuery(internal.waitlist.listEntries);
 
         if (entries.length === 0) {
             return { sent: 0 };
