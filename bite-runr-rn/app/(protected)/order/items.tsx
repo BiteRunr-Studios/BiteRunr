@@ -383,6 +383,7 @@ export default function WriteOrder() {
     const [loadedItems, setLoadedItems] = useState<string[]>([]);
     const [itemInput, setItemInput] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+    const [isCompletingOrder, setIsCompletingOrder] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [voiceModalVisible, setVoiceModalVisible] = useState(false);
     const [voiceTranscript, setVoiceTranscript] = useState("");
@@ -392,6 +393,7 @@ export default function WriteOrder() {
     const [isListening, setIsListening] = useState(false);
     const [isProcessingVoice, setIsProcessingVoice] = useState(false);
     const leaveInFlightRef = useRef(false);
+    const skipBeforeRemovePersistRef = useRef(false);
     const isMountedRef = useRef(true);
     const shouldProcessVoiceResultRef = useRef(false);
     const hasProcessedVoiceResultRef = useRef(false);
@@ -773,9 +775,35 @@ export default function WriteOrder() {
     }, [completeOrder, saveCurrentLocation]);
 
     const finishOrderingAndLeave = useCallback(() => {
-        queueBackgroundExitPersist();
-        router.dismiss();
-    }, [queueBackgroundExitPersist]);
+        if (isSaving || isCompletingOrder) {
+            return;
+        }
+
+        void (async () => {
+            setIsCompletingOrder(true);
+            let didExit = false;
+
+            try {
+                const didSave = await saveCurrentLocation();
+                if (!didSave) {
+                    return;
+                }
+
+                const didComplete = await completeOrder();
+                if (!didComplete) {
+                    return;
+                }
+
+                skipBeforeRemovePersistRef.current = true;
+                didExit = true;
+                router.dismiss();
+            } finally {
+                if (!didExit && isMountedRef.current) {
+                    setIsCompletingOrder(false);
+                }
+            }
+        })();
+    }, [completeOrder, isCompletingOrder, isSaving, saveCurrentLocation]);
 
     const addItem = useCallback(() => {
         const nextItem = itemInput.trim();
@@ -797,7 +825,11 @@ export default function WriteOrder() {
 
     const handleLocationPress = useCallback(
         async (nextLocationId: string) => {
-            if (selectedLocation?.id === nextLocationId || isSaving) {
+            if (
+                selectedLocation?.id === nextLocationId ||
+                isSaving ||
+                isCompletingOrder
+            ) {
                 return;
             }
 
@@ -811,7 +843,12 @@ export default function WriteOrder() {
             setItemInput("");
             setSelectedLocationId(nextLocationId);
         },
-        [isSaving, saveCurrentLocation, selectedLocation?.id],
+        [
+            isCompletingOrder,
+            isSaving,
+            saveCurrentLocation,
+            selectedLocation?.id,
+        ],
     );
 
     const startVoiceOrdering = useCallback(async () => {
@@ -897,10 +934,20 @@ export default function WriteOrder() {
     }, []);
 
     useEffect(() => {
-        return navigation.addListener("beforeRemove", () => {
+        return navigation.addListener("beforeRemove", (event) => {
+            if (skipBeforeRemovePersistRef.current) {
+                skipBeforeRemovePersistRef.current = false;
+                return;
+            }
+
+            if (isCompletingOrder) {
+                event.preventDefault();
+                return;
+            }
+
             queueBackgroundExitPersist();
         });
-    }, [navigation, queueBackgroundExitPersist]);
+    }, [isCompletingOrder, navigation, queueBackgroundExitPersist]);
 
     if (orderLocations === undefined) {
         return (
@@ -928,7 +975,13 @@ export default function WriteOrder() {
             {/* Header */}
             <View className="flex-row justify-between items-center px-4 py-3 border-b border-border">
                 <Pressable
-                    onPress={() => router.back()}
+                    onPress={() => {
+                        if (isCompletingOrder) {
+                            return;
+                        }
+
+                        router.back();
+                    }}
                     className="p-2 -ml-2 rounded-full active:opacity-70">
                     <Icon
                         name="ChevronLeft"
@@ -1015,7 +1068,7 @@ export default function WriteOrder() {
                                         </Text>
                                     </View>
                                 </View>
-                                {isSaving ?? (
+                                {isSaving || isCompletingOrder ? (
                                     <View className="flex-row gap-2 items-center px-3 py-2 rounded-full bg-primary/10">
                                         <ActivityIndicator
                                             size="small"
@@ -1024,10 +1077,12 @@ export default function WriteOrder() {
                                             }
                                         />
                                         <Text className="text-xs font-medium text-primary">
-                                            Saving
+                                            {isCompletingOrder
+                                                ? "Finishing"
+                                                : "Saving"}
                                         </Text>
                                     </View>
-                                )}
+                                ) : null}
                             </View>
 
                             {locationEntries === undefined &&
@@ -1061,9 +1116,11 @@ export default function WriteOrder() {
                                         </View>
                                         <TouchableOpacity
                                             onPress={addItem}
-                                            disabled={isSaving}
+                                            disabled={
+                                                isSaving || isCompletingOrder
+                                            }
                                             className={`flex-row items-center justify-center min-w-[96px] h-[55px] px-4 rounded-xl gap-2 ${
-                                                isSaving
+                                                isSaving || isCompletingOrder
                                                     ? "bg-primary/50"
                                                     : "bg-primary"
                                             }`}>
@@ -1082,9 +1139,15 @@ export default function WriteOrder() {
                                         onPress={() =>
                                             void startVoiceOrdering()
                                         }
-                                        disabled={isSaving || isProcessingVoice}
+                                        disabled={
+                                            isSaving ||
+                                            isCompletingOrder ||
+                                            isProcessingVoice
+                                        }
                                         className={`flex-row items-center justify-center h-[52px] px-4 rounded-xl gap-2 border ${
-                                            isSaving || isProcessingVoice
+                                            isSaving ||
+                                            isCompletingOrder ||
+                                            isProcessingVoice
                                                 ? "border-primary/20 bg-primary/5"
                                                 : "border-primary/30 bg-primary/10"
                                         }`}>
@@ -1198,10 +1261,15 @@ export default function WriteOrder() {
 
                 <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
                     <TouchableOpacity
-                        className="items-center justify-center w-full h-[55px] rounded-xl bg-primary"
+                        className={`items-center justify-center w-full h-[55px] rounded-xl ${
+                            isCompletingOrder ? "bg-primary/50" : "bg-primary"
+                        }`}
+                        disabled={isCompletingOrder}
                         onPress={finishOrderingAndLeave}>
                         <Text className="text-base font-semibold text-center text-white">
-                            I'm Done Ordering
+                            {isCompletingOrder
+                                ? "Finishing Order..."
+                                : "I'm Done Ordering"}
                         </Text>
                     </TouchableOpacity>
                 </View>

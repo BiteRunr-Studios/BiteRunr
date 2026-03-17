@@ -177,42 +177,6 @@ function SummaryDataLoadingScreen({
     );
 }
 
-function SummaryAiErrorScreen({
-    colorScheme,
-    error,
-    onRetry,
-}: {
-    colorScheme: "light" | "dark";
-    error: string | null;
-    onRetry: () => void;
-}) {
-    return (
-        <SummaryStateLayout colorScheme={colorScheme} title="Order Summary">
-            <View className="flex-1 justify-center items-center px-6">
-                <View className="items-center w-full max-w-sm p-6 border rounded-[28px] border-destructive/15 bg-card">
-                    <View className="justify-center items-center w-16 h-16 rounded-2xl bg-destructive/10">
-                        <Icon name="CircleAlert" size={30} color="#ef4444" />
-                    </View>
-                    <Text className="mt-4 text-2xl font-bold text-center text-foreground">
-                        We couldn&apos;t summarize this order right now.
-                    </Text>
-                    <Text className="mt-2 text-sm text-center text-muted-foreground">
-                        {error ?? "Please try again in a moment."}
-                    </Text>
-                    <View className="gap-3 mt-6 w-full">
-                        <Button label="Try Again" onPress={onRetry} />
-                        <Button
-                            label="Back"
-                            variant="outline"
-                            onPress={() => router.back()}
-                        />
-                    </View>
-                </View>
-            </View>
-        </SummaryStateLayout>
-    );
-}
-
 export default function OrderSummary() {
     const params = useLocalSearchParams<{ orderId?: string; aiHint?: string }>();
     const orderId = params.orderId ? (params.orderId as Id<"orders">) : null;
@@ -339,16 +303,15 @@ export default function OrderSummary() {
             ) ?? null,
         [aiSummary, selectedLocation?.orderLocationId],
     );
-    const itemGroups = useMemo(() => {
-        if (!currentAiLocationSummary) {
-            return [];
-        }
-
-        return materializeResolvedOrderItemTextGroups(
-            currentLocationLines,
-            currentAiLocationSummary.groups,
-        );
-    }, [currentAiLocationSummary, currentLocationLines]);
+    const itemGroups = useMemo(
+        () =>
+            materializeResolvedOrderItemTextGroups(
+                currentLocationLines,
+                currentAiLocationSummary?.groups,
+            ),
+        [currentAiLocationSummary?.groups, currentLocationLines],
+    );
+    const isUsingLocalSummaryFallback = aiSummaryStatus === "ai-error";
 
     if (summary === undefined) {
         return aiHint === "generate" ? (
@@ -372,21 +335,11 @@ export default function OrderSummary() {
         return <SummaryDataLoadingScreen colorScheme={colorScheme} />;
     }
 
-    if (aiSummaryStatus === "ai-error") {
-        return (
-            <SummaryAiErrorScreen
-                colorScheme={colorScheme}
-                error={aiSummaryError}
-                onRetry={retryAiSummary}
-            />
-        );
-    }
-
     if (aiSummaryStatus === "summarizing") {
         return <SummaryAiLoadingScreen colorScheme={colorScheme} />;
     }
 
-    if (!aiSummary) {
+    if (!aiSummary && !isUsingLocalSummaryFallback) {
         return <SummaryDataLoadingScreen colorScheme={colorScheme} />;
     }
 
@@ -565,6 +518,25 @@ export default function OrderSummary() {
                             className="self-start px-4 py-1.5 rounded-full bg-destructive/15">
                             <Text className="text-sm font-medium text-destructive">
                                 Try Again
+                            </Text>
+                        </Pressable>
+                    </View>
+                ) : null}
+
+                {isUsingLocalSummaryFallback ? (
+                    <View className="gap-2 px-4 py-3 mx-4 mt-4 rounded-xl border border-yellow-500/20 bg-yellow-500/10">
+                        <View className="flex-row gap-3 items-center">
+                            <Icon name="CircleAlert" size={18} color="#eab308" />
+                            <Text className="flex-1 text-sm text-yellow-700 dark:text-yellow-400">
+                                {aiSummaryError ??
+                                    "AI grouping is unavailable right now. Showing a local summary so you can keep pricing and settling this order."}
+                            </Text>
+                        </View>
+                        <Pressable
+                            onPress={retryAiSummary}
+                            className="self-start px-4 py-1.5 rounded-full bg-yellow-500/15">
+                            <Text className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
+                                Retry AI Grouping
                             </Text>
                         </Pressable>
                     </View>
