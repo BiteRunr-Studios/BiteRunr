@@ -177,4 +177,10 @@ export default defineSchema({
         .index("by_code", ["code"])
         .index("by_orderId", ["orderId"])
         .index("by_orderId_isActive", ["orderId", "isActive"]),
+
+    // Waitlist signups
+    waitlist: defineTable({
+        email: v.string(),
+        signedUpAt: v.number(),
+    }).index("by_email", ["email"]),
 });

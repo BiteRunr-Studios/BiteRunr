@@ -10,12 +10,12 @@ import {
   mutation,
 } from "./_generated/server";
 import { api, internal } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
+import type { Id } from "./_generated/dataModel";
 import { getUserId } from "./authHelper";
 import {
   analyzeOrderItemTextGroups,
   buildOrderSummaryTextSignature,
-  ResolvedOrderItemTextGroup,
+  type ResolvedOrderItemTextGroup,
 } from "../lib/order-item-grouping";
 
 function normalizeEntryLines(text: string): string[] {

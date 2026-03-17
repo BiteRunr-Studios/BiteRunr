@@ -24,6 +24,7 @@ import type * as pushNotifications from "../pushNotifications.js";
 import type * as receiptScanning from "../receiptScanning.js";
 import type * as stripeConnect from "../stripeConnect.js";
 import type * as users from "../users.js";
+import type * as waitlist from "../waitlist.js";
 
 import type {
   ApiFromModules,
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   receiptScanning: typeof receiptScanning;
   stripeConnect: typeof stripeConnect;
   users: typeof users;
+  waitlist: typeof waitlist;
 }>;
 
 /**
