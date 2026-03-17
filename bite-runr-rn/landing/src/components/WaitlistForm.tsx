@@ -1,11 +1,17 @@
 import { useState, type FormEvent } from "react";
 import { useAction } from "convex/react";
-import { api } from "convex/_generated/api";
+import { makeFunctionReference } from "convex/server";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, Loader2 } from "lucide-react";
 
+const joinWaitlistReference = makeFunctionReference<
+  "action",
+  { email: string },
+  { alreadyJoined: boolean }
+>("waitlist:join");
+
 export default function WaitlistForm() {
-  const joinWaitlist = useAction(api.waitlist.join);
+  const joinWaitlist = useAction(joinWaitlistReference);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "already" | "error"

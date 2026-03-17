@@ -16,11 +16,6 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Path aliases */
-    "paths": {
-      "convex/_generated/*": ["../convex/_generated/*"]
-    },
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
