@@ -10,63 +10,33 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as LocationsIndexRouteImport } from './routes/locations/index'
-import { Route as LocationsLocationIdRouteImport } from './routes/locations/$locationId'
 
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LocationsIndexRoute = LocationsIndexRouteImport.update({
-  id: '/locations/',
-  path: '/locations/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LocationsLocationIdRoute = LocationsLocationIdRouteImport.update({
-  id: '/locations/$locationId',
-  path: '/locations/$locationId',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/privacy': typeof PrivacyRoute
-  '/locations/$locationId': typeof LocationsLocationIdRoute
-  '/locations/': typeof LocationsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/privacy': typeof PrivacyRoute
-  '/locations/$locationId': typeof LocationsLocationIdRoute
-  '/locations': typeof LocationsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/privacy': typeof PrivacyRoute
-  '/locations/$locationId': typeof LocationsLocationIdRoute
-  '/locations/': typeof LocationsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/privacy' | '/locations/$locationId' | '/locations/'
+  fullPaths: '/privacy'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/privacy' | '/locations/$locationId' | '/locations'
-  id: '__root__' | '/' | '/privacy' | '/locations/$locationId' | '/locations/'
+  to: '/privacy'
+  id: '__root__' | '/privacy'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   PrivacyRoute: typeof PrivacyRoute
-  LocationsLocationIdRoute: typeof LocationsLocationIdRoute
-  LocationsIndexRoute: typeof LocationsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -78,36 +48,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/locations/': {
-      id: '/locations/'
-      path: '/locations'
-      fullPath: '/locations/'
-      preLoaderRoute: typeof LocationsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/locations/$locationId': {
-      id: '/locations/$locationId'
-      path: '/locations/$locationId'
-      fullPath: '/locations/$locationId'
-      preLoaderRoute: typeof LocationsLocationIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   PrivacyRoute: PrivacyRoute,
-  LocationsLocationIdRoute: LocationsLocationIdRoute,
-  LocationsIndexRoute: LocationsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

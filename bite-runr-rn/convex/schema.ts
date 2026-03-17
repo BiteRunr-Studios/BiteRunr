@@ -28,6 +28,22 @@ export const stripePaymentStatusValidator = v.union(
     v.literal("expired"),
 );
 
+const pausedAiSummaryValidator = v.object({
+    signature: v.string(),
+    generatedAt: v.number(),
+    locations: v.array(
+        v.object({
+            orderLocationId: v.id("orderLocations"),
+            groups: v.array(
+                v.object({
+                    displayName: v.string(),
+                    orderItemIds: v.array(v.id("orderItems")),
+                }),
+            ),
+        }),
+    ),
+});
+
 export default defineSchema({
     // Users table - managed by Better Auth component but we define the schema for our code
     // Better Auth adds the core fields, we add our custom fields
@@ -50,7 +66,6 @@ export default defineSchema({
         friendId: v.id("users"),
     })
         .index("by_userId", ["userId"])
-        .index("by_friendId", ["friendId"])
         .index("by_userId_friendId", ["userId", "friendId"]),
 
     // Friend requests (pending only - rows are deleted on accept/decline)
@@ -62,23 +77,6 @@ export default defineSchema({
         .index("by_receiverId", ["receiverId"])
         .index("by_senderId_receiverId", ["senderId", "receiverId"]),
 
-    // Locations (restaurants, etc.)
-    locations: defineTable({
-        name: v.string(),
-    }).index("by_name", ["name"]),
-
-    // Menu items at locations
-    items: defineTable({
-        name: v.string(),
-        locationId: v.id("locations"),
-    })
-        .index("by_locationId", ["locationId"])
-        .index("by_name_locationId", ["name", "locationId"])
-        .searchIndex("search_name", {
-            searchField: "name",
-            filterFields: ["locationId"],
-        }),
-
     // Orders
     orders: defineTable({
         name: v.string(),
@@ -86,10 +84,8 @@ export default defineSchema({
         comments: v.optional(v.string()),
         status: orderStatusValidator,
         paused: v.boolean(),
-    })
-        .index("by_creatorId", ["creatorId"])
-        .index("by_status", ["status"])
-        .index("by_creatorId_status", ["creatorId", "status"]),
+        pausedAiSummary: v.optional(pausedAiSummaryValidator),
+    }),
 
     // Order users (participants in an order)
     orderUsers: defineTable({
@@ -101,35 +97,30 @@ export default defineSchema({
     })
         .index("by_userId", ["userId"])
         .index("by_orderId", ["orderId"])
-        .index("by_userId_orderId", ["userId", "orderId"])
-        .index("by_orderId_settlementStatus", ["orderId", "settlementStatus"]),
+        .index("by_userId_orderId", ["userId", "orderId"]),
 
     // Order locations (which locations are part of an order)
     orderLocations: defineTable({
         orderId: v.id("orders"),
-        locationId: v.id("locations"),
+        name: v.string(),
         receiptTotalInCents: v.optional(v.int64()), // Receipt total including tax (set from receipt scanning)
-    })
-        .index("by_orderId", ["orderId"])
-        .index("by_locationId", ["locationId"]),
+    }).index("by_orderId", ["orderId"]),
 
     // Order items (individual items ordered by users)
     orderItems: defineTable({
         orderLocationId: v.id("orderLocations"),
         orderUserId: v.id("orderUsers"),
-        itemId: v.id("items"),
-        comments: v.optional(v.string()),
-        quantity: v.number(),
-        priceInCents: v.optional(v.int64()), // Price per item in cents (set from receipt scanning)
+        text: v.string(),
+        sortOrder: v.number(),
+        priceInCents: v.optional(v.int64()), // Line total in cents (set from receipt scanning/manual entry)
     })
         .index("by_orderLocationId", ["orderLocationId"])
         .index("by_orderUserId", ["orderUserId"])
-        .index("by_itemId", ["itemId"])
-        .index("by_orderUserId_itemId_comments", [
+        .index("by_orderUserId_orderLocationId", [
             "orderUserId",
-            "itemId",
-            "comments",
-        ]),
+            "orderLocationId",
+        ])
+        .index("by_orderLocationId_sortOrder", ["orderLocationId", "sortOrder"]),
 
     // Stripe Connect accounts (runners who receive card payments)
     connectedAccounts: defineTable({
@@ -161,11 +152,8 @@ export default defineSchema({
         createdAt: v.number(),
         updatedAt: v.number(),
     })
-        .index("by_buyerId", ["buyerId"])
-        .index("by_sellerId", ["sellerId"])
         .index("by_stripeSessionId", ["stripeSessionId"])
         .index("by_orderUserId", ["orderUserId"])
-        .index("by_status", ["status"])
         .index("by_stripePaymentIntentId", ["stripePaymentIntentId"]),
 
     // Device push token ownership (tracks which user owns which device token)

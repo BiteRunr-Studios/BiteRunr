@@ -6,11 +6,11 @@ export const Route = createFileRoute('/privacy')({
 
 function PrivacyPolicy() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen bg-white text-gray-900">
       <div className="max-w-3xl mx-auto px-6 py-12">
         <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-          Last updated: March 1, 2026
+        <p className="text-sm text-gray-500 mb-8">
+          Last updated: March 14, 2026
         </p>
 
         <div className="space-y-8 text-[15px] leading-relaxed">
@@ -76,9 +76,10 @@ function PrivacyPolicy() {
               The App may request access to your camera to scan QR codes for
               joining group orders, and access to your photo library to set a
               profile picture. You may also take photos of receipts for price
-              verification — receipt images are processed and then immediately
-              deleted from our servers. We do not permanently store receipt
-              images.
+              verification. Receipt images and related order text may be sent
+              to AI processing providers to parse receipt lines or organize
+              order summaries, and we do not keep receipt images as permanent
+              storage.
             </p>
           </section>
 
@@ -98,8 +99,7 @@ function PrivacyPolicy() {
                 To send transactional emails (sign-in codes, email
                 verification, password resets)
               </li>
-              <li>To parse receipt images for accurate price splitting</li>
-              <li>To provide search functionality for menu items</li>
+              <li>To parse receipt images and structure order text</li>
             </ul>
           </section>
 
@@ -125,16 +125,11 @@ function PrivacyPolicy() {
                 codes, verification emails).
               </li>
               <li>
-                <strong>OpenAI</strong> — Receipt image parsing. Receipt images
-                are sent for processing and deleted immediately after.
+                <strong>OpenRouter and model providers</strong> — AI-assisted
+                receipt parsing and order summarization. Receipt images and
+                related order text are sent only for processing.
               </li>
-              <li>
-                <strong>Expo</strong> — Push notification delivery.
-              </li>
-              <li>
-                <strong>Typesense</strong> — Search functionality for menu
-                items.
-              </li>
+              <li><strong>Expo</strong> — Push notification delivery.</li>
             </ul>
           </section>
 
@@ -218,7 +213,7 @@ function PrivacyPolicy() {
               exercise your data rights, please contact us at{' '}
               <a
                 href="mailto:support@biterunr.com"
-                className="text-blue-600 dark:text-blue-400 underline"
+                className="text-blue-600 underline"
               >
                 support@biterunr.com
               </a>

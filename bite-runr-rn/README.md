@@ -6,9 +6,11 @@ A React Native mobile app for coordinating group food orders. Create orders, inv
 
 - **Group Orders**: Create and manage group food orders with friends
 - **Friends System**: Add friends, send/receive friend requests
-- **Location & Menu Management**: Track restaurants and menu items
+- **Multi-Location Runs**: Split one group order across multiple pickup spots
+- **Receipt Matching**: Parse receipts and assign prices back to order lines
+- **Voice Order Entry**: Add order lines by speaking instead of typing
 - **Order Settlement**: Track who owes what with settlement status
-- **Authentication**: Email-based authentication with OTP verification
+- **Authentication**: Better Auth with email OTP and optional social sign-in
 
 ## Tech Stack
 
@@ -16,7 +18,7 @@ A React Native mobile app for coordinating group food orders. Create orders, inv
 - **Backend**: [Convex](https://convex.dev) (real-time database & serverless functions)
 - **Styling**: [NativeWind](https://nativewind.dev) (Tailwind CSS for React Native)
 - **Navigation**: Expo Router with file-based routing
-- **Authentication**: @convex-dev/auth with Resend for emails
+- **Authentication**: Better Auth with Resend for emails
 
 ## Getting Started
 
@@ -69,7 +71,8 @@ npm run phone
 ├── convex/              # Convex backend
 │   ├── schema.ts        # Database schema
 │   ├── orders.ts        # Order mutations/queries
-│   ├── friends.ts       # Friends system
+│   ├── receiptScanning.ts
+│   ├── payments.ts
 │   └── ...
 └── lib/                 # Utilities and helpers
 ```

@@ -24,6 +24,7 @@ const config: ExpoConfig = {
   ios: {
     bundleIdentifier: "com.RunrStudios.BiteRunrRN",
     supportsTablet: true,
+    usesAppleSignIn: true,
     appleTeamId: "6K8R8337BL",
     icon: {
       dark: "./assets/images/icon-dark.png",
@@ -111,6 +112,15 @@ const config: ExpoConfig = {
       {
         cameraPermission:
           "Allow $(PRODUCT_NAME) to access your camera to scan QR codes for joining group orders.",
+      },
+    ],
+    [
+      "expo-speech-recognition",
+      {
+        microphonePermission:
+          "Allow $(PRODUCT_NAME) to access your microphone so you can speak your order items.",
+        speechRecognitionPermission:
+          "Allow $(PRODUCT_NAME) to recognize your speech so you can add order items by voice.",
       },
     ],
     [

@@ -3,17 +3,6 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
-export function useLocations() {
-    const data = useQuery(api.locations.list);
-    return {
-        data: data?.map((loc) => ({
-            id: loc._id,
-            name: loc.name,
-        })) ?? [],
-        isLoading: data === undefined,
-    };
-}
-
 export function useFriends() {
     const data = useQuery(api.friends.list);
     return {
@@ -35,7 +24,7 @@ export function useCreateOrder() {
         mutateAsync: async (orderData: {
             name: string;
             comments: string | null;
-            locationIds: string[];
+            locationNames: string[];
             friendIds: string[];
         }) => {
             setIsPending(true);
@@ -43,7 +32,7 @@ export function useCreateOrder() {
                 return await createOrder({
                     name: orderData.name,
                     comments: orderData.comments ?? undefined,
-                    locationIds: orderData.locationIds as Id<"locations">[],
+                    locationNames: orderData.locationNames,
                     friendIds: orderData.friendIds as Id<"users">[],
                 });
             } finally {

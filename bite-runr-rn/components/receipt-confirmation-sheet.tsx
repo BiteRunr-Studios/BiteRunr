@@ -20,10 +20,8 @@ import { groupOrderItemsByParticipant } from "@/lib/order-item-grouping";
 interface OrderItem {
     id: string;
     orderUserId: string;
-    itemName: string;
-    quantity: number;
+    text: string;
     userName: string;
-    comments?: string | null;
     priceInCents: number | null;
 }
 
@@ -51,11 +49,6 @@ function formatPrice(cents: number | null): string {
 function getEffectivePrice(item: MatchedItem | null | undefined): number | null {
     if (!item) return null;
     return item.manualPriceInCents ?? item.receiptItem.priceInCents;
-}
-
-function getOrderItemComment(orderItem: OrderItem): string | null {
-    const trimmedComment = orderItem.comments?.trim();
-    return trimmedComment ? trimmedComment : null;
 }
 
 // --- Unmatched Receipt Item Card ---
@@ -133,7 +126,6 @@ function OrderItemCard({
     colorScheme: "light" | "dark";
 }) {
     const [manualPrice, setManualPrice] = useState("");
-    const itemComment = getOrderItemComment(orderItem);
 
     const handlePriceChange = (text: string) => {
         let cleaned = text.replace(/[^0-9.]/g, "");
@@ -186,22 +178,8 @@ function OrderItemCard({
                         )}
                         <View className="flex-1">
                             <Text className="text-sm font-medium text-foreground">
-                                {orderItem.itemName}
+                                {orderItem.text}
                             </Text>
-                            <Text className="text-xs text-muted-foreground">
-                                Qty: {orderItem.quantity}
-                            </Text>
-                            {itemComment && (
-                                <Text
-                                    className={`mt-1 text-[11px] ${
-                                        !linkedReceiptItem && hasSelectedItem
-                                            ? "text-primary"
-                                            : "text-muted-foreground"
-                                    }`}
-                                >
-                                    Comment: {itemComment}
-                                </Text>
-                            )}
                         </View>
                     </View>
 
@@ -684,7 +662,7 @@ export function ReceiptConfirmationSheet({
                 <View className="px-4 py-3 border-t border-border">
                     <View className="flex-row items-center justify-between mb-3">
                         <Text className="text-sm text-muted-foreground">
-                            {pricedOrderItemCount} of {totalOrderItems} order items priced
+                            {pricedOrderItemCount} of {totalOrderItems} order lines priced
                         </Text>
                         <Text className="text-base font-semibold text-foreground">
                             Saving: {formatPrice(totalToSave)}

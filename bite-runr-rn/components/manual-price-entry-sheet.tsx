@@ -17,8 +17,7 @@ import { groupOrderItemsByParticipant } from "@/lib/order-item-grouping";
 interface OrderItem {
     id: string;
     orderUserId: string;
-    itemName: string;
-    quantity: number;
+    text: string;
     userName: string;
     priceInCents: number | null;
 }
@@ -93,10 +92,7 @@ function PriceItemCard({
                         )}
                         <View className="flex-1">
                             <Text className="text-sm font-medium text-foreground">
-                                {orderItem.itemName}
-                            </Text>
-                            <Text className="text-xs text-muted-foreground">
-                                Qty: {orderItem.quantity}
+                                {orderItem.text}
                             </Text>
                         </View>
                     </View>

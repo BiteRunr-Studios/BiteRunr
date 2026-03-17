@@ -165,32 +165,3 @@ export const removeFromOrder = mutation({
     });
   },
 });
-
-// Update amount owed for an order user (amount in cents)
-export const updateAmountOwed = mutation({
-  args: {
-    orderUserId: v.id("orderUsers"),
-    amountOwed: v.int64(), // Amount in cents (must be non-negative integer)
-  },
-  handler: async (ctx, args) => {
-    const userId = await getUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
-    // Validate amountOwed is non-negative (bigints are always integers)
-    if (args.amountOwed < 0n) {
-      throw new Error("Amount owed must be non-negative (cents)");
-    }
-
-    const orderUser = await ctx.db.get(args.orderUserId);
-    if (!orderUser) throw new Error("Order user not found");
-
-    // Verify the current user is the order creator
-    const order = await ctx.db.get(orderUser.orderId);
-    if (!order || order.creatorId !== userId) {
-      throw new Error("Not authorized");
-    }
-
-    await ctx.db.patch(args.orderUserId, { amountOwed: args.amountOwed });
-    return args.orderUserId;
-  },
-});

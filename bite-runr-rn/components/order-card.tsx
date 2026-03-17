@@ -237,7 +237,7 @@ export function OrderCard({
                             />
                             <Text className="text-xs font-medium text-muted-foreground">
                                 {itemCount}{" "}
-                                {itemCount === 1 ? "item" : "items"}
+                                {itemCount === 1 ? "line" : "lines"}
                             </Text>
                         </View>
                     )}

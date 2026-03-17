@@ -14,10 +14,6 @@ RUN pnpm install --frozen-lockfile
 # Copy admin source
 COPY admin/ .
 
-# Replace the symlink with the actual convex files so they can resolve node_modules
-RUN rm -f convex
-COPY convex ./convex
-
 # Pass Vite env vars at build time (Vite bakes VITE_* into the bundle)
 ARG VITE_CONVEX_URL
 ENV VITE_CONVEX_URL=$VITE_CONVEX_URL

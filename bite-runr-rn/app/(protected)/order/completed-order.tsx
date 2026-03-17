@@ -232,7 +232,7 @@ export default function CompletedOrder() {
                                 {data.stats.totalItems}
                             </Text>
                             <Text className="text-xs text-muted-foreground">
-                                Items
+                                Lines
                             </Text>
                         </View>
 
@@ -346,8 +346,8 @@ export default function CompletedOrder() {
                                             <Text className="text-xs text-muted-foreground">
                                                 {participant.itemCount}{" "}
                                                 {participant.itemCount === 1
-                                                    ? "item"
-                                                    : "items"}
+                                                    ? "line"
+                                                    : "lines"}
                                             </Text>
                                         </View>
                                         {!participant.isCreator && (
@@ -369,30 +369,20 @@ export default function CompletedOrder() {
                                                     <View
                                                         key={idx}
                                                         className="flex-row items-start justify-between">
-                                                        <View className="flex-1 flex-row items-start gap-2">
-                                                            <Text className="text-xs text-muted-foreground mt-0.5">
-                                                                {item.quantity}x
+                                                        <View className="flex-1">
+                                                            <Text className="text-sm text-foreground">
+                                                                {item.text}
                                                             </Text>
-                                                            <View className="flex-1">
-                                                                <Text className="text-sm text-foreground">
-                                                                    {item.name}
-                                                                </Text>
-                                                                {item.comments && (
-                                                                    <Text className="text-xs text-muted-foreground italic">
-                                                                        {
-                                                                            item.comments
-                                                                        }
-                                                                    </Text>
-                                                                )}
-                                                            </View>
+                                                            <Text className="text-xs text-muted-foreground">
+                                                                {item.locationName}
+                                                            </Text>
                                                         </View>
                                                         {item.priceInCents !==
                                                             null && (
                                                             <Text className="text-sm text-muted-foreground ml-2">
                                                                 $
                                                                 {(
-                                                                    (item.priceInCents *
-                                                                        item.quantity) /
+                                                                    item.priceInCents /
                                                                     100
                                                                 ).toFixed(2)}
                                                             </Text>

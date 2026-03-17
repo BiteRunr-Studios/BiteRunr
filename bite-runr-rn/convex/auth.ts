@@ -31,8 +31,20 @@ const googleCredentials =
           }
         : null;
 
+const appleCredentials =
+    process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET
+        ? {
+              clientId: process.env.AUTH_APPLE_ID,
+              clientSecret: process.env.AUTH_APPLE_SECRET,
+              redirectURI: `${siteUrl}/api/auth/callback/apple`,
+              appBundleIdentifier:
+                  process.env.AUTH_APPLE_BUNDLE_ID ??
+                  "com.RunrStudios.BiteRunrRN",
+          }
+        : null;
+
 // Validate SITE_URL when OAuth providers are configured
-const hasOAuthProviders = githubCredentials || googleCredentials;
+const hasOAuthProviders = githubCredentials || googleCredentials || appleCredentials;
 if (!siteUrl && hasOAuthProviders) {
     throw new Error(
         "SITE_URL environment variable is required when OAuth providers are configured. " +
@@ -52,6 +64,7 @@ export const createAuth = (ctx: any) => {
         trustedOrigins: [
             "biterunr://",
             "biterunr://*",
+            "https://appleid.apple.com",
             // Development Expo URLs
             ...(process.env.NODE_ENV === "development"
                 ? ["exp://", "exp://**"]
@@ -127,12 +140,14 @@ export const createAuth = (ctx: any) => {
                 trustedProviders: [
                     ...(googleCredentials ? ["google" as const] : []),
                     ...(githubCredentials ? ["github" as const] : []),
+                    ...(appleCredentials ? ["apple" as const] : []),
                 ],
             },
         },
         socialProviders: {
             ...(githubCredentials && { github: githubCredentials }),
             ...(googleCredentials && { google: googleCredentials }),
+            ...(appleCredentials && { apple: appleCredentials }),
         },
     });
 };

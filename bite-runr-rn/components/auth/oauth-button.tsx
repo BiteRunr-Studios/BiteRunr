@@ -1,12 +1,19 @@
-import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
-import { Pressable, Text, Animated, Alert } from "react-native";
+import React, {
+    useMemo,
+    useState,
+    useEffect,
+    useRef,
+    useCallback,
+} from "react";
+import { Pressable, Text, Animated, Alert, Platform } from "react-native";
 import { Flow } from "react-native-animated-spinkit";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { NAV_THEME } from "@/lib/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { authClient } from "@/lib/auth-client";
+import * as AppleAuthentication from "expo-apple-authentication";
 
-type OAuthProvider = "github" | "google";
+type OAuthProvider = "google" | "apple";
 
 type OAuthButtonProps = {
     provider: OAuthProvider;
@@ -33,8 +40,8 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
         switch (provider) {
             case "google":
                 return "Continue with Google";
-            case "github":
-                return "Continue with GitHub";
+            case "apple":
+                return "Continue with Apple";
             default:
                 return "Continue";
         }
@@ -43,7 +50,10 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
     const spinnerWidth = useRef(new Animated.Value(0)).current;
     const spinnerOpacity = useRef(new Animated.Value(0)).current;
 
-    const iconName = provider === "google" ? "logo-google" : "logo-github";
+    const iconName =
+        provider === "google"
+            ? "logo-google"
+            : "logo-apple";
 
     const isDisabled = disabled || loading;
 
@@ -67,22 +77,54 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
 
         setLoading(true);
         try {
+            if (provider === "apple" && Platform.OS === "ios") {
+                const credential = await AppleAuthentication.signInAsync({
+                    requestedScopes: [
+                        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+                        AppleAuthentication.AppleAuthenticationScope.EMAIL,
+                    ],
+                });
+
+                if (!credential.identityToken) {
+                    throw new Error("Apple sign-in did not return an identity token.");
+                }
+
+                await authClient.signIn.social({
+                    provider,
+                    idToken: {
+                        token: credential.identityToken,
+                    },
+                });
+                return;
+            }
+
             // signIn.social() opens browser and returns immediately
             // The actual auth completion happens via deep link callback
             // User sync will be handled by the protected layout
             await authClient.signIn.social({
                 provider,
-                callbackURL: "/(protected)/(tabs)",
+                callbackURL: "/",
             });
             // Note: Code here runs BEFORE OAuth completes in the browser
             // The session and user sync are handled when the app receives the callback
         } catch (error) {
+            if (
+                error instanceof Error &&
+                "code" in error &&
+                error.code === "ERR_REQUEST_CANCELED"
+            ) {
+                return;
+            }
             console.error(`${provider} OAuth error:`, error);
             const err = error instanceof Error ? error : new Error(String(error));
             onError?.(err);
+            const providerName =
+                provider === "google"
+                    ? "Google"
+                    : "Apple";
             Alert.alert(
                 "Sign In Failed",
-                `Unable to sign in with ${provider === "google" ? "Google" : "GitHub"}. Please try again.`
+                `Unable to sign in with ${providerName}. Please try again.`,
             );
         } finally {
             setLoading(false);
@@ -95,7 +137,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
             disabled={isDisabled}
             className={
                 className ??
-                "w-full flex-row items-center h-[55px] justify-center gap-2 rounded-2xl p-4 border border-muted active:opacity-80"
+                "flex-row gap-2 justify-center items-center p-4 w-full rounded-2xl border h-[55px] border-muted active:opacity-80"
             }
             accessibilityRole="button"
             accessibilityLabel={label ?? defaultLabel}>
@@ -116,7 +158,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
                 size={24}
             />
 
-            <Text className={"text-foreground font-semibold text-lg"}>
+            <Text className={"text-lg font-semibold text-foreground"}>
                 {label ?? defaultLabel}
             </Text>
         </Pressable>
