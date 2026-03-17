@@ -74,7 +74,6 @@ function containsSubstantialMatch(str1: string, str2: string): boolean {
 export interface MatchCandidate {
     id: string;
     name: string;
-    quantity: number;
 }
 
 export interface MatchResult {
@@ -133,8 +132,7 @@ export function autoMatchReceiptItems(
     }>,
     orderItems: Array<{
         id: string;
-        itemName: string;
-        quantity: number;
+        text: string;
         userName: string;
     }>,
 ): Array<{
@@ -158,8 +156,7 @@ export function autoMatchReceiptItems(
             .filter((oi) => !matchedOrderItemIds.has(oi.id))
             .map((oi) => ({
                 id: oi.id,
-                name: oi.itemName,
-                quantity: oi.quantity,
+                name: oi.text,
                 userName: oi.userName,
             }));
 

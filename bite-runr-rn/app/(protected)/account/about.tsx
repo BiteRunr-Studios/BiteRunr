@@ -111,9 +111,9 @@ export default function AboutScreen() {
                     />
 
                     <FeatureItem
-                        icon="Star"
-                        title="Favorites"
-                        description="Your most-ordered items are saved so you can quickly reorder your go-to meals."
+                        icon="Mic"
+                        title="Voice Ordering"
+                        description="Speak your order lines and let BiteRunr clean them up into structured items."
                     />
 
                     <FeatureItem

@@ -1,26 +1,8 @@
-import { HeadContent, Outlet, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { ConvexProvider } from 'convex/react'
-import { convex } from '../convex'
-import { ThemeProvider } from '../hooks/use-theme'
-import { AuthProvider, useAuth } from '../hooks/use-auth'
-import { LoginPage } from '../components/login-page'
 
 import appCss from '../styles.css?url'
-
-const themeScript = `
-(function() {
-  const theme = localStorage.getItem('theme') || 'dark';
-  const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const shouldBeDark = theme === 'dark' || (theme === 'system' && systemDark);
-  if (shouldBeDark) {
-    document.documentElement.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
-  }
-})();
-`
 
 export const Route = createRootRoute({
   head: () => ({
@@ -33,7 +15,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'BiteRunr Dashboard',
+        title: 'BiteRunr',
       },
     ],
     links: [
@@ -48,42 +30,14 @@ export const Route = createRootRoute({
   component: RootComponent,
 })
 
-const PUBLIC_ROUTES = ['/privacy']
-
-function AuthGate() {
-  const { isAuthenticated } = useAuth()
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
-
-  if (PUBLIC_ROUTES.includes(pathname)) {
-    return <Outlet />
-  }
-
-  if (!isAuthenticated) {
-    return <LoginPage />
-  }
-
-  return (
-    <ConvexProvider client={convex}>
-      <Outlet />
-    </ConvexProvider>
-  )
-}
-
 function RootComponent() {
-  return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AuthGate />
-      </AuthProvider>
-    </ThemeProvider>
-  )
+  return <Outlet />
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <HeadContent />
       </head>
       <body>

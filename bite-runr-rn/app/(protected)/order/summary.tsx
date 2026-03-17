@@ -1,62 +1,217 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useState, useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
-    View,
-    Text,
-    ScrollView,
-    Pressable,
-    TouchableOpacity,
     ActivityIndicator,
+    Pressable,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
+import * as Haptics from "expo-haptics";
+import Toast from "react-native-toast-message";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
-import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { useReceiptScanning } from "@/hooks/useReceiptScanning";
 import { useManualPriceEntry } from "@/hooks/useManualPriceEntry";
+import {
+    RawOrderSummaryData,
+    useAiOrderSummary,
+} from "@/hooks/useAiOrderSummary";
 import { ReceiptConfirmationSheet } from "@/components/receipt-confirmation-sheet";
 import { ManualPriceEntrySheet } from "@/components/manual-price-entry-sheet";
 import { ListItem } from "@/components/profile/list-item";
 import { Button } from "@/components/common/button";
-import Toast from "react-native-toast-message";
-import * as Haptics from "expo-haptics";
+import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
+import {
+    groupOrderItemsByParticipant,
+    materializeResolvedOrderItemTextGroups,
+} from "@/lib/order-item-grouping";
 
-type Location = {
-    orderLocationId: string;
-    locationId: string;
-    name: string;
-};
+type GroupMode = "items" | "people";
+type SummaryAiHint = "cached" | "generate" | null;
+type SummaryLocation = RawOrderSummaryData["locations"][number];
+
+function SummaryStateLayout({
+    colorScheme,
+    title,
+    children,
+}: {
+    colorScheme: "light" | "dark";
+    title: string;
+    children: ReactNode;
+}) {
+    return (
+        <>
+            <SafeAreaView edges={["top"]} />
+            <View className="flex-1 bg-background">
+                <View className="flex-row items-center px-4 pt-4 pb-3 border-b border-border">
+                    <Pressable
+                        onPress={() => router.back()}
+                        className="p-2 -ml-2 rounded-full active:opacity-70">
+                        <Icon
+                            name="ChevronLeft"
+                            size={24}
+                            color={NAV_THEME[colorScheme].primary}
+                        />
+                    </Pressable>
+                    <Text className="flex-1 ml-2 text-xl font-bold text-foreground">
+                        {title}
+                    </Text>
+                </View>
+                {children}
+            </View>
+        </>
+    );
+}
+
+function SummaryAiLoadingScreen({
+    colorScheme,
+}: {
+    colorScheme: "light" | "dark";
+}) {
+    return (
+        <SummaryStateLayout colorScheme={colorScheme} title="Order Summary">
+            <ScrollView
+                className="flex-1"
+                contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+                showsVerticalScrollIndicator={false}>
+                <View className="items-center p-6 border rounded-[28px] border-primary/20 bg-card">
+                    <View className="justify-center items-center w-16 h-16 rounded-2xl bg-primary/10">
+                        <Icon
+                            name="ClipboardList"
+                            size={30}
+                            color={NAV_THEME[colorScheme].primary}
+                        />
+                    </View>
+                    <Text className="mt-4 text-2xl font-bold text-center text-foreground">
+                        Summarizing order
+                    </Text>
+                    <Text className="mt-2 text-sm text-center text-muted-foreground">
+                        Grouping similar items across all pickup spots...
+                    </Text>
+                    <View className="flex-row gap-2 items-center mt-5">
+                        <ActivityIndicator
+                            size="small"
+                            color={NAV_THEME[colorScheme].primary}
+                        />
+                        <Text className="text-sm font-medium text-primary">
+                            This only takes a moment
+                        </Text>
+                    </View>
+                </View>
+            </ScrollView>
+        </SummaryStateLayout>
+    );
+}
+
+function SummaryDataLoadingScreen({
+    colorScheme,
+}: {
+    colorScheme: "light" | "dark";
+}) {
+    return (
+        <SummaryStateLayout colorScheme={colorScheme} title="Order Summary">
+            <Skeleton>
+                <ScrollView
+                    className="flex-1"
+                    contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+                    showsVerticalScrollIndicator={false}>
+                    <View className="p-5 rounded-[28px] border border-muted bg-card">
+                        <SkeletonBlock
+                            width={180}
+                            height={28}
+                            className="mb-3"
+                        />
+                        <SkeletonBlock
+                            width={140}
+                            height={16}
+                            className="mb-4"
+                        />
+                        <View className="flex-row gap-2 mb-5">
+                            <SkeletonBlock
+                                width={92}
+                                height={34}
+                                rounded="rounded-full"
+                            />
+                            <SkeletonBlock
+                                width={118}
+                                height={34}
+                                rounded="rounded-full"
+                            />
+                            <SkeletonBlock
+                                width={104}
+                                height={34}
+                                rounded="rounded-full"
+                            />
+                        </View>
+                        <View className="gap-3">
+                            {[1, 2, 3].map((index) => (
+                                <View
+                                    key={index}
+                                    className="p-4 rounded-2xl border border-muted bg-background">
+                                    <View className="flex-row justify-between items-center">
+                                        <SkeletonBlock
+                                            width={index === 1 ? "58%" : "46%"}
+                                            height={16}
+                                        />
+                                        <SkeletonBlock
+                                            width={34}
+                                            height={24}
+                                            rounded="rounded-full"
+                                        />
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+                </ScrollView>
+            </Skeleton>
+        </SummaryStateLayout>
+    );
+}
 
 export default function OrderSummary() {
-    const { orderId } = useLocalSearchParams();
+    const params = useLocalSearchParams<{ orderId?: string; aiHint?: string }>();
+    const orderId = params.orderId ? (params.orderId as Id<"orders">) : null;
+    const aiHint: SummaryAiHint =
+        params.aiHint === "cached"
+            ? "cached"
+            : params.aiHint === "generate"
+              ? "generate"
+              : null;
     const { colorScheme } = useColorScheme();
     const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
         null,
     );
+    const [groupMode, setGroupMode] = useState<GroupMode>("items");
     const sourceActionSheetRef = useRef<ActionSheetRef>(null);
 
     const summary = useQuery(
         api.orderItems.getOrderSummary,
-        orderId ? { orderId: orderId as Id<"orders"> } : "skip",
-    );
+        orderId ? { orderId } : "skip",
+    ) as RawOrderSummaryData | null | undefined;
 
-    const selectedLocation = (() => {
-        if (!summary?.locations || summary.locations.length === 0) {
-            return null;
-        }
+    const {
+        status: aiSummaryStatus,
+        aiSummary,
+        retry: retryAiSummary,
+        error: aiSummaryError,
+    } = useAiOrderSummary(orderId, summary);
 
-        return (
-            summary.locations.find(
-                (location) => location.orderLocationId === selectedLocationId,
-            ) ?? summary.locations[0]
-        );
-    })();
+    const selectedLocation =
+        summary?.locations.find(
+            (location) => location.orderLocationId === selectedLocationId,
+        ) ??
+        summary?.locations[0] ??
+        null;
 
-    // Receipt scanning hook
     const {
         state: scanState,
         error: scanError,
@@ -72,10 +227,9 @@ export default function OrderSummary() {
         reset: resetScan,
     } = useReceiptScanning(
         selectedLocation?.orderLocationId as Id<"orderLocations"> | null,
-        orderId as Id<"orders"> | null,
+        orderId,
     );
 
-    // Manual price entry hook
     const {
         state: manualState,
         error: manualError,
@@ -88,10 +242,9 @@ export default function OrderSummary() {
         reset: resetManual,
     } = useManualPriceEntry(
         selectedLocation?.orderLocationId as Id<"orderLocations"> | null,
-        orderId as Id<"orders"> | null,
+        orderId,
     );
 
-    // Get order items for the confirmation sheet
     const orderItems = useQuery(
         api.receiptScanning.getOrderItemsForLocation,
         selectedLocation?.orderLocationId
@@ -102,7 +255,6 @@ export default function OrderSummary() {
             : "skip",
     );
 
-    // Show toast on scan success and reset
     useEffect(() => {
         if (scanState !== "success") return;
 
@@ -113,14 +265,10 @@ export default function OrderSummary() {
             visibilityTime: 2500,
         });
 
-        const resetTimer = setTimeout(() => {
-            resetScan();
-        }, 0);
+        const timer = setTimeout(() => resetScan(), 0);
+        return () => clearTimeout(timer);
+    }, [resetScan, scanState]);
 
-        return () => clearTimeout(resetTimer);
-    }, [scanState, resetScan]);
-
-    // Show toast on manual entry success and reset
     useEffect(() => {
         if (manualState !== "success") return;
 
@@ -131,31 +279,45 @@ export default function OrderSummary() {
             visibilityTime: 2500,
         });
 
-        const resetTimer = setTimeout(() => {
-            resetManual();
-        }, 0);
-
-        return () => clearTimeout(resetTimer);
+        const timer = setTimeout(() => resetManual(), 0);
+        return () => clearTimeout(timer);
     }, [manualState, resetManual]);
 
-    const handleSourceSelect = async (source: "camera" | "library") => {
-        sourceActionSheetRef.current?.hide();
-        await startScan(source);
-    };
+    const currentLocationSummary = summary?.locationSummaries.find(
+        (locationSummary) =>
+            locationSummary.orderLocationId ===
+            selectedLocation?.orderLocationId,
+    );
+    const currentLocationLines = currentLocationSummary?.lines ?? [];
 
-    const handleConfirmClose = () => {
-        dismissScan();
-    };
-
-    const handleConfirm = async () => {
-        await confirmMatches();
-    };
+    const participantGroups = useMemo(
+        () => groupOrderItemsByParticipant(currentLocationLines),
+        [currentLocationLines],
+    );
+    const currentAiLocationSummary = useMemo(
+        () =>
+            aiSummary?.locations.find(
+                (location) =>
+                    location.orderLocationId ===
+                    selectedLocation?.orderLocationId,
+            ) ?? null,
+        [aiSummary, selectedLocation?.orderLocationId],
+    );
+    const itemGroups = useMemo(
+        () =>
+            materializeResolvedOrderItemTextGroups(
+                currentLocationLines,
+                currentAiLocationSummary?.groups,
+            ),
+        [currentAiLocationSummary?.groups, currentLocationLines],
+    );
+    const isUsingLocalSummaryFallback = aiSummaryStatus === "ai-error";
 
     if (summary === undefined) {
-        return (
-            <View className="flex-1 justify-center items-center bg-background">
-                <Text className="text-foreground">Loading...</Text>
-            </View>
+        return aiHint === "generate" ? (
+            <SummaryAiLoadingScreen colorScheme={colorScheme} />
+        ) : (
+            <SummaryDataLoadingScreen colorScheme={colorScheme} />
         );
     }
 
@@ -169,21 +331,27 @@ export default function OrderSummary() {
         );
     }
 
-    // Get the current location's items
-    const currentLocationSummary = summary.locationSummaries.find(
-        (ls) => ls.orderLocationId === selectedLocation?.orderLocationId,
-    );
+    if (aiSummaryStatus === "loading-data") {
+        return <SummaryDataLoadingScreen colorScheme={colorScheme} />;
+    }
+
+    if (aiSummaryStatus === "summarizing") {
+        return <SummaryAiLoadingScreen colorScheme={colorScheme} />;
+    }
+
+    if (!aiSummary && !isUsingLocalSummaryFallback) {
+        return <SummaryDataLoadingScreen colorScheme={colorScheme} />;
+    }
 
     const isScanning = scanState === "uploading" || scanState === "parsing";
     const allLocationsPriced = summary.locationSummaries.every(
-        (ls) => ls.subtotalInCents !== null,
+        (locationSummary) => locationSummary.subtotalInCents !== null,
     );
-
     const locationsWithPrices = summary.locationSummaries.filter(
-        (ls) => ls.subtotalInCents !== null,
+        (locationSummary) => locationSummary.subtotalInCents !== null,
     );
     const locationsMissingPrices = summary.locationSummaries.filter(
-        (ls) => ls.subtotalInCents === null,
+        (locationSummary) => locationSummary.subtotalInCents === null,
     );
     const someLocationsPriced =
         locationsWithPrices.length > 0 && locationsMissingPrices.length > 0;
@@ -192,9 +360,8 @@ export default function OrderSummary() {
         <>
             <SafeAreaView edges={["top"]} />
             <View className="flex-1 bg-background">
-                {/* Header */}
                 <View className="px-4 pt-4 pb-3 border-b border-border">
-                    <View className="flex-row items-center mb-1">
+                    <View className="flex-row gap-3 items-center mb-1">
                         <Pressable
                             onPress={() => router.back()}
                             className="p-2 -ml-2 rounded-full active:opacity-70">
@@ -207,6 +374,36 @@ export default function OrderSummary() {
                         <Text className="flex-1 ml-2 text-xl font-bold text-foreground">
                             {summary.order.name || "Order Summary"}
                         </Text>
+                        <View className="p-1 rounded-full bg-muted">
+                            <View className="flex-row gap-1 items-center">
+                                {(["items", "people"] as GroupMode[]).map(
+                                    (mode) => {
+                                        const isSelected = groupMode === mode;
+
+                                        return (
+                                            <Pressable
+                                                key={mode}
+                                                onPress={() =>
+                                                    setGroupMode(mode)
+                                                }
+                                                className={`px-4 py-2 rounded-full ${
+                                                    isSelected
+                                                        ? "bg-background"
+                                                        : ""}`}>
+                                                <Text
+                                                    className={`text-sm font-medium capitalize ${
+                                                        isSelected
+                                                            ? "text-foreground"
+                                                            : "text-muted-foreground"
+                                                    }`}>
+                                                    {mode}
+                                                </Text>
+                                            </Pressable>
+                                        );
+                                    },
+                                )}
+                            </View>
+                        </View>
                     </View>
                     <Text className="mb-3 ml-1 text-sm text-muted-foreground">
                         {summary.totalPeople} people · {summary.totalItems}{" "}
@@ -216,17 +413,18 @@ export default function OrderSummary() {
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={{ gap: 8 }}>
-                        {summary.locations.map((location) => {
-                            const locSummary = summary.locationSummaries.find(
-                                (ls) =>
-                                    ls.orderLocationId ===
-                                    location.orderLocationId,
-                            );
-                            const hasPrices =
-                                locSummary?.subtotalInCents !== null;
+                        {summary.locations.map((location: SummaryLocation) => {
+                            const locationSummary =
+                                summary.locationSummaries.find(
+                                    (value) =>
+                                        value.orderLocationId ===
+                                        location.orderLocationId,
+                                );
                             const isSelected =
                                 selectedLocation?.orderLocationId ===
                                 location.orderLocationId;
+                            const hasPrices =
+                                locationSummary?.subtotalInCents !== null;
 
                             return (
                                 <Pressable
@@ -239,8 +437,11 @@ export default function OrderSummary() {
                                     className={`flex-row items-center justify-center px-8 py-2 rounded-full ${
                                         isSelected ? "bg-primary" : "bg-muted"
                                     }`}>
-                                    {hasPrices && (
-                                        <View style={{ marginRight: 6 }}>
+                                    {hasPrices ? (
+                                        <View
+                                            style={{
+                                                marginRight: 6,
+                                            }}>
                                             <Icon
                                                 name="CircleCheck"
                                                 size={14}
@@ -251,7 +452,7 @@ export default function OrderSummary() {
                                                 }
                                             />
                                         </View>
-                                    )}
+                                    ) : null}
                                     <Text
                                         className={`text-sm ${
                                             isSelected
@@ -266,24 +467,19 @@ export default function OrderSummary() {
                     </ScrollView>
                 </View>
 
-                {/* Scan Error Banner */}
-                {scanState === "error" && scanError && (
+                {scanState === "error" && scanError ? (
                     <View className="gap-2 px-4 py-3 mx-4 mt-4 rounded-xl bg-destructive/10">
                         <View className="flex-row gap-3 items-center">
                             <Icon
                                 name="CircleAlert"
                                 size={20}
-                                color={NAV_THEME[colorScheme].notification}
+                                color="#ef4444"
                             />
                             <Text className="flex-1 text-sm text-destructive">
                                 {scanError}
                             </Text>
                             <Pressable onPress={resetScan}>
-                                <Icon
-                                    name="X"
-                                    size={16}
-                                    color={NAV_THEME[colorScheme].notification}
-                                />
+                                <Icon name="X" size={16} color="#ef4444" />
                             </Pressable>
                         </View>
                         <Pressable
@@ -297,26 +493,21 @@ export default function OrderSummary() {
                             </Text>
                         </Pressable>
                     </View>
-                )}
+                ) : null}
 
-                {/* Manual Entry Error Banner */}
-                {manualState === "error" && manualError && (
+                {manualState === "error" && manualError ? (
                     <View className="gap-2 px-4 py-3 mx-4 mt-4 rounded-xl bg-destructive/10">
                         <View className="flex-row gap-3 items-center">
                             <Icon
                                 name="CircleAlert"
                                 size={20}
-                                color={NAV_THEME[colorScheme].notification}
+                                color="#ef4444"
                             />
                             <Text className="flex-1 text-sm text-destructive">
                                 {manualError}
                             </Text>
                             <Pressable onPress={resetManual}>
-                                <Icon
-                                    name="X"
-                                    size={16}
-                                    color={NAV_THEME[colorScheme].notification}
-                                />
+                                <Icon name="X" size={16} color="#ef4444" />
                             </Pressable>
                         </View>
                         <Pressable
@@ -330,19 +521,39 @@ export default function OrderSummary() {
                             </Text>
                         </Pressable>
                     </View>
-                )}
+                ) : null}
 
-                {/* Remaining Locations Banner */}
-                {someLocationsPriced && (
+                {isUsingLocalSummaryFallback ? (
+                    <View className="gap-2 px-4 py-3 mx-4 mt-4 rounded-xl border border-yellow-500/20 bg-yellow-500/10">
+                        <View className="flex-row gap-3 items-center">
+                            <Icon name="CircleAlert" size={18} color="#eab308" />
+                            <Text className="flex-1 text-sm text-yellow-700 dark:text-yellow-400">
+                                {aiSummaryError ??
+                                    "AI grouping is unavailable right now. Showing a local summary so you can keep pricing and settling this order."}
+                            </Text>
+                        </View>
+                        <Pressable
+                            onPress={retryAiSummary}
+                            className="self-start px-4 py-1.5 rounded-full bg-yellow-500/15">
+                            <Text className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
+                                Retry AI Grouping
+                            </Text>
+                        </Pressable>
+                    </View>
+                ) : null}
+
+                {someLocationsPriced ? (
                     <Pressable
                         onPress={() => {
-                            const nextUnpriced = summary.locations.find((loc) =>
-                                locationsMissingPrices.some(
-                                    (ls) =>
-                                        ls.orderLocationId ===
-                                        loc.orderLocationId,
-                                ),
+                            const nextUnpriced = summary.locations.find(
+                                (location) =>
+                                    locationsMissingPrices.some(
+                                        (locationSummary) =>
+                                            locationSummary.orderLocationId ===
+                                            location.orderLocationId,
+                                    ),
                             );
+
                             if (nextUnpriced) {
                                 setSelectedLocationId(
                                     nextUnpriced.orderLocationId,
@@ -353,26 +564,31 @@ export default function OrderSummary() {
                         <Icon name="CircleAlert" size={18} color="#eab308" />
                         <Text className="flex-1 text-sm text-yellow-700 dark:text-yellow-400">
                             {locationsMissingPrices.length === 1
-                                ? `Still need prices for ${summary.locations.find((l) => l.orderLocationId === locationsMissingPrices[0].orderLocationId)?.name ?? "1 location"}`
+                                ? `Still need prices for ${
+                                      summary.locations.find(
+                                          (location) =>
+                                              location.orderLocationId ===
+                                              locationsMissingPrices[0]
+                                                  .orderLocationId,
+                                      )?.name ?? "1 location"
+                                  }`
                                 : `Still need prices for ${locationsMissingPrices.length} locations`}
                         </Text>
                         <Icon name="ChevronRight" size={16} color="#eab308" />
                     </Pressable>
-                )}
+                ) : null}
 
-                {/* Items List */}
                 <View className="flex-1 px-4 pt-4">
                     <ScrollView
                         className="flex-1"
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ gap: 12, paddingBottom: 32 }}>
                         {currentLocationSummary &&
-                        currentLocationSummary.items.length > 0 ? (
+                        currentLocationSummary.lines.length > 0 ? (
                             <>
-                                {/* Section Header */}
                                 <View className="flex-row justify-between items-center">
                                     <Text className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-                                        Items
+                                        Order Items
                                     </Text>
                                     <View className="px-2.5 py-0.5 rounded-full bg-muted">
                                         <Text className="text-xs font-medium text-muted-foreground">
@@ -381,76 +597,56 @@ export default function OrderSummary() {
                                     </View>
                                 </View>
 
-                                {currentLocationSummary.items.map((item) => (
-                                    <View
-                                        key={item.itemId}
-                                        className="p-4 rounded-2xl border border-muted bg-card">
-                                        <View className="flex-row gap-3 items-center">
-                                            <View className="justify-center items-center w-8 h-8 rounded-full bg-primary/10">
-                                                <Text className="text-xs font-semibold text-primary">
-                                                    x{item.totalQuantity}
-                                                </Text>
-                                            </View>
-                                            <View className="flex-1">
-                                                <Text className="text-base font-medium text-foreground">
-                                                    {item.itemName}
-                                                </Text>
-                                                {item.priceInCents !== null && (
-                                                    <Text className="text-sm text-muted-foreground">
-                                                        $
-                                                        {(
-                                                            item.priceInCents /
-                                                            100
-                                                        ).toFixed(2)}{" "}
-                                                        each
-                                                    </Text>
-                                                )}
-                                            </View>
-                                        </View>
-                                        {item.subItems.length > 0 && (
-                                            <View className="pt-2 mt-3 ml-11 border-t border-muted">
-                                                {item.baseQuantity > 0 && (
-                                                    <View className="flex-row items-center justify-between py-1.5">
-                                                        <Text className="flex-1 text-xs text-muted-foreground">
-                                                            Standard
-                                                        </Text>
-                                                        <Text className="ml-2 text-xs font-medium text-muted-foreground">
-                                                            x{item.baseQuantity}
-                                                        </Text>
-                                                    </View>
-                                                )}
-                                                {item.subItems.map(
-                                                    (
-                                                        subItem,
-                                                        subItemIndex,
-                                                    ) => (
-                                                        <View
-                                                            key={`${item.itemId}-${subItem.comment}-${subItem.quantity}-${subItemIndex}`}
-                                                            className="flex-row items-center justify-between gap-2 py-1.5">
-                                                            <Text
-                                                                numberOfLines={
-                                                                    1
-                                                                }
-                                                                className="flex-1 text-xs text-muted-foreground">
-                                                                {subItem.comment.trim()}
-                                                            </Text>
-                                                            <Text className="ml-2 text-xs font-medium text-muted-foreground">
-                                                                x
-                                                                {
-                                                                    subItem.quantity
-                                                                }
-                                                            </Text>
-                                                        </View>
-                                                    ),
-                                                )}
-                                            </View>
-                                        )}
-                                    </View>
-                                ))}
+                                {groupMode === "items"
+                                    ? itemGroups.map((group) => (
+                                          <View
+                                              key={group.key}
+                                              className="p-4 rounded-2xl border border-muted bg-card">
+                                              <View className="flex-row gap-3 justify-between items-center">
+                                                  <Text className="flex-1 text-sm font-semibold text-foreground">
+                                                      {group.displayName}
+                                                  </Text>
+                                                  <View className="px-2.5 py-1 rounded-full bg-primary/10">
+                                                      <Text className="text-xs font-semibold text-primary">
+                                                          {group.lineCount}
+                                                      </Text>
+                                                  </View>
+                                              </View>
+                                          </View>
+                                      ))
+                                    : participantGroups.map((group) => (
+                                          <View
+                                              key={group.key}
+                                              className="p-4 rounded-2xl border border-muted bg-card">
+                                              <Text className="mb-3 text-sm font-semibold text-foreground">
+                                                  {group.displayName}
+                                              </Text>
+                                              <View className="gap-2">
+                                                  {group.items.map((line) => (
+                                                      <View
+                                                          key={line.id}
+                                                          className="flex-row gap-3 justify-between items-start">
+                                                          <Text className="flex-1 text-sm text-foreground">
+                                                              {line.text}
+                                                          </Text>
+                                                          {line.priceInCents !==
+                                                          null ? (
+                                                              <Text className="text-sm text-muted-foreground">
+                                                                  $
+                                                                  {(
+                                                                      line.priceInCents /
+                                                                      100
+                                                                  ).toFixed(2)}
+                                                              </Text>
+                                                          ) : null}
+                                                      </View>
+                                                  ))}
+                                              </View>
+                                          </View>
+                                      ))}
 
-                                {/* Price Breakdown */}
                                 {currentLocationSummary.subtotalInCents !==
-                                    null && (
+                                null ? (
                                     <>
                                         <View className="flex-row justify-between items-center mt-2">
                                             <Text className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
@@ -471,7 +667,7 @@ export default function OrderSummary() {
                                                 </Text>
                                             </View>
                                             {currentLocationSummary.taxInCents !==
-                                                null && (
+                                            null ? (
                                                 <View className="flex-row justify-between items-center mb-2">
                                                     <Text className="text-sm text-muted-foreground">
                                                         Tax
@@ -484,9 +680,9 @@ export default function OrderSummary() {
                                                         ).toFixed(2)}
                                                     </Text>
                                                 </View>
-                                            )}
+                                            ) : null}
                                             {currentLocationSummary.totalInCents !==
-                                                null && (
+                                            null ? (
                                                 <View className="flex-row justify-between items-center pt-2 border-t border-primary/20">
                                                     <Text className="text-base font-semibold text-foreground">
                                                         Total
@@ -499,10 +695,10 @@ export default function OrderSummary() {
                                                         ).toFixed(2)}
                                                     </Text>
                                                 </View>
-                                            )}
+                                            ) : null}
                                         </View>
                                     </>
-                                )}
+                                ) : null}
                             </>
                         ) : (
                             <View className="justify-center items-center py-12">
@@ -512,14 +708,13 @@ export default function OrderSummary() {
                                     color={NAV_THEME[colorScheme].border}
                                 />
                                 <Text className="mt-3 text-muted-foreground">
-                                    No items from this location
+                                    No items from this location yet
                                 </Text>
                             </View>
                         )}
                     </ScrollView>
                 </View>
 
-                {/* Footer */}
                 <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
                     {isScanning ? (
                         <TouchableOpacity
@@ -582,7 +777,6 @@ export default function OrderSummary() {
                 </View>
             </View>
 
-            {/* Source Selection Action Sheet */}
             <ActionSheet
                 ref={sourceActionSheetRef}
                 containerStyle={{
@@ -593,9 +787,9 @@ export default function OrderSummary() {
                     borderTopLeftRadius: 24,
                     borderTopRightRadius: 24,
                 }}
-                gestureEnabled={true}
+                gestureEnabled
                 defaultOverlayOpacity={0.3}
-                useBottomSafeAreaPadding={true}>
+                useBottomSafeAreaPadding>
                 <View className="gap-3 p-4">
                     <Text className="mb-1 text-lg font-bold text-center text-foreground">
                         Add Prices
@@ -608,20 +802,26 @@ export default function OrderSummary() {
                         iconName="Camera"
                         title="Take Photo"
                         subtitle="Use your camera to capture the receipt"
-                        onPress={() => handleSourceSelect("camera")}
+                        onPress={() => {
+                            sourceActionSheetRef.current?.hide();
+                            void startScan("camera");
+                        }}
                     />
 
                     <ListItem
                         iconName="Image"
                         title="Choose from Library"
                         subtitle="Select an existing photo"
-                        onPress={() => handleSourceSelect("library")}
+                        onPress={() => {
+                            sourceActionSheetRef.current?.hide();
+                            void startScan("library");
+                        }}
                     />
 
                     <ListItem
                         iconName="DollarSign"
                         title="Enter Manually"
-                        subtitle="Type in prices for each item"
+                        subtitle="Type in prices for each order line"
                         onPress={() => {
                             sourceActionSheetRef.current?.hide();
                             setTimeout(() => startManualEntry(), 400);
@@ -636,11 +836,10 @@ export default function OrderSummary() {
                 </View>
             </ActionSheet>
 
-            {/* Receipt Confirmation Sheet */}
             <ReceiptConfirmationSheet
                 visible={scanState === "confirming" || scanState === "saving"}
-                onClose={handleConfirmClose}
-                onConfirm={handleConfirm}
+                onClose={dismissScan}
+                onConfirm={() => void confirmMatches()}
                 matchedItems={matchedItems}
                 orderItems={orderItems}
                 onUpdateMatch={updateMatch}
@@ -649,11 +848,10 @@ export default function OrderSummary() {
                 isSaving={scanState === "saving"}
             />
 
-            {/* Manual Price Entry Sheet */}
             <ManualPriceEntrySheet
                 visible={manualState === "entering" || manualState === "saving"}
                 onDismiss={dismissManual}
-                onSave={saveManualPrices}
+                onSave={() => void saveManualPrices()}
                 orderItems={manualOrderItems}
                 prices={manualPrices}
                 onUpdatePrice={updatePrice}

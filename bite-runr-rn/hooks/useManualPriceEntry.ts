@@ -26,8 +26,7 @@ export interface UseManualPriceEntryResult {
     orderItems: Array<{
         id: string;
         orderUserId: string;
-        itemName: string;
-        quantity: number;
+        text: string;
         userName: string;
         priceInCents: number | null;
     }> | null;

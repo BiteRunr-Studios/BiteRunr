@@ -40,6 +40,29 @@ const ONBOARDING_STEPS = [
     },
 ];
 
+type PayoutBalanceData = {
+    available: number;
+    pending: number;
+    instantAvailable: number;
+    instantPayoutAmount: number;
+    instantPayoutFee: number;
+    hasInstantPayoutCard: boolean;
+    hasBankPayoutAccount: boolean;
+    instantPayoutsEnabled: boolean;
+    currency: string;
+};
+
+type OnboardingStatus = {
+    onboarded: boolean;
+    payoutsEnabled: boolean;
+    chargesEnabled: boolean;
+};
+
+function sanitizeCurrencyAmount(value: number | null | undefined): number {
+    if (typeof value !== "number" || !Number.isFinite(value)) return 0;
+    return Math.max(0, Math.round(value));
+}
+
 export default function PaymentsScreen() {
     const { colorScheme } = useColorScheme();
     const [isSettingUp, setIsSettingUp] = useState(false);
@@ -49,13 +72,9 @@ export default function PaymentsScreen() {
     const [isRequestingPayout, setIsRequestingPayout] = useState(false);
     const [isRequestingStandardPayout, setIsRequestingStandardPayout] =
         useState(false);
-    const [balanceData, setBalanceData] = useState<{
-        available: number;
-        pending: number;
-        instantAvailable: number;
-        instantPayoutsEnabled: boolean;
-        currency: string;
-    } | null>(null);
+    const [balanceData, setBalanceData] = useState<PayoutBalanceData | null>(
+        null,
+    );
 
     const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
     const createConnectAccount = useAction(
@@ -75,6 +94,29 @@ export default function PaymentsScreen() {
         api.stripeConnect.requestStandardPayout,
     );
 
+    const showOnboardingStatusAlert = (status: OnboardingStatus) => {
+        if (status.onboarded && status.chargesEnabled) {
+            Alert.alert(
+                "Setup Complete",
+                "Your account is ready to accept card payments!",
+            );
+            return;
+        }
+
+        if (status.onboarded) {
+            Alert.alert(
+                "Almost There",
+                "Your account is set up but Stripe is still verifying your details. This usually takes a few minutes.",
+            );
+            return;
+        }
+
+        Alert.alert(
+            "Setup Incomplete",
+            "You haven't finished setting up your payout account. Tap 'Continue Setup' to complete it.",
+        );
+    };
+
     const handleSetupPayouts = async () => {
         setIsSettingUp(true);
         try {
@@ -83,23 +125,15 @@ export default function PaymentsScreen() {
                 await WebBrowser.openBrowserAsync(result.url);
                 // Check status after browser closes
                 setIsChecking(true);
+                let status: OnboardingStatus | null = null;
                 try {
-                    const status = await checkOnboardingStatus({});
-                    if (status.onboarded && status.chargesEnabled) {
-                        Alert.alert(
-                            "Setup Complete",
-                            "Your account is ready to accept card payments!",
-                        );
-                    } else if (status.onboarded) {
-                        Alert.alert(
-                            "Almost There",
-                            "Your account is set up but Stripe is still verifying your details. This usually takes a few minutes.",
-                        );
-                    }
+                    status = await checkOnboardingStatus({});
                 } catch {
                     // Status check failed silently — the webhook will update the state
-                } finally {
-                    setIsChecking(false);
+                }
+                setIsChecking(false);
+                if (status) {
+                    showOnboardingStatusAlert(status);
                 }
             }
         } catch (error) {
@@ -109,31 +143,15 @@ export default function PaymentsScreen() {
                     ? error.message
                     : "Failed to start payout setup",
             );
-        } finally {
-            setIsSettingUp(false);
         }
+        setIsSettingUp(false);
     };
 
     const handleCheckStatus = async () => {
         setIsChecking(true);
+        let status: OnboardingStatus | null = null;
         try {
-            const status = await checkOnboardingStatus({});
-            if (status.onboarded && status.chargesEnabled) {
-                Alert.alert(
-                    "Setup Complete",
-                    "Your account is ready to accept card payments!",
-                );
-            } else if (status.onboarded) {
-                Alert.alert(
-                    "Almost There",
-                    "Your account is set up but Stripe is still verifying your details. This usually takes a few minutes.",
-                );
-            } else {
-                Alert.alert(
-                    "Setup Incomplete",
-                    "You haven't finished setting up your payout account. Tap 'Continue Setup' to complete it.",
-                );
-            }
+            status = await checkOnboardingStatus({});
         } catch (error) {
             Alert.alert(
                 "Error",
@@ -141,8 +159,10 @@ export default function PaymentsScreen() {
                     ? error.message
                     : "Failed to check status",
             );
-        } finally {
-            setIsChecking(false);
+        }
+        setIsChecking(false);
+        if (status) {
+            showOnboardingStatusAlert(status);
         }
     };
 
@@ -151,51 +171,68 @@ export default function PaymentsScreen() {
     const fetchBalance = useCallback(async () => {
         if (!isReady) return;
         setIsLoadingBalance(true);
+        let payoutBalance: PayoutBalanceData | null = null;
         try {
-            const result = await getPayoutBalance({});
-            setBalanceData(result);
+            payoutBalance = await getPayoutBalance({});
         } catch {
             // Silently fail — balance card just won't show
-        } finally {
-            setIsLoadingBalance(false);
         }
+        setIsLoadingBalance(false);
+        if (!payoutBalance) return;
+
+        const instantPayoutAmount = sanitizeCurrencyAmount(
+            payoutBalance.instantPayoutAmount,
+        );
+
+        setBalanceData({
+            available: sanitizeCurrencyAmount(payoutBalance.available),
+            pending: sanitizeCurrencyAmount(payoutBalance.pending),
+            instantAvailable: sanitizeCurrencyAmount(
+                payoutBalance.instantAvailable,
+            ),
+            instantPayoutAmount,
+            instantPayoutFee: sanitizeCurrencyAmount(
+                payoutBalance.instantPayoutFee,
+            ),
+            hasInstantPayoutCard: payoutBalance.hasInstantPayoutCard === true,
+            hasBankPayoutAccount: payoutBalance.hasBankPayoutAccount === true,
+            instantPayoutsEnabled:
+                payoutBalance.instantPayoutsEnabled === true &&
+                instantPayoutAmount > 0,
+            currency: payoutBalance.currency || "cad",
+        });
     }, [isReady, getPayoutBalance]);
 
     useEffect(() => {
-        fetchBalance();
+        const timeoutId = setTimeout(() => {
+            void fetchBalance();
+        }, 0);
+
+        return () => clearTimeout(timeoutId);
     }, [fetchBalance]);
 
     const formatCurrency = (amount: number) => {
-        return `$${(amount / 100).toFixed(2)}`;
-    };
-
-    const estimatePayoutFee = (amount: number) => {
-        return Math.max(Math.ceil(amount * 0.01), 60);
+        return `$${(sanitizeCurrencyAmount(amount) / 100).toFixed(2)}`;
     };
 
     const handleInstantPayout = async () => {
-        if (!balanceData || balanceData.instantAvailable <= 0) return;
-
-        const fee = estimatePayoutFee(balanceData.instantAvailable);
-        const estimatedPayout = balanceData.instantAvailable - fee;
+        if (!balanceData || balanceData.instantPayoutAmount <= 0) return;
 
         Alert.alert(
             "Instant Payout",
-            `Cash out to your debit card?\n\nBalance: ${formatCurrency(balanceData.instantAvailable)}\nStripe fee: -${formatCurrency(fee)}\nYou'll receive: ~${formatCurrency(estimatedPayout)}`,
+            `Cash out to your debit card?\n\nBalance: ${formatCurrency(balanceData.instantAvailable)}\nStripe fee: -${formatCurrency(balanceData.instantPayoutFee)}\nYou'll receive: ${formatCurrency(balanceData.instantPayoutAmount)}`,
             [
                 { text: "Cancel", style: "cancel" },
                 {
                     text: "Cash Out",
                     onPress: async () => {
                         setIsRequestingPayout(true);
+                        let payoutResult: {
+                            amount: number;
+                            fee: number;
+                        } | null = null;
                         try {
-                            const result = await requestInstantPayout({});
-                            Alert.alert(
-                                "Payout Sent!",
-                                `${formatCurrency(result.amount)} is on its way to your debit card.${result.fee > 0 ? ` (Fee: ${formatCurrency(result.fee)})` : ""}`,
-                            );
-                            // Refresh balance after payout
-                            fetchBalance();
+                            payoutResult = await requestInstantPayout({});
                         } catch (error) {
                             Alert.alert(
                                 "Payout Failed",
@@ -203,9 +240,20 @@ export default function PaymentsScreen() {
                                     ? error.message
                                     : "Failed to create instant payout. Make sure you have a debit card linked to your Stripe account.",
                             );
-                        } finally {
-                            setIsRequestingPayout(false);
                         }
+                        setIsRequestingPayout(false);
+                        if (!payoutResult) return;
+
+                        const feeMessage =
+                            payoutResult.fee > 0
+                                ? ` (Fee: ${formatCurrency(payoutResult.fee)})`
+                                : "";
+
+                        Alert.alert(
+                            "Payout Sent!",
+                            `${formatCurrency(payoutResult.amount)} is on its way to your debit card.${feeMessage}`,
+                        );
+                        void fetchBalance();
                     },
                 },
             ],
@@ -213,7 +261,13 @@ export default function PaymentsScreen() {
     };
 
     const handleStandardPayout = async () => {
-        if (!balanceData || balanceData.available <= 0) return;
+        if (
+            !balanceData ||
+            balanceData.available <= 0 ||
+            !balanceData.hasBankPayoutAccount
+        ) {
+            return;
+        }
 
         Alert.alert(
             "Payout to Bank",
@@ -224,13 +278,9 @@ export default function PaymentsScreen() {
                     text: "Transfer",
                     onPress: async () => {
                         setIsRequestingStandardPayout(true);
+                        let payoutResult: { amount: number } | null = null;
                         try {
-                            const result = await requestStandardPayout({});
-                            Alert.alert(
-                                "Payout Initiated",
-                                `${formatCurrency(result.amount)} will arrive in your bank account in 1-2 business days.`,
-                            );
-                            fetchBalance();
+                            payoutResult = await requestStandardPayout({});
                         } catch (error) {
                             Alert.alert(
                                 "Payout Failed",
@@ -238,9 +288,15 @@ export default function PaymentsScreen() {
                                     ? error.message
                                     : "Failed to create payout.",
                             );
-                        } finally {
-                            setIsRequestingStandardPayout(false);
                         }
+                        setIsRequestingStandardPayout(false);
+                        if (!payoutResult) return;
+
+                        Alert.alert(
+                            "Payout Initiated",
+                            `${formatCurrency(payoutResult.amount)} will arrive in your bank account in 1-2 business days.`,
+                        );
+                        void fetchBalance();
                     },
                 },
             ],
@@ -261,14 +317,43 @@ export default function PaymentsScreen() {
                     ? error.message
                     : "Failed to open dashboard",
             );
-        } finally {
-            setIsOpeningDashboard(false);
         }
+        setIsOpeningDashboard(false);
     };
 
     const isOnboarded = connectedAccount?.onboardingComplete;
     const isLoading = connectedAccount === undefined;
     const hasNoAccount = connectedAccount === null;
+    const showInstantPayout =
+        !!balanceData?.instantPayoutsEnabled &&
+        (balanceData?.instantPayoutAmount ?? 0) > 0;
+    const showBankTransfer =
+        !!balanceData?.hasBankPayoutAccount && (balanceData?.available ?? 0) > 0;
+    const instantPayoutStatus =
+        balanceData && balanceData.available > 0 && !showInstantPayout
+            ? !balanceData.hasInstantPayoutCard
+                ? {
+                      icon: "CircleAlert" as const,
+                      color: "#f59e0b",
+                      title: "Instant payout unavailable",
+                      message:
+                          "Stripe does not currently show an instant-eligible debit card on this account. Add or replace the payout card in Stripe to enable instant cash out.",
+                  }
+                : balanceData.instantAvailable <= 0
+                  ? {
+                        icon: "Info" as const,
+                        color: NAV_THEME[colorScheme].primary,
+                        title: "No instant-eligible balance yet",
+                        message: `You have ${formatCurrency(balanceData.available)} available for standard payout, but Stripe is currently reporting ${formatCurrency(balanceData.instantAvailable)} as instant-eligible.`,
+                    }
+                  : {
+                        icon: "Info" as const,
+                        color: NAV_THEME[colorScheme].primary,
+                        title: "Instant payout unavailable",
+                        message:
+                            "Your instant-eligible balance is too small to cover Stripe's instant payout fee right now.",
+                    }
+            : null;
 
     // Derive step completion from actual Stripe account state
     const getStepStatus = (index: number) => {
@@ -589,22 +674,67 @@ export default function PaymentsScreen() {
                                             </View>
                                         )}
 
-                                        {balanceData.available > 0 &&
-                                        balanceData.instantPayoutsEnabled ? (
+                                        {balanceData.available > 0 && (
+                                            <View className="mb-4 gap-2">
+                                                <View className="flex-row items-center justify-between px-3 py-2 rounded-xl bg-muted">
+                                                    <Text className="text-sm text-muted-foreground">
+                                                        Instant-eligible now
+                                                    </Text>
+                                                    <Text className="text-sm font-medium text-foreground">
+                                                        {balanceData.hasInstantPayoutCard
+                                                            ? formatCurrency(
+                                                                  balanceData.instantAvailable,
+                                                              )
+                                                            : "No eligible card"}
+                                                    </Text>
+                                                </View>
+
+                                                {instantPayoutStatus && (
+                                                    <View className="flex-row gap-2 items-start px-3 py-2 rounded-xl border border-muted bg-muted">
+                                                        <Icon
+                                                            name={
+                                                                instantPayoutStatus.icon
+                                                            }
+                                                            size={16}
+                                                            color={
+                                                                instantPayoutStatus.color
+                                                            }
+                                                        />
+                                                        <View className="flex-1">
+                                                            <Text
+                                                                className="text-sm font-medium"
+                                                                style={{
+                                                                    color: instantPayoutStatus.color,
+                                                                }}>
+                                                                {
+                                                                    instantPayoutStatus.title
+                                                                }
+                                                            </Text>
+                                                            <Text className="mt-0.5 text-xs text-muted-foreground">
+                                                                {
+                                                                    instantPayoutStatus.message
+                                                                }
+                                                            </Text>
+                                                        </View>
+                                                    </View>
+                                                )}
+                                            </View>
+                                        )}
+
+                                        {showInstantPayout &&
+                                        showBankTransfer ? (
                                             <View className="gap-2">
                                                 <Button
-                                                    label={`Instant Payout — ~${formatCurrency(balanceData.instantAvailable - estimatePayoutFee(balanceData.instantAvailable))}`}
+                                                    label={`Instant Payout: ${formatCurrency(balanceData.instantPayoutAmount)}`}
                                                     icon="Zap"
                                                     onPress={
                                                         handleInstantPayout
                                                     }
-                                                    loading={
-                                                        isRequestingPayout
-                                                    }
+                                                    loading={isRequestingPayout}
                                                     color="#22c55e"
                                                 />
                                                 <Button
-                                                    label={`Bank Transfer — ${formatCurrency(balanceData.available)}`}
+                                                    label={`Bank Transfer: ${formatCurrency(balanceData.available)}`}
                                                     icon="Building"
                                                     variant="outline"
                                                     onPress={
@@ -619,12 +749,30 @@ export default function PaymentsScreen() {
                                                     }
                                                 />
                                                 <Text className="text-xs text-center text-muted-foreground">
-                                                    Bank transfers are free
-                                                    and arrive in 1-2
-                                                    business days.
+                                                    Bank transfers are free and
+                                                    arrive in 1-2 business days.
                                                 </Text>
                                             </View>
-                                        ) : balanceData.available > 0 ? (
+                                        ) : showInstantPayout ? (
+                                            <View className="gap-2">
+                                                <Button
+                                                    label={`Instant Payout: ${formatCurrency(balanceData.instantPayoutAmount)}`}
+                                                    icon="Zap"
+                                                    onPress={
+                                                        handleInstantPayout
+                                                    }
+                                                    loading={isRequestingPayout}
+                                                    color="#22c55e"
+                                                />
+                                                <Text className="text-xs text-center text-muted-foreground">
+                                                    Instant payouts go to your
+                                                    debit card. Add a bank
+                                                    account in Stripe if you
+                                                    also want free standard
+                                                    transfers.
+                                                </Text>
+                                            </View>
+                                        ) : showBankTransfer ? (
                                             <View className="gap-2">
                                                 <Button
                                                     label={`Payout to Bank — ${formatCurrency(balanceData.available)}`}
@@ -639,9 +787,18 @@ export default function PaymentsScreen() {
                                                 />
                                                 <Text className="text-xs text-center text-muted-foreground">
                                                     No fees — arrives in 1-2
-                                                    business days. Add a
-                                                    debit card in Stripe for
-                                                    instant payouts.
+                                                    business days. Instant
+                                                    payout appears separately
+                                                    when Stripe reports an
+                                                    instant-eligible balance.
+                                                </Text>
+                                            </View>
+                                        ) : balanceData.available > 0 ? (
+                                            <View>
+                                                <Text className="text-xs text-center text-muted-foreground">
+                                                    {balanceData.hasInstantPayoutCard
+                                                        ? "Instant payout will appear here once Stripe marks part of this balance as instant-eligible."
+                                                        : "Add a bank account or an instant-eligible debit card in Stripe to cash out your balance."}
                                                 </Text>
                                             </View>
                                         ) : (

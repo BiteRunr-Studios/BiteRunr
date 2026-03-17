@@ -1,232 +1,60 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { useQuery, useAction } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import { DashboardLayout } from "@/components/dashboard-layout";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Package, Users, ShoppingCart, ArrowRight, Mail, Send } from "lucide-react";
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { ArrowRight, FileText, ShieldCheck } from 'lucide-react'
 
-export const Route = createFileRoute("/")({ component: Dashboard });
+export const Route = createFileRoute('/')({
+  component: IndexPage,
+})
 
-function Dashboard() {
-  const stats = useQuery(api.admin.getStats);
-  const locations = useQuery(api.admin.listLocations);
-  const waitlistCount = useQuery(api.waitlist.getCount);
-  const waitlistEntries = useQuery(api.waitlist.list);
-  const sendLaunchEmail = useAction(api.waitlist.sendLaunchEmail);
-
-  const [emailSubject, setEmailSubject] = useState("BiteRunr is Live! 🎉");
-  const [emailBody, setEmailBody] = useState(
-    `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-  <h1 style="color: #FF8800;">BiteRunr is Live!</h1>
-  <p>Hey there! You signed up for the BiteRunr waitlist, and we're excited to let you know — the app is now available!</p>
-  <p>Download it today and start simplifying group food orders with your friends.</p>
-  <a href="https://biterunr.com" style="display: inline-block; background: #FF8800; color: black; font-weight: bold; padding: 12px 24px; border-radius: 8px; text-decoration: none; margin-top: 16px;">Get BiteRunr</a>
-  <p style="color: #888; margin-top: 24px; font-size: 12px;">— The BiteRunr Team</p>
-</div>`
-  );
-  const [sending, setSending] = useState(false);
-  const [sendResult, setSendResult] = useState<string | null>(null);
-
+function IndexPage() {
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Overview of your BiteRunr data
+    <main className="min-h-screen bg-[linear-gradient(135deg,#f6f8f7_0%,#eef6f2_45%,#ffffff_100%)] text-foreground">
+      <div className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center gap-10 px-6 py-16">
+        <div className="space-y-4">
+          <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">
+            BiteRunr Admin
+          </p>
+          <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">
+            This admin package only hosts BiteRunr&apos;s public policy pages.
+          </h1>
+          <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+            The dashboard code that was previously here referenced app routes,
+            Convex modules, and UI components that do not exist in this package.
+            The homepage now stays within the scope documented for `admin`.
           </p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Locations
-              </CardTitle>
-              <MapPin className="size-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats?.totalLocations ?? "..."}
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid gap-4 md:grid-cols-2">
+          <section className="border border-border bg-card p-6 shadow-[8px_8px_0_0_rgba(0,0,0,0.08)]">
+            <div className="mb-4 flex items-center gap-3">
+              <ShieldCheck className="size-5 text-primary" />
+              <h2 className="text-xl font-medium">Privacy policy</h2>
+            </div>
+            <p className="mb-6 text-sm leading-6 text-muted-foreground">
+              View the current BiteRunr privacy policy published by this app.
+            </p>
+            <Link
+              to="/privacy"
+              className="inline-flex items-center gap-2 border border-foreground bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-transform hover:translate-x-1"
+            >
+              Open privacy page
+              <ArrowRight className="size-4" />
+            </Link>
+          </section>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-              <Package className="size-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats?.totalItems ?? "..."}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="size-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats?.totalUsers ?? "..."}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                Active Orders
-              </CardTitle>
-              <ShoppingCart className="size-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats?.activeOrders ?? "..."}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                of {stats?.totalOrders ?? "..."} total orders
-              </p>
-            </CardContent>
-          </Card>
+          <section className="border border-border bg-card p-6 shadow-[8px_8px_0_0_rgba(0,0,0,0.08)]">
+            <div className="mb-4 flex items-center gap-3">
+              <FileText className="size-5 text-primary" />
+              <h2 className="text-xl font-medium">Package scope</h2>
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">
+              If you want a real operational dashboard, it should live in a
+              dedicated admin app with its own routes, shared UI, and Convex API
+              surface instead of reaching into the mobile app repository
+              structure.
+            </p>
+          </section>
         </div>
-
-        {/* Waitlist */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="size-5" />
-                  Waitlist
-                </CardTitle>
-                <CardDescription>
-                  {waitlistCount ?? "..."} people signed up
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {waitlistEntries && waitlistEntries.length > 0 && (
-              <div className="max-h-40 overflow-y-auto space-y-1 rounded-md border p-3 text-sm">
-                {waitlistEntries.map((entry) => (
-                  <div key={entry._id} className="flex items-center justify-between">
-                    <span>{entry.email}</span>
-                    <span className="text-muted-foreground text-xs">
-                      {new Date(entry.signedUpAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="space-y-3 rounded-md border p-4">
-              <h4 className="font-medium text-sm">Send Email to Waitlist</h4>
-              <Input
-                placeholder="Subject"
-                value={emailSubject}
-                onChange={(e) => setEmailSubject(e.target.value)}
-              />
-              <Textarea
-                placeholder="HTML body"
-                value={emailBody}
-                onChange={(e) => setEmailBody(e.target.value)}
-                rows={6}
-                className="font-mono text-xs"
-              />
-              <div className="flex items-center gap-3">
-                <Button
-                  disabled={sending || !waitlistCount}
-                  onClick={async () => {
-                    if (!confirm(`Send email to ${waitlistCount} waitlist subscribers?`)) return;
-                    setSending(true);
-                    setSendResult(null);
-                    try {
-                      const result = await sendLaunchEmail({
-                        subject: emailSubject,
-                        html: emailBody,
-                      });
-                      setSendResult(`Sent to ${result.sent} subscribers!`);
-                    } catch (err) {
-                      setSendResult(`Error: ${err instanceof Error ? err.message : "Unknown error"}`);
-                    } finally {
-                      setSending(false);
-                    }
-                  }}
-                >
-                  <Send className="size-4 mr-2" />
-                  {sending ? "Sending..." : `Send to ${waitlistCount ?? 0} subscribers`}
-                </Button>
-                {sendResult && (
-                  <span className={`text-sm ${sendResult.startsWith("Error") ? "text-destructive" : "text-green-500"}`}>
-                    {sendResult}
-                  </span>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Locations */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Locations</CardTitle>
-                <CardDescription>
-                  Recently added restaurant locations
-                </CardDescription>
-              </div>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/locations">
-                  View all
-                  <ArrowRight className="ml-1 size-4" />
-                </Link>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {locations === undefined ? (
-              <p className="text-muted-foreground">Loading...</p>
-            ) : locations.length === 0 ? (
-              <p className="text-muted-foreground">No locations yet</p>
-            ) : (
-              <div className="space-y-3">
-                {locations.slice(0, 5).map((location) => (
-                  <Link
-                    key={location._id}
-                    to="/locations/$locationId"
-                    params={{ locationId: location._id }}
-                    className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
-                  >
-                    <div>
-                      <p className="font-medium">{location.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {location.address}
-                      </p>
-                    </div>
-                    <ArrowRight className="size-4 text-muted-foreground" />
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
-    </DashboardLayout>
-  );
+    </main>
+  )
 }

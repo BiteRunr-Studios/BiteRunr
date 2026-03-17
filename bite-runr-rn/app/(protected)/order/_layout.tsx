@@ -5,6 +5,7 @@ export default function OrderLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
+        headerBackButtonMenuEnabled: false,
       }}
     />
   );

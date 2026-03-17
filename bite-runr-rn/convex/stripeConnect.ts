@@ -16,6 +16,80 @@ function getStripe() {
 
 import { calculatePlatformFee } from "./fees";
 
+const STRIPE_INSTANT_PAYOUT_PERCENT = 0.01;
+const STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS = 60;
+
+function calculateInstantPayoutFee(amountCents: number): number {
+    if (amountCents <= 0) return 0;
+    return Math.max(
+        Math.ceil(amountCents * STRIPE_INSTANT_PAYOUT_PERCENT),
+        STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS,
+    );
+}
+
+function calculateMaxInstantPayout(amountAvailableCents: number): {
+    amount: number;
+    fee: number;
+} {
+    if (amountAvailableCents <= STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS) {
+        return { amount: 0, fee: 0 };
+    }
+
+    // Below the threshold where 1% exceeds the minimum fee, the net payout is
+    // simply the available balance minus the fixed minimum fee.
+    const minFeeCandidate =
+        amountAvailableCents - STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS;
+    if (
+        calculateInstantPayoutFee(minFeeCandidate) ===
+        STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS
+    ) {
+        return {
+            amount: minFeeCandidate,
+            fee: STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS,
+        };
+    }
+
+    // Once percentage pricing applies, solve `amount + fee <= available`.
+    let amount = Math.floor((amountAvailableCents * 100) / 101);
+    while (amount > 0) {
+        const fee = calculateInstantPayoutFee(amount);
+        if (amount + fee <= amountAvailableCents) {
+            return { amount, fee };
+        }
+        amount -= 1;
+    }
+
+    return { amount: 0, fee: 0 };
+}
+
+async function getPayoutDestinationAvailability(
+    stripe: Stripe,
+    stripeAccountId: string,
+): Promise<{
+    hasInstantPayoutCard: boolean;
+    hasBankPayoutAccount: boolean;
+}> {
+    const externalAccounts = await stripe.accounts.listExternalAccounts(
+        stripeAccountId,
+        { limit: 10 },
+    );
+
+    const hasInstantPayoutCard = externalAccounts.data.some(
+        (externalAccount) =>
+            externalAccount.object === "card" &&
+            externalAccount.available_payout_methods?.includes("instant") ===
+                true,
+    );
+    const hasBankPayoutAccount = externalAccounts.data.some(
+        (externalAccount) => externalAccount.object === "bank_account",
+    );
+
+    return {
+        hasInstantPayoutCard,
+        hasBankPayoutAccount,
+    };
+}
+
 // --- SELLER ONBOARDING ---
 // Creates a Stripe Connect Express account and returns the onboarding URL.
 // The runner opens this URL to enter their identity + debit card / bank info.
@@ -268,6 +342,10 @@ export const getPayoutBalance = action({
         available: number;
         pending: number;
         instantAvailable: number;
+        instantPayoutAmount: number;
+        instantPayoutFee: number;
+        hasInstantPayoutCard: boolean;
+        hasBankPayoutAccount: boolean;
         instantPayoutsEnabled: boolean;
         currency: string;
     }> => {
@@ -282,6 +360,10 @@ export const getPayoutBalance = action({
         if (!account) throw new Error("No connected account found");
 
         const stripe = getStripe();
+        const payoutDestinations = await getPayoutDestinationAvailability(
+            stripe,
+            account.stripeAccountId,
+        );
 
         const balance = await stripe.balance.retrieve({
             stripeAccount: account.stripeAccountId,
@@ -298,12 +380,15 @@ export const getPayoutBalance = action({
             balance.instant_available?.find((b) => b.currency === "cad") ??
             balance.instant_available?.[0];
 
-        // instant_available is supposed to be a subset of available, but
-        // Stripe can sometimes report instant_available > 0 while available
-        // is 0 (race / pending settlement). Cap it so the UI stays sane.
         const availableAmount = availableEntry?.amount ?? 0;
-        const rawInstant = instantEntry?.amount ?? 0;
-        const instantAmount = Math.min(rawInstant, availableAmount);
+        // Stripe instant payouts are based on `instant_available`, which can
+        // exceed the standard available balance while funds are still queued
+        // for the regular payout schedule.
+        const instantAmount = instantEntry?.amount ?? 0;
+        const {
+            amount: instantPayoutAmount,
+            fee: instantPayoutFee,
+        } = calculateMaxInstantPayout(instantAmount);
         const hasInstantCapability =
             Array.isArray(balance.instant_available) &&
             balance.instant_available.length > 0;
@@ -312,8 +397,19 @@ export const getPayoutBalance = action({
             available: availableAmount,
             pending: pendingEntry?.amount ?? 0,
             instantAvailable: instantAmount,
-            instantPayoutsEnabled: hasInstantCapability && instantAmount > 0,
-            currency: availableEntry?.currency ?? "cad",
+            instantPayoutAmount,
+            instantPayoutFee,
+            hasInstantPayoutCard: payoutDestinations.hasInstantPayoutCard,
+            hasBankPayoutAccount: payoutDestinations.hasBankPayoutAccount,
+            instantPayoutsEnabled:
+                hasInstantCapability &&
+                payoutDestinations.hasInstantPayoutCard &&
+                instantPayoutAmount > 0,
+            currency:
+                availableEntry?.currency ??
+                instantEntry?.currency ??
+                pendingEntry?.currency ??
+                "cad",
         };
     },
 });
@@ -342,6 +438,16 @@ export const requestInstantPayout = action({
         if (!account) throw new Error("No connected account found");
 
         const stripe = getStripe();
+        const payoutDestinations = await getPayoutDestinationAvailability(
+            stripe,
+            account.stripeAccountId,
+        );
+
+        if (!payoutDestinations.hasInstantPayoutCard) {
+            throw new Error(
+                "Instant payouts are not available for your account. Add a debit card in Stripe to use instant payout.",
+            );
+        }
 
         // Get balance to determine payout amount.
         // instant_available is the actual amount Stripe will let you instant-pay.
@@ -352,9 +458,9 @@ export const requestInstantPayout = action({
         const instantEntry =
             balance.instant_available?.find((b) => b.currency === "cad") ??
             balance.instant_available?.[0];
-        const availableAmount = instantEntry?.amount ?? 0;
+        const instantAvailableAmount = instantEntry?.amount ?? 0;
 
-        if (!instantEntry || availableAmount <= 0) {
+        if (!instantEntry || instantAvailableAmount <= 0) {
             // Check if there are pending funds to give a better message
             const pendingEntry =
                 balance.pending.find((b) => b.currency === "cad") ??
@@ -372,19 +478,11 @@ export const requestInstantPayout = action({
         }
 
         const currency = instantEntry.currency ?? "cad";
-
-        // Stripe charges an instant payout fee (1%, min $0.50) from the
-        // connected account's balance. Subtract the fee so the payout +
-        // fee doesn't exceed the available balance.
-        const estimatedFee = Math.max(
-            Math.ceil(availableAmount * 0.01),
-            60, // $0.60 CAD minimum fee
-        );
-        const amount = availableAmount - estimatedFee;
+        const { amount, fee } = calculateMaxInstantPayout(instantAvailableAmount);
 
         if (amount <= 0) {
             throw new Error(
-                `Your available balance of $${(availableAmount / 100).toFixed(2)} is too small to cover the instant payout fee. Funds will be paid out automatically on the regular schedule.`,
+                `Your available balance of $${(instantAvailableAmount / 100).toFixed(2)} is too small to cover the instant payout fee. Funds will be paid out automatically on the regular schedule.`,
             );
         }
 
@@ -403,7 +501,7 @@ export const requestInstantPayout = action({
             return {
                 success: true,
                 amount: payout.amount,
-                fee: 0, // Stripe reports fees separately via balance transactions
+                fee,
                 currency,
             };
         } catch (error) {
@@ -450,6 +548,16 @@ export const requestStandardPayout = action({
         if (!account) throw new Error("No connected account found");
 
         const stripe = getStripe();
+        const payoutDestinations = await getPayoutDestinationAvailability(
+            stripe,
+            account.stripeAccountId,
+        );
+
+        if (!payoutDestinations.hasBankPayoutAccount) {
+            throw new Error(
+                "Bank transfers are not available for your account. Add a bank account in Stripe to use standard payouts.",
+            );
+        }
 
         const balance = await stripe.balance.retrieve({
             stripeAccount: account.stripeAccountId,

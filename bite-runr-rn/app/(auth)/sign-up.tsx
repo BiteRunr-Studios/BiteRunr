@@ -130,7 +130,7 @@ export default function SignUpScreen() {
 
             if (response.error) {
                 throw new Error(
-                    response.error.message || "Failed to create account"
+                    response.error.message || "Failed to create account",
                 );
             }
 
@@ -180,11 +180,10 @@ export default function SignUpScreen() {
     }, [form, setIsSigningUp]);
 
     return (
-        <SafeAreaView className="justify-center flex-1 px-4 transition-all duration-200">
+        <SafeAreaView className="flex-1 justify-center px-4 transition-all duration-200">
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
-                className="flex-1 justify-center"
-            >
+                className="flex-1 justify-center">
                 <View className="mt-10"></View>
                 {/* Title */}
                 <Text className="mb-2 text-3xl font-bold text-foreground">
@@ -196,7 +195,7 @@ export default function SignUpScreen() {
 
                 <View className="mt-8" />
 
-                <View className="flex-row justify-center gap-2 items-top">
+                <View className="flex-row gap-2 justify-center items-top">
                     {/* First Name Field */}
                     <View className="flex-1">
                         <Input
@@ -274,7 +273,7 @@ export default function SignUpScreen() {
 
                 <View className="mt-8" />
 
-                <View className="flex-row items-center justify-between gap-3">
+                <View className="flex-row gap-3 justify-between items-center">
                     <View className="bg-muted h-[1px] flex-grow"></View>
                     <Text className="italic text-muted-foreground">OR</Text>
                     <View className="bg-muted h-[1px] flex-grow"></View>
@@ -282,27 +281,29 @@ export default function SignUpScreen() {
 
                 <View className="mt-8" />
 
-                {/* GitHub Auth Button */}
-                <OAuthButton provider="github" disabled={loading} />
+                {/* Apple Auth Button */}
+                <OAuthButton provider="apple" disabled={loading} />
 
                 <View className="mt-3" />
 
                 {/* Google Auth Button */}
                 <OAuthButton provider="google" disabled={loading} />
 
-                <View className="flex-row items-center justify-center gap-2 mt-4">
+                <View className="flex-row gap-2 justify-center items-center mt-4">
                     <Text className="text-muted-foreground">
                         Already have an account?
                     </Text>
                     <Pressable
-                        className="flex-row items-center gap-1"
+                        className="flex-row gap-1 items-center"
                         onPress={() => router.back()}>
                         <Icon
                             name="ArrowLeft"
                             size={15}
                             color={NAV_THEME[colorScheme].primary}
                         />
-                        <Text className="font-semibold text-primary">Sign in</Text>
+                        <Text className="font-semibold text-primary">
+                            Sign in
+                        </Text>
                     </Pressable>
                 </View>
             </KeyboardAvoidingView>

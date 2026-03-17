@@ -316,32 +316,3 @@ export const joinOrder = mutation({
         return { orderId: order._id, alreadyMember: false };
     },
 });
-
-// Deactivate all active invites for an order (creator only)
-export const deactivateInvite = mutation({
-    args: { orderId: v.id("orders") },
-    handler: async (ctx, args) => {
-        const userId = await requireUserIdWithSync(ctx);
-
-        // Get the order and verify creator
-        const order = await ctx.db.get(args.orderId);
-        if (!order) throw new Error("Order not found");
-        if (order.creatorId !== userId) {
-            throw new Error("Only the order creator can deactivate invites");
-        }
-
-        // Deactivate all active invites
-        const activeInvites = await ctx.db
-            .query("orderInvites")
-            .withIndex("by_orderId_isActive", (q) =>
-                q.eq("orderId", args.orderId).eq("isActive", true)
-            )
-            .collect();
-
-        for (const invite of activeInvites) {
-            await ctx.db.patch(invite._id, { isActive: false });
-        }
-
-        return { deactivatedCount: activeInvites.length };
-    },
-});

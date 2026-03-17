@@ -30,12 +30,13 @@ import ReAnimated, {
 } from "react-native-reanimated";
 import { NAV_THEME } from "@/lib/constants";
 import Icon from "@/components/common/icon";
-import { useQuery, useMutation } from "convex/react";
+import { useAction, useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { QRCodeModal } from "@/components/qr-code-modal";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
+import { primeAiOrderSummaryRequest } from "@/hooks/useAiOrderSummary";
 
 type ButtonState = "readyToRun" | "enabled" | "disabled";
 
@@ -62,25 +63,31 @@ function UserItemsList({ orderUserId }: { orderUserId: Id<"orderUsers"> }) {
 
     return (
         <View className="px-4 pt-2 pb-3">
-            {items.map((item) => (
-                <View
-                    key={item.id}
-                    className="flex-row items-start justify-between py-1.5">
-                    <View className="flex-1">
-                        <Text className="text-sm text-foreground">
-                            {item.itemName}
-                        </Text>
-                        {item.comments ? (
-                            <Text className="mt-0.5 text-xs text-muted-foreground">
-                                {item.comments}
+            {items.map((item, index) => {
+                const showLocation =
+                    index === 0 ||
+                    items[index - 1].orderLocationId !== item.orderLocationId;
+
+                return (
+                    <View key={item.id} className="py-1.5">
+                        {showLocation ? (
+                            <Text className="mb-1 text-xs font-semibold tracking-wide uppercase text-muted-foreground">
+                                {item.locationName}
                             </Text>
                         ) : null}
+                        <View className="flex-row justify-between items-start">
+                            <Text className="flex-1 text-sm text-foreground">
+                                {item.text}
+                            </Text>
+                            {item.priceInCents !== null ? (
+                                <Text className="ml-3 text-sm text-muted-foreground">
+                                    ${(item.priceInCents / 100).toFixed(2)}
+                                </Text>
+                            ) : null}
+                        </View>
                     </View>
-                    <Text className="ml-3 text-sm text-muted-foreground">
-                        x{item.quantity}
-                    </Text>
-                </View>
-            ))}
+                );
+            })}
         </View>
     );
 }
@@ -98,7 +105,9 @@ export default function SpecificOrder() {
     const transferRunnerSheetRef = useRef<ActionSheetRef>(null);
 
     const toggleExpanded = useCallback((orderUserId: string) => {
-        setExpandedUserId((prev) => (prev === orderUserId ? null : orderUserId));
+        setExpandedUserId((prev) =>
+            prev === orderUserId ? null : orderUserId,
+        );
     }, []);
 
     const breatheValue = useSharedValue(1);
@@ -143,6 +152,9 @@ export default function SpecificOrder() {
     const transferRunner = useMutation(api.orders.transferRunner);
     const leaveOrder = useMutation(api.orderUsers.leaveOrder);
     const removeFromOrder = useMutation(api.orderUsers.removeFromOrder);
+    const generateAiOrderSummary = useAction(
+        api.orderItems.generateAiOrderSummary,
+    );
 
     const prevStatusRef = useRef<string | null>(null);
 
@@ -259,6 +271,17 @@ export default function SpecificOrder() {
     const transferCandidates =
         data?.orderUsers.filter((orderUser) => !orderUser.isCreator) ?? [];
 
+    function openOrderSummary(aiHint: "cached" | "generate") {
+        if (aiHint === "generate") {
+            void primeAiOrderSummaryRequest(
+                generateAiOrderSummary,
+                orderId as Id<"orders">,
+            );
+        }
+
+        router.push(`/order/summary?orderId=${orderId}&aiHint=${aiHint}`);
+    }
+
     async function handleStartRun() {
         const startRun = async () => {
             try {
@@ -266,8 +289,7 @@ export default function SpecificOrder() {
                     orderId: orderId as Id<"orders">,
                     paused: true,
                 });
-                // Navigate to order summary page
-                router.push(`/order/summary?orderId=${orderId}`);
+                openOrderSummary("generate");
             } catch (error) {
                 console.error("Failed to start run:", error);
                 Alert.alert("Error", "Failed to start run. Please try again.");
@@ -347,42 +369,38 @@ export default function SpecificOrder() {
                 ? `Make ${nextRunnerName} the new runner for this order? Future card payments will go to them instead of you.`
                 : `Make ${nextRunnerName} the new runner for this order? They do not have Stripe payments set up, so members will need to use cash settlement until they do.`;
 
-            Alert.alert(
-                "Transfer Runner",
-                transferMessage,
-                [
-                    {
-                        text: "Cancel",
-                        style: "cancel",
+            Alert.alert("Transfer Runner", transferMessage, [
+                {
+                    text: "Cancel",
+                    style: "cancel",
+                },
+                {
+                    text: "Transfer",
+                    onPress: async () => {
+                        setIsTransferringRunner(true);
+                        try {
+                            await transferRunner({
+                                orderId: orderId as Id<"orders">,
+                                newCreatorId: nextRunner.userId as Id<"users">,
+                            });
+                            Alert.alert(
+                                "Runner Updated",
+                                `${nextRunnerName} is now the runner for this order.`,
+                            );
+                        } catch (error) {
+                            console.error("Failed to transfer runner:", error);
+                            Alert.alert(
+                                "Error",
+                                error instanceof Error
+                                    ? error.message
+                                    : "Failed to transfer the runner. Please try again.",
+                            );
+                        } finally {
+                            setIsTransferringRunner(false);
+                        }
                     },
-                    {
-                        text: "Transfer",
-                        onPress: async () => {
-                            setIsTransferringRunner(true);
-                            try {
-                                await transferRunner({
-                                    orderId: orderId as Id<"orders">,
-                                    newCreatorId: nextRunner.userId as Id<"users">,
-                                });
-                                Alert.alert(
-                                    "Runner Updated",
-                                    `${nextRunnerName} is now the runner for this order.`,
-                                );
-                            } catch (error) {
-                                console.error("Failed to transfer runner:", error);
-                                Alert.alert(
-                                    "Error",
-                                    error instanceof Error
-                                        ? error.message
-                                        : "Failed to transfer the runner. Please try again.",
-                                );
-                            } finally {
-                                setIsTransferringRunner(false);
-                            }
-                        },
-                    },
-                ],
-            );
+                },
+            ]);
         });
     }
 
@@ -464,7 +482,7 @@ export default function SpecificOrder() {
                                 swipeable,
                             )
                         }
-                        className="items-center justify-center w-16 h-16 rounded-full"
+                        className="justify-center items-center w-16 h-16 rounded-full"
                         style={{ backgroundColor: "hsl(0, 84%, 60%)" }}
                         activeOpacity={0.7}>
                         <Icon name="UserMinus" size={22} color="white" />
@@ -498,7 +516,11 @@ export default function SpecificOrder() {
                 <SafeAreaView edges={["top"]} />
                 {/* Header skeleton */}
                 <View className="flex-row items-center px-4 py-3 border-b border-border">
-                    <SkeletonBlock width={32} height={32} rounded="rounded-full" />
+                    <SkeletonBlock
+                        width={32}
+                        height={32}
+                        rounded="rounded-full"
+                    />
                     <View className="ml-2">
                         <SkeletonBlock width={120} height={22} />
                     </View>
@@ -506,21 +528,37 @@ export default function SpecificOrder() {
 
                 {/* Order info card skeleton */}
                 <View className="mx-4 mt-4">
-                    <View className="p-5 border rounded-2xl border-muted bg-card">
-                        <View className="flex-row items-start justify-between mb-3">
+                    <View className="p-5 rounded-2xl border border-muted bg-card">
+                        <View className="flex-row justify-between items-start mb-3">
                             <View>
-                                <SkeletonBlock width={100} height={14} className="mb-2" />
+                                <SkeletonBlock
+                                    width={100}
+                                    height={14}
+                                    className="mb-2"
+                                />
                                 <SkeletonBlock width={180} height={28} />
                             </View>
-                            <SkeletonBlock width={90} height={28} rounded="rounded-full" />
+                            <SkeletonBlock
+                                width={90}
+                                height={28}
+                                rounded="rounded-full"
+                            />
                         </View>
                         <View className="flex-row gap-4 pt-3 mt-1 border-t border-muted">
-                            <View className="flex-row items-center gap-2">
-                                <SkeletonBlock width={32} height={32} rounded="rounded-full" />
+                            <View className="flex-row gap-2 items-center">
+                                <SkeletonBlock
+                                    width={32}
+                                    height={32}
+                                    rounded="rounded-full"
+                                />
                                 <SkeletonBlock width={60} height={16} />
                             </View>
-                            <View className="flex-row items-center gap-2">
-                                <SkeletonBlock width={32} height={32} rounded="rounded-full" />
+                            <View className="flex-row gap-2 items-center">
+                                <SkeletonBlock
+                                    width={32}
+                                    height={32}
+                                    rounded="rounded-full"
+                                />
                                 <SkeletonBlock width={50} height={16} />
                             </View>
                         </View>
@@ -529,11 +567,15 @@ export default function SpecificOrder() {
 
                 {/* Progress skeleton */}
                 <View className="px-4 mt-6">
-                    <View className="flex-row items-center justify-between mb-3">
+                    <View className="flex-row justify-between items-center mb-3">
                         <SkeletonBlock width={120} height={18} />
                         <SkeletonBlock width={80} height={14} />
                     </View>
-                    <SkeletonBlock width="100%" height={8} rounded="rounded-full" />
+                    <SkeletonBlock
+                        width="100%"
+                        height={8}
+                        rounded="rounded-full"
+                    />
                 </View>
 
                 {/* Participants skeleton */}
@@ -543,10 +585,18 @@ export default function SpecificOrder() {
                         {[1, 2, 3].map((i) => (
                             <View
                                 key={i}
-                                className="flex-row items-center p-4 border rounded-xl border-muted bg-card">
-                                <SkeletonBlock width={48} height={48} rounded="rounded-full" />
+                                className="flex-row items-center p-4 rounded-xl border border-muted bg-card">
+                                <SkeletonBlock
+                                    width={48}
+                                    height={48}
+                                    rounded="rounded-full"
+                                />
                                 <View className="flex-1 ml-3">
-                                    <SkeletonBlock width={130} height={16} className="mb-2" />
+                                    <SkeletonBlock
+                                        width={130}
+                                        height={16}
+                                        className="mb-2"
+                                    />
                                     <SkeletonBlock width={90} height={14} />
                                 </View>
                             </View>
@@ -559,7 +609,7 @@ export default function SpecificOrder() {
 
     if (!data) {
         return (
-            <View className="items-center justify-center flex-1 px-6">
+            <View className="flex-1 justify-center items-center px-6">
                 <Text className="text-destructive">Order not found</Text>
             </View>
         );
@@ -574,7 +624,7 @@ export default function SpecificOrder() {
         <>
             <SafeAreaView edges={["top"]} />
             {/* Header */}
-            <View className="flex-row items-center justify-between px-4 py-3 border-b border-border">
+            <View className="flex-row justify-between items-center px-4 py-3 border-b border-border">
                 <Pressable
                     onPress={() => router.back()}
                     className="p-2 -ml-2 rounded-full active:opacity-70">
@@ -586,16 +636,16 @@ export default function SpecificOrder() {
                 </Pressable>
                 <Text
                     numberOfLines={1}
-                    className="flex-1 ml-2 mr-2 text-xl font-semibold text-foreground">
+                    className="flex-1 mr-2 ml-2 text-xl font-semibold text-foreground">
                     Order Details
                 </Text>
                 {isCreator && (
-                    <View className="flex-row items-center gap-2">
+                    <View className="flex-row gap-2 items-center">
                         {!data.order.paused && (
                             <>
                                 <TouchableOpacity
                                     onPress={() => setShowQRModal(true)}
-                                    className="items-center justify-center w-9 h-9 rounded-full bg-primary/10">
+                                    className="justify-center items-center w-9 h-9 rounded-full bg-primary/10">
                                     <Icon
                                         name="QrCode"
                                         size={18}
@@ -605,7 +655,7 @@ export default function SpecificOrder() {
                                 <TouchableOpacity
                                     onPress={handleOpenTransferRunnerSheet}
                                     disabled={isTransferringRunner}
-                                    className="items-center justify-center w-9 h-9 rounded-full bg-primary/10">
+                                    className="justify-center items-center w-9 h-9 rounded-full bg-primary/10">
                                     {isTransferringRunner ? (
                                         <Flow size={16} color="#888" />
                                     ) : (
@@ -622,7 +672,7 @@ export default function SpecificOrder() {
                         )}
                         <TouchableOpacity
                             onPress={handleCancelOrder}
-                            className="items-center justify-center w-9 h-9 rounded-full bg-destructive/10">
+                            className="justify-center items-center w-9 h-9 rounded-full bg-destructive/10">
                             <Icon
                                 name="CircleX"
                                 size={18}
@@ -636,10 +686,12 @@ export default function SpecificOrder() {
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
                 {/* Order Info Card */}
                 <ReAnimated.View
-                    entering={FadeInUp.duration(500).easing(Easing.out(Easing.ease))}
+                    entering={FadeInUp.duration(500).easing(
+                        Easing.out(Easing.ease),
+                    )}
                     className="mx-4 mt-4">
-                    <View className="p-5 border rounded-2xl border-muted bg-card">
-                        <View className="flex-row items-start justify-between mb-3">
+                    <View className="p-5 rounded-2xl border border-muted bg-card">
+                        <View className="flex-row justify-between items-start mb-3">
                             <View className="flex-1">
                                 <Text className="text-sm text-muted-foreground">
                                     {new Date(
@@ -683,8 +735,8 @@ export default function SpecificOrder() {
 
                         {/* Stats Row */}
                         <View className="flex-row gap-4 pt-3 mt-1 border-t border-muted">
-                            <View className="flex-row items-center gap-2">
-                                <View className="items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                            <View className="flex-row gap-2 items-center">
+                                <View className="justify-center items-center w-8 h-8 rounded-full bg-primary/10">
                                     <Icon
                                         name="Users"
                                         size={16}
@@ -700,8 +752,8 @@ export default function SpecificOrder() {
                                         : "people"}
                                 </Text>
                             </View>
-                            <View className="flex-row items-center gap-2">
-                                <View className="items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                            <View className="flex-row gap-2 items-center">
+                                <View className="justify-center items-center w-8 h-8 rounded-full bg-primary/10">
                                     <Icon
                                         name="ShoppingBag"
                                         size={16}
@@ -722,9 +774,11 @@ export default function SpecificOrder() {
                 {/* Progress Section */}
                 {!data.order.paused && (
                     <ReAnimated.View
-                        entering={FadeInUp.duration(500).delay(100).easing(Easing.out(Easing.ease))}
+                        entering={FadeInUp.duration(500)
+                            .delay(100)
+                            .easing(Easing.out(Easing.ease))}
                         className="px-4 mt-6">
-                        <View className="flex-row items-center justify-between mb-3">
+                        <View className="flex-row justify-between items-center mb-3">
                             <Text className="text-base font-semibold text-foreground">
                                 Order Progress
                             </Text>
@@ -733,7 +787,7 @@ export default function SpecificOrder() {
                                 {data.completionStats?.total} done
                             </Text>
                         </View>
-                        <View className="h-2 overflow-hidden rounded-full bg-muted">
+                        <View className="overflow-hidden h-2 rounded-full bg-muted">
                             <View
                                 className={`h-full rounded-full ${
                                     data.completionStats?.allDone
@@ -744,7 +798,7 @@ export default function SpecificOrder() {
                             />
                         </View>
                         {data.completionStats?.allDone && (
-                            <View className="flex-row items-center gap-2 mt-2">
+                            <View className="flex-row gap-2 items-center mt-2">
                                 <Icon
                                     name="CircleCheck"
                                     size={14}
@@ -760,7 +814,9 @@ export default function SpecificOrder() {
 
                 {/* Participants Section */}
                 <ReAnimated.View
-                    entering={FadeInUp.duration(500).delay(200).easing(Easing.out(Easing.ease))}
+                    entering={FadeInUp.duration(500)
+                        .delay(200)
+                        .easing(Easing.out(Easing.ease))}
                     className="px-4 mt-6 mb-4">
                     <Text className="mb-3 text-base font-semibold text-foreground">
                         Participants
@@ -795,7 +851,7 @@ export default function SpecificOrder() {
                                                         width: 48,
                                                         height: 48,
                                                     }}
-                                                    className="items-center justify-center rounded-full bg-muted">
+                                                    className="justify-center items-center rounded-full bg-muted">
                                                     <Text className="text-lg font-semibold text-muted-foreground">
                                                         {`${(orderUser.user?.firstName || "").charAt(0)}${(orderUser.user?.lastName || "").charAt(0)}`.toUpperCase() ||
                                                             "U"}
@@ -823,7 +879,7 @@ export default function SpecificOrder() {
 
                                         {/* Info */}
                                         <View className="flex-1 ml-3">
-                                            <View className="flex-row items-center gap-2">
+                                            <View className="flex-row gap-2 items-center">
                                                 <Text
                                                     className={`text-base font-medium ${
                                                         isCurrentUser
@@ -842,7 +898,7 @@ export default function SpecificOrder() {
                                                     </View>
                                                 )}
                                             </View>
-                                            <View className="flex-row items-center gap-2 mt-1">
+                                            <View className="flex-row gap-2 items-center mt-1">
                                                 <Text
                                                     className={`text-sm ${
                                                         isDone
@@ -908,16 +964,12 @@ export default function SpecificOrder() {
 
                             const card = isDone ? (
                                 <Pressable
-                                    onPress={() =>
-                                        toggleExpanded(orderUser.id)
-                                    }
+                                    onPress={() => toggleExpanded(orderUser.id)}
                                     className={cardStyle}>
                                     {cardContent}
                                 </Pressable>
                             ) : (
-                                <View className={cardStyle}>
-                                    {cardContent}
-                                </View>
+                                <View className={cardStyle}>{cardContent}</View>
                             );
 
                             const wrappedCard = canSwipeRemove ? (
@@ -950,7 +1002,7 @@ export default function SpecificOrder() {
             <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
                 {data.order.paused && !isCreator ? (
                     <View className="items-center py-4">
-                        <View className="items-center justify-center w-12 h-12 mb-3 rounded-full bg-primary/10">
+                        <View className="justify-center items-center mb-3 w-12 h-12 rounded-full bg-primary/10">
                             <Icon
                                 name="Truck"
                                 size={24}
@@ -964,17 +1016,13 @@ export default function SpecificOrder() {
                             Sit tight! You'll be notified when it's ready.
                         </Text>
                         <TouchableOpacity
-                            className="flex-row items-center justify-center gap-2 px-6 py-3 mt-4 rounded-xl bg-primary"
+                            className="flex-row gap-2 justify-center items-center px-6 py-3 mt-4 rounded-xl bg-primary"
                             onPress={() =>
                                 router.push(
                                     `/order/my-settlement?orderId=${orderId}`,
                                 )
                             }>
-                            <Icon
-                                name="Receipt"
-                                size={18}
-                                color="white"
-                            />
+                            <Icon name="Receipt" size={18} color="white" />
                             <Text className="text-base font-semibold text-white">
                                 View My Settlement
                             </Text>
@@ -983,7 +1031,7 @@ export default function SpecificOrder() {
                 ) : (
                     <>
                         {data.order.paused && (
-                            <View className="flex-row items-center gap-2 p-3 mb-4 rounded-lg bg-orange-500/10">
+                            <View className="flex-row gap-2 items-center p-3 mb-4 rounded-lg bg-orange-500/10">
                                 <Icon
                                     name="CircleAlert"
                                     size={18}
@@ -998,10 +1046,12 @@ export default function SpecificOrder() {
                         <View className="flex-col gap-3">
                             {data.order.paused && isCreator ? (
                                 <TouchableOpacity
-                                    className="flex-row items-center justify-center w-full gap-2 py-4 rounded-xl bg-primary"
+                                    className="flex-row gap-2 justify-center items-center py-4 w-full rounded-xl bg-primary"
                                     onPress={() =>
-                                        router.push(
-                                            `/order/summary?orderId=${orderId}`,
+                                        openOrderSummary(
+                                            data.order.hasPausedAiSummary
+                                                ? "cached"
+                                                : "generate",
                                         )
                                     }>
                                     <Icon
@@ -1021,7 +1071,11 @@ export default function SpecificOrder() {
                                     {isSelectingItems ? (
                                         <Flow size={22} color="white" />
                                     ) : (
-                                        <Icon name="Plus" size={20} color="white" />
+                                        <Icon
+                                            name="Plus"
+                                            size={20}
+                                            color="white"
+                                        />
                                     )}
                                     <Text className="text-base font-semibold text-white">
                                         Select Items
@@ -1030,7 +1084,7 @@ export default function SpecificOrder() {
                             )}
                             {!isCreator && !data.order.paused && (
                                 <TouchableOpacity
-                                    className="flex-row items-center justify-center w-full gap-2 py-4 border rounded-xl border-destructive bg-destructive/10"
+                                    className="flex-row gap-2 justify-center items-center py-4 w-full rounded-xl border border-destructive bg-destructive/10"
                                     onPress={handleLeaveGroup}>
                                     <Icon
                                         name="LogOut"
@@ -1155,12 +1209,12 @@ export default function SpecificOrder() {
                                 return (
                                     <TouchableOpacity
                                         key={candidate.id}
-                                        className="p-4 border rounded-2xl border-border bg-card"
+                                        className="p-4 rounded-2xl border border-border bg-card"
                                         onPress={() =>
                                             handleTransferRunner(candidate)
                                         }
                                         disabled={isTransferringRunner}>
-                                        <View className="flex-row items-center justify-between gap-3">
+                                        <View className="flex-row gap-3 justify-between items-center">
                                             <View className="flex-1">
                                                 <Text className="text-base font-semibold text-foreground">
                                                     {candidateName}
@@ -1199,14 +1253,13 @@ export default function SpecificOrder() {
                 <View className="px-5 mt-5">
                     <TouchableOpacity
                         onPress={() => transferRunnerSheetRef.current?.hide()}
-                        className="items-center justify-center py-4 rounded-2xl bg-muted">
+                        className="justify-center items-center py-4 rounded-2xl bg-muted">
                         <Text className="text-base font-medium text-foreground">
                             Close
                         </Text>
                     </TouchableOpacity>
                 </View>
             </ActionSheet>
-
         </>
     );
 }
