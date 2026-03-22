@@ -5,6 +5,7 @@ import {
     View,
     TouchableOpacity,
     Pressable,
+    InteractionManager,
 } from "react-native";
 import Animated, {
     FadeInUp,
@@ -79,6 +80,7 @@ export default function HomeTab() {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const [isInitializing, setIsInitializing] = useState(true);
+    const [isTransitionComplete, setIsTransitionComplete] = useState(false);
     const [showPaymentSplash, setShowPaymentSplash] = useState(false);
     const [balanceAmount, setBalanceAmount] = useState<number | null>(null);
     const getPayoutBalance = useAction(api.stripeConnect.getPayoutBalance);
@@ -98,6 +100,13 @@ export default function HomeTab() {
     useEffect(() => {
         fetchBalance();
     }, [fetchBalance]);
+
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            setIsTransitionComplete(true);
+        });
+        return () => task.cancel();
+    }, []);
 
     const handleCreateOrder = () => {
         if (connectedAccount?.chargesEnabled) {
@@ -135,7 +144,7 @@ export default function HomeTab() {
         return () => clearTimeout(timer);
     }, [queriesReturned, hasAnyData]);
 
-    const isLoading = !queriesReturned || isInitializing;
+    const isLoading = !queriesReturned || isInitializing || !isTransitionComplete;
 
     const hasSettlementData =
         settlementSummary &&
@@ -318,8 +327,8 @@ export default function HomeTab() {
                             {/* Outstanding Debts Section */}
                             {outstandingDebts && outstandingDebts.length > 0 && (
                                 <Animated.View
-                                    entering={FadeInUp.duration(500).delay(
-                                        150,
+                                    entering={FadeInUp.duration(400).delay(
+                                        50,
                                     )}>
                                     <View className="flex-row gap-2 items-center mb-3">
                                         <Icon
@@ -380,8 +389,8 @@ export default function HomeTab() {
                             {outstandingPayments &&
                                 outstandingPayments.length > 0 && (
                                     <Animated.View
-                                        entering={FadeInUp.duration(500).delay(
-                                            175,
+                                        entering={FadeInUp.duration(400).delay(
+                                            100,
                                         )}>
                                         <View className="flex-row gap-2 items-center mb-3">
                                             <Icon
@@ -455,8 +464,8 @@ export default function HomeTab() {
 
                             {/* Your Squads Section */}
                             {hasAnyData && <Animated.View
-                                entering={FadeInUp.duration(500).delay(
-                                    200,
+                                entering={FadeInUp.duration(400).delay(
+                                    150,
                                 )}>
                                 <View className="flex-row gap-2 items-center mb-3">
                                     <Icon
@@ -626,8 +635,8 @@ export default function HomeTab() {
 
                             {/* Recent Orders Section */}
                             {hasAnyData && <Animated.View
-                                    entering={FadeInUp.duration(500).delay(
-                                        300,
+                                    entering={FadeInUp.duration(400).delay(
+                                        200,
                                     )}>
                                     <View className="flex-row gap-2 items-center mb-3">
                                         <Icon

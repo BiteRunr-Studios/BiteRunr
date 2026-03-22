@@ -187,7 +187,7 @@ function RootAppShell() {
     <>
       <StatusBar style="auto" />
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack screenOptions={{ headerShown: false, freezeOnBlur: true }}>
           <Stack.Screen
             name="(protected)"
             options={{
@@ -198,7 +198,7 @@ function RootAppShell() {
             name="(auth)"
             options={{
               headerShown: false,
-              animation: "slide_from_left",
+              animation: "fade",
               animationTypeForReplace: "pop",
             }}
           />

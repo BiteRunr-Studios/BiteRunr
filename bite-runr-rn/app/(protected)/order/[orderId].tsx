@@ -7,6 +7,7 @@ import {
     Animated,
     Alert,
     Pressable,
+    InteractionManager,
 } from "react-native";
 import { Flow } from "react-native-animated-spinkit";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -104,6 +105,15 @@ export default function SpecificOrder() {
     const [isTransferringRunner, setIsTransferringRunner] = useState(false);
     const transferRunnerSheetRef = useRef<ActionSheetRef>(null);
 
+    const [isTransitionComplete, setIsTransitionComplete] = useState(false);
+
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            setIsTransitionComplete(true);
+        });
+        return () => task.cancel();
+    }, []);
+
     const toggleExpanded = useCallback((orderUserId: string) => {
         setExpandedUserId((prev) =>
             prev === orderUserId ? null : orderUserId,
@@ -111,24 +121,27 @@ export default function SpecificOrder() {
     }, []);
 
     const breatheValue = useSharedValue(1);
-    breatheValue.value = withRepeat(
-        withSequence(
-            withTiming(0.4, {
-                duration: 2000,
-                easing: Easing.inOut(Easing.ease),
-            }),
-            withTiming(1, {
-                duration: 2000,
-                easing: Easing.inOut(Easing.ease),
-            }),
-            withTiming(1, {
-                duration: 2000,
-                easing: Easing.inOut(Easing.ease),
-            }),
-        ),
-        -1,
-        false,
-    );
+
+    useEffect(() => {
+        breatheValue.value = withRepeat(
+            withSequence(
+                withTiming(0.4, {
+                    duration: 2000,
+                    easing: Easing.inOut(Easing.ease),
+                }),
+                withTiming(1, {
+                    duration: 2000,
+                    easing: Easing.inOut(Easing.ease),
+                }),
+                withTiming(1, {
+                    duration: 2000,
+                    easing: Easing.inOut(Easing.ease),
+                }),
+            ),
+            -1,
+            false,
+        );
+    }, []);
 
     const breatheStyle = useAnimatedStyle(() => ({
         opacity: breatheValue.value,
@@ -144,7 +157,7 @@ export default function SpecificOrder() {
         api.orders.get,
         orderId ? { orderId: orderId as Id<"orders"> } : "skip",
     );
-    const isPending = data === undefined;
+    const isPending = data === undefined || !isTransitionComplete;
 
     // Mutations
     const setStatus = useMutation(api.orderUsers.setStatus);
@@ -227,7 +240,7 @@ export default function SpecificOrder() {
                 `/order/items?orderUserId=${orderUser.id}&orderId=${orderId}`,
             );
         } catch (error) {
-            console.error("Failed to set status:", error);
+            if (__DEV__) console.error("Failed to set status:", error);
         } finally {
             setIsSelectingItems(false);
         }
@@ -252,7 +265,7 @@ export default function SpecificOrder() {
                                 status: "cancelled",
                             });
                         } catch (error) {
-                            console.error("Failed to cancel order:", error);
+                            if (__DEV__) console.error("Failed to cancel order:", error);
                             Alert.alert(
                                 "Error",
                                 "Failed to cancel order. Please try again.",
@@ -291,7 +304,7 @@ export default function SpecificOrder() {
                 });
                 openOrderSummary("generate");
             } catch (error) {
-                console.error("Failed to start run:", error);
+                if (__DEV__) console.error("Failed to start run:", error);
                 Alert.alert("Error", "Failed to start run. Please try again.");
             }
         };
@@ -335,7 +348,7 @@ export default function SpecificOrder() {
                             });
                             router.back();
                         } catch (error) {
-                            console.error("Failed to leave order:", error);
+                            if (__DEV__) console.error("Failed to leave order:", error);
                             Alert.alert(
                                 "Error",
                                 "Failed to leave order. Please try again.",
@@ -388,7 +401,7 @@ export default function SpecificOrder() {
                                 `${nextRunnerName} is now the runner for this order.`,
                             );
                         } catch (error) {
-                            console.error("Failed to transfer runner:", error);
+                            if (__DEV__) console.error("Failed to transfer runner:", error);
                             Alert.alert(
                                 "Error",
                                 error instanceof Error
@@ -429,7 +442,7 @@ export default function SpecificOrder() {
                                 targetUserId,
                             });
                         } catch (error) {
-                            console.error("Failed to remove member:", error);
+                            if (__DEV__) console.error("Failed to remove member:", error);
                             Alert.alert(
                                 "Error",
                                 "Failed to remove member. Please try again.",

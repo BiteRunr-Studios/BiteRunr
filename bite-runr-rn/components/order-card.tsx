@@ -1,3 +1,4 @@
+import React from "react";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { View, Text, TouchableOpacity } from "react-native";
@@ -36,7 +37,7 @@ interface OrderCardProps {
     locationNames?: string[];
 }
 
-export function OrderCard({
+export const OrderCard = React.memo(function OrderCard({
     name,
     status,
     paused,
@@ -259,7 +260,7 @@ export function OrderCard({
             </View>
         </View>
     );
-}
+});
 
 export function OrderCardSkeleton() {
     return (

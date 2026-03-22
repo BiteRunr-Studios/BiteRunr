@@ -14,7 +14,7 @@ export default function AuthLayout() {
   // Always render the Stack to preserve navigation state.
   // Initial auth loading is now covered by the root splash.
   return (
-    <Stack screenOptions={{ headerTitleAlign: "center", headerShown: false }}>
+    <Stack screenOptions={{ headerTitleAlign: "center", headerShown: false, freezeOnBlur: true }}>
       <Stack.Screen name="sign-in" options={{ title: "Sign In" }} />
       <Stack.Screen
         name="sign-up"

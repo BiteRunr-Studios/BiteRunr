@@ -5,6 +5,7 @@ import {
     Text,
     View,
     TouchableOpacity,
+    InteractionManager,
 } from "react-native";
 import Animated, {
     FadeInUp,
@@ -90,9 +91,17 @@ export default function GroupsTab() {
     }, [filter]);
     const [showPaymentSplash, setShowPaymentSplash] = useState(false);
     const [showFilterMenu, setShowFilterMenu] = useState(false);
+    const [isTransitionComplete, setIsTransitionComplete] = useState(false);
     const { colorScheme } = useColorScheme();
     const insets = useSafeAreaInsets();
     const listBottomPadding = 84 + insets.bottom;
+
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            setIsTransitionComplete(true);
+        });
+        return () => task.cancel();
+    }, []);
 
     // Get current user
     const currentUser = useQuery(api.users.getCurrentUser);
@@ -111,7 +120,7 @@ export default function GroupsTab() {
 
     // Get orders with user details for avatars
     const data = useQuery(api.orders.getWithDetails);
-    const isPending = data === undefined || currentUser === undefined;
+    const isPending = data === undefined || currentUser === undefined || !isTransitionComplete;
 
     const filteredOrders = data?.filter((item) => {
         if (!userId) return false;

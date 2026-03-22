@@ -6,6 +6,7 @@ export default function OrderLayout() {
       screenOptions={{
         headerShown: false,
         headerBackButtonMenuEnabled: false,
+        freezeOnBlur: true,
       }}
     />
   );

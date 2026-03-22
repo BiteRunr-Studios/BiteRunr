@@ -7,8 +7,6 @@ import { authClient } from "@/lib/auth-client";
 import { getAuthErrorMessage } from "@/lib/auth-helpers";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState, useCallback, useRef, useEffect } from "react";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import {
     View,
     Text,
@@ -41,7 +39,6 @@ export default function VerifyOtpScreen() {
     const [resendCooldown, setResendCooldown] = useState(0);
 
     const inputRefs = useRef<(TextInput | null)[]>([]);
-    const syncUser = useMutation(api.users.syncUser);
 
     // Focus first input on mount
     useEffect(() => {
@@ -111,15 +108,12 @@ export default function VerifyOtpScreen() {
                 );
             }
 
-            // Refresh session to ensure Convex has the latest auth token
+            // Refresh session to ensure Convex picks up the new auth token.
             await refreshSession();
 
-            // Sync the user to the app's users table
-            await syncUser();
-
-            // Reset signing up state and navigate to protected area
+            // Allow AuthLayout's <Redirect> to navigate to protected area.
+            // ProtectedLayout handles syncUser on mount.
             setIsSigningUp(false);
-            router.replace("/(protected)/(tabs)");
         } catch (err) {
             console.error("Verification error:", err);
             const errorResult = getAuthErrorMessage(err, "verify");
@@ -127,7 +121,7 @@ export default function VerifyOtpScreen() {
         } finally {
             setLoading(false);
         }
-    }, [otp, email, syncUser, setIsSigningUp, refreshSession]);
+    }, [otp, email, setIsSigningUp, refreshSession]);
 
     const handleResend = useCallback(async () => {
         if (resendCooldown > 0 || resending) return;

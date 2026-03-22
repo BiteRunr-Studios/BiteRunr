@@ -8,7 +8,7 @@ import Animated, {
 
 const ReanimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export function AnimatedPressable({
+export const AnimatedPressable = React.memo(function AnimatedPressable({
     children,
     style,
     onPressIn: onPressInProp,
@@ -54,4 +54,4 @@ export function AnimatedPressable({
             {children}
         </ReanimatedPressable>
     );
-}
+});

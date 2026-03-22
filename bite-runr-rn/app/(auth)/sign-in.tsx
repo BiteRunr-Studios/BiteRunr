@@ -24,8 +24,6 @@ import {
     TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 
 export default function SignInScreen() {
     const { colorScheme } = useColorScheme();
@@ -38,7 +36,6 @@ export default function SignInScreen() {
     const { onChange, onBlur } = createFormHandlers(form, setForm);
     const [loading, setLoading] = useState(false);
     const passwordRef = useRef<TextInput>(null);
-    const syncUser = useMutation(api.users.syncUser);
 
     const handleEmailSignIn = useCallback(async () => {
         const email = form.email?.value?.trim()?.toLowerCase();
@@ -90,14 +87,10 @@ export default function SignInScreen() {
                 throw new Error(response.error.message || "Sign in failed");
             }
 
-            // Refresh session to ensure Convex has the latest auth token
+            // Refresh session to ensure Convex picks up the new auth token.
+            // AuthLayout's <Redirect> handles navigation once isLoggedIn becomes true.
+            // ProtectedLayout handles syncUser on mount.
             await refreshSession();
-
-            // Sync user to app's users table
-            await syncUser();
-
-            // Navigate to protected area
-            router.replace("/(protected)/(tabs)");
         } catch (error) {
             console.error("Email sign-in error:", error);
             const errorResult = getAuthErrorMessage(error, "signIn");
@@ -125,7 +118,7 @@ export default function SignInScreen() {
         } finally {
             setLoading(false);
         }
-    }, [form.email?.value, form.password?.value, syncUser, refreshSession]);
+    }, [form.email?.value, form.password?.value, refreshSession]);
 
     return (
         <SafeAreaView className="flex-1 justify-center px-4 transition-all duration-200">
