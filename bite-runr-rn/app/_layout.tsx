@@ -198,7 +198,7 @@ function RootAppShell() {
             name="(auth)"
             options={{
               headerShown: false,
-              animation: "slide_from_left",
+              animation: "fade",
               animationTypeForReplace: "pop",
             }}
           />
