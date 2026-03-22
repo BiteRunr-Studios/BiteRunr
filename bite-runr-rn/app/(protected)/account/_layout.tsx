@@ -5,6 +5,7 @@ export default function AccountLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
+        freezeOnBlur: true,
       }}
     />
   );

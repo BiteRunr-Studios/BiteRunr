@@ -51,7 +51,7 @@ export default function ProtectedLayout() {
   // Always render the Stack to preserve navigation state
   return (
     <View style={{ flex: 1 }}>
-      <Stack>
+      <Stack screenOptions={{ freezeOnBlur: true }}>
         <Stack.Screen
           name="(tabs)"
           options={{

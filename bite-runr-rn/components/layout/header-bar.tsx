@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { QRScannerModal } from "@/components/qr-scanner-modal";
 import { EnterCodeModal } from "@/components/enter-code-modal";
 
-export function HeaderBar() {
+export const HeaderBar = React.memo(function HeaderBar() {
     const [showScanner, setShowScanner] = useState(false);
     const [showEnterCode, setShowEnterCode] = useState(false);
 
@@ -61,4 +61,4 @@ export function HeaderBar() {
             />
         </View>
     );
-}
+});

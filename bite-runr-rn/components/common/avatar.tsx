@@ -1,3 +1,4 @@
+import React from "react";
 import { View, Text } from "react-native";
 import { Image } from "expo-image";
 
@@ -7,7 +8,7 @@ interface AvatarProps {
     size?: number;
 }
 
-export function Avatar({ name, avatarUrl, size = 52 }: AvatarProps) {
+export const Avatar = React.memo(function Avatar({ name, avatarUrl, size = 52 }: AvatarProps) {
     if (avatarUrl) {
         return (
             <Image
@@ -43,4 +44,4 @@ export function Avatar({ name, avatarUrl, size = 52 }: AvatarProps) {
             </Text>
         </View>
     );
-}
+});
