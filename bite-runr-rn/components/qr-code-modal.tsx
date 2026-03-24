@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { View, Text, Modal, Pressable, Share, ActivityIndicator } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import QRCode from "react-native-qrcode-svg";
 import Icon from "@/components/common/icon";
 import { useColorScheme } from "@/lib/use-color-scheme";
@@ -26,6 +27,7 @@ export function QRCodeModal({
     const createInvite = useMutation(api.orderInvites.createInvite);
     const [isCreating, setIsCreating] = React.useState(false);
     const [createAttempted, setCreateAttempted] = React.useState(false);
+    const [copied, setCopied] = React.useState(false);
 
     // Create invite when modal opens if none exists (one-time attempt)
     useEffect(() => {
@@ -42,6 +44,7 @@ export function QRCodeModal({
     useEffect(() => {
         if (!visible) {
             setCreateAttempted(false);
+            setCopied(false);
         }
     }, [visible]);
 
@@ -61,6 +64,13 @@ export function QRCodeModal({
             return `${hours}h ${minutes}m remaining`;
         }
         return `${minutes}m remaining`;
+    };
+
+    const handleCopy = async () => {
+        if (!inviteCode) return;
+        await Clipboard.setStringAsync(inviteCode);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
 
     const handleShare = async () => {
@@ -146,14 +156,31 @@ export function QRCodeModal({
                             </View>
 
                             {/* Invite Code Display */}
-                            <View className="w-full bg-muted rounded-xl p-4 mb-4">
+                            <Pressable
+                                onPress={handleCopy}
+                                className="w-full bg-muted rounded-xl p-4 mb-4 active:opacity-70">
                                 <Text className="text-xs text-muted-foreground text-center mb-1">
                                     INVITE CODE
                                 </Text>
                                 <Text className="text-2xl font-bold text-foreground text-center tracking-widest">
                                     {inviteCode}
                                 </Text>
-                            </View>
+                                <View className="flex-row items-center justify-center gap-1 mt-2">
+                                    <Icon
+                                        name={copied ? "Check" : "Copy"}
+                                        size={14}
+                                        color={
+                                            copied
+                                                ? NAV_THEME[colorScheme].primary
+                                                : NAV_THEME[colorScheme].border
+                                        }
+                                    />
+                                    <Text
+                                        className={`text-xs ${copied ? "text-primary" : "text-muted-foreground"}`}>
+                                        {copied ? "Copied!" : "Tap to copy"}
+                                    </Text>
+                                </View>
+                            </Pressable>
 
                             {/* Expiry info */}
                             {getTimeRemaining() && (
