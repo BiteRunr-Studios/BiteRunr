@@ -673,7 +673,7 @@ export default function SpecificOrder() {
                                         <Flow size={16} color="#888" />
                                     ) : (
                                         <Icon
-                                            name="RefreshCw"
+                                            name="ArrowRightLeft"
                                             size={18}
                                             color={
                                                 NAV_THEME[colorScheme].primary

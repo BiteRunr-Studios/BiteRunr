@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import {
+    Platform,
     View,
     Text,
     TouchableOpacity,
@@ -99,9 +100,20 @@ function PriceItemCard({
                 </View>
 
                 <View className="flex-row items-center ml-8 h-9 px-2.5 border rounded-lg border-input bg-background">
-                    <Text className="text-sm text-muted-foreground">$</Text>
+                    <View className="justify-center h-full">
+                        <Text
+                            className="text-sm text-muted-foreground"
+                            style={{
+                                fontSize: 14,
+                                lineHeight: 16,
+                                includeFontPadding: false,
+                            }}
+                        >
+                            $
+                        </Text>
+                    </View>
                     <TextInput
-                        className="flex-1 px-1 text-sm text-foreground"
+                        className="flex-1 h-full px-1 text-sm text-foreground"
                         placeholder={
                             orderItem.priceInCents !== null
                                 ? formatPrice(orderItem.priceInCents)
@@ -111,6 +123,15 @@ function PriceItemCard({
                         value={localPrice}
                         onChangeText={handlePriceChange}
                         keyboardType="decimal-pad"
+                        style={{
+                            height: "100%",
+                            fontSize: 14,
+                            lineHeight: 16,
+                            paddingTop: 0,
+                            paddingBottom: 0,
+                            includeFontPadding: false,
+                            textAlignVertical: "center",
+                        }}
                     />
                 </View>
             </View>
@@ -216,6 +237,9 @@ export function ManualPriceEntrySheet({
                     className="flex-1 px-4"
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: 24 }}
+                    keyboardDismissMode={
+                        Platform.OS === "ios" ? "interactive" : "on-drag"
+                    }
                     keyboardShouldPersistTaps="handled"
                 >
                     {personGroups.map(({ key, displayName, items }) => {

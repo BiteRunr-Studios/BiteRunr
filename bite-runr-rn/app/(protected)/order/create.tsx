@@ -196,6 +196,9 @@ export default function CreateOrder() {
                 <ScrollView
                     className="flex-1"
                     contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+                    keyboardDismissMode={
+                        Platform.OS === "ios" ? "interactive" : "on-drag"
+                    }
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}>
                     <View className="items-center p-6 mb-6 border rounded-2xl border-muted bg-card">

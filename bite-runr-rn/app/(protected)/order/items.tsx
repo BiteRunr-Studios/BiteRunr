@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
+    Animated,
+    Easing,
     KeyboardAvoidingView,
     Modal,
     Platform,
@@ -20,15 +22,6 @@ import Toast from "react-native-toast-message";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { useAction, useMutation, useQuery } from "convex/react";
-import Animated, {
-    Easing,
-    cancelAnimation,
-    useAnimatedStyle,
-    useSharedValue,
-    withRepeat,
-    withSequence,
-    withTiming,
-} from "react-native-reanimated";
 import { Flow } from "react-native-animated-spinkit";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -148,227 +141,6 @@ function getSpeechErrorMessage(error: unknown) {
     return "Voice ordering isn't available right now. Please try again.";
 }
 
-function VoicePulseOrb({
-    colorScheme,
-    isListening,
-    isProcessingVoice,
-}: {
-    colorScheme: "light" | "dark";
-    isListening: boolean;
-    isProcessingVoice: boolean;
-}) {
-    const haloScale = useSharedValue(1);
-    const haloOpacity = useSharedValue(0.2);
-    const coreScale = useSharedValue(1);
-
-    useEffect(() => {
-        if (isListening) {
-            haloScale.value = withRepeat(
-                withSequence(
-                    withTiming(1.35, {
-                        duration: 1200,
-                        easing: Easing.out(Easing.ease),
-                    }),
-                    withTiming(1, {
-                        duration: 1200,
-                        easing: Easing.inOut(Easing.ease),
-                    }),
-                ),
-                -1,
-                false,
-            );
-            haloOpacity.value = withRepeat(
-                withSequence(
-                    withTiming(0.45, { duration: 900 }),
-                    withTiming(0.18, { duration: 900 }),
-                ),
-                -1,
-                false,
-            );
-            coreScale.value = withRepeat(
-                withSequence(
-                    withTiming(1.08, {
-                        duration: 700,
-                        easing: Easing.inOut(Easing.ease),
-                    }),
-                    withTiming(1, {
-                        duration: 700,
-                        easing: Easing.inOut(Easing.ease),
-                    }),
-                ),
-                -1,
-                false,
-            );
-            return;
-        }
-
-        if (isProcessingVoice) {
-            haloScale.value = withRepeat(
-                withSequence(
-                    withTiming(1.18, { duration: 850 }),
-                    withTiming(1, { duration: 850 }),
-                ),
-                -1,
-                false,
-            );
-            haloOpacity.value = withRepeat(
-                withSequence(
-                    withTiming(0.28, { duration: 700 }),
-                    withTiming(0.14, { duration: 700 }),
-                ),
-                -1,
-                false,
-            );
-            coreScale.value = withRepeat(
-                withSequence(
-                    withTiming(1.04, { duration: 650 }),
-                    withTiming(1, { duration: 650 }),
-                ),
-                -1,
-                false,
-            );
-            return;
-        }
-
-        cancelAnimation(haloScale);
-        cancelAnimation(haloOpacity);
-        cancelAnimation(coreScale);
-        haloScale.value = withTiming(1, { duration: 250 });
-        haloOpacity.value = withTiming(0.14, { duration: 250 });
-        coreScale.value = withTiming(1, { duration: 250 });
-    }, [coreScale, haloOpacity, haloScale, isListening, isProcessingVoice]);
-
-    const haloStyle = useAnimatedStyle(() => ({
-        opacity: haloOpacity.value,
-        transform: [{ scale: haloScale.value }],
-    }));
-
-    const coreStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: coreScale.value }],
-    }));
-
-    return (
-        <View className="justify-center items-center h-[170px]">
-            <Animated.View
-                style={haloStyle}
-                className="absolute w-[148px] h-[148px] rounded-full bg-primary"
-            />
-            <View className="absolute w-[118px] h-[118px] rounded-full bg-primary/15" />
-            <Animated.View
-                style={coreStyle}
-                className="justify-center items-center w-[92px] h-[92px] rounded-full border border-primary/20 bg-primary">
-                <View className="justify-center items-center w-[72px] h-[72px] rounded-full bg-white/15">
-                    {isListening ? (
-                        <VoiceBars
-                            active={isListening || isProcessingVoice}
-                            colorScheme={colorScheme}
-                        />
-                    ) : (
-                        <Icon
-                            name={isProcessingVoice ? "Sparkles" : "Mic"}
-                            size={30}
-                            color="white"
-                        />
-                    )}
-                </View>
-            </Animated.View>
-            <View className="absolute top-5 right-10 px-2 py-1 rounded-full bg-white/10">
-                <Text className="text-[10px] font-semibold tracking-[1px] uppercase text-white/90">
-                    {isListening
-                        ? "Live"
-                        : isProcessingVoice
-                          ? "AI"
-                          : colorScheme === "dark"
-                            ? "Ready"
-                            : "Voice"}
-                </Text>
-            </View>
-        </View>
-    );
-}
-
-function VoiceBars({
-    active,
-    colorScheme,
-}: {
-    active: boolean;
-    colorScheme: "light" | "dark";
-}) {
-    const barA = useSharedValue(0.35);
-    const barB = useSharedValue(0.65);
-    const barC = useSharedValue(0.45);
-    const barD = useSharedValue(0.8);
-
-    useEffect(() => {
-        const animateBar = (value: typeof barA, delayScale: number) => {
-            value.value = withRepeat(
-                withSequence(
-                    withTiming(0.25 + delayScale, {
-                        duration: 260,
-                        easing: Easing.inOut(Easing.ease),
-                    }),
-                    withTiming(0.95 - delayScale / 3, {
-                        duration: 420,
-                        easing: Easing.inOut(Easing.ease),
-                    }),
-                    withTiming(0.4 + delayScale / 2, {
-                        duration: 320,
-                        easing: Easing.inOut(Easing.ease),
-                    }),
-                ),
-                -1,
-                false,
-            );
-        };
-
-        if (active) {
-            animateBar(barA, 0.1);
-            animateBar(barB, 0.22);
-            animateBar(barC, 0.14);
-            animateBar(barD, 0.28);
-            return;
-        }
-
-        [barA, barB, barC, barD].forEach((value) => {
-            cancelAnimation(value);
-            value.value = withTiming(0.38, { duration: 220 });
-        });
-    }, [active, barA, barB, barC, barD]);
-
-    const barAStyle = useAnimatedStyle(() => ({
-        transform: [{ scaleY: barA.value }],
-        opacity: 0.55 + barA.value * 0.45,
-    }));
-    const barBStyle = useAnimatedStyle(() => ({
-        transform: [{ scaleY: barB.value }],
-        opacity: 0.55 + barB.value * 0.45,
-    }));
-    const barCStyle = useAnimatedStyle(() => ({
-        transform: [{ scaleY: barC.value }],
-        opacity: 0.55 + barC.value * 0.45,
-    }));
-    const barDStyle = useAnimatedStyle(() => ({
-        transform: [{ scaleY: barD.value }],
-        opacity: 0.55 + barD.value * 0.45,
-    }));
-
-    const barStyles = [barAStyle, barBStyle, barCStyle, barDStyle];
-
-    return (
-        <View className="flex-row gap-2 items-end h-10">
-            {barStyles.map((style, index) => (
-                <Animated.View
-                    key={`voice-bar-${index}`}
-                    style={style}
-                    className={`w-2 h-10 rounded-full ${
-                        colorScheme === "dark" ? "bg-white/80" : "bg-primary"
-                    }`}
-                />
-            ))}
-        </View>
-    );
-}
-
 export default function WriteOrder() {
     const { orderUserId, orderId } = useLocalSearchParams<{
         orderUserId?: string;
@@ -399,6 +171,9 @@ export default function WriteOrder() {
     const hasProcessedVoiceResultRef = useRef(false);
     const voiceTranscriptRef = useRef("");
     const committedVoiceTranscriptRef = useRef("");
+    const suppressVoiceEventsRef = useRef(false);
+    const voiceSheetTranslateY = useRef(new Animated.Value(24)).current;
+    const voiceSheetOpacity = useRef(new Animated.Value(0)).current;
 
     const orderLocations = useQuery(
         api.orderLocations.listForOrder,
@@ -526,6 +301,29 @@ export default function WriteOrder() {
         setItemInput("");
     }, [selectedLocation?.id, locationEntries]);
 
+    useEffect(() => {
+        if (!voiceModalVisible) {
+            voiceSheetTranslateY.setValue(24);
+            voiceSheetOpacity.setValue(0);
+            return;
+        }
+
+        Animated.parallel([
+            Animated.timing(voiceSheetTranslateY, {
+                toValue: 0,
+                duration: 240,
+                easing: Easing.out(Easing.cubic),
+                useNativeDriver: true,
+            }),
+            Animated.timing(voiceSheetOpacity, {
+                toValue: 1,
+                duration: 220,
+                easing: Easing.out(Easing.quad),
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [voiceModalVisible, voiceSheetOpacity, voiceSheetTranslateY]);
+
     const processVoiceTranscript = useCallback(
         async (transcript: string) => {
             const normalizedTranscript = normalizeVoiceTranscript(transcript);
@@ -595,11 +393,19 @@ export default function WriteOrder() {
     );
 
     useSpeechRecognitionEvent("start", () => {
+        if (suppressVoiceEventsRef.current) {
+            return;
+        }
+
         setIsListening(true);
         setVoiceError(null);
     });
 
     useSpeechRecognitionEvent("result", (event: any) => {
+        if (suppressVoiceEventsRef.current) {
+            return;
+        }
+
         const transcript = extractSpeechTranscript(event);
         if (!transcript) {
             return;
@@ -628,6 +434,11 @@ export default function WriteOrder() {
 
     useSpeechRecognitionEvent("error", (event: any) => {
         setIsListening(false);
+        if (suppressVoiceEventsRef.current) {
+            suppressVoiceEventsRef.current = false;
+            return;
+        }
+
         shouldProcessVoiceResultRef.current = false;
         hasProcessedVoiceResultRef.current = true;
         committedVoiceTranscriptRef.current = "";
@@ -637,6 +448,11 @@ export default function WriteOrder() {
 
     useSpeechRecognitionEvent("end", () => {
         setIsListening(false);
+
+        if (suppressVoiceEventsRef.current) {
+            suppressVoiceEventsRef.current = false;
+            return;
+        }
 
         if (
             shouldProcessVoiceResultRef.current &&
@@ -851,6 +667,34 @@ export default function WriteOrder() {
         ],
     );
 
+    const resetVoiceState = useCallback(() => {
+        setVoiceModalVisible(true);
+        setVoiceTranscript("");
+        setDisplayedVoiceTranscript("");
+        voiceTranscriptRef.current = "";
+        committedVoiceTranscriptRef.current = "";
+        setVoiceError(null);
+        setIsProcessingVoice(false);
+        setIsListening(false);
+    }, []);
+
+    const openVoiceModal = useCallback(() => {
+        resetVoiceState();
+        shouldProcessVoiceResultRef.current = false;
+        hasProcessedVoiceResultRef.current = false;
+        suppressVoiceEventsRef.current = false;
+    }, [resetVoiceState]);
+
+    const clearVoiceDraft = useCallback(() => {
+        setVoiceTranscript("");
+        setDisplayedVoiceTranscript("");
+        voiceTranscriptRef.current = "";
+        committedVoiceTranscriptRef.current = "";
+        setVoiceError(null);
+        setIsProcessingVoice(false);
+        setIsListening(false);
+    }, []);
+
     const startVoiceOrdering = useCallback(async () => {
         if (!selectedLocation || !orderUserId) {
             return;
@@ -864,15 +708,12 @@ export default function WriteOrder() {
             return;
         }
 
-        setVoiceModalVisible(true);
-        setVoiceTranscript("");
-        setDisplayedVoiceTranscript("");
-        voiceTranscriptRef.current = "";
-        committedVoiceTranscriptRef.current = "";
         setVoiceError(null);
         setIsProcessingVoice(false);
+        setIsListening(false);
         shouldProcessVoiceResultRef.current = true;
         hasProcessedVoiceResultRef.current = false;
+        suppressVoiceEventsRef.current = false;
 
         try {
             const permissionResponse =
@@ -916,22 +757,37 @@ export default function WriteOrder() {
         }
     }, []);
 
-    const closeVoiceModal = useCallback(async () => {
+    const restartVoiceOrdering = useCallback(() => {
+        suppressVoiceEventsRef.current = true;
         shouldProcessVoiceResultRef.current = false;
         hasProcessedVoiceResultRef.current = true;
-        setVoiceModalVisible(false);
-        setVoiceTranscript("");
-        setDisplayedVoiceTranscript("");
-        voiceTranscriptRef.current = "";
-        committedVoiceTranscriptRef.current = "";
-        setVoiceError(null);
-        setIsProcessingVoice(false);
-        setIsListening(false);
+
+        clearVoiceDraft();
 
         try {
             ExpoSpeechRecognitionModule.abort();
         } catch {}
-    }, []);
+
+        setTimeout(() => {
+            if (!isMountedRef.current || !voiceModalVisible) {
+                return;
+            }
+
+            void startVoiceOrdering();
+        }, 150);
+    }, [clearVoiceDraft, startVoiceOrdering, voiceModalVisible]);
+
+    const closeVoiceModal = useCallback(async () => {
+        suppressVoiceEventsRef.current = true;
+        shouldProcessVoiceResultRef.current = false;
+        hasProcessedVoiceResultRef.current = true;
+        setVoiceModalVisible(false);
+        clearVoiceDraft();
+
+        try {
+            ExpoSpeechRecognitionModule.abort();
+        } catch {}
+    }, [clearVoiceDraft]);
 
     useEffect(() => {
         return navigation.addListener("beforeRemove", (event) => {
@@ -968,6 +824,29 @@ export default function WriteOrder() {
         totalLocations === 1
             ? "Add each item separately, including any modifiers."
             : `Add each item under the right pickup location across ${totalLocations} pickup spots.`;
+    const voiceStatusLabel = voiceError
+        ? "Try again"
+        : isListening
+          ? "Listening"
+          : isProcessingVoice
+            ? "Reviewing"
+            : displayedVoiceTranscript
+              ? "Captured"
+              : "Ready";
+    const voiceStatusMessage = voiceError
+        ? voiceError
+        : isProcessingVoice
+          ? "Turning your words into order items."
+          : isListening
+            ? "Speak naturally and include quantities or modifiers."
+            : displayedVoiceTranscript
+              ? "Check the transcript below. You can start over if needed."
+              : "Tap start and say the order once.";
+    const voicePreviewLabel = displayedVoiceTranscript
+        ? "Transcript"
+        : isListening
+          ? "Listening for your order"
+          : "Try saying";
 
     return (
         <>
@@ -1057,6 +936,9 @@ export default function WriteOrder() {
                             padding: 16,
                             paddingBottom: 40,
                         }}
+                        keyboardDismissMode={
+                            Platform.OS === "ios" ? "interactive" : "on-drag"
+                        }
                         keyboardShouldPersistTaps="handled"
                         showsVerticalScrollIndicator={false}>
                         <View className="p-4 rounded-[28px] border border-muted bg-card">
@@ -1136,9 +1018,7 @@ export default function WriteOrder() {
                                     </View>
 
                                     <TouchableOpacity
-                                        onPress={() =>
-                                            void startVoiceOrdering()
-                                        }
+                                        onPress={openVoiceModal}
                                         disabled={
                                             isSaving ||
                                             isCompletingOrder ||
@@ -1279,158 +1159,185 @@ export default function WriteOrder() {
                     transparent
                     animationType="fade"
                     onRequestClose={() => void closeVoiceModal()}>
-                    <View className="flex-1 justify-center px-6 bg-black/50">
-                        <View className="overflow-hidden rounded-[28px] border border-border bg-card">
-                            <View className="px-5 pt-5 pb-4 bg-primary">
-                                <View className="flex-row justify-between items-start">
-                                    <View className="flex-1">
-                                        <View className="self-start px-3 py-1 mb-3 rounded-full bg-white/15">
-                                            <Text className="text-[11px] font-semibold tracking-[1.2px] uppercase text-white">
-                                                BiteRunr AI
-                                            </Text>
-                                        </View>
-                                        <Text className="text-2xl font-bold text-white">
-                                            What's your order?
-                                        </Text>
-                                        <Text className="mt-1 text-sm text-white/80">
-                                            {isListening
-                                                ? "I'm listening for items, modifiers, and special requests."
-                                                : isProcessingVoice
-                                                  ? "I'm turning your words into clean order items now."
-                                                  : "Tap in and speak naturally like you're talking to a person."}
-                                        </Text>
-                                    </View>
-                                    <Pressable
-                                        onPress={() => void closeVoiceModal()}
-                                        hitSlop={10}
-                                        accessibilityRole="button"
-                                        accessibilityLabel="Close voice ordering"
-                                        className="justify-center items-center w-9 h-9 rounded-full bg-white/15">
-                                        <Icon
-                                            name="X"
-                                            size={18}
-                                            color="white"
-                                        />
-                                    </Pressable>
-                                </View>
+                    <Pressable
+                        className="flex-1 justify-end bg-black/45"
+                        onPress={() => void closeVoiceModal()}>
+                        <Animated.View
+                            style={{
+                                opacity: voiceSheetOpacity,
+                                transform: [
+                                    { translateY: voiceSheetTranslateY },
+                                ],
+                            }}
+                        >
+                            <Pressable
+                            onPress={(event) => event.stopPropagation()}
+                            className="rounded-t-[30px] border-t border-border bg-card px-5 pt-3 pb-8">
+                            <View className="self-center w-10 h-1.5 rounded-full bg-border" />
 
-                                <VoicePulseOrb
-                                    colorScheme={colorScheme}
-                                    isListening={isListening}
-                                    isProcessingVoice={isProcessingVoice}
-                                />
-                            </View>
-
-                            <View className="p-5">
-                                <View className="p-4 mt-4 rounded-2xl border border-primary/10 bg-background">
-                                    <View className="flex-row gap-2 items-center mb-3">
-                                        <Icon
-                                            name={
-                                                isProcessingVoice
-                                                    ? "Sparkles"
-                                                    : "MessageSquareText"
-                                            }
-                                            size={16}
-                                            color={
-                                                NAV_THEME[colorScheme].primary
-                                            }
-                                        />
-                                        <Text className="text-xs font-semibold tracking-[1px] uppercase text-primary">
-                                            {isProcessingVoice
-                                                ? "AI Draft"
-                                                : "Live Transcript"}
-                                        </Text>
-                                    </View>
-                                    <Text className="text-base leading-6 text-foreground">
-                                        {displayedVoiceTranscript ||
-                                            "Say something like “two spicy chicken sandwiches, fries, and a Coke with no ice.”"}
+                            <View className="flex-row items-start justify-between mt-4">
+                                <View className="flex-1 pr-4">
+                                    <Text className="text-xl font-semibold text-foreground">
+                                        Add items by voice
+                                    </Text>
+                                    <Text className="mt-1 text-sm leading-5 text-muted-foreground">
+                                        Speak once, then review before we update your list.
                                     </Text>
                                 </View>
+                                <Pressable
+                                    onPress={() => void closeVoiceModal()}
+                                    hitSlop={10}
+                                    accessibilityRole="button"
+                                    accessibilityLabel="Close voice ordering"
+                                    className="items-center justify-center w-9 h-9 rounded-full bg-muted">
+                                    <Icon
+                                        name="X"
+                                        size={18}
+                                        color={NAV_THEME[colorScheme].text}
+                                    />
+                                </Pressable>
+                            </View>
 
-                                {!voiceError &&
-                                (isListening || isProcessingVoice) ? (
-                                    <View className="flex-row gap-2 items-center px-3 py-3 mt-4 rounded-xl bg-primary/5">
-                                        <ActivityIndicator
-                                            size="small"
+                            <View className="flex-row items-center gap-4 p-4 mt-5 rounded-2xl border border-border bg-background">
+                                <View
+                                    className={`items-center justify-center w-12 h-12 rounded-full ${
+                                        voiceError
+                                            ? "bg-destructive/10"
+                                            : isListening
+                                              ? "bg-primary"
+                                              : "bg-primary/10"
+                                    }`}>
+                                    {isProcessingVoice ? (
+                                        <Flow
+                                            size={18}
                                             color={
-                                                NAV_THEME[colorScheme].primary
+                                                colorScheme === "dark"
+                                                    ? "#ffffff"
+                                                    : NAV_THEME[colorScheme]
+                                                          .primary
                                             }
                                         />
-                                        <Text className="flex-1 text-sm text-primary">
-                                            {isProcessingVoice
-                                                ? "AI is cleaning up the transcript and extracting the actual order items."
-                                                : "Listening for quantities, modifiers, combo names, and special requests."}
-                                        </Text>
-                                    </View>
-                                ) : null}
-
-                                {voiceError ? (
-                                    <View className="flex-row gap-2 items-center px-3 py-3 mt-4 rounded-xl bg-destructive/10">
+                                    ) : (
                                         <Icon
-                                            name="CircleAlert"
-                                            size={18}
-                                            color="#ef4444"
+                                            name={
+                                                voiceError
+                                                    ? "CircleAlert"
+                                                    : isListening
+                                                      ? "Mic"
+                                                      : "MessageSquareText"
+                                            }
+                                            size={20}
+                                            color={
+                                                voiceError
+                                                    ? "#ef4444"
+                                                    : isListening
+                                                      ? "white"
+                                                      : NAV_THEME[colorScheme]
+                                                            .primary
+                                            }
                                         />
-                                        <Text className="flex-1 text-sm text-destructive">
-                                            {voiceError}
-                                        </Text>
-                                    </View>
-                                ) : null}
+                                    )}
+                                </View>
+                                <View className="flex-1">
+                                    <Text
+                                        className={`text-sm font-semibold ${
+                                            voiceError
+                                                ? "text-destructive"
+                                                : "text-foreground"
+                                        }`}>
+                                        {voiceStatusLabel}
+                                    </Text>
+                                    <Text
+                                        className={`mt-1 text-sm leading-5 ${
+                                            voiceError
+                                                ? "text-destructive"
+                                                : "text-muted-foreground"
+                                        }`}>
+                                        {voiceStatusMessage}
+                                    </Text>
+                                </View>
+                            </View>
 
-                                <View className="flex-row gap-3 mt-5">
+                            <View className="mt-4 rounded-2xl bg-muted px-4 py-4">
+                                <Text className="text-xs font-semibold uppercase tracking-[0.8px] text-muted-foreground">
+                                    {voicePreviewLabel}
+                                </Text>
+                                <Text className="mt-2 text-sm leading-6 text-foreground">
+                                    {displayedVoiceTranscript ||
+                                        (isListening
+                                            ? "Listening..."
+                                            : "Two spicy chicken sandwiches, one fry, and a Coke with no ice.")}
+                                </Text>
+                            </View>
+
+                            {(isListening || voiceTranscript || voiceError) && (
+                                <TouchableOpacity
+                                    onPress={restartVoiceOrdering}
+                                    disabled={isProcessingVoice}
+                                    className="self-start px-3 py-2 mt-3 rounded-full bg-primary/10">
+                                    <Text
+                                        className={`text-sm font-medium ${
+                                            isProcessingVoice
+                                                ? "text-muted-foreground"
+                                                : "text-primary"
+                                        }`}>
+                                        Start over
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+
+                            <View className="flex-row gap-3 mt-6">
+                                <TouchableOpacity
+                                    onPress={() => void closeVoiceModal()}
+                                    className="flex-1 items-center justify-center h-[52px] rounded-xl border border-border bg-background">
+                                    <Text className="text-sm font-semibold text-foreground">
+                                        Cancel
+                                    </Text>
+                                </TouchableOpacity>
+                                {isListening ? (
                                     <TouchableOpacity
-                                        onPress={() => void closeVoiceModal()}
-                                        className="flex-1 items-center justify-center h-[52px] rounded-xl border border-border bg-background">
-                                        <Text className="text-sm font-semibold text-foreground">
-                                            Cancel
+                                        onPress={() => void stopVoiceOrdering()}
+                                        className="flex-1 flex-row items-center justify-center h-[52px] gap-2 rounded-xl bg-primary">
+                                        <Icon
+                                            name="Square"
+                                            size={16}
+                                            color="white"
+                                        />
+                                        <Text className="text-sm font-semibold text-white">
+                                            Stop
                                         </Text>
                                     </TouchableOpacity>
-                                    {isListening ? (
-                                        <TouchableOpacity
-                                            onPress={() =>
-                                                void stopVoiceOrdering()
-                                            }
-                                            className="flex-1 flex-row gap-2 items-center justify-center h-[52px] rounded-xl bg-primary">
+                                ) : (
+                                    <TouchableOpacity
+                                        onPress={() => void startVoiceOrdering()}
+                                        disabled={isProcessingVoice}
+                                        className={`flex-1 flex-row items-center justify-center h-[52px] gap-2 rounded-xl ${
+                                            isProcessingVoice
+                                                ? "bg-primary/50"
+                                                : "bg-primary"
+                                        }`}>
+                                        {isProcessingVoice ? (
+                                            <Flow size={22} color="white" />
+                                        ) : (
                                             <Icon
-                                                name="Square"
+                                                name="Mic"
                                                 size={16}
                                                 color="white"
                                             />
-                                            <Text className="text-sm font-semibold text-white">
-                                                Stop Listening
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ) : (
-                                        <TouchableOpacity
-                                            onPress={() =>
-                                                void startVoiceOrdering()
-                                            }
-                                            disabled={isProcessingVoice}
-                                            className={`flex-1 flex-row gap-2 items-center justify-center h-[52px] rounded-xl ${
-                                                isProcessingVoice
-                                                    ? "bg-primary/50"
-                                                    : "bg-primary"
-                                            }`}>
-                                            {isProcessingVoice ? (
-                                                <Flow size={22} color="white" />
-                                            ) : (
-                                                <Icon
-                                                    name="Mic"
-                                                    size={16}
-                                                    color="white"
-                                                />
-                                            )}
-                                            <Text className="text-sm font-semibold text-white">
-                                                {isProcessingVoice
-                                                    ? "AI Working..."
-                                                    : "Listen Again"}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    )}
-                                </View>
+                                        )}
+                                        <Text className="text-sm font-semibold text-white">
+                                            {isProcessingVoice
+                                                ? "Processing..."
+                                                : voiceTranscript
+                                                  ? "Listen Again"
+                                                  : "Start"}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
                             </View>
-                        </View>
-                    </View>
+                            </Pressable>
+                        </Animated.View>
+                    </Pressable>
                 </Modal>
             </View>
         </>
