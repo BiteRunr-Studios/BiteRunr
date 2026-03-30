@@ -90,6 +90,32 @@ async function getPayoutDestinationAvailability(
     };
 }
 
+function getRequirementStatus(account: Stripe.Account) {
+    return {
+        requirementsCurrentlyDue: account.requirements?.currently_due ?? [],
+        requirementsPastDue: account.requirements?.past_due ?? [],
+        requirementsPendingVerification:
+            account.requirements?.pending_verification ?? [],
+        requirementsDisabledReason:
+            account.requirements?.disabled_reason ?? undefined,
+    };
+}
+
+const STRIPE_IDENTITY_REQUIREMENT_FIELDS = [
+    "verification.document",
+    "verification.additional_document",
+    "proof_of_liveness",
+    "person.verification.proof_of_liveness",
+];
+
+function hasIdentityVerificationRequirement(requirements: string[]): boolean {
+    return requirements.some((field) =>
+        STRIPE_IDENTITY_REQUIREMENT_FIELDS.some((requirement) =>
+            field.includes(requirement),
+        ),
+    );
+}
+
 // --- SELLER ONBOARDING ---
 // Creates a Stripe Connect Express account and returns the onboarding URL.
 // The runner opens this URL to enter their identity + debit card / bank info.
@@ -140,6 +166,9 @@ export const createConnectAccount = action({
                 onboardingComplete: false,
                 payoutsEnabled: false,
                 chargesEnabled: false,
+                requirementsCurrentlyDue: [],
+                requirementsPastDue: [],
+                requirementsPendingVerification: [],
                 email: user.email,
             });
         }
@@ -152,6 +181,9 @@ export const createConnectAccount = action({
             refresh_url: `${siteUrl}/stripe-onboarding-refresh`,
             return_url: `${siteUrl}/stripe-onboarding-complete`,
             type: "account_onboarding",
+            collection_options: {
+                fields: "eventually_due",
+            },
         });
 
         return { url: accountLink.url, stripeAccountId };
@@ -169,6 +201,13 @@ export const checkOnboardingStatus = action({
         onboarded: boolean;
         payoutsEnabled: boolean;
         chargesEnabled: boolean;
+        requirementsCurrentlyDue: string[];
+        requirementsPastDue: string[];
+        requirementsPendingVerification: string[];
+        requirementsDisabledReason?: string;
+        needsMoreInformation: boolean;
+        verificationInReview: boolean;
+        requiresIdentityDocument: boolean;
     }> => {
         const user = await ctx.runQuery(api.users.getCurrentUser, {});
         if (!user) throw new Error("Not authenticated");
@@ -184,6 +223,12 @@ export const checkOnboardingStatus = action({
                 onboarded: false,
                 payoutsEnabled: false,
                 chargesEnabled: false,
+                requirementsCurrentlyDue: [],
+                requirementsPastDue: [],
+                requirementsPendingVerification: [],
+                needsMoreInformation: false,
+                verificationInReview: false,
+                requiresIdentityDocument: false,
             };
         }
 
@@ -194,6 +239,18 @@ export const checkOnboardingStatus = action({
             stripeAccount.details_submitted ?? false;
         const payoutsEnabled: boolean = stripeAccount.payouts_enabled ?? false;
         const chargesEnabled: boolean = stripeAccount.charges_enabled ?? false;
+        const requirementStatus = getRequirementStatus(stripeAccount);
+        const allOutstandingRequirements = [
+            ...requirementStatus.requirementsCurrentlyDue,
+            ...requirementStatus.requirementsPastDue,
+        ];
+        const needsMoreInformation = allOutstandingRequirements.length > 0;
+        const verificationInReview =
+            !needsMoreInformation &&
+            requirementStatus.requirementsPendingVerification.length > 0;
+        const requiresIdentityDocument = hasIdentityVerificationRequirement(
+            allOutstandingRequirements,
+        );
 
         await ctx.runMutation(
             internal.payments.updateConnectedAccountByStripeId,
@@ -202,6 +259,7 @@ export const checkOnboardingStatus = action({
                 onboardingComplete,
                 payoutsEnabled,
                 chargesEnabled,
+                ...requirementStatus,
             },
         );
 
@@ -209,6 +267,10 @@ export const checkOnboardingStatus = action({
             onboarded: onboardingComplete,
             payoutsEnabled,
             chargesEnabled,
+            ...requirementStatus,
+            needsMoreInformation,
+            verificationInReview,
+            requiresIdentityDocument,
         };
     },
 });

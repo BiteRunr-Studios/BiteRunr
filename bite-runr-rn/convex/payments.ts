@@ -31,6 +31,12 @@ export const getMyConnectedAccount = query({
             onboardingComplete: account.onboardingComplete,
             payoutsEnabled: account.payoutsEnabled,
             chargesEnabled: account.chargesEnabled,
+            requirementsCurrentlyDue: account.requirementsCurrentlyDue ?? [],
+            requirementsPastDue: account.requirementsPastDue ?? [],
+            requirementsPendingVerification:
+                account.requirementsPendingVerification ?? [],
+            requirementsDisabledReason:
+                account.requirementsDisabledReason ?? null,
         };
     },
 });
@@ -75,6 +81,10 @@ export const upsertConnectedAccount = internalMutation({
         onboardingComplete: v.boolean(),
         payoutsEnabled: v.boolean(),
         chargesEnabled: v.boolean(),
+        requirementsCurrentlyDue: v.optional(v.array(v.string())),
+        requirementsPastDue: v.optional(v.array(v.string())),
+        requirementsPendingVerification: v.optional(v.array(v.string())),
+        requirementsDisabledReason: v.optional(v.string()),
         email: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
@@ -103,6 +113,10 @@ export const updateConnectedAccountByStripeId = internalMutation({
         onboardingComplete: v.boolean(),
         payoutsEnabled: v.boolean(),
         chargesEnabled: v.boolean(),
+        requirementsCurrentlyDue: v.optional(v.array(v.string())),
+        requirementsPastDue: v.optional(v.array(v.string())),
+        requirementsPendingVerification: v.optional(v.array(v.string())),
+        requirementsDisabledReason: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         const account = await ctx.db
@@ -116,6 +130,11 @@ export const updateConnectedAccountByStripeId = internalMutation({
                 onboardingComplete: args.onboardingComplete,
                 payoutsEnabled: args.payoutsEnabled,
                 chargesEnabled: args.chargesEnabled,
+                requirementsCurrentlyDue: args.requirementsCurrentlyDue,
+                requirementsPastDue: args.requirementsPastDue,
+                requirementsPendingVerification:
+                    args.requirementsPendingVerification,
+                requirementsDisabledReason: args.requirementsDisabledReason,
                 updatedAt: Date.now(),
             });
         }

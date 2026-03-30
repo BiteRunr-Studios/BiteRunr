@@ -86,16 +86,17 @@ export default function HomeTab() {
     const getPayoutBalance = useAction(api.stripeConnect.getPayoutBalance);
 
     const hasStripe = connectedAccount?.chargesEnabled === true;
+    const canReceivePayouts = connectedAccount?.payoutsEnabled === true;
 
     const fetchBalance = useCallback(async () => {
-        if (!hasStripe) return;
+        if (!canReceivePayouts) return;
         try {
             const result = await getPayoutBalance({});
             setBalanceAmount(result.available + result.pending);
         } catch {
             // Silently fail
         }
-    }, [hasStripe, getPayoutBalance]);
+    }, [canReceivePayouts, getPayoutBalance]);
 
     useEffect(() => {
         fetchBalance();

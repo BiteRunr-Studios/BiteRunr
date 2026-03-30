@@ -263,6 +263,15 @@ http.route({
                             onboardingComplete: account.details_submitted ?? false,
                             payoutsEnabled: account.payouts_enabled ?? false,
                             chargesEnabled: account.charges_enabled ?? false,
+                            requirementsCurrentlyDue:
+                                account.requirements?.currently_due ?? [],
+                            requirementsPastDue:
+                                account.requirements?.past_due ?? [],
+                            requirementsPendingVerification:
+                                account.requirements?.pending_verification ?? [],
+                            requirementsDisabledReason:
+                                account.requirements?.disabled_reason ??
+                                undefined,
                         },
                     );
                     break;

@@ -71,6 +71,21 @@ const items: Item[] = [
     },
 ];
 
+const STRIPE_IDENTITY_REQUIREMENT_FIELDS = [
+    "verification.document",
+    "verification.additional_document",
+    "proof_of_liveness",
+    "person.verification.proof_of_liveness",
+];
+
+function hasIdentityVerificationRequirement(requirements: string[]) {
+    return requirements.some((field) =>
+        STRIPE_IDENTITY_REQUIREMENT_FIELDS.some((requirement) =>
+            field.includes(requirement),
+        ),
+    );
+}
+
 export default function AccountTab() {
     const { signOut } = useContext(AuthContext);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -79,7 +94,16 @@ export default function AccountTab() {
 
     const user = useQuery(api.users.getCurrentUser);
     const pendingCount = useQuery(api.friends.pendingRequestCount);
+    const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
     const isLoading = user === undefined;
+    const payoutRequirements = [
+        ...(connectedAccount?.requirementsCurrentlyDue ?? []),
+        ...(connectedAccount?.requirementsPastDue ?? []),
+    ];
+    const needsPayoutIdentityVerification =
+        !!connectedAccount &&
+        !connectedAccount.payoutsEnabled &&
+        hasIdentityVerificationRequirement(payoutRequirements);
 
     const onRefresh = useCallback(() => {
         setIsRefreshing(true);
@@ -185,6 +209,41 @@ export default function AccountTab() {
                             </Pressable>
 
                             {/* Menu Items */}
+                            {needsPayoutIdentityVerification && (
+                                <Pressable
+                                    onPress={() => router.push("/account/payments")}
+                                    className="flex-row items-start p-4 mb-3 border rounded-xl active:opacity-90"
+                                    style={{
+                                        borderColor: "#f59e0b40",
+                                        backgroundColor: "#f59e0b12",
+                                    }}>
+                                    <View className="items-center justify-center w-12 h-12 rounded-xl bg-amber-500/15">
+                                        <Icon
+                                            name="CircleAlert"
+                                            size={22}
+                                            color="#d97706"
+                                        />
+                                    </View>
+                                    <View className="flex-1 ml-3">
+                                        <Text
+                                            className="text-base font-semibold"
+                                            style={{ color: "#b45309" }}>
+                                            Finish setup to get paid
+                                        </Text>
+                                        <Text className="mt-0.5 text-sm text-muted-foreground">
+                                            We use Stripe to safely confirm
+                                            your information before money can be
+                                            sent to you.
+                                        </Text>
+                                    </View>
+                                    <Icon
+                                        name="ChevronRight"
+                                        size={20}
+                                        color="#d97706"
+                                    />
+                                </Pressable>
+                            )}
+
                             <View className="gap-3">
                                 {items.map((item) => (
                                     <Pressable
