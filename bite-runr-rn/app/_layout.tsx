@@ -14,6 +14,16 @@ import {
 } from "@react-navigation/native";
 import Toast, { type BaseToastProps } from "react-native-toast-message";
 import * as SplashScreen from "expo-splash-screen";
+import {
+  useFonts as useBricolage,
+  BricolageGrotesque_500Medium,
+  BricolageGrotesque_700Bold,
+  BricolageGrotesque_800ExtraBold,
+} from "@expo-google-fonts/bricolage-grotesque";
+import {
+  JetBrainsMono_500Medium,
+  JetBrainsMono_700Bold,
+} from "@expo-google-fonts/jetbrains-mono";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { ConvexReactClient } from "convex/react";
@@ -162,7 +172,7 @@ function useToastConfig() {
   );
 }
 
-function RootAppShell() {
+function RootAppShell({ fontsLoaded }: { fontsLoaded: boolean }) {
   const toastConfig = useToastConfig();
   const { isReady, isLoading } = useAuth();
   const [showSplash, setShowSplash] = React.useState(true);
@@ -181,7 +191,7 @@ function RootAppShell() {
     setShowSplash(false);
   }, []);
 
-  const appReadyForReveal = isReady && !isLoading;
+  const appReadyForReveal = isReady && !isLoading && fontsLoaded;
 
   return (
     <>
@@ -225,6 +235,13 @@ function RootAppShell() {
 
 export default function RootLayout() {
   const { colorScheme } = useColorScheme();
+  const [fontsLoaded] = useBricolage({
+    BricolageGrotesque_500Medium,
+    BricolageGrotesque_700Bold,
+    BricolageGrotesque_800ExtraBold,
+    JetBrainsMono_500Medium,
+    JetBrainsMono_700Bold,
+  });
 
   React.useEffect(() => {
     if (Platform.OS === "web" && typeof document !== "undefined") {
@@ -249,7 +266,7 @@ export default function RootLayout() {
             value={colorScheme === "dark" ? DARK_THEME : LIGHT_THEME}
           >
             <SafeAreaProvider>
-              <RootAppShell />
+              <RootAppShell fontsLoaded={fontsLoaded} />
             </SafeAreaProvider>
           </ThemeProvider>
         </AuthProvider>

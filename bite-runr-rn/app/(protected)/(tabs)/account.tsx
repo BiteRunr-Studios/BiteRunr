@@ -1,12 +1,12 @@
-import React, { useContext, useState, useCallback } from "react";
+import { useContext } from "react";
 import {
-    ScrollView,
-    Text,
-    View,
-    Alert,
-    Pressable,
-    RefreshControl,
-    TouchableOpacity,
+  ScrollView,
+  Text,
+  View,
+  Alert,
+  Pressable,
+  Image,
+  StyleSheet,
 } from "react-native";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { AuthContext } from "@/lib/convex-auth-context";
@@ -14,283 +14,406 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { router } from "expo-router";
 import Icon from "@/components/common/icon";
-import { NAV_THEME } from "@/lib/constants";
-import { useColorScheme } from "@/lib/use-color-scheme";
-import type { icons } from "lucide-react-native";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { HeaderBar } from "@/components/layout/header-bar";
-import { Avatar } from "@/components/common/avatar";
+import { BrAvatar, BrSticker, BrText } from "@/components/br";
+import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import Animated, { FadeInUp } from "react-native-reanimated";
+import type { icons } from "lucide-react-native";
 
-type Item = {
-    key: string;
-    title: string;
-    subtitle: string;
-    icon: keyof typeof icons;
-    iconBg: string;
-    iconColor: string;
-    href: string;
+type SectionItem = {
+  key: string;
+  icon: keyof typeof icons;
+  label: string;
+  sub?: string;
+  href?: string;
+  danger?: boolean;
+  badge?: number;
+  onPress?: () => void;
 };
 
-const items: Item[] = [
-    {
-        key: "friends",
-        title: "Friends",
-        subtitle: "View, make & manage friends",
-        icon: "Users",
-        iconBg: "bg-green-500/10",
-        iconColor: "#22c55e",
-        href: "/account/friends",
-    },
-    {
-        key: "payments",
-        title: "Payments",
-        subtitle: "View & claim owed amounts",
-        icon: "CreditCard",
-        iconBg: "bg-purple-500/10",
-        iconColor: "#a855f7",
-        href: "/account/payments",
-    },
-    {
-        key: "support",
-        title: "Support",
-        subtitle: "Report an issue with the app",
-        icon: "Headset",
-        iconBg: "bg-orange-500/10",
-        iconColor: "#f97316",
-        href: "/account/support",
-    },
-    {
-        key: "about",
-        title: "About",
-        subtitle: "Release notes & about us",
-        icon: "Info",
-        iconBg: "bg-gray-500/10",
-        iconColor: "#6b7280",
-        href: "/account/about",
-    },
-];
+type Section = {
+  title: string;
+  items: SectionItem[];
+};
+
+function runnerLevel(runs: number) {
+  if (runs >= 50) return 5;
+  if (runs >= 30) return 4;
+  if (runs >= 15) return 3;
+  if (runs >= 6) return 2;
+  return 1;
+}
 
 export default function AccountTab() {
-    const { signOut } = useContext(AuthContext);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-    const { colorScheme } = useColorScheme();
-    const insets = useSafeAreaInsets();
+  const { signOut } = useContext(AuthContext);
+  const insets = useSafeAreaInsets();
 
-    const user = useQuery(api.users.getCurrentUser);
-    const pendingCount = useQuery(api.friends.pendingRequestCount);
-    const isLoading = user === undefined;
+  const user = useQuery(api.users.getCurrentUser);
+  const pendingCount = useQuery(api.friends.pendingRequestCount);
+  const friends = useQuery(api.friends.list);
+  const orders = useQuery(api.orders.getWithDetails);
+  const isLoading = user === undefined;
 
-    const onRefresh = useCallback(() => {
-        setIsRefreshing(true);
-        setTimeout(() => setIsRefreshing(false), 500);
-    }, []);
+  const fullName = user
+    ? [user.firstName, user.lastName].filter(Boolean).join(" ")
+    : null;
 
-    async function onSignOut() {
-        try {
+  const handle = user?.firstName
+    ? `@${user.firstName.toLowerCase()}${user.lastName ? user.lastName[0].toLowerCase() : ""}`
+    : null;
+
+  const memberSince = user
+    ? new Date(user._creationTime).toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      })
+    : null;
+
+  const runsCount = orders?.length ?? 0;
+  const friendsCount = friends?.length ?? 0;
+  const itemsCount = orders?.reduce((acc, o) => acc + (o.itemsCount ?? 0), 0) ?? 0;
+  const level = runnerLevel(runsCount);
+
+  function onSignOut() {
+    Alert.alert("Sign out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign out",
+        style: "destructive",
+        onPress: async () => {
+          try {
             await signOut();
-        } catch (e: any) {
+          } catch (e: any) {
             Alert.alert("Error", e?.message ?? "Something went wrong.");
-        }
-    }
+          }
+        },
+      },
+    ]);
+  }
 
-    const fullName = user
-        ? [user.firstName, user.lastName].filter(Boolean).join(" ")
-        : null;
+  const sections: Section[] = [
+    {
+      title: "Wallet",
+      items: [
+        { key: "payments", icon: "CreditCard", label: "Payments", sub: "View & claim owed amounts", href: "/account/payments" },
+        { key: "friends", icon: "Users", label: "Friends", sub: "View, add & manage friends", href: "/account/friends", badge: pendingCount ?? 0 },
+      ],
+    },
+    {
+      title: "App",
+      items: [
+        { key: "support", icon: "Headset", label: "Support", sub: "Report an issue", href: "/account/support" },
+        { key: "about", icon: "Info", label: "About", sub: "Release notes & about us", href: "/account/about" },
+      ],
+    },
+    {
+      title: "More",
+      items: [
+        { key: "signout", icon: "LogOut", label: "Sign out", danger: true, onPress: onSignOut },
+      ],
+    },
+  ];
 
-    return (
-        <ErrorBoundary>
-            <View style={{ paddingTop: insets.top }} className="flex-1 bg-background">
-            <HeaderBar />
-            <ScrollView
-                className="flex-1"
-                contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
-                showsVerticalScrollIndicator={false}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={isRefreshing}
-                        onRefresh={onRefresh}
-                    />
-                }>
-                    {isLoading && <ProfileSkeleton />}
+  return (
+    <ErrorBoundary>
+      <View style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}>
+        {/* Top bar */}
+        <View style={styles.topBar}>
+          <Image
+            source={require("@/assets/images/icon-no-bg.png")}
+            style={{ width: 44, height: 44 }}
+            resizeMode="contain"
+          />
+          <Pressable style={styles.iconBtn} onPress={() => router.push("/account/account-info")}>
+            <Icon name="Settings" size={16} color={BR.ink} />
+          </Pressable>
+        </View>
 
-                    {!isLoading && user && (
-                        <>
-                            {/* Profile Card */}
-                            <Pressable
-                                onPress={() =>
-                                    router.push("/account/account-info")
-                                }
-                                className="p-5 mb-6 border rounded-2xl border-muted bg-card active:opacity-90">
-                                <View className="flex-row items-center">
-                                    <View className="relative">
-                                        <Avatar
-                                            name={fullName || "U"}
-                                            avatarUrl={user.avatarUrl}
-                                            size={80}
-                                        />
-                                        <View className="absolute bottom-0 right-0 items-center justify-center border-2 rounded-full w-7 h-7 bg-primary border-card">
-                                            <Icon
-                                                name="Pencil"
-                                                size={12}
-                                                color="white"
-                                            />
-                                        </View>
-                                    </View>
-                                    <View className="flex-1 ml-4">
-                                        <Text className="text-xl font-bold text-foreground">
-                                            {fullName || "Unknown User"}
-                                        </Text>
-                                        <View className="flex-row items-center gap-1.5 mt-1">
-                                            <Icon
-                                                name="Mail"
-                                                size={14}
-                                                color={
-                                                    NAV_THEME[colorScheme]
-                                                        .border
-                                                }
-                                            />
-                                            <Text
-                                                className="text-sm text-muted-foreground"
-                                                numberOfLines={1}>
-                                                {user.email}
-                                            </Text>
-                                        </View>
-                                        <View className="flex-row items-center gap-1.5 mt-1">
-                                            <Icon
-                                                name="Calendar"
-                                                size={14}
-                                                color={
-                                                    NAV_THEME[colorScheme]
-                                                        .border
-                                                }
-                                            />
-                                            <Text className="text-sm text-muted-foreground">
-                                                Member since{" "}
-                                                {new Date(
-                                                    user._creationTime,
-                                                ).toLocaleDateString("en-US", {
-                                                    month: "short",
-                                                    year: "numeric",
-                                                })}
-                                            </Text>
-                                        </View>
-                                    </View>
-                                    <Icon
-                                        name="ChevronRight"
-                                        size={20}
-                                        color={NAV_THEME[colorScheme].border}
-                                    />
-                                </View>
-                            </Pressable>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 50 + insets.bottom }}
+          showsVerticalScrollIndicator={false}
+        >
+          {isLoading && <ProfileSkeleton />}
 
-                            {/* Menu Items */}
-                            <View className="gap-3">
-                                {items.map((item) => (
-                                    <Pressable
-                                        key={item.key}
-                                        onPress={() =>
-                                            router.push(item.href as any)
-                                        }
-                                        className="flex-row items-center p-4 border rounded-xl border-muted bg-card active:opacity-90">
-                                        <View
-                                            className={`items-center justify-center w-12 h-12 rounded-xl ${item.iconBg}`}>
-                                            <Icon
-                                                name={item.icon}
-                                                size={24}
-                                                color={item.iconColor}
-                                            />
-                                        </View>
-                                        <View className="flex-1 ml-3">
-                                            <Text className="text-base font-semibold text-foreground">
-                                                {item.title}
-                                            </Text>
-                                            <Text className="mt-0.5 text-sm text-muted-foreground">
-                                                {item.subtitle}
-                                            </Text>
-                                        </View>
-                                        {item.key === "friends" && typeof pendingCount === "number" && pendingCount > 0 && (
-                                            <View className="items-center justify-center w-6 h-6 mr-2 bg-red-500 rounded-full">
-                                                <Text className="text-xs font-bold text-white">
-                                                    {pendingCount > 9 ? "9+" : pendingCount}
-                                                </Text>
-                                            </View>
-                                        )}
-                                        <Icon
-                                            name="ChevronRight"
-                                            size={20}
-                                            color={
-                                                NAV_THEME[colorScheme].border
-                                            }
-                                        />
-                                    </Pressable>
-                                ))}
-                            </View>
+          {!isLoading && user && (
+            <Animated.View entering={FadeInUp.duration(400)} style={{ gap: 10 }}>
+              {/* Profile hero */}
+              <View style={styles.profileHero}>
+                {/* Level sticker */}
+                <View style={styles.stickerWrap}>
+                  <BrSticker rotate={4}>
+                    <Icon name="Flame" size={11} color={BR.orange} />
+                    {"  "}Lvl {level} Runner
+                  </BrSticker>
+                </View>
 
-                            {/* Sign Out Button */}
-                            <TouchableOpacity
-                                onPress={onSignOut}
-                                className="flex-row items-center justify-center gap-2 py-4 mt-6 border rounded-xl border-destructive active:opacity-80">
-                                <Icon name="LogOut" size={20} color="#ef4444" />
-                                <Text className="font-semibold text-destructive">
-                                    Sign out
-                                </Text>
-                            </TouchableOpacity>
-                        </>
-                    )}
+                <BrAvatar
+                  name={fullName || "U"}
+                  avatarUrl={user.avatarUrl}
+                  size={88}
+                  ring="#fff"
+                />
+                <BrText variant="h2" style={{ marginTop: 12, textAlign: "center" }}>
+                  {fullName || "Unknown User"}
+                </BrText>
+                <Text style={styles.heroHandle}>
+                  {handle} · joined {memberSince}
+                </Text>
+              </View>
 
-                    {!isLoading && !user && (
-                        <View className="items-center p-8 rounded-2xl bg-card">
-                            <View className="items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-muted">
-                                <Icon
-                                    name="User"
-                                    size={40}
-                                    color={NAV_THEME[colorScheme].border}
-                                />
-                            </View>
-                            <Text className="text-lg font-semibold text-foreground">
-                                Not signed in
+              {/* Stats row */}
+              <View style={styles.statsRow}>
+                <StatCard label="Runs" value={runsCount} sub="all time" />
+                <StatCard label="Squad" value={friendsCount} sub="friends" />
+                <StatCard label="Items" value={itemsCount} sub="ordered" />
+              </View>
+
+              {/* Sections */}
+              {sections.map((sec, si) => (
+                <Animated.View
+                  key={sec.title}
+                  entering={FadeInUp.duration(400).delay(100 + si * 50)}
+                  style={{ marginTop: 12 }}
+                >
+                  <BrText variant="eyebrow" style={{ marginBottom: 8 }}>{sec.title}</BrText>
+                  <View style={styles.sectionCard}>
+                    {sec.items.map((item, i) => (
+                      <Pressable
+                        key={item.key}
+                        onPress={item.onPress ?? (() => router.push(item.href as any))}
+                        style={({ pressed }) => [
+                          i < sec.items.length - 1 && styles.sectionRowBorder,
+                          pressed && { opacity: 0.82 },
+                        ]}
+                      >
+                        <View style={styles.sectionRow}>
+                          <View style={[
+                            styles.rowIcon,
+                            { backgroundColor: item.danger ? BR.coralSoft : BR.paper2 },
+                          ]}>
+                            <Icon
+                              name={item.icon}
+                              size={16}
+                              color={item.danger ? BR.coralInk : BR.ink2}
+                            />
+                          </View>
+
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.rowLabel, item.danger && { color: BR.coralInk }]}>
+                              {item.label}
                             </Text>
-                            <Text className="mt-2 text-center text-muted-foreground">
-                                Please sign in to see your profile
-                            </Text>
+                            {item.sub ? (
+                              <Text style={styles.rowSub}>{item.sub}</Text>
+                            ) : null}
+                          </View>
+
+                          {typeof item.badge === "number" && item.badge > 0 && (
+                            <View style={styles.badge}>
+                              <Text style={styles.badgeText}>
+                                {item.badge > 9 ? "9+" : item.badge}
+                              </Text>
+                            </View>
+                          )}
+
+                          {!item.danger && (
+                            <Icon name="ChevronRight" size={16} color={BR.ink3} />
+                          )}
                         </View>
-                    )}
-            </ScrollView>
+                      </Pressable>
+                    ))}
+                  </View>
+                </Animated.View>
+              ))}
+            </Animated.View>
+          )}
+
+          {!isLoading && !user && (
+            <View style={styles.notSignedIn}>
+              <Text style={{ fontSize: 40 }}>👤</Text>
+              <BrText variant="h3" style={{ marginTop: 12 }}>Not signed in</BrText>
+              <BrText style={{ fontSize: 13, color: BR.ink3, marginTop: 4, textAlign: "center" }}>
+                Please sign in to see your profile.
+              </BrText>
             </View>
-        </ErrorBoundary>
-    );
+          )}
+        </ScrollView>
+      </View>
+    </ErrorBoundary>
+  );
+}
+
+function StatCard({ label, value, sub }: { label: string; value: number | string; sub: string }) {
+  return (
+    <View style={styles.statCard}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label} · {sub}</Text>
+    </View>
+  );
 }
 
 function ProfileSkeleton() {
-    return (
-        <Skeleton>
-            <View>
-                {/* Profile Card Skeleton */}
-                <View className="flex-row items-center p-5 mb-6 border rounded-2xl border-muted bg-card">
-                    <SkeletonBlock width={80} height={80} rounded="rounded-full" />
-                    <View className="flex-1 ml-4">
-                        <SkeletonBlock width={160} height={24} className="mb-2" />
-                        <SkeletonBlock width={200} height={16} className="mb-2" />
-                        <SkeletonBlock width={140} height={16} />
-                    </View>
-                </View>
-
-                {/* Menu Items Skeleton */}
-                <View className="gap-3">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                        <View
-                            key={i}
-                            className="flex-row items-center p-4 border rounded-xl border-muted bg-card">
-                            <SkeletonBlock width={48} height={48} rounded="rounded-xl" />
-                            <View className="flex-1 ml-3">
-                                <SkeletonBlock width={140} height={20} className="mb-2" />
-                                <SkeletonBlock width={180} height={16} />
-                            </View>
-                        </View>
-                    ))}
-                </View>
+  return (
+    <Skeleton>
+      <View style={{ gap: 10 }}>
+        <View style={[styles.profileHero, { alignItems: "center" }]}>
+          <SkeletonBlock width={88} height={88} rounded="rounded-full" />
+          <View style={{ marginTop: 12, gap: 8, alignItems: "center" }}>
+            <SkeletonBlock width={160} height={22} />
+            <SkeletonBlock width={130} height={14} />
+          </View>
+        </View>
+        <View style={styles.statsRow}>
+          {[1, 2, 3].map((i) => (
+            <View key={i} style={[styles.statCard, { flex: 1 }]}>
+              <SkeletonBlock width={40} height={24} />
+              <SkeletonBlock width={60} height={12} />
             </View>
-        </Skeleton>
-    );
+          ))}
+        </View>
+        {[1, 2].map((i) => (
+          <View key={i} style={{ marginTop: 12 }}>
+            <SkeletonBlock width={80} height={12} style={{ marginBottom: 8 }} />
+            <View style={styles.sectionCard}>
+              {[1, 2].map((j) => (
+                <View key={j} style={[styles.sectionRow, j === 1 && styles.sectionRowBorder]}>
+                  <SkeletonBlock width={34} height={34} rounded="rounded-xl" />
+                  <View style={{ flex: 1, marginLeft: 12, gap: 6 }}>
+                    <SkeletonBlock width={120} height={14} />
+                    <SkeletonBlock width={160} height={11} />
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ))}
+      </View>
+    </Skeleton>
+  );
 }
+
+const styles = StyleSheet.create({
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    backgroundColor: BR.paper2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profileHero: {
+    backgroundColor: BR.orangeTint,
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: "rgba(255,106,31,0.2)",
+    padding: 22,
+    alignItems: "center",
+    position: "relative",
+    overflow: "hidden",
+    marginTop: 10,
+  },
+  stickerWrap: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+  },
+  heroHandle: {
+    fontSize: 13,
+    fontFamily: BR_FONT.mono,
+    color: BR.orangeDeep,
+    marginTop: 4,
+  },
+  statsRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: BR.card,
+    borderRadius: BR_RADIUS.md,
+    borderWidth: 1,
+    borderColor: BR.line,
+    padding: 14,
+    alignItems: "center",
+    gap: 4,
+  },
+  statValue: {
+    fontFamily: BR_FONT.monoBold,
+    fontSize: 24,
+    color: BR.ink,
+  },
+  statLabel: {
+    fontSize: 11,
+    color: BR.ink3,
+    textAlign: "center",
+  },
+  sectionCard: {
+    backgroundColor: BR.card,
+    borderRadius: BR_RADIUS.md,
+    borderWidth: 1,
+    borderColor: BR.line,
+    overflow: "hidden",
+  },
+  sectionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 14,
+  },
+  sectionRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: BR.line,
+  },
+  rowIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  rowLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: BR.ink,
+  },
+  rowSub: {
+    fontSize: 11,
+    color: BR.ink3,
+    marginTop: 1,
+  },
+  badge: {
+    minWidth: 20,
+    height: 20,
+    borderRadius: 999,
+    backgroundColor: BR.coral,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 5,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#fff",
+  },
+  notSignedIn: {
+    alignItems: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+    marginTop: 24,
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: BR.line2,
+    backgroundColor: BR.card,
+  },
+});
