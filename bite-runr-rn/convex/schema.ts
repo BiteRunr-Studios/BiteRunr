@@ -178,6 +178,15 @@ export default defineSchema({
         .index("by_orderId", ["orderId"])
         .index("by_orderId_isActive", ["orderId", "isActive"]),
 
+    // Named squads (user-created groups of friends)
+    squads: defineTable({
+        name: v.string(),
+        creatorId: v.id("users"),
+        color: v.string(), // "orange" | "lilac" | "mint" | "coral" | "yolk"
+        icon: v.string(),  // lucide icon name
+        memberIds: v.array(v.id("users")),
+    }).index("by_creatorId", ["creatorId"]),
+
     // Waitlist signups
     waitlist: defineTable({
         email: v.string(),

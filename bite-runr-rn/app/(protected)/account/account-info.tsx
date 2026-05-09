@@ -178,7 +178,7 @@ export default function AccountInfoScreen() {
             showsVerticalScrollIndicator={false}
           >
             {/* Avatar hero */}
-            <Animated.View entering={FadeInUp.duration(400)} style={styles.avatarHero}>
+            <Animated.View entering={FadeInUp.duration(300)} style={styles.avatarHero}>
               <Pressable
                 onPress={showAvatarOptions}
                 disabled={isUploadingAvatar}
@@ -204,7 +204,7 @@ export default function AccountInfoScreen() {
             </Animated.View>
 
             {/* Name fields */}
-            <Animated.View entering={FadeInUp.duration(400).delay(60)} style={{ gap: 10 }}>
+            <Animated.View entering={FadeInUp.duration(300).delay(30)} style={{ gap: 10 }}>
               <BrText variant="eyebrow" style={{ marginBottom: 2 }}>Name</BrText>
               <BrInput
                 value={firstName}
@@ -226,7 +226,7 @@ export default function AccountInfoScreen() {
             </Animated.View>
 
             {/* Email (locked) */}
-            <Animated.View entering={FadeInUp.duration(400).delay(100)} style={{ marginTop: 20 }}>
+            <Animated.View entering={FadeInUp.duration(300).delay(25)} style={{ marginTop: 20 }}>
               <BrText variant="eyebrow" style={{ marginBottom: 8 }}>Email</BrText>
               <View style={styles.emailRow}>
                 <Icon name="Mail" size={18} color={BR.ink2} />
@@ -240,7 +240,7 @@ export default function AccountInfoScreen() {
 
             {/* Member since */}
             <Animated.View
-              entering={FadeInUp.duration(400).delay(130)}
+              entering={FadeInUp.duration(300).delay(65)}
               style={styles.memberRow}
             >
               <Icon name="Calendar" size={13} color={BR.ink3} />
@@ -254,7 +254,7 @@ export default function AccountInfoScreen() {
             </Animated.View>
 
             {/* Save */}
-            <Animated.View entering={FadeInUp.duration(400).delay(160)} style={{ marginTop: 28 }}>
+            <Animated.View entering={FadeInUp.duration(300).delay(40)} style={{ marginTop: 28 }}>
               <BrButton
                 label="Save changes"
                 variant="primary"

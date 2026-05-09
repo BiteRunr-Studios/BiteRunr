@@ -261,7 +261,7 @@ export default function HomeTab() {
             <>
               {/* Greeting */}
               <Animated.View
-                entering={FadeInUp.duration(400)}
+                entering={FadeInUp.duration(300)}
                 style={styles.greetingRow}
               >
                 <View style={{ flex: 1 }}>
@@ -286,7 +286,7 @@ export default function HomeTab() {
               {/* Hero — active order */}
               {activeOrder && (
                 <Animated.View
-                  entering={FadeInUp.duration(400).delay(50)}
+                  entering={FadeInUp.duration(300).delay(25)}
                   style={{ marginTop: 22 }}
                 >
                   <Pressable
@@ -354,7 +354,7 @@ export default function HomeTab() {
 
               {/* New run CTA */}
               <Animated.View
-                entering={FadeInUp.duration(400).delay(80)}
+                entering={FadeInUp.duration(300).delay(40)}
                 style={{ marginTop: activeOrder ? 12 : 22 }}
               >
                 <Pressable onPress={handleCreateOrder} style={styles.newRunCta}>
@@ -379,7 +379,7 @@ export default function HomeTab() {
               {/* Stats row */}
               {(owedToMe > 0 || iOwe > 0 || hasStripe) && (
                 <Animated.View
-                  entering={FadeInUp.duration(400).delay(120)}
+                  entering={FadeInUp.duration(300).delay(30)}
                   style={styles.statsRow}
                 >
                   {owedToMe > 0 && (
@@ -488,7 +488,7 @@ export default function HomeTab() {
               {/* Squads */}
               {frequentGroups && frequentGroups.squads.length > 0 && (
                 <Animated.View
-                  entering={FadeInUp.duration(400).delay(160)}
+                  entering={FadeInUp.duration(300).delay(40)}
                   style={{ marginTop: 22 }}
                 >
                   <View style={styles.sectionHeader}>
@@ -564,7 +564,7 @@ export default function HomeTab() {
               {/* Recent runs */}
               {pastOrders && pastOrders.length > 0 && (
                 <Animated.View
-                  entering={FadeInUp.duration(400).delay(200)}
+                  entering={FadeInUp.duration(300).delay(25)}
                   style={{ marginTop: 22 }}
                 >
                   <View style={styles.sectionHeader}>
@@ -661,7 +661,7 @@ export default function HomeTab() {
               {/* Empty state */}
               {!hasAnyData && (
                 <Animated.View
-                  entering={FadeInUp.duration(600).springify()}
+                  entering={FadeInUp.duration(300).springify()}
                   style={styles.empty}
                 >
                   <View style={styles.emptyIcon}>

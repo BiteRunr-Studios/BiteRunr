@@ -1,20 +1,24 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
-    View,
-    Text,
-    ScrollView,
-    Pressable,
+    ActivityIndicator,
     Alert,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    useWindowDimensions,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { FadeInUp } from "react-native-reanimated";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
-import { Button } from "@/components/common/button";
-import { NAV_THEME } from "@/lib/constants";
-import { useColorScheme } from "@/lib/use-color-scheme";
+import { BrText, BrChip, BrAvatar } from "@/components/br";
+import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
 
 type Member = {
     orderUserId: string;
@@ -25,72 +29,150 @@ type Member = {
     email: string;
     amountOwed: bigint | number;
     settlementStatus: string;
-    stripePayment: {
-        status: string;
-        amount: number;
-    } | null;
+    stripePayment: { status: string; amount: number } | null;
 };
-
-function getStatusIcon(
-    settlementStatus: string,
-    stripePayment: { status: string } | null,
-) {
-    if (settlementStatus === "confirmed" || settlementStatus === "settled_in_person") {
-        return { name: "CircleCheck" as const, color: "#22c55e" };
-    }
-    if (stripePayment) {
-        switch (stripePayment.status) {
-            case "pending":
-                return { name: "Clock" as const, color: "#f59e0b" };
-            case "failed":
-            case "expired":
-                return { name: "CircleX" as const, color: "#ef4444" };
-            case "completed":
-                return { name: "CircleCheck" as const, color: "#22c55e" };
-        }
-    }
-    return { name: "CircleDashed" as const, color: "#9ca3af" };
-}
-
-function getStatusText(
-    settlementStatus: string,
-    stripePayment: { status: string } | null,
-) {
-    if (settlementStatus === "confirmed") return "Paid";
-    if (settlementStatus === "settled_in_person") return "Settled in person";
-    if (stripePayment) {
-        switch (stripePayment.status) {
-            case "pending":
-                return "Payment pending...";
-            case "completed":
-                return "Paid";
-            case "failed":
-                return "Payment failed";
-            case "expired":
-                return "Payment expired";
-        }
-    }
-    return "Unpaid";
-}
 
 function formatCents(cents: number | bigint): string {
     const num = typeof cents === "bigint" ? Number(cents) : cents;
     return `$${(num / 100).toFixed(2)}`;
 }
 
+function getMemberVisualStatus(m: Member): "paid" | "sent" | "outstanding" {
+    if (m.settlementStatus === "confirmed" || m.settlementStatus === "settled_in_person") return "paid";
+    if (m.stripePayment?.status === "pending") return "sent";
+    return "outstanding";
+}
+
+// ── TornEdge ─────────────────────────────────────────────────────
+
+const TOOTH_W = 9;
+const TOOTH_H = 7;
+
+function TornEdge({ position }: { position: "top" | "bottom" }) {
+    const { width } = useWindowDimensions();
+    const count = Math.ceil(width / TOOTH_W) + 2;
+    return (
+        <View style={{ height: TOOTH_H, backgroundColor: BR.paper, flexDirection: "row", overflow: "hidden" }}>
+            {Array.from({ length: count }).map((_, i) => (
+                <View
+                    key={i}
+                    style={{
+                        width: 0,
+                        height: 0,
+                        borderLeftWidth: TOOTH_W / 2,
+                        borderRightWidth: TOOTH_W / 2,
+                        borderLeftColor: "transparent",
+                        borderRightColor: "transparent",
+                        ...(position === "top"
+                            ? { borderBottomWidth: TOOTH_H, borderBottomColor: BR.card }
+                            : { borderTopWidth: TOOTH_H, borderTopColor: BR.card }),
+                    }}
+                />
+            ))}
+        </View>
+    );
+}
+
+// ── MemberRow ────────────────────────────────────────────────────
+
+function MemberRow({
+    m,
+    idx,
+    onMarkCash,
+    onNudge,
+}: {
+    m: Member;
+    idx: number;
+    onMarkCash: () => void;
+    onNudge: () => void;
+}) {
+    const status = getMemberVisualStatus(m);
+    const isPaid = status === "paid";
+    const isSent = status === "sent";
+    const isOut = status === "outstanding";
+
+    const chipColor = isPaid ? "mint" : isSent ? "orange" : "coral";
+    const chipLabel = isPaid
+        ? m.settlementStatus === "settled_in_person"
+            ? "Cash · paid"
+            : "Paid"
+        : isSent
+          ? "Sent"
+          : "Awaiting";
+    const chipDotColor = isPaid ? BR.mint : isSent ? BR.orange : BR.coral;
+
+    return (
+        <Animated.View
+            entering={FadeInUp.duration(280).delay(idx * 55 + 100)}
+            style={[
+                styles.memberCard,
+                {
+                    backgroundColor: isSent ? BR.orangeTint : BR.card,
+                    borderColor: isSent ? "rgba(255,106,31,0.25)" : BR.line,
+                    opacity: isPaid ? 0.88 : 1,
+                },
+            ]}
+        >
+            <BrAvatar name={`${m.firstName} ${m.lastName}`} size={44} />
+
+            <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
+                <Text style={styles.memberName} numberOfLines={1}>
+                    {m.firstName} {m.lastName}
+                </Text>
+                <BrChip
+                    color={chipColor}
+                    leftSlot={
+                        <View
+                            style={{ width: 5, height: 5, borderRadius: 999, backgroundColor: chipDotColor }}
+                        />
+                    }
+                >
+                    {chipLabel}
+                </BrChip>
+            </View>
+
+            <View style={{ alignItems: "flex-end", gap: 6 }}>
+                <Text
+                    style={[
+                        styles.memberAmount,
+                        { color: isPaid ? BR.mintInk : BR.ink },
+                        isPaid && { textDecorationLine: "line-through", opacity: 0.55 },
+                    ]}
+                >
+                    {formatCents(Number(m.amountOwed))}
+                </Text>
+                {isOut && (
+                    <View style={{ flexDirection: "row", gap: 6 }}>
+                        <Pressable onPress={onNudge} hitSlop={6} style={styles.iconBtn}>
+                            <Icon name="Bell" size={13} color={BR.ink2} />
+                        </Pressable>
+                        <Pressable onPress={onMarkCash} style={styles.cashBtn}>
+                            <Text style={styles.cashBtnText}>CASH</Text>
+                        </Pressable>
+                    </View>
+                )}
+                {isSent && (
+                    <Pressable onPress={onMarkCash} style={styles.confirmPill}>
+                        <Text style={styles.confirmPillText}>CONFIRM</Text>
+                    </Pressable>
+                )}
+            </View>
+        </Animated.View>
+    );
+}
+
+// ── Main ─────────────────────────────────────────────────────────
+
 export default function Settlement() {
     const params = useLocalSearchParams();
-    const orderId = Array.isArray(params.orderId)
-        ? params.orderId[0]
-        : params.orderId;
-    const { colorScheme } = useColorScheme();
+    const orderId = Array.isArray(params.orderId) ? params.orderId[0] : params.orderId;
+    const insets = useSafeAreaInsets();
     const [isCompleting, setIsCompleting] = useState(false);
 
     const paymentStatus = useQuery(
         api.payments.getOrderPaymentStatus,
         orderId ? { orderId: orderId as Id<"orders"> } : "skip",
     );
-
     const markSettledInPerson = useMutation(api.payments.markSettledInPerson);
     const updateOrder = useMutation(api.orders.update);
 
@@ -98,27 +180,12 @@ export default function Settlement() {
         if (!orderId) return;
         setIsCompleting(true);
         try {
-            await updateOrder({
-                orderId: orderId as Id<"orders">,
-                status: "completed",
-            });
-            Alert.alert(
-                "Order Complete",
-                "This order has been marked as complete.",
-                [
-                    {
-                        text: "OK",
-                        onPress: () => router.dismissTo("/(protected)/(tabs)"),
-                    },
-                ],
-            );
+            await updateOrder({ orderId: orderId as Id<"orders">, status: "completed" });
+            Alert.alert("Order Complete", "This order has been marked as complete.", [
+                { text: "OK", onPress: () => router.dismissTo("/(protected)/(tabs)") },
+            ]);
         } catch (error) {
-            Alert.alert(
-                "Error",
-                error instanceof Error
-                    ? error.message
-                    : "Failed to complete order",
-            );
+            Alert.alert("Error", error instanceof Error ? error.message : "Failed to complete order");
         } finally {
             setIsCompleting(false);
         }
@@ -141,9 +208,7 @@ export default function Settlement() {
                         } catch (error) {
                             Alert.alert(
                                 "Error",
-                                error instanceof Error
-                                    ? error.message
-                                    : "Failed to mark as settled",
+                                error instanceof Error ? error.message : "Failed to mark as settled",
                             );
                         }
                     },
@@ -154,198 +219,457 @@ export default function Settlement() {
 
     if (paymentStatus === undefined) {
         return (
-            <View className="flex-1 justify-center items-center bg-background">
-                <Text className="text-foreground">Loading...</Text>
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: BR.paper }}>
+                <ActivityIndicator size="large" color={BR.orange} />
             </View>
         );
     }
 
     if (paymentStatus === null) {
         return (
-            <View className="flex-1 justify-center items-center bg-background">
-                <Text className="text-destructive">
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: BR.paper }}>
+                <Text style={{ fontFamily: BR_FONT.mono, color: BR.coralInk }}>
                     Not authorized to view settlement
                 </Text>
             </View>
         );
     }
 
-    // Calculate totals
     const members = paymentStatus.members as Member[];
     const nonCreatorMembers = members.filter((m) => !m.isCreator);
-    const totalOwed = nonCreatorMembers.reduce(
-        (sum, m) => sum + Number(m.amountOwed),
-        0,
-    );
+    const totalOwed = nonCreatorMembers.reduce((s, m) => s + Number(m.amountOwed), 0);
     const totalPaid = nonCreatorMembers
         .filter((m) => m.settlementStatus === "confirmed" || m.settlementStatus === "settled_in_person")
-        .reduce((sum, m) => sum + Number(m.amountOwed), 0);
+        .reduce((s, m) => s + Number(m.amountOwed), 0);
+    const outstanding = Math.max(0, totalOwed - totalPaid);
     const allSettled = nonCreatorMembers
         .filter((m) => Number(m.amountOwed) > 0)
-        .every(
-            (m) =>
-                m.settlementStatus === "confirmed" ||
-                m.settlementStatus === "settled_in_person",
-        );
+        .every((m) => m.settlementStatus === "confirmed" || m.settlementStatus === "settled_in_person");
+    const paidCount = nonCreatorMembers.filter((m) => getMemberVisualStatus(m) === "paid").length;
+    const pct = totalOwed > 0 ? Math.round((totalPaid / totalOwed) * 100) : 0;
+    const outstandingCount = nonCreatorMembers.filter((m) => getMemberVisualStatus(m) !== "paid").length;
 
     return (
         <>
-            <SafeAreaView edges={["top"]} />
-            <View className="flex-1 bg-background">
-                {/* Header */}
-                <View className="px-4 pt-4 pb-3 border-b border-border">
-                    <View className="flex-row items-center mb-2">
-                        <Pressable
-                            onPress={() => router.back()}
-                            className="p-2 -ml-2 rounded-full active:opacity-70">
-                            <Icon
-                                name="ChevronLeft"
-                                size={24}
-                                color={NAV_THEME[colorScheme].primary}
-                            />
-                        </Pressable>
-                        <Text className="flex-1 ml-2 text-xl font-bold text-foreground">
-                            Settlement
-                        </Text>
-                    </View>
-                    <Text className="text-sm text-muted-foreground">
-                        {paymentStatus.orderName}
-                    </Text>
-                </View>
+            <SafeAreaView edges={["top"]} style={{ backgroundColor: BR.paper }} />
 
-                {/* Summary Card */}
-                <View className="p-4 mx-4 mt-4 rounded-2xl border border-primary/30 bg-primary/5">
-                    <View className="flex-row justify-between items-center mb-2">
-                        <Text className="text-sm text-muted-foreground">
-                            Total Owed
-                        </Text>
-                        <Text className="text-sm font-medium text-foreground">
-                            {formatCents(totalOwed)}
-                        </Text>
-                    </View>
-                    <View className="flex-row justify-between items-center mb-2">
-                        <Text className="text-sm text-muted-foreground">
-                            Total Paid
-                        </Text>
-                        <Text
-                            className="text-sm font-medium text-foreground"
-                            style={{ color: "#22c55e" }}>
-                            {formatCents(totalPaid)}
-                        </Text>
-                    </View>
-                    <View className="flex-row justify-between items-center pt-2 border-t border-primary/20">
-                        <Text className="text-base font-semibold text-foreground">
-                            Outstanding
-                        </Text>
-                        <Text className="text-base font-semibold text-primary">
-                            {formatCents(totalOwed - totalPaid)}
-                        </Text>
-                    </View>
-                </View>
+            {/* Header */}
+            <View style={styles.header}>
+                <Pressable onPress={() => router.back()} style={styles.backBtn}>
+                    <Icon name="ChevronLeft" size={20} color={BR.ink} />
+                </Pressable>
+                <Text style={styles.headerTitle}>Settle up</Text>
+                <View style={{ width: 38 }} />
+            </View>
 
-                {/* Members List */}
-                <View className="flex-1 px-4 py-4">
-                    <ScrollView
-                        className="flex-1"
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={{ gap: 12, paddingBottom: 32 }}>
-                        {nonCreatorMembers.map((member) => {
-                            const statusIcon = getStatusIcon(
-                                member.settlementStatus,
-                                member.stripePayment,
-                            );
-                            const statusText = getStatusText(
-                                member.settlementStatus,
-                                member.stripePayment,
-                            );
-                            const amount = Number(member.amountOwed);
+            <ScrollView
+                style={{ flex: 1, backgroundColor: BR.paper }}
+                contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 140 }}
+                showsVerticalScrollIndicator={false}
+            >
+                <BrText variant="eyebrow" style={{ marginBottom: 10 }}>
+                    {paymentStatus.orderName}
+                </BrText>
 
-                            return (
+                {/* Receipt card */}
+                <Animated.View entering={FadeInUp.duration(300)}>
+                    <TornEdge position="top" />
+                    <View style={styles.receipt}>
+                        <View style={{ alignItems: "center" }}>
+                            <Text style={styles.receiptTitle}>You are the runner</Text>
+                            <Text style={styles.receiptMeta}>
+                                ·{" "}
+                                {new Date()
+                                    .toLocaleDateString("en-US", {
+                                        weekday: "short",
+                                        month: "short",
+                                        day: "numeric",
+                                    })
+                                    .toUpperCase()}{" "}
+                                ·
+                            </Text>
+                        </View>
+
+                        <View style={styles.rule} />
+
+                        <View style={styles.receiptRow}>
+                            <Text style={styles.rowLabel}>Members</Text>
+                            <Text style={styles.rowValue}>{nonCreatorMembers.length}</Text>
+                        </View>
+                        <View style={styles.receiptRow}>
+                            <Text style={styles.rowLabel}>Total owed</Text>
+                            <Text style={styles.rowValue}>{formatCents(totalOwed)}</Text>
+                        </View>
+                        <View style={styles.receiptRow}>
+                            <Text style={styles.rowLabel}>Collected</Text>
+                            <Text style={[styles.rowValue, { color: BR.mintInk }]}>
+                                + {formatCents(totalPaid)}
+                            </Text>
+                        </View>
+
+                        <View style={styles.rule} />
+
+                        <View
+                            style={{
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                                alignItems: "baseline",
+                            }}
+                        >
+                            <Text style={styles.outstandingLabel}>OUTSTANDING</Text>
+                            <Text
+                                style={[
+                                    styles.outstandingAmount,
+                                    { color: allSettled ? BR.mintInk : BR.coral },
+                                ]}
+                            >
+                                {formatCents(outstanding)}
+                            </Text>
+                        </View>
+
+                        <View style={{ marginTop: 14 }}>
+                            <View style={styles.progressTrack}>
                                 <View
-                                    key={member.orderUserId}
-                                    className="p-4 rounded-2xl border border-muted bg-card">
-                                    <View className="flex-row justify-between items-center">
-                                        <View className="flex-1">
-                                            <Text className="text-base font-medium text-foreground">
-                                                {member.firstName}{" "}
-                                                {member.lastName}
-                                            </Text>
-                                            <Text className="text-sm text-muted-foreground">
-                                                {member.email}
-                                            </Text>
-                                        </View>
-                                        <Text className="text-base font-semibold text-foreground">
-                                            {formatCents(amount)}
-                                        </Text>
-                                    </View>
-                                    <View className="flex-row gap-2 items-center pt-3 mt-3 border-t border-muted">
-                                        <Icon
-                                            name={statusIcon.name}
-                                            size={16}
-                                            color={statusIcon.color}
-                                        />
-                                        <Text
-                                            className="text-sm"
-                                            style={{ color: statusIcon.color }}>
-                                            {statusText}
-                                        </Text>
-                                    </View>
-                                    {member.stripePayment &&
-                                        member.stripePayment.amount > amount && (
-                                            <Text className="mt-1 text-xs text-muted-foreground">
-                                                Buyer charged{" "}
-                                                {formatCents(member.stripePayment.amount)}{" "}
-                                                (incl. service fee)
-                                            </Text>
-                                        )}
-                                    {amount > 0 &&
-                                        member.settlementStatus !== "confirmed" &&
-                                        member.settlementStatus !== "settled_in_person" && (
-                                            <Pressable
-                                                onPress={() =>
-                                                    handleMarkSettled(member)
-                                                }
-                                                className="flex-row items-center gap-1.5 mt-2 active:opacity-70">
-                                                <Icon
-                                                    name="HandCoins"
-                                                    size={14}
-                                                    color={
-                                                        NAV_THEME[colorScheme]
-                                                            .primary
-                                                    }
-                                                />
-                                                <Text className="text-sm font-medium text-primary">
-                                                    Mark as Settled
-                                                </Text>
-                                            </Pressable>
-                                        )}
-                                </View>
-                            );
-                        })}
+                                    style={[
+                                        styles.progressFill,
+                                        {
+                                            width: `${pct}%` as any,
+                                            backgroundColor: allSettled ? BR.mint : BR.orange,
+                                        },
+                                    ]}
+                                />
+                            </View>
+                            <View
+                                style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6 }}
+                            >
+                                <Text style={styles.progressMeta}>
+                                    {paidCount} of {nonCreatorMembers.length} paid
+                                </Text>
+                                <Text style={styles.progressMeta}>{pct}%</Text>
+                            </View>
+                        </View>
 
-                        {nonCreatorMembers.length === 0 && (
-                            <View className="justify-center items-center py-12">
-                                <Text className="text-muted-foreground">
-                                    No members owe money
+                        <View style={styles.rule} />
+                        <View style={{ alignItems: "center" }}>
+                            <Text style={styles.receiptCode}>
+                                BR-RUN-{orderId?.slice(-4).toUpperCase() ?? "----"}
+                            </Text>
+                            <Text style={[styles.receiptCode, { marginTop: 5, letterSpacing: 5 }]}>
+                                · · · · · · · ·
+                            </Text>
+                        </View>
+                    </View>
+                    <TornEdge position="bottom" />
+                </Animated.View>
+
+                {/* Ledger */}
+                <Animated.View entering={FadeInUp.duration(300).delay(80)} style={{ marginTop: 22 }}>
+                    <View style={styles.ledgerHeader}>
+                        <BrText variant="eyebrow">Ledger · {nonCreatorMembers.length}</BrText>
+                        <Pressable
+                            hitSlop={8}
+                            style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
+                        >
+                            <Icon name="Bell" size={11} color={BR.orangeDeep} />
+                            <Text style={styles.nudgeAllText}>NUDGE ALL</Text>
+                        </Pressable>
+                    </View>
+
+                    <View style={{ gap: 10 }}>
+                        {nonCreatorMembers.map((m, i) => (
+                            <MemberRow
+                                key={m.orderUserId}
+                                m={m}
+                                idx={i}
+                                onMarkCash={() => handleMarkSettled(m)}
+                                onNudge={() =>
+                                    Alert.alert("Nudge sent", `A reminder has been sent to ${m.firstName}.`)
+                                }
+                            />
+                        ))}
+                    </View>
+
+                    {!allSettled && (
+                        <View style={{ alignItems: "center", marginTop: 20 }}>
+                            <View style={styles.sticker}>
+                                <Text style={styles.stickerText}>
+                                    ☕ Runs settle 2× faster with a nudge
                                 </Text>
                             </View>
-                        )}
-                    </ScrollView>
-                </View>
+                        </View>
+                    )}
+                </Animated.View>
+            </ScrollView>
 
-                {/* Footer */}
-                {allSettled && (
-                    <View className="px-6 pt-4 pb-10 border-t border-muted bg-background">
-                        <Button
-                            label="Complete Order"
-                            icon="CircleCheck"
-                            onPress={handleCompleteOrder}
-                            loading={isCompleting}
-                            color="#22c55e"
-                        />
+            {/* Footer */}
+            <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+                {!allSettled && (
+                    <View style={styles.warningBanner}>
+                        <Icon name="CircleAlert" size={14} color={BR.coralInk} />
+                        <Text style={styles.warningText} numberOfLines={1}>
+                            {formatCents(outstanding)} outstanding from {outstandingCount}
+                        </Text>
+                        <Pressable onPress={handleCompleteOrder} style={styles.closeAnywayBtn}>
+                            <Text style={styles.closeAnywayText}>CLOSE ANYWAY</Text>
+                        </Pressable>
                     </View>
                 )}
+                <TouchableOpacity
+                    onPress={handleCompleteOrder}
+                    disabled={isCompleting}
+                    style={[
+                        styles.completeBtn,
+                        allSettled && { backgroundColor: BR.mint, shadowColor: BR.mint },
+                        isCompleting && { opacity: 0.6 },
+                    ]}
+                >
+                    {isCompleting ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                        <Icon name={allSettled ? "Check" : "Flag"} size={16} color="#fff" />
+                    )}
+                    <Text style={styles.completeBtnText}>
+                        {isCompleting
+                            ? "Completing…"
+                            : allSettled
+                              ? "Complete run · all settled"
+                              : "Complete run"}
+                    </Text>
+                </TouchableOpacity>
             </View>
         </>
     );
 }
+
+const styles = StyleSheet.create({
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: 18,
+        paddingTop: 8,
+        paddingBottom: 12,
+        backgroundColor: BR.paper,
+    },
+    backBtn: {
+        width: 38,
+        height: 38,
+        borderRadius: 999,
+        backgroundColor: BR.paper2,
+        borderWidth: 1,
+        borderColor: BR.line,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    headerTitle: {
+        fontFamily: BR_FONT.display,
+        fontSize: 17,
+        fontWeight: "700",
+        color: BR.ink,
+    },
+    receipt: {
+        backgroundColor: BR.card,
+        paddingHorizontal: 22,
+        paddingVertical: 24,
+    },
+    receiptTitle: {
+        fontFamily: BR_FONT.displayExtraBold,
+        fontStyle: "italic",
+        fontSize: 20,
+        color: BR.orangeDeep,
+        textAlign: "center",
+    },
+    receiptMeta: {
+        fontFamily: BR_FONT.mono,
+        fontSize: 11,
+        color: BR.ink3,
+        letterSpacing: 1.2,
+        marginTop: 3,
+    },
+    rule: {
+        height: 1,
+        backgroundColor: "rgba(26,20,16,0.1)",
+        marginVertical: 14,
+    },
+    receiptRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 5,
+    },
+    rowLabel: {
+        fontFamily: BR_FONT.mono,
+        fontSize: 13,
+        color: BR.ink2,
+    },
+    rowValue: {
+        fontFamily: BR_FONT.mono,
+        fontSize: 13,
+        color: BR.ink,
+    },
+    outstandingLabel: {
+        fontFamily: BR_FONT.displayExtraBold,
+        fontSize: 18,
+        color: BR.ink,
+    },
+    outstandingAmount: {
+        fontFamily: BR_FONT.displayExtraBold,
+        fontSize: 32,
+    },
+    progressTrack: {
+        height: 6,
+        borderRadius: 999,
+        backgroundColor: BR.paper2,
+        overflow: "hidden",
+    },
+    progressFill: {
+        height: "100%",
+        borderRadius: 999,
+    },
+    progressMeta: {
+        fontFamily: BR_FONT.mono,
+        fontSize: 11,
+        color: BR.ink3,
+    },
+    receiptCode: {
+        fontFamily: BR_FONT.mono,
+        fontSize: 10,
+        color: BR.ink3,
+        letterSpacing: 1,
+    },
+    ledgerHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 10,
+    },
+    nudgeAllText: {
+        fontFamily: BR_FONT.monoBold,
+        fontSize: 11,
+        color: BR.orangeDeep,
+        letterSpacing: 0.5,
+    },
+    memberCard: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+        padding: 14,
+        borderRadius: BR_RADIUS.lg,
+        borderWidth: 1,
+        ...BR_SHADOW.card,
+    },
+    memberName: {
+        fontFamily: BR_FONT.display,
+        fontSize: 14,
+        fontWeight: "700",
+        color: BR.ink,
+    },
+    memberAmount: {
+        fontFamily: BR_FONT.displayExtraBold,
+        fontSize: 17,
+    },
+    iconBtn: {
+        width: 28,
+        height: 28,
+        borderRadius: 999,
+        backgroundColor: BR.paper2,
+        borderWidth: 1,
+        borderColor: BR.line2,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    cashBtn: {
+        height: 28,
+        paddingHorizontal: 10,
+        borderRadius: 999,
+        backgroundColor: BR.mintSoft,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    cashBtnText: {
+        fontFamily: BR_FONT.monoBold,
+        fontSize: 11,
+        color: BR.mintInk,
+        letterSpacing: 0.5,
+    },
+    confirmPill: {
+        height: 28,
+        paddingHorizontal: 10,
+        borderRadius: 999,
+        borderWidth: 1,
+        borderColor: BR.line2,
+        backgroundColor: BR.paper2,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    confirmPillText: {
+        fontFamily: BR_FONT.monoBold,
+        fontSize: 11,
+        color: BR.ink2,
+        letterSpacing: 0.5,
+    },
+    sticker: {
+        paddingHorizontal: 14,
+        paddingVertical: 7,
+        borderRadius: 999,
+        backgroundColor: BR.yolkSoft,
+        transform: [{ rotate: "-2deg" }],
+    },
+    stickerText: {
+        fontFamily: BR_FONT.mono,
+        fontSize: 11,
+        color: "#7A4A20",
+    },
+    footer: {
+        paddingHorizontal: 18,
+        paddingTop: 14,
+        gap: 10,
+        backgroundColor: BR.paper,
+        borderTopWidth: 1,
+        borderTopColor: BR.line,
+    },
+    warningBanner: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        padding: 12,
+        borderRadius: BR_RADIUS.md,
+        backgroundColor: BR.coralSoft,
+        borderWidth: 1,
+        borderColor: "rgba(255,77,109,0.2)",
+    },
+    warningText: {
+        flex: 1,
+        fontFamily: BR_FONT.mono,
+        fontSize: 12,
+        color: BR.coralInk,
+        fontWeight: "600",
+    },
+    closeAnywayBtn: {
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 8,
+        backgroundColor: "rgba(255,77,109,0.18)",
+    },
+    closeAnywayText: {
+        fontFamily: BR_FONT.monoBold,
+        fontSize: 11,
+        color: BR.coralInk,
+        letterSpacing: 0.5,
+    },
+    completeBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        height: 54,
+        borderRadius: BR_RADIUS.md,
+        backgroundColor: BR.orange,
+        ...BR_SHADOW.primary,
+    },
+    completeBtnText: {
+        fontFamily: BR_FONT.display,
+        fontSize: 16,
+        fontWeight: "700",
+        color: "#fff",
+    },
+});

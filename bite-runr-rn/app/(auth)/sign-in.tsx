@@ -7,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   TextInput,
-  Image,
   StyleSheet,
   Dimensions,
 } from "react-native";
@@ -283,16 +282,6 @@ export default function SignInScreen() {
           {/* Hero: full-screen orange background */}
           <HeroBackdrop />
 
-          {/* Logo — squircle clipped */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logoSquircle}>
-              <Image
-                source={require("@/assets/images/icon.png")}
-                style={styles.logoImage}
-                resizeMode="cover"
-              />
-            </View>
-          </View>
 
           {/* Bottom paper sheet — static, not scrollable */}
           <View style={[styles.sheet, showEmail && styles.sheetExpanded]}>
@@ -440,25 +429,6 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1.5,
     borderColor: "rgba(255,255,255,0.12)",
-  },
-  logoContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 4,
-  },
-  logoSquircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  logoImage: {
-    width: 64,
-    height: 64,
   },
   receiptCard: {
     width: 160,

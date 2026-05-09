@@ -19,6 +19,7 @@ import Animated, {
   cancelAnimation,
   Easing,
 } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "convex/react";
@@ -67,7 +68,6 @@ const SECTION_ICONS: Record<TimeSection, React.ComponentProps<typeof Icon>["name
   Earlier: "Archive",
 };
 
-const ICON_PALETTE = [BR.orange, BR.lilac, BR.mint, BR.coral, BR.yolk, "#9DDF9D"];
 
 type OrderItem = NonNullable<ReturnType<typeof useQuery<typeof api.orders.getWithDetails>>>[number];
 
@@ -130,30 +130,29 @@ function RunCard({
   let fg: string;
   let dotColor: string;
   let statusLabel: string;
-  let cardBg: string;
   let cardBorder: string;
 
   if (isLive) {
     bg = BR.orangeSoft; fg = BR.orangeDeep; dotColor = BR.orange;
     statusLabel = "Live";
-    cardBg = BR.orangeTint; cardBorder = "rgba(255,106,31,0.25)";
+    cardBorder = "rgba(255,106,31,0.25)";
   } else if (isOrdering) {
     bg = BR.yolkSoft; fg = "#7A4A20"; dotColor = BR.yolk;
     statusLabel = "Ordering";
-    cardBg = "#FFFDF5"; cardBorder = "rgba(255,197,66,0.3)";
+    cardBorder = "rgba(255,197,66,0.3)";
   } else if (isCompleted) {
     bg = BR.mintSoft; fg = BR.mintInk; dotColor = BR.mint;
     statusLabel = "Settled";
-    cardBg = BR.card; cardBorder = BR.line;
+    cardBorder = BR.line;
   } else {
     bg = BR.paper2; fg = BR.ink2; dotColor = BR.ink3;
     statusLabel = "Cancelled";
-    cardBg = BR.card; cardBorder = BR.line;
+    cardBorder = BR.line;
   }
 
-  const pulsing = isLive || isOrdering;
+  const gradientColors: readonly [string, string] = [BR.orangeTint, "#ffffff"];
 
-  const iconColor = ICON_PALETTE[(order.name?.charCodeAt(0) ?? 0) % ICON_PALETTE.length];
+  const pulsing = isLive || isOrdering;
   const locationName = orderLocations?.[0]?.name;
 
   const createdDate = new Date(order.createdAt);
@@ -169,18 +168,13 @@ function RunCard({
     avatarUrl: ou.user?.avatarUrl ?? null,
   }));
 
-  return (
-    <View
-      style={[
-        styles.runCard,
-        { backgroundColor: cardBg, borderColor: cardBorder },
-      ]}
-    >
+  const cardContent = (
+    <>
       {/* Top section */}
       <View style={styles.runCardTop}>
         {/* Icon tile */}
-        <View style={[styles.iconTile, { backgroundColor: iconColor }]}>
-          <Icon name="ShoppingBag" size={20} color="#fff" />
+        <View style={[styles.iconTile, { backgroundColor: bg }]}>
+          <Icon name="ShoppingBag" size={20} color={fg} />
         </View>
 
         {/* Title block */}
@@ -246,7 +240,19 @@ function RunCard({
           <Icon name="ArrowRight" size={16} color={BR.orange} />
         )}
       </View>
-    </View>
+    </>
+  );
+
+  return (
+    <LinearGradient
+      colors={gradientColors}
+      locations={[0, 0.65]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={[styles.runCard, { borderColor: cardBorder }]}
+    >
+      {cardContent}
+    </LinearGradient>
   );
 }
 
@@ -348,20 +354,20 @@ export default function GroupsTab() {
         >
           <View style={{ paddingHorizontal: 18 }}>
             {/* Title */}
-            <Animated.View entering={FadeInUp.duration(400)} style={styles.titleRow}>
+            <Animated.View entering={FadeInUp.duration(300)} style={styles.titleRow}>
               <View>
                 <BrText variant="eyebrow">
                   {allCount} {allCount === 1 ? "run" : "runs"} total
                 </BrText>
                 <BrText variant="h1" style={{ marginTop: 4 }}>
                   Your{" "}
-                  <BrText variant="h1" italic color={BR.orange}>runs.</BrText>
+                  <BrText variant="h1" color={BR.orange}>runs.</BrText>
                 </BrText>
               </View>
             </Animated.View>
 
             {/* Filter row */}
-            <Animated.View entering={FadeInUp.duration(400).delay(50)}>
+            <Animated.View entering={FadeInUp.duration(300).delay(25)}>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -430,7 +436,7 @@ export default function GroupsTab() {
 
             {/* Content */}
             {!isPending && (
-              <Animated.View entering={FadeInUp.duration(400).delay(100)}>
+              <Animated.View entering={FadeInUp.duration(300).delay(25)}>
                 {grouped.length === 0 ? (
                   <View style={styles.emptyState}>
                     <Text style={{ fontSize: 36 }}>🍽️</Text>
@@ -448,7 +454,7 @@ export default function GroupsTab() {
                     {grouped.map((section, gi) => (
                       <Animated.View
                         key={section.title}
-                        entering={FadeInUp.duration(400).delay(100 + gi * 40)}
+                        entering={FadeInUp.duration(300).delay(50 + gi * 20)}
                       >
                         {/* Section header */}
                         <View style={styles.sectionHeader}>

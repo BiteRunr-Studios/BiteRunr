@@ -138,7 +138,7 @@ export default function AccountTab() {
           {isLoading && <ProfileSkeleton />}
 
           {!isLoading && user && (
-            <Animated.View entering={FadeInUp.duration(400)} style={{ gap: 10 }}>
+            <Animated.View entering={FadeInUp.duration(300)} style={{ gap: 10 }}>
               {/* Profile hero */}
               <View style={styles.profileHero}>
                 {/* Level sticker */}
@@ -174,7 +174,7 @@ export default function AccountTab() {
               {sections.map((sec, si) => (
                 <Animated.View
                   key={sec.title}
-                  entering={FadeInUp.duration(400).delay(100 + si * 50)}
+                  entering={FadeInUp.duration(300).delay(60 + si * 25)}
                   style={{ marginTop: 12 }}
                 >
                   <BrText variant="eyebrow" style={{ marginBottom: 8 }}>{sec.title}</BrText>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
     View,
     Text,
@@ -7,301 +7,438 @@ import {
     Alert,
     ActivityIndicator,
     TouchableOpacity,
+    TextInput,
+    Modal,
+    KeyboardAvoidingView,
+    Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
-import { Input } from "@/components/common/input";
-import { NAV_THEME } from "@/lib/constants";
-import { useColorScheme } from "@/lib/use-color-scheme";
-import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
 import { Avatar } from "@/components/common/avatar";
+import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
+import { FONTS, COLORS } from "@/lib/fonts";
+import Animated, { FadeInUp, FadeIn } from "react-native-reanimated";
+import type { icons } from "lucide-react-native";
 
-type Tab = "friends" | "requests" | "search";
+type Tab = "friends" | "requests" | "search" | "squads";
 
-export default function FriendsScreen() {
-    const [activeTab, setActiveTab] = useState<Tab>("friends");
-    const { colorScheme } = useColorScheme();
+const SQUAD_COLORS: { key: string; bg: string; deep: string; icon: keyof typeof icons }[] = [
+    { key: "orange", bg: COLORS.orange, deep: COLORS.orangeDeep, icon: "Flame" },
+    { key: "lilac", bg: COLORS.lilac, deep: "#3A2DC2", icon: "Briefcase" },
+    { key: "mint", bg: COLORS.mint, deep: COLORS.mintDeep, icon: "House" },
+    { key: "coral", bg: COLORS.coral, deep: COLORS.coralDeep, icon: "Heart" },
+    { key: "yolk", bg: COLORS.yolk, deep: "#B27500", icon: "Star" },
+];
 
+// ─── Tab pill ──────────────────────────────────────────────────────
+function TabPill({ label, active, badge, onPress }: { label: string; active: boolean; badge?: number; onPress: () => void }) {
     return (
-        <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
-            {/* Header */}
-            <View className="flex-row items-center px-4 py-3 border-b border-border">
-                <Pressable
-                    onPress={() => router.back()}
-                    className="p-2 -ml-2 rounded-full active:opacity-70">
-                    <Icon
-                        name="ChevronLeft"
-                        size={24}
-                        color={NAV_THEME[colorScheme].primary}
-                    />
-                </Pressable>
-                <Text className="flex-1 ml-2 text-xl font-bold text-foreground">
-                    Friends
-                </Text>
-            </View>
-
-            {/* Tab Selector */}
-            <View className="flex-row gap-2 p-4">
-                <TabButton
-                    label="My Friends"
-                    icon="Users"
-                    isActive={activeTab === "friends"}
-                    onPress={() => setActiveTab("friends")}
-                />
-                <TabButton
-                    label="Requests"
-                    icon="Bell"
-                    isActive={activeTab === "requests"}
-                    onPress={() => setActiveTab("requests")}
-                    showBadge
-                />
-                <TabButton
-                    label="Search"
-                    icon="Search"
-                    isActive={activeTab === "search"}
-                    onPress={() => setActiveTab("search")}
-                />
-            </View>
-
-            {/* Content */}
-            {activeTab === "friends" && <FriendsList />}
-            {activeTab === "requests" && <FriendRequests />}
-            {activeTab === "search" && <SearchUsers />}
-        </SafeAreaView>
-    );
-}
-
-function TabButton({
-    label,
-    icon,
-    isActive,
-    onPress,
-    showBadge,
-}: {
-    label: string;
-    icon: "Users" | "Bell" | "Search";
-    isActive: boolean;
-    onPress: () => void;
-    showBadge?: boolean;
-}) {
-    const { colorScheme } = useColorScheme();
-    const pendingCount = useQuery(
-        api.friends.pendingRequestCount,
-        showBadge ? {} : "skip"
-    );
-    const hasPending =
-        showBadge && typeof pendingCount === "number" && pendingCount > 0;
-
-    return (
-        <Pressable
+        <TouchableOpacity
             onPress={onPress}
-            className={`flex-1 py-3 rounded-xl items-center ${
-                isActive ? "bg-primary" : "bg-muted"
-            }`}>
-            <View className="flex-row items-center gap-1.5">
-                <Icon
-                    name={icon}
-                    size={16}
-                    color={isActive ? "white" : NAV_THEME[colorScheme].text}
-                />
-                <Text
-                    className={`font-medium text-sm ${
-                        isActive ? "text-white" : "text-foreground"
-                    }`}>
-                    {label}
-                </Text>
-                {hasPending && (
-                    <View className="items-center justify-center w-5 h-5 ml-1 bg-red-500 rounded-full">
-                        <Text className="text-xs font-bold text-white">
-                            {pendingCount > 9 ? "9+" : pendingCount}
-                        </Text>
-                    </View>
-                )}
-            </View>
-        </Pressable>
+            activeOpacity={0.8}
+            style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
+                paddingHorizontal: 14,
+                paddingVertical: 8,
+                borderRadius: 999,
+                backgroundColor: active ? COLORS.ink : COLORS.paper2,
+                borderWidth: 1,
+                borderColor: active ? COLORS.ink : COLORS.line,
+            }}
+        >
+            <Text style={{ fontFamily: FONTS.display.bold, fontSize: 13, color: active ? "#fff" : COLORS.ink2 }}>
+                {label}
+            </Text>
+            {!!badge && badge > 0 && (
+                <View style={{ minWidth: 18, height: 18, borderRadius: 9, backgroundColor: COLORS.coral, alignItems: "center", justifyContent: "center", paddingHorizontal: 4 }}>
+                    <Text style={{ fontFamily: FONTS.mono.bold, fontSize: 10, color: "#fff" }}>{badge > 9 ? "9+" : badge}</Text>
+                </View>
+            )}
+        </TouchableOpacity>
     );
 }
 
-function FriendsList() {
-    const friends = useQuery(api.friends.list);
-    const removeFriend = useMutation(api.friends.removeFriend);
-    const [removingId, setRemovingId] = useState<string | null>(null);
-    const { colorScheme } = useColorScheme();
+// ─── Create Squad Sheet ────────────────────────────────────────────
+function CreateSquadSheet({
+    visible,
+    onClose,
+    friends,
+}: {
+    visible: boolean;
+    onClose: () => void;
+    friends: { id: Id<"users">; firstName: string; lastName: string; avatarUrl?: string }[];
+}) {
+    const createSquad = useMutation(api.squads.create);
+    const [name, setName] = useState("");
+    const [selectedColor, setSelectedColor] = useState("orange");
+    const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
+    const [saving, setSaving] = useState(false);
 
-    const isLoading = friends === undefined;
+    const colorDef = SQUAD_COLORS.find((c) => c.key === selectedColor) ?? SQUAD_COLORS[0];
 
-    const handleRemoveFriend = (friendId: Id<"users">, friendName: string) => {
-        Alert.alert(
-            "Remove Friend",
-            `Are you sure you want to remove ${friendName} from your friends?`,
-            [
-                { text: "Cancel", style: "cancel" },
-                {
-                    text: "Remove",
-                    style: "destructive",
-                    onPress: async () => {
-                        setRemovingId(friendId);
-                        try {
-                            await removeFriend({ friendId });
-                        } catch (error: any) {
-                            Alert.alert(
-                                "Error",
-                                error?.message ?? "Failed to remove friend"
-                            );
-                        } finally {
-                            setRemovingId(null);
-                        }
-                    },
-                },
-            ]
-        );
+    const toggleMember = (id: string) => {
+        setSelectedMembers((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
     };
 
-    if (isLoading) {
-        return (
-            <ScrollView
-                className="flex-1 px-4"
-                contentContainerStyle={{ paddingBottom: 20 }}>
-                <Skeleton>
-                    <View className="gap-3">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                            <FriendCardSkeleton key={i} />
-                        ))}
+    const handleCreate = async () => {
+        if (!name.trim()) { Alert.alert("Name required", "Give your squad a name."); return; }
+        setSaving(true);
+        try {
+            await createSquad({
+                name: name.trim(),
+                color: selectedColor,
+                icon: colorDef.icon,
+                memberIds: [...selectedMembers] as Id<"users">[],
+            });
+            setName("");
+            setSelectedColor("orange");
+            setSelectedMembers(new Set());
+            onClose();
+        } catch (e: any) {
+            Alert.alert("Error", e?.message ?? "Failed to create squad");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleClose = () => {
+        setName("");
+        setSelectedColor("orange");
+        setSelectedMembers(new Set());
+        onClose();
+    };
+
+    return (
+        <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
+            <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+                <View style={{ flex: 1, backgroundColor: COLORS.paper }}>
+                    {/* Handle + header */}
+                    <View style={{ alignItems: "center", paddingTop: 12, paddingBottom: 4 }}>
+                        <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: COLORS.line2 }} />
                     </View>
+                    <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18, paddingVertical: 14, gap: 12 }}>
+                        <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: colorDef.bg, alignItems: "center", justifyContent: "center" }}>
+                            <Icon name={colorDef.icon} size={20} color="#fff" />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontFamily: FONTS.display.bold, fontSize: 22, letterSpacing: -0.4, color: COLORS.ink }}>
+                                Create a <Text style={{ color: COLORS.orange, fontStyle: "italic" }}>squad</Text>
+                            </Text>
+                            <Text style={{ fontSize: 12, color: COLORS.ink3, marginTop: 1 }}>Reusable group for fast runs & splits</Text>
+                        </View>
+                        <Pressable onPress={handleClose} style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.paper2, borderWidth: 1, borderColor: COLORS.line, alignItems: "center", justifyContent: "center" }}>
+                            <Icon name="X" size={15} color={COLORS.ink} />
+                        </Pressable>
+                    </View>
+
+                    <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+                        {/* Name */}
+                        <Text style={{ fontFamily: FONTS.mono.semibold, fontSize: 10, letterSpacing: 1.2, textTransform: "uppercase", color: COLORS.ink3, marginBottom: 8 }}>
+                            Squad name
+                        </Text>
+                        <TextInput
+                            value={name}
+                            onChangeText={setName}
+                            placeholder="e.g. Lunch crew, Roomies…"
+                            placeholderTextColor={COLORS.ink3}
+                            style={{
+                                fontFamily: FONTS.display.bold,
+                                fontStyle: "italic",
+                                fontSize: 18,
+                                color: COLORS.ink,
+                                backgroundColor: "#fff",
+                                borderRadius: 16,
+                                borderWidth: 1,
+                                borderColor: COLORS.line,
+                                paddingHorizontal: 16,
+                                paddingVertical: 14,
+                                marginBottom: 20,
+                            }}
+                        />
+
+                        {/* Color picker */}
+                        <Text style={{ fontFamily: FONTS.mono.semibold, fontSize: 10, letterSpacing: 1.2, textTransform: "uppercase", color: COLORS.ink3, marginBottom: 10 }}>
+                            Pick a vibe
+                        </Text>
+                        <View style={{ flexDirection: "row", gap: 10, marginBottom: 22 }}>
+                            {SQUAD_COLORS.map((c) => {
+                                const isSelected = selectedColor === c.key;
+                                return (
+                                    <Pressable
+                                        key={c.key}
+                                        onPress={() => setSelectedColor(c.key)}
+                                        style={{
+                                            flex: 1,
+                                            aspectRatio: 1,
+                                            borderRadius: 14,
+                                            backgroundColor: c.bg,
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            borderWidth: isSelected ? 3 : 2,
+                                            borderColor: isSelected ? COLORS.ink : "transparent",
+                                            shadowColor: isSelected ? COLORS.ink : "transparent",
+                                            shadowOffset: { width: 2, height: 2 },
+                                            shadowOpacity: isSelected ? 1 : 0,
+                                            shadowRadius: 0,
+                                        }}
+                                    >
+                                        <Icon name={c.icon} size={18} color="#fff" />
+                                    </Pressable>
+                                );
+                            })}
+                        </View>
+
+                        {/* Friend selector */}
+                        <Text style={{ fontFamily: FONTS.mono.semibold, fontSize: 10, letterSpacing: 1.2, textTransform: "uppercase", color: COLORS.ink3, marginBottom: 10 }}>
+                            Add friends
+                        </Text>
+                        {friends.length === 0 ? (
+                            <Text style={{ fontSize: 13, color: COLORS.ink3, marginBottom: 20 }}>Add some friends first to include them in a squad.</Text>
+                        ) : (
+                            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
+                                {friends.map((f) => {
+                                    const isSelected = selectedMembers.has(f.id);
+                                    const fullName = `${f.firstName} ${f.lastName}`;
+                                    return (
+                                        <Pressable
+                                            key={f.id}
+                                            onPress={() => toggleMember(f.id)}
+                                            style={{
+                                                flexDirection: "row",
+                                                alignItems: "center",
+                                                gap: 7,
+                                                paddingRight: 12,
+                                                paddingLeft: 6,
+                                                paddingVertical: 6,
+                                                borderRadius: 999,
+                                                backgroundColor: isSelected ? COLORS.ink : "#fff",
+                                                borderWidth: 1,
+                                                borderColor: isSelected ? COLORS.ink : COLORS.line,
+                                            }}
+                                        >
+                                            <Avatar name={fullName} avatarUrl={f.avatarUrl} size={24} />
+                                            <Text style={{ fontFamily: FONTS.display.semibold, fontSize: 13, color: isSelected ? "#fff" : COLORS.ink }}>
+                                                {f.firstName}
+                                            </Text>
+                                            {isSelected && <Icon name="Check" size={12} color="#fff" />}
+                                        </Pressable>
+                                    );
+                                })}
+                            </View>
+                        )}
+
+                        {/* CTA */}
+                        <Pressable
+                            onPress={handleCreate}
+                            disabled={saving}
+                            style={({ pressed }) => ({
+                                height: 58,
+                                borderRadius: 18,
+                                backgroundColor: pressed ? COLORS.orangeDeep : COLORS.orange,
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexDirection: "row",
+                                gap: 10,
+                                opacity: saving ? 0.75 : 1,
+                                shadowColor: COLORS.orange,
+                                shadowOffset: { width: 0, height: 6 },
+                                shadowOpacity: 0.35,
+                                shadowRadius: 12,
+                            })}
+                        >
+                            {saving ? <ActivityIndicator color="#fff" /> : (
+                                <>
+                                    <Icon name="Sparkles" size={16} color="#fff" />
+                                    <Text style={{ fontFamily: FONTS.display.bold, fontSize: 16, color: "#fff" }}>Create squad</Text>
+                                </>
+                            )}
+                        </Pressable>
+                    </ScrollView>
+                </View>
+            </KeyboardAvoidingView>
+        </Modal>
+    );
+}
+
+// ─── Friends tab ───────────────────────────────────────────────────
+function FriendsTab({ pendingCount }: { pendingCount: number }) {
+    const friends = useQuery(api.friends.list);
+    const requests = useQuery(api.friends.listPendingRequests);
+    const removeFriend = useMutation(api.friends.removeFriend);
+    const [removingId, setRemovingId] = useState<string | null>(null);
+    const [search, setSearch] = useState("");
+
+    const filtered = friends?.filter((f) => {
+        if (!search) return true;
+        const full = `${f.firstName} ${f.lastName}`.toLowerCase();
+        return full.includes(search.toLowerCase());
+    }) ?? [];
+
+    const handleRemove = (id: Id<"users">, name: string) => {
+        Alert.alert("Remove Friend", `Remove ${name} from your friends?`, [
+            { text: "Cancel", style: "cancel" },
+            {
+                text: "Remove", style: "destructive",
+                onPress: async () => {
+                    setRemovingId(id);
+                    try { await removeFriend({ friendId: id }); }
+                    catch (e: any) { Alert.alert("Error", e?.message ?? "Failed to remove friend"); }
+                    finally { setRemovingId(null); }
+                },
+            },
+        ]);
+    };
+
+    if (friends === undefined) {
+        return (
+            <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 32, gap: 10 }}>
+                <Skeleton>
+                    {[1, 2, 3, 4].map((i) => <SkeletonBlock key={i} width="100%" height={68} rounded="rounded-2xl" />)}
                 </Skeleton>
             </ScrollView>
         );
     }
 
-    if (!friends || friends.length === 0) {
-        return (
-            <View className="items-center px-6 pt-12">
-                <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-green-500/10">
-                    <Icon name="Users" size={32} color="#22c55e" />
-                </View>
-                <Text className="text-base font-semibold text-foreground">
-                    No friends yet
-                </Text>
-                <Text className="mt-1 text-sm text-center text-muted-foreground">
-                    Search for people to add them as friends and start ordering
-                    together
-                </Text>
-            </View>
-        );
-    }
-
     return (
-        <ScrollView
-            className="flex-1 px-4"
-            contentContainerStyle={{ paddingBottom: 20 }}>
-            <View className="gap-3">
-                {friends.map((friend) => (
-                    <View
-                        key={friend.id}
-                        className="flex-row items-center p-4 border rounded-xl border-muted bg-card">
-                        <Avatar
-                            name={`${friend.firstName} ${friend.lastName}`}
-                            avatarUrl={friend.avatarUrl}
-                            size={52}
-                        />
-                        <View className="flex-1 ml-3">
-                            <Text className="text-base font-semibold text-foreground">
-                                {friend.firstName} {friend.lastName}
-                            </Text>
-                            <View className="flex-row items-center gap-1 mt-1">
-                                <Icon
-                                    name="UserCheck"
-                                    size={12}
-                                    color="#22c55e"
-                                />
-                                <Text className="text-sm text-green-500">
-                                    Friends
-                                </Text>
-                            </View>
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+            {/* Pending request banner */}
+            {pendingCount > 0 && (
+                <Animated.View entering={FadeIn.duration(300)}>
+                    <Pressable
+                        onPress={() => { /* parent handles tab switch — pass via prop below */ }}
+                        style={{ flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: 16, backgroundColor: COLORS.orangeTint, borderWidth: 1, borderColor: "rgba(255,106,31,0.2)", marginBottom: 12 }}
+                    >
+                        <View style={{ flexDirection: "row" }}>
+                            {(requests ?? []).slice(0, 3).map((r, j) => (
+                                <View key={r.id} style={{ marginLeft: j > 0 ? -10 : 0, borderRadius: 999, shadowColor: COLORS.orangeTint, shadowRadius: 0 }}>
+                                    <Avatar name={`${r.sender?.firstName} ${r.sender?.lastName}`} avatarUrl={r.sender?.avatarUrl} size={28} />
+                                </View>
+                            ))}
                         </View>
-                        <Pressable
-                            onPress={() =>
-                                handleRemoveFriend(
-                                    friend.id,
-                                    `${friend.firstName} ${friend.lastName}`
-                                )
-                            }
-                            disabled={removingId === friend.id}
-                            className="items-center justify-center w-10 h-10 rounded-xl bg-red-500/10 active:opacity-70">
-                            {removingId === friend.id ? (
-                                <ActivityIndicator size="small" color="#ef4444" />
-                            ) : (
-                                <Icon name="UserMinus" size={20} color="#ef4444" />
-                            )}
+                        <Text style={{ fontFamily: FONTS.display.semibold, fontSize: 13, color: COLORS.orangeDeep, flex: 1 }}>
+                            {pendingCount} new friend {pendingCount === 1 ? "request" : "requests"}
+                        </Text>
+                        <Icon name="ChevronRight" size={16} color={COLORS.orange} />
+                    </Pressable>
+                </Animated.View>
+            )}
+
+            {/* Search bar */}
+            {(friends?.length ?? 0) > 3 && (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#fff", borderRadius: 14, borderWidth: 1, borderColor: COLORS.line, paddingHorizontal: 12, height: 42, marginBottom: 12 }}>
+                    <Icon name="Search" size={15} color={COLORS.ink3} />
+                    <TextInput
+                        value={search}
+                        onChangeText={setSearch}
+                        placeholder="Search friends…"
+                        placeholderTextColor={COLORS.ink3}
+                        style={{ flex: 1, fontFamily: FONTS.display.regular, fontSize: 14, color: COLORS.ink }}
+                    />
+                    {search.length > 0 && (
+                        <Pressable onPress={() => setSearch("")}>
+                            <Icon name="X" size={14} color={COLORS.ink3} />
                         </Pressable>
+                    )}
+                </View>
+            )}
+
+            {friends.length === 0 ? (
+                <View style={{ alignItems: "center", paddingTop: 48, paddingHorizontal: 24 }}>
+                    <View style={{ width: 64, height: 64, borderRadius: 20, backgroundColor: COLORS.paper2, alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+                        <Icon name="Users" size={28} color={COLORS.ink3} />
                     </View>
-                ))}
-            </View>
+                    <Text style={{ fontFamily: FONTS.display.bold, fontSize: 17, color: COLORS.ink }}>No friends yet</Text>
+                    <Text style={{ fontSize: 13, color: COLORS.ink3, textAlign: "center", marginTop: 6, lineHeight: 20 }}>
+                        Search for people to add them as friends and start ordering together
+                    </Text>
+                </View>
+            ) : filtered.length === 0 ? (
+                <View style={{ alignItems: "center", paddingTop: 32 }}>
+                    <Text style={{ fontSize: 13, color: COLORS.ink3 }}>No friends matching "{search}"</Text>
+                </View>
+            ) : (
+                <View style={{ gap: 8 }}>
+                    {filtered.map((friend, i) => {
+                        const fullName = `${friend.firstName} ${friend.lastName}`;
+                        return (
+                            <Animated.View key={friend.id} entering={FadeInUp.duration(300).delay(i * 40)}>
+                                <View style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 14, backgroundColor: COLORS.orangeTint, borderRadius: 18, borderWidth: 1, borderColor: "rgba(255,106,31,0.2)" }}>
+                                    <Avatar name={fullName} avatarUrl={friend.avatarUrl} size={46} />
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontFamily: FONTS.display.bold, fontSize: 15, color: COLORS.ink }}>{fullName}</Text>
+                                        <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
+                                            <Icon name="UserCheck" size={11} color={COLORS.mint} />
+                                            <Text style={{ fontSize: 12, color: COLORS.mint, fontFamily: FONTS.display.semibold }}>Friends</Text>
+                                        </View>
+                                    </View>
+                                    <Pressable
+                                        onPress={() => handleRemove(friend.id, fullName)}
+                                        disabled={removingId === friend.id}
+                                        style={{ width: 38, height: 38, borderRadius: 999, backgroundColor: "#fff", borderWidth: 1, borderColor: COLORS.line, alignItems: "center", justifyContent: "center" }}
+                                    >
+                                        {removingId === friend.id
+                                            ? <ActivityIndicator size="small" color={COLORS.ink3} />
+                                            : <Icon name="X" size={16} color={COLORS.ink} />}
+                                    </Pressable>
+                                </View>
+                            </Animated.View>
+                        );
+                    })}
+                </View>
+            )}
         </ScrollView>
     );
 }
 
-function FriendRequests() {
+// ─── Requests tab ──────────────────────────────────────────────────
+function RequestsTab() {
     const requests = useQuery(api.friends.listPendingRequests);
     const acceptRequest = useMutation(api.friends.acceptRequest);
     const rejectRequest = useMutation(api.friends.rejectRequest);
     const [processingId, setProcessingId] = useState<string | null>(null);
-    const { colorScheme } = useColorScheme();
 
-    const isLoading = requests === undefined;
-
-    const handleAccept = async (requestId: Id<"friendRequests">) => {
-        setProcessingId(requestId);
-        try {
-            await acceptRequest({ requestId });
-        } catch (error: any) {
-            Alert.alert("Error", error?.message ?? "Failed to accept request");
-        } finally {
-            setProcessingId(null);
-        }
+    const handleAccept = async (id: Id<"friendRequests">) => {
+        setProcessingId(id);
+        try { await acceptRequest({ requestId: id }); }
+        catch (e: any) { Alert.alert("Error", e?.message ?? "Failed to accept"); }
+        finally { setProcessingId(null); }
     };
 
-    const handleReject = async (requestId: Id<"friendRequests">) => {
-        setProcessingId(requestId);
-        try {
-            await rejectRequest({ requestId });
-        } catch (error: any) {
-            Alert.alert("Error", error?.message ?? "Failed to reject request");
-        } finally {
-            setProcessingId(null);
-        }
+    const handleReject = async (id: Id<"friendRequests">) => {
+        setProcessingId(id);
+        try { await rejectRequest({ requestId: id }); }
+        catch (e: any) { Alert.alert("Error", e?.message ?? "Failed to decline"); }
+        finally { setProcessingId(null); }
     };
 
-    if (isLoading) {
+    if (requests === undefined) {
         return (
-            <ScrollView
-                className="flex-1 px-4"
-                contentContainerStyle={{ paddingBottom: 20 }}>
+            <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 32, gap: 10 }}>
                 <Skeleton>
-                    <View className="gap-3">
-                        {[1, 2, 3].map((i) => (
-                            <FriendRequestSkeleton key={i} />
-                        ))}
-                    </View>
+                    {[1, 2].map((i) => <SkeletonBlock key={i} width="100%" height={100} rounded="rounded-2xl" />)}
                 </Skeleton>
             </ScrollView>
         );
     }
 
-    if (!requests || requests.length === 0) {
+    if (requests.length === 0) {
         return (
-            <View className="items-center px-6 pt-12">
-                <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-orange-500/10">
-                    <Icon name="Bell" size={32} color="#f97316" />
+            <View style={{ alignItems: "center", paddingTop: 48, paddingHorizontal: 24 }}>
+                <View style={{ width: 64, height: 64, borderRadius: 20, backgroundColor: COLORS.paper2, alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+                    <Icon name="Bell" size={28} color={COLORS.ink3} />
                 </View>
-                <Text className="text-base font-semibold text-foreground">
-                    No pending requests
-                </Text>
-                <Text className="mt-1 text-sm text-center text-muted-foreground">
+                <Text style={{ fontFamily: FONTS.display.bold, fontSize: 17, color: COLORS.ink }}>No pending requests</Text>
+                <Text style={{ fontSize: 13, color: COLORS.ink3, textAlign: "center", marginTop: 6, lineHeight: 20 }}>
                     When someone sends you a friend request, it will appear here
                 </Text>
             </View>
@@ -309,72 +446,60 @@ function FriendRequests() {
     }
 
     return (
-        <ScrollView
-            className="flex-1 px-4"
-            contentContainerStyle={{ paddingBottom: 20 }}>
-            <View className="gap-3">
-                {requests.map((request) => {
-                    if (!request.sender) return null;
-
-                    const fullName = `${request.sender.firstName} ${request.sender.lastName}`;
-
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+            <Text style={{ fontFamily: FONTS.mono.semibold, fontSize: 10, letterSpacing: 1.2, textTransform: "uppercase", color: COLORS.ink3, marginBottom: 10 }}>
+                {requests.length} pending
+            </Text>
+            <View style={{ gap: 10 }}>
+                {requests.map((req, i) => {
+                    if (!req.sender) return null;
+                    const fullName = `${req.sender.firstName} ${req.sender.lastName}`;
+                    const isProcessing = processingId === req.id;
                     return (
-                        <View
-                            key={request.id}
-                            className="p-4 border rounded-xl border-muted bg-card">
-                            <View className="flex-row items-center">
-                                <View className="relative">
-                                    <Avatar
-                                        name={fullName}
-                                        avatarUrl={request.sender.avatarUrl}
-                                        size={52}
-                                    />
-                                    <View className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full items-center justify-center border-2 border-card bg-primary">
-                                        <Icon name="UserPlus" size={10} color="white" />
+                        <Animated.View key={req.id} entering={FadeInUp.duration(300).delay(i * 50)}>
+                            <View style={{ padding: 14, borderRadius: 18, backgroundColor: COLORS.orangeTint, borderWidth: 1, borderColor: "rgba(255,106,31,0.2)" }}>
+                                <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                                    <View style={{ position: "relative" }}>
+                                        <Avatar name={fullName} avatarUrl={req.sender.avatarUrl} size={48} />
+                                        <View style={{ position: "absolute", bottom: -2, right: -2, width: 20, height: 20, borderRadius: 10, backgroundColor: COLORS.orange, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: COLORS.orangeTint }}>
+                                            <Icon name="UserPlus" size={10} color="#fff" />
+                                        </View>
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontFamily: FONTS.display.bold, fontSize: 15, color: COLORS.ink }}>{fullName}</Text>
+                                        <Text style={{ fontSize: 12, color: COLORS.ink3, marginTop: 2 }}>Wants to be your friend</Text>
                                     </View>
                                 </View>
-                                <View className="flex-1 ml-3">
-                                    <Text className="text-base font-semibold text-foreground">
-                                        {fullName}
-                                    </Text>
-                                    <Text className="mt-0.5 text-sm text-muted-foreground">
-                                        Wants to be your friend
-                                    </Text>
+                                <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
+                                    <TouchableOpacity
+                                        onPress={() => handleReject(req.id)}
+                                        disabled={isProcessing}
+                                        style={{ flex: 1, height: 42, borderRadius: 12, backgroundColor: "#fff", borderWidth: 1, borderColor: COLORS.line, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6 }}
+                                        activeOpacity={0.8}
+                                    >
+                                        {isProcessing ? <ActivityIndicator size="small" color={COLORS.ink3} /> : (
+                                            <>
+                                                <Icon name="X" size={15} color={COLORS.ink2} />
+                                                <Text style={{ fontFamily: FONTS.display.semibold, fontSize: 13, color: COLORS.ink2 }}>Decline</Text>
+                                            </>
+                                        )}
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => handleAccept(req.id)}
+                                        disabled={isProcessing}
+                                        style={{ flex: 1, height: 42, borderRadius: 12, backgroundColor: COLORS.mint, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6 }}
+                                        activeOpacity={0.8}
+                                    >
+                                        {isProcessing ? <ActivityIndicator size="small" color="#fff" /> : (
+                                            <>
+                                                <Icon name="Check" size={15} color="#fff" />
+                                                <Text style={{ fontFamily: FONTS.display.semibold, fontSize: 13, color: "#fff" }}>Accept</Text>
+                                            </>
+                                        )}
+                                    </TouchableOpacity>
                                 </View>
                             </View>
-                            <View className="flex-row gap-3 mt-4">
-                                <TouchableOpacity
-                                    onPress={() => handleReject(request.id)}
-                                    disabled={processingId === request.id}
-                                    className="flex-1 flex-row items-center justify-center gap-2 py-3 border rounded-xl border-muted active:opacity-70">
-                                    {processingId === request.id ? (
-                                        <ActivityIndicator size="small" color="#666" />
-                                    ) : (
-                                        <>
-                                            <Icon name="X" size={16} color="#666" />
-                                            <Text className="font-medium text-foreground">
-                                                Decline
-                                            </Text>
-                                        </>
-                                    )}
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => handleAccept(request.id)}
-                                    disabled={processingId === request.id}
-                                    className="flex-1 flex-row items-center justify-center gap-2 py-3 rounded-xl bg-primary active:opacity-70">
-                                    {processingId === request.id ? (
-                                        <ActivityIndicator size="small" color="#fff" />
-                                    ) : (
-                                        <>
-                                            <Icon name="Check" size={16} color="white" />
-                                            <Text className="font-medium text-white">
-                                                Accept
-                                            </Text>
-                                        </>
-                                    )}
-                                </TouchableOpacity>
-                            </View>
-                        </View>
+                        </Animated.View>
                     );
                 })}
             </View>
@@ -382,191 +507,274 @@ function FriendRequests() {
     );
 }
 
-function SearchUsers() {
-    const [searchQuery, setSearchQuery] = useState("");
-    const searchResults = useQuery(
-        api.friends.searchUsers,
-        searchQuery.length >= 2 ? { query: searchQuery } : "skip"
-    );
+// ─── Search users tab ──────────────────────────────────────────────
+function SearchTab() {
+    const [query, setQuery] = useState("");
+    const searchResults = useQuery(api.friends.searchUsers, query.length >= 2 ? { query } : "skip");
     const sendRequest = useMutation(api.friends.sendRequest);
     const [sendingTo, setSendingTo] = useState<string | null>(null);
-    const { colorScheme } = useColorScheme();
 
-    const isSearching = searchQuery.length >= 2 && searchResults === undefined;
-
-    const handleSendRequest = async (userId: Id<"users">, userName: string) => {
+    const handleAdd = async (userId: Id<"users">, name: string) => {
         setSendingTo(userId);
         try {
             await sendRequest({ receiverId: userId });
-            Alert.alert("Request Sent", `Friend request sent to ${userName}`);
-        } catch (error: any) {
-            Alert.alert(
-                "Error",
-                error?.message ?? "Failed to send friend request"
-            );
+            Alert.alert("Request Sent", `Friend request sent to ${name}`);
+        } catch (e: any) {
+            Alert.alert("Error", e?.message ?? "Failed to send request");
         } finally {
             setSendingTo(null);
         }
     };
 
-    return (
-        <View className="flex-1 px-4">
-            {/* Search Input */}
-            <Input
-                placeholder="Search by name or email..."
-                value={searchQuery}
-                leftIcon="Search"
-                errorMessage=""
-                rightIcon={searchQuery.length > 0 ? "CircleX" : undefined}
-                onRightIconPress={() => setSearchQuery("")}
-                rightIconColor="#666"
-                onChangeText={setSearchQuery}
-                autoCapitalize="none"
-                autoCorrect={false}
-            />
+    const isSearching = query.length >= 2 && searchResults === undefined;
 
-            {/* Search Results */}
-            {searchQuery.length < 2 && (
-                <View className="items-center pt-12">
-                    <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-blue-500/10">
-                        <Icon name="Search" size={32} color="#3b82f6" />
+    return (
+        <View style={{ flex: 1, paddingHorizontal: 18 }}>
+            {/* Search input */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#fff", borderRadius: 14, borderWidth: 1, borderColor: COLORS.line, paddingHorizontal: 12, height: 46, marginBottom: 16 }}>
+                <Icon name="Search" size={16} color={COLORS.ink3} />
+                <TextInput
+                    value={query}
+                    onChangeText={setQuery}
+                    placeholder="Search by name or email…"
+                    placeholderTextColor={COLORS.ink3}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    style={{ flex: 1, fontFamily: FONTS.display.regular, fontSize: 14, color: COLORS.ink }}
+                />
+                {query.length > 0 && (
+                    <Pressable onPress={() => setQuery("")}>
+                        <Icon name="X" size={14} color={COLORS.ink3} />
+                    </Pressable>
+                )}
+            </View>
+
+            {query.length < 2 && (
+                <View style={{ alignItems: "center", paddingTop: 40 }}>
+                    <View style={{ width: 64, height: 64, borderRadius: 20, backgroundColor: COLORS.paper2, alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+                        <Icon name="Search" size={28} color={COLORS.ink3} />
                     </View>
-                    <Text className="text-base font-semibold text-foreground">
-                        Find Friends
-                    </Text>
-                    <Text className="mt-1 text-sm text-center text-muted-foreground">
-                        Enter at least 2 characters to search
-                    </Text>
+                    <Text style={{ fontFamily: FONTS.display.bold, fontSize: 17, color: COLORS.ink }}>Find Friends</Text>
+                    <Text style={{ fontSize: 13, color: COLORS.ink3, textAlign: "center", marginTop: 6 }}>Enter at least 2 characters to search</Text>
                 </View>
             )}
 
             {isSearching && (
-                <View className="flex-1 mt-4">
-                    <Skeleton>
-                        <View className="gap-3">
-                            {[1, 2, 3].map((i) => (
-                                <FriendCardSkeleton key={i} />
-                            ))}
-                        </View>
-                    </Skeleton>
+                <Skeleton>
+                    <View style={{ gap: 10 }}>
+                        {[1, 2, 3].map((i) => <SkeletonBlock key={i} width="100%" height={68} rounded="rounded-2xl" />)}
+                    </View>
+                </Skeleton>
+            )}
+
+            {query.length >= 2 && searchResults && searchResults.length === 0 && (
+                <View style={{ alignItems: "center", paddingTop: 40 }}>
+                    <View style={{ width: 64, height: 64, borderRadius: 20, backgroundColor: COLORS.paper2, alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+                        <Icon name="UserX" size={28} color={COLORS.ink3} />
+                    </View>
+                    <Text style={{ fontFamily: FONTS.display.bold, fontSize: 17, color: COLORS.ink }}>No users found</Text>
+                    <Text style={{ fontSize: 13, color: COLORS.ink3, marginTop: 6 }}>Try a different name or email</Text>
                 </View>
             )}
 
-            {searchQuery.length >= 2 &&
-                searchResults &&
-                searchResults.length === 0 && (
-                    <View className="items-center pt-12">
-                        <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-purple-500/10">
-                            <Icon name="UserX" size={32} color="#a855f7" />
-                        </View>
-                        <Text className="text-base font-semibold text-foreground">
-                            No users found
-                        </Text>
-                        <Text className="mt-1 text-sm text-center text-muted-foreground">
-                            Try a different search term
-                        </Text>
-                    </View>
-                )}
-
             {searchResults && searchResults.length > 0 && (
-                <ScrollView
-                    className="flex-1 mt-4"
-                    contentContainerStyle={{ paddingBottom: 20 }}>
-                    <View className="gap-3">
-                        {searchResults.map((user) => {
-                            const fullName = `${user.firstName} ${user.lastName}`;
-
-                            return (
-                                <View
-                                    key={user.id}
-                                    className="flex-row items-center p-4 border rounded-xl border-muted bg-card">
-                                    <Avatar
-                                        name={fullName}
-                                        avatarUrl={user.avatarUrl}
-                                        size={52}
-                                    />
-                                    <View className="flex-1 ml-3">
-                                        <Text className="text-base font-semibold text-foreground">
-                                            {fullName}
-                                        </Text>
-                                        <View className="flex-row items-center gap-1 mt-1">
-                                            <Icon
-                                                name="Mail"
-                                                size={12}
-                                                color={NAV_THEME[colorScheme].border}
-                                            />
-                                            <Text
-                                                className="text-sm text-muted-foreground"
-                                                numberOfLines={1}>
-                                                {user.email}
-                                            </Text>
-                                        </View>
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 32 }}>
+                    {searchResults.map((user, i) => {
+                        const fullName = `${user.firstName} ${user.lastName}`;
+                        return (
+                            <Animated.View key={user.id} entering={FadeInUp.duration(250).delay(i * 40)}>
+                                <View style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 12, backgroundColor: "#fff", borderRadius: 16, borderWidth: 1, borderColor: COLORS.line }}>
+                                    <Avatar name={fullName} avatarUrl={user.avatarUrl} size={46} />
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontFamily: FONTS.display.bold, fontSize: 15, color: COLORS.ink }}>{fullName}</Text>
+                                        <Text style={{ fontSize: 12, color: COLORS.ink3, marginTop: 2 }} numberOfLines={1}>{user.email}</Text>
                                     </View>
                                     <TouchableOpacity
-                                        onPress={() =>
-                                            handleSendRequest(user.id, fullName)
-                                        }
+                                        onPress={() => handleAdd(user.id, fullName)}
                                         disabled={sendingTo === user.id}
-                                        className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl bg-primary active:opacity-70">
-                                        {sendingTo === user.id ? (
-                                            <ActivityIndicator
-                                                size="small"
-                                                color="#fff"
-                                            />
-                                        ) : (
-                                            <>
-                                                <Icon
-                                                    name="UserPlus"
-                                                    size={16}
-                                                    color="white"
-                                                />
-                                                <Text className="font-semibold text-white">
-                                                    Add
-                                                </Text>
-                                            </>
-                                        )}
+                                        activeOpacity={0.8}
+                                        style={{ flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: COLORS.ink }}
+                                    >
+                                        {sendingTo === user.id
+                                            ? <ActivityIndicator size="small" color="#fff" />
+                                            : <><Icon name="UserPlus" size={14} color="#fff" /><Text style={{ fontFamily: FONTS.display.semibold, fontSize: 13, color: "#fff" }}>Add</Text></>}
                                     </TouchableOpacity>
                                 </View>
-                            );
-                        })}
-                    </View>
+                            </Animated.View>
+                        );
+                    })}
                 </ScrollView>
             )}
         </View>
     );
 }
 
-function FriendCardSkeleton() {
+// ─── Squads tab ────────────────────────────────────────────────────
+function SquadsTab({ onCreateSquad }: { onCreateSquad: () => void }) {
+    const squads = useQuery(api.squads.list);
+    const removeSquad = useMutation(api.squads.remove);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+
+    const handleDelete = (id: Id<"squads">, name: string) => {
+        Alert.alert("Delete Squad", `Delete "${name}"? This can't be undone.`, [
+            { text: "Cancel", style: "cancel" },
+            {
+                text: "Delete", style: "destructive",
+                onPress: async () => {
+                    setDeletingId(id);
+                    try { await removeSquad({ squadId: id }); }
+                    catch (e: any) { Alert.alert("Error", e?.message ?? "Failed to delete squad"); }
+                    finally { setDeletingId(null); }
+                },
+            },
+        ]);
+    };
+
+    if (squads === undefined) {
+        return (
+            <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 32, gap: 10 }}>
+                <Skeleton>
+                    {[1, 2].map((i) => <SkeletonBlock key={i} width="100%" height={72} rounded="rounded-2xl" />)}
+                </Skeleton>
+            </ScrollView>
+        );
+    }
+
     return (
-        <View className="flex-row items-center p-4 border rounded-xl border-muted bg-card">
-            <SkeletonBlock width={52} height={52} rounded="rounded-full" />
-            <View className="flex-1 ml-3">
-                <SkeletonBlock width={140} height={18} className="mb-2" />
-                <SkeletonBlock width={80} height={14} />
+        <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+            {squads.length > 0 && (
+                <Text style={{ fontFamily: FONTS.mono.semibold, fontSize: 10, letterSpacing: 1.2, textTransform: "uppercase", color: COLORS.ink3, marginBottom: 10 }}>
+                    Your squads
+                </Text>
+            )}
+            <View style={{ gap: 10 }}>
+                {squads.map((squad, i) => {
+                    const colorDef = SQUAD_COLORS.find((c) => c.key === squad.color) ?? SQUAD_COLORS[0];
+                    return (
+                        <Animated.View key={squad.id} entering={FadeInUp.duration(300).delay(i * 50)}>
+                            <View style={{ flexDirection: "row", alignItems: "center", gap: 14, padding: 14, borderRadius: 18, backgroundColor: i === 0 && squads.length > 1 ? COLORS.ink : "#fff", borderWidth: i === 0 && squads.length > 1 ? 0 : 1, borderColor: COLORS.line }}>
+                                <View style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: colorDef.bg, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                    <Icon name={colorDef.icon as keyof typeof icons} size={20} color="#fff" />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={{ fontFamily: FONTS.display.semibold, fontSize: 15, color: i === 0 && squads.length > 1 ? "#fff" : COLORS.ink }}>
+                                        {squad.name}
+                                    </Text>
+                                    <Text style={{ fontSize: 12, color: i === 0 && squads.length > 1 ? "rgba(255,255,255,0.6)" : COLORS.ink3, marginTop: 2 }}>
+                                        {squad.members.length} {squad.members.length === 1 ? "person" : "people"}
+                                    </Text>
+                                </View>
+                                {/* Stacked avatars */}
+                                <View style={{ flexDirection: "row", marginRight: 4 }}>
+                                    {squad.members.slice(0, 4).map((m, j) => (
+                                        <View key={m.id} style={{ marginLeft: j > 0 ? -10 : 0, borderRadius: 999, borderWidth: 2, borderColor: i === 0 && squads.length > 1 ? COLORS.ink : "#fff" }}>
+                                            <Avatar name={`${m.firstName} ${m.lastName}`} avatarUrl={m.avatarUrl} size={26} />
+                                        </View>
+                                    ))}
+                                    {squad.members.length > 4 && (
+                                        <View style={{ marginLeft: -10, width: 26, height: 26, borderRadius: 13, backgroundColor: COLORS.paper2, borderWidth: 2, borderColor: "#fff", alignItems: "center", justifyContent: "center" }}>
+                                            <Text style={{ fontFamily: FONTS.mono.bold, fontSize: 9, color: COLORS.ink2 }}>+{squad.members.length - 4}</Text>
+                                        </View>
+                                    )}
+                                </View>
+                                {squad.isCreator && (
+                                    <Pressable
+                                        onPress={() => handleDelete(squad.id, squad.name)}
+                                        disabled={deletingId === squad.id}
+                                        style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: i === 0 && squads.length > 1 ? "rgba(255,255,255,0.12)" : COLORS.paper2, alignItems: "center", justifyContent: "center" }}
+                                    >
+                                        {deletingId === squad.id
+                                            ? <ActivityIndicator size="small" color={i === 0 && squads.length > 1 ? "#fff" : COLORS.ink3} />
+                                            : <Icon name="Trash2" size={14} color={i === 0 && squads.length > 1 ? "rgba(255,255,255,0.7)" : COLORS.ink3} />}
+                                    </Pressable>
+                                )}
+                            </View>
+                        </Animated.View>
+                    );
+                })}
+
+                {/* Create squad CTA */}
+                <Pressable
+                    onPress={onCreateSquad}
+                    style={({ pressed }) => ({
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 14,
+                        padding: 14,
+                        borderRadius: 18,
+                        backgroundColor: pressed ? COLORS.paper2 : "transparent",
+                        borderWidth: 1.5,
+                        borderStyle: "dashed",
+                        borderColor: COLORS.line2,
+                    })}
+                >
+                    <View style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: COLORS.paper2, alignItems: "center", justifyContent: "center" }}>
+                        <Icon name="Plus" size={20} color={COLORS.ink2} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                        <Text style={{ fontFamily: FONTS.display.semibold, fontSize: 15, color: COLORS.ink }}>Create a squad</Text>
+                        <Text style={{ fontSize: 12, color: COLORS.ink3, marginTop: 2 }}>Group for fast runs & splits</Text>
+                    </View>
+                    <Icon name="ChevronRight" size={16} color={COLORS.ink3} />
+                </Pressable>
             </View>
-            <SkeletonBlock width={40} height={40} rounded="rounded-xl" />
-        </View>
+        </ScrollView>
     );
 }
 
-function FriendRequestSkeleton() {
+// ─── Root screen ───────────────────────────────────────────────────
+export default function FriendsScreen() {
+    const insets = useSafeAreaInsets();
+    const [activeTab, setActiveTab] = useState<Tab>("friends");
+    const [showCreateSquad, setShowCreateSquad] = useState(false);
+
+    const pendingCount = useQuery(api.friends.pendingRequestCount) ?? 0;
+    const friends = useQuery(api.friends.list) ?? [];
+
     return (
-        <View className="p-4 border rounded-xl border-muted bg-card">
-            <View className="flex-row items-center">
-                <SkeletonBlock width={52} height={52} rounded="rounded-full" />
-                <View className="flex-1 ml-3">
-                    <SkeletonBlock width={140} height={18} className="mb-2" />
-                    <SkeletonBlock width={160} height={14} />
-                </View>
+        <View style={{ flex: 1, backgroundColor: COLORS.paper, paddingTop: insets.top }}>
+            {/* Header */}
+            <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18, paddingVertical: 10, gap: 10 }}>
+                <Pressable
+                    onPress={() => router.back()}
+                    style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: COLORS.paper2, borderWidth: 1, borderColor: COLORS.line, alignItems: "center", justifyContent: "center" }}
+                >
+                    <Icon name="ChevronLeft" size={20} color={COLORS.ink} />
+                </Pressable>
+                <Text style={{ fontFamily: FONTS.display.bold, fontSize: 20, letterSpacing: -0.4, color: COLORS.ink, flex: 1 }}>Friends</Text>
+                {activeTab === "squads" && (
+                    <Pressable
+                        onPress={() => setShowCreateSquad(true)}
+                        style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: COLORS.ink, alignItems: "center", justifyContent: "center" }}
+                    >
+                        <Icon name="Plus" size={18} color="#fff" />
+                    </Pressable>
+                )}
             </View>
-            <View className="flex-row gap-3 mt-4">
-                <View className="flex-1">
-                    <SkeletonBlock width="100%" height={44} rounded="rounded-xl" />
-                </View>
-                <View className="flex-1">
-                    <SkeletonBlock width="100%" height={44} rounded="rounded-xl" />
-                </View>
+
+            {/* Tab row */}
+            <View style={{ paddingHorizontal: 18, paddingBottom: 14 }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                    <TabPill label={`Friends · ${friends.length}`} active={activeTab === "friends"} onPress={() => setActiveTab("friends")} />
+                    <TabPill label="Requests" active={activeTab === "requests"} badge={pendingCount} onPress={() => setActiveTab("requests")} />
+                    <TabPill label="Search" active={activeTab === "search"} onPress={() => setActiveTab("search")} />
+                    <TabPill label="Squads" active={activeTab === "squads"} onPress={() => setActiveTab("squads")} />
+                </ScrollView>
             </View>
+
+            {/* Content */}
+            <View style={{ flex: 1 }}>
+                {activeTab === "friends" && <FriendsTab pendingCount={pendingCount} />}
+                {activeTab === "requests" && <RequestsTab />}
+                {activeTab === "search" && <SearchTab />}
+                {activeTab === "squads" && <SquadsTab onCreateSquad={() => setShowCreateSquad(true)} />}
+            </View>
+
+            <CreateSquadSheet
+                visible={showCreateSquad}
+                onClose={() => setShowCreateSquad(false)}
+                friends={friends}
+            />
         </View>
     );
 }
