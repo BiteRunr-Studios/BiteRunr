@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import * as Haptics from "expo-haptics";
 import {
     ActivityIndicator,
     Alert,
@@ -14,11 +15,14 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeInDown, FadeInUp, ZoomIn } from "react-native-reanimated";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { useFriends, useCreateOrder } from "@/lib/hooks/use-order-api";
 import Icon from "@/components/common/icon";
+import { AnimatedPressable } from "@/components/common/animated-pressable";
 import { BrText, BrAvatar } from "@/components/br";
 import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
 
@@ -84,6 +88,7 @@ export default function CreateOrder() {
     // ── Data
     const { data: rawFriends = [], isLoading: isLoadingFriends } = useFriends();
     const friends = rawFriends as Friend[];
+    const squads = useQuery(api.squads.list) ?? [];
     const createOrderMutation = useCreateOrder();
 
     // ── Spot helpers
@@ -94,8 +99,20 @@ export default function CreateOrder() {
         setSpots((p) => (p.length === 1 ? [""] : p.filter((_, idx) => idx !== i)));
 
     // ── Friend helpers
-    const toggleFriend = (id: string) =>
+    const toggleFriend = (id: string) => {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         setSelectedFriendIds((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+    };
+
+    const toggleSquad = (memberIds: string[]) => {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        const allSelected = memberIds.every((id) => selectedFriendIds.includes(id));
+        if (allSelected) {
+            setSelectedFriendIds((p) => p.filter((id) => !memberIds.includes(id)));
+        } else {
+            setSelectedFriendIds((p) => [...new Set([...p, ...memberIds])]);
+        }
+    };
 
     const filteredFriends = useMemo(
         () =>
@@ -131,6 +148,7 @@ export default function CreateOrder() {
             setFieldErrors(errors);
             return;
         }
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         try {
             const orderId = await createOrderMutation.mutateAsync({
                 name: trimmedName,
@@ -210,8 +228,9 @@ export default function CreateOrder() {
                         {/* Quick-fill chips */}
                         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
                             {QUICK_FILLS.map((s) => (
-                                <Pressable
+                                <AnimatedPressable
                                     key={s}
+                                    scale={0.93}
                                     onPress={() => {
                                         setName(s.split(" ").slice(1).join(" "));
                                         if (fieldErrors.name) clearError("name");
@@ -219,7 +238,7 @@ export default function CreateOrder() {
                                     style={styles.quickFillChip}
                                 >
                                     <Text style={styles.quickFillText}>{s}</Text>
-                                </Pressable>
+                                </AnimatedPressable>
                             ))}
                         </View>
                     </Animated.View>
@@ -314,6 +333,53 @@ export default function CreateOrder() {
                             )}
                         </View>
 
+                        {/* Squad shortcuts */}
+                        {squads.length > 0 && (
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={{ gap: 8, paddingVertical: 2, marginTop: 12 }}
+                            >
+                                {squads.map((squad) => {
+                                    const memberIds = squad.memberIds as string[];
+                                    const allSelected = memberIds.length > 0 && memberIds.every((id) => selectedFriendIds.includes(id));
+                                    return (
+                                        <AnimatedPressable
+                                            key={squad.id}
+                                            scale={0.93}
+                                            onPress={() => toggleSquad(memberIds)}
+                                            style={[styles.squadPill, allSelected && styles.squadPillActive]}
+                                        >
+                                            {/* Stacked avatars */}
+                                            <View style={{ flexDirection: "row" }}>
+                                                {squad.members.slice(0, 3).map((m, i) => (
+                                                    <View key={m.id} style={{ marginLeft: i > 0 ? -8 : 0 }}>
+                                                        <BrAvatar
+                                                            name={`${m.firstName} ${m.lastName}`}
+                                                            avatarUrl={m.avatarUrl}
+                                                            size={22}
+                                                            ring={allSelected ? BR.orange : BR.card}
+                                                        />
+                                                    </View>
+                                                ))}
+                                            </View>
+                                            <Text style={[styles.squadPillName, allSelected && { color: "#fff" }]}>
+                                                {squad.name}
+                                            </Text>
+                                            <Text style={[styles.squadPillCount, allSelected && { color: "rgba(255,255,255,0.7)" }]}>
+                                                · {squad.memberIds.length}
+                                            </Text>
+                                            {allSelected && (
+                                                <Animated.View entering={ZoomIn.duration(150).springify()}>
+                                                    <Icon name="Check" size={13} color="#fff" strokeWidth={3} />
+                                                </Animated.View>
+                                            )}
+                                        </AnimatedPressable>
+                                    );
+                                })}
+                            </ScrollView>
+                        )}
+
                         {/* Search */}
                         <View style={[styles.searchBar, { marginTop: 12 }]}>
                             <Icon name="Search" size={15} color={BR.ink3} />
@@ -350,8 +416,9 @@ export default function CreateOrder() {
                                     const fullName = `${f.first_name} ${f.last_name}`;
                                     const selected = selectedFriendIds.includes(f.id);
                                     return (
-                                        <Pressable
+                                        <AnimatedPressable
                                             key={f.id}
+                                            scale={0.98}
                                             onPress={() => toggleFriend(f.id)}
                                             style={[
                                                 styles.friendRow,
@@ -378,10 +445,12 @@ export default function CreateOrder() {
                                                 ]}
                                             >
                                                 {selected && (
-                                                    <Icon name="Check" size={12} color="#fff" strokeWidth={3} />
+                                                    <Animated.View entering={ZoomIn.duration(160).springify()}>
+                                                        <Icon name="Check" size={12} color="#fff" strokeWidth={3} />
+                                                    </Animated.View>
                                                 )}
                                             </View>
-                                        </Pressable>
+                                        </AnimatedPressable>
                                     );
                                 })
                             )}
@@ -456,7 +525,8 @@ export default function CreateOrder() {
                         </Text>
                     </Animated.View>
                 )}
-                <TouchableOpacity
+                <AnimatedPressable
+                    scale={isValid ? 0.97 : 1}
                     onPress={handleCreate}
                     disabled={createOrderMutation.isPending}
                     style={[
@@ -464,7 +534,6 @@ export default function CreateOrder() {
                         !isValid && styles.createBtnDisabled,
                         createOrderMutation.isPending && { opacity: 0.6 },
                     ]}
-                    activeOpacity={isValid ? 0.85 : 1}
                 >
                     {createOrderMutation.isPending ? (
                         <ActivityIndicator size="small" color="#fff" />
@@ -477,7 +546,7 @@ export default function CreateOrder() {
                             {isValid && <Icon name="ArrowRight" size={16} color="#fff" />}
                         </>
                     )}
-                </TouchableOpacity>
+                </AnimatedPressable>
             </View>
         </>
     );
@@ -706,6 +775,34 @@ const styles = StyleSheet.create({
     },
     sectionDividerEmoji: {
         fontSize: 18,
+    },
+    // squads
+    squadPill: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 7,
+        paddingLeft: 6,
+        paddingRight: 12,
+        paddingVertical: 6,
+        borderRadius: 999,
+        backgroundColor: BR.card,
+        borderWidth: 1,
+        borderColor: BR.line,
+    },
+    squadPillActive: {
+        backgroundColor: BR.orange,
+        borderColor: BR.orange,
+    },
+    squadPillName: {
+        fontFamily: BR_FONT.display,
+        fontSize: 13,
+        fontWeight: "600",
+        color: BR.ink,
+    },
+    squadPillCount: {
+        fontFamily: BR_FONT.mono,
+        fontSize: 11,
+        color: BR.ink3,
     },
     // friends
     clearText: {

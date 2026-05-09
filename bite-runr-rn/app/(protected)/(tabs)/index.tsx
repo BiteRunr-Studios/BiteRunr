@@ -42,6 +42,14 @@ import {
 } from "@/components/br";
 import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
 
+const SQUAD_COLOR_MAP: Record<string, string> = {
+  orange: BR.orange,
+  lilac: BR.lilac,
+  mint: BR.mint,
+  coral: BR.coral,
+  yolk: BR.yolk,
+};
+
 function PulseDot({ color = "#fff", size = 8 }: { color?: string; size?: number }) {
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
@@ -125,6 +133,7 @@ export default function HomeTab() {
   const outstandingDebts = useQuery(api.orders.getOutstandingDebts);
   const outstandingPayments = useQuery(api.orders.getOutstandingPayments);
   const frequentGroups = useQuery(api.orders.getFrequentGroups, {});
+  const squads = useQuery(api.squads.list);
   const friends = useQuery(api.friends.list);
   const pendingRequests = useQuery(api.friends.pendingRequestCount);
   const currentUser = useQuery(api.users.getCurrentUser);
@@ -201,6 +210,7 @@ export default function HomeTab() {
     (pastOrders?.length ?? 0) > 0 ||
     (settlementSummary?.owedToMe ?? 0) > 0 ||
     (settlementSummary?.iOwe ?? 0) > 0 ||
+    (squads?.length ?? 0) > 0 ||
     (frequentGroups?.squads?.length ?? 0) > 0 ||
     (friends?.length ?? 0) > 0;
 
@@ -486,7 +496,7 @@ export default function HomeTab() {
               )}
 
               {/* Squads */}
-              {frequentGroups && frequentGroups.squads.length > 0 && (
+              {squads && squads.length > 0 && (
                 <Animated.View
                   entering={FadeInUp.duration(300).delay(40)}
                   style={{ marginTop: 22 }}
@@ -494,10 +504,10 @@ export default function HomeTab() {
                   <View style={styles.sectionHeader}>
                     <BrText variant="h3">Your squads</BrText>
                     <Pressable
-                      onPress={() => router.push("/groups")}
+                      onPress={() => router.push("/account/friends")}
                       style={styles.smallChip}
                     >
-                      <Text style={styles.smallChipText}>See all</Text>
+                      <Text style={styles.smallChipText}>Manage</Text>
                     </Pressable>
                   </View>
                   <ScrollView
@@ -506,57 +516,77 @@ export default function HomeTab() {
                     contentContainerStyle={{ gap: 10, paddingRight: 18 }}
                     style={{ marginHorizontal: -18, paddingHorizontal: 18 }}
                   >
-                    {frequentGroups.squads.map((squad, i) => (
-                      <Pressable
-                        key={squad.id}
-                        onPress={() =>
-                          router.push(
-                            `/order/create?reorderFriendIds=${squad.memberIds}`,
-                          )
-                        }
-                      >
-                        <BrCard
-                          variant="outlined"
-                          background={i === 0 ? BR.paper2 : BR.card}
-                          padding={14}
-                          style={{ width: 220 }}
+                    {squads.map((squad) => {
+                      const tileColor = SQUAD_COLOR_MAP[squad.color] ?? BR.orange;
+                      const memberIds = (squad.memberIds as string[]).join(",");
+                      return (
+                        <Pressable
+                          key={squad.id}
+                          onPress={() =>
+                            router.push(
+                              `/order/create?reorderFriendIds=${memberIds}`,
+                            )
+                          }
                         >
-                          <View style={{ flexDirection: "row" }}>
-                            {squad.members.slice(0, 4).map((m, idx) => (
-                              <View
-                                key={m.id}
-                                style={{ marginLeft: idx ? -8 : 0 }}
-                              >
-                                <BrAvatar
-                                  name={`${m.firstName ?? ""} ${m.lastName ?? ""}`}
-                                  avatarUrl={m.avatarUrl}
-                                  size={32}
-                                  ring="#fff"
-                                />
-                              </View>
-                            ))}
-                          </View>
-                          <BrText
-                            weight="bold"
-                            style={{ marginTop: 10, fontSize: 14 }}
-                            numberOfLines={1}
+                          <BrCard
+                            variant="outlined"
+                            background={BR.card}
+                            padding={14}
+                            style={{ width: 200 }}
                           >
-                            {squad.members.map((m) => m.firstName).join(", ")}
-                          </BrText>
-                          <View style={styles.squadMetaRow}>
-                            <Icon
-                              name="MapPin"
-                              size={11}
-                              color={BR.ink3}
-                            />
-                            <BrText style={{ fontSize: 12, color: BR.ink3 }}>
-                              {squad.locationNames[0] ?? "various"} ·{" "}
-                              {squad.orderCount} runs
+                            {/* Icon tile */}
+                            <View
+                              style={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: 14,
+                                backgroundColor: tileColor,
+                                alignItems: "center",
+                                justifyContent: "center",
+                                marginBottom: 12,
+                              }}
+                            >
+                              <Icon
+                                name={squad.icon as React.ComponentProps<typeof Icon>["name"]}
+                                size={20}
+                                color="#fff"
+                              />
+                            </View>
+
+                            {/* Name */}
+                            <BrText
+                              weight="bold"
+                              style={{ fontSize: 15 }}
+                              numberOfLines={1}
+                            >
+                              {squad.name}
                             </BrText>
-                          </View>
-                        </BrCard>
-                      </Pressable>
-                    ))}
+
+                            {/* Members row */}
+                            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10 }}>
+                              <View style={{ flexDirection: "row" }}>
+                                {squad.members.slice(0, 4).map((m, idx) => (
+                                  <View
+                                    key={m.id}
+                                    style={{ marginLeft: idx ? -8 : 0 }}
+                                  >
+                                    <BrAvatar
+                                      name={`${m.firstName ?? ""} ${m.lastName ?? ""}`}
+                                      avatarUrl={m.avatarUrl}
+                                      size={24}
+                                      ring={BR.card}
+                                    />
+                                  </View>
+                                ))}
+                              </View>
+                              <Text style={{ fontSize: 12, color: BR.ink3, fontFamily: BR_FONT.mono }}>
+                                {squad.members.length} {squad.members.length === 1 ? "person" : "people"}
+                              </Text>
+                            </View>
+                          </BrCard>
+                        </Pressable>
+                      );
+                    })}
                   </ScrollView>
                 </Animated.View>
               )}

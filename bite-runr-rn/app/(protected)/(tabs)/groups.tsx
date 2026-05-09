@@ -20,6 +20,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
+import { AnimatedPressable } from "@/components/common/animated-pressable";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "convex/react";
@@ -379,8 +380,9 @@ export default function GroupsTab() {
                   const count = countFor(f.key);
                   if (f.key === "needs_payment" && count === 0) return null;
                   return (
-                    <Pressable
+                    <AnimatedPressable
                       key={f.key}
+                      scale={0.93}
                       onPress={() => setActiveFilter(f.key)}
                       style={[
                         styles.filterChip,
@@ -404,15 +406,15 @@ export default function GroupsTab() {
                       >
                         {count}
                       </Text>
-                    </Pressable>
+                    </AnimatedPressable>
                   );
                 })}
 
                 {/* New run pill */}
-                <Pressable onPress={handleCreateOrder} style={styles.newRunChip}>
+                <AnimatedPressable scale={0.93} onPress={handleCreateOrder} style={styles.newRunChip}>
                   <Icon name="Plus" size={14} color="#fff" strokeWidth={3} />
                   <Text style={styles.newRunChipText}>New run</Text>
-                </Pressable>
+                </AnimatedPressable>
               </ScrollView>
             </Animated.View>
 
@@ -490,7 +492,7 @@ export default function GroupsTab() {
                             if (item.order.status === "active") {
                               return (
                                 <Link href={`/order/${item.order.id}`} key={item.order.id} asChild>
-                                  <Pressable>{card}</Pressable>
+                                  <AnimatedPressable scale={0.98}>{card}</AnimatedPressable>
                                 </Link>
                               );
                             }
@@ -501,7 +503,7 @@ export default function GroupsTab() {
                                   key={item.order.id}
                                   asChild
                                 >
-                                  <Pressable>{card}</Pressable>
+                                  <AnimatedPressable scale={0.98}>{card}</AnimatedPressable>
                                 </Link>
                               );
                             }

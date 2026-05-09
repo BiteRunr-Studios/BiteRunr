@@ -1,57 +1,67 @@
 import React, { useCallback } from "react";
-import { Pressable, type PressableStateCallbackType, type StyleProp, type ViewStyle } from "react-native";
+import { Pressable } from "react-native";
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withTiming,
+    withSpring,
+    Easing,
 } from "react-native-reanimated";
 
-const ReanimatedPressable = Animated.createAnimatedComponent(Pressable);
+interface AnimatedPressableProps extends React.ComponentProps<typeof Pressable> {
+    /** Target scale when pressed. Defaults to 0.97. */
+    scale?: number;
+}
 
+/**
+ * Pressable with a spring-back scale animation on press.
+ * Uses Animated.View as the animation layer so useAnimatedStyle
+ * is applied directly to an Animated component — the correct
+ * Reanimated pattern that avoids style tracking issues.
+ */
 export const AnimatedPressable = React.memo(function AnimatedPressable({
     children,
     style,
+    scale: targetScale = 0.97,
     onPressIn: onPressInProp,
     onPressOut: onPressOutProp,
     ...props
-}: React.ComponentProps<typeof Pressable>) {
-    const scale = useSharedValue(1);
+}: AnimatedPressableProps) {
+    const sv = useSharedValue(1);
+
     const animatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: scale.value }],
+        transform: [{ scale: sv.value }],
     }));
 
     const onPressIn = useCallback(
         (e: any) => {
-            scale.value = withTiming(0.97, { duration: 150 });
+            sv.value = withTiming(targetScale, {
+                duration: 80,
+                easing: Easing.out(Easing.ease),
+            });
             onPressInProp?.(e);
         },
-        [onPressInProp],
-    );
-    const onPressOut = useCallback(
-        (e: any) => {
-            scale.value = withTiming(1, { duration: 200 });
-            onPressOutProp?.(e);
-        },
-        [onPressOutProp],
+        [sv, targetScale, onPressInProp],
     );
 
-    // Pressable style can be a function (state) => style or a plain style.
-    // We need to resolve it before combining with animatedStyle.
-    const combinedStyle = useCallback(
-        (state: PressableStateCallbackType): StyleProp<ViewStyle> => {
-            const resolved = typeof style === "function" ? style(state) : style;
-            return [animatedStyle, resolved];
+    const onPressOut = useCallback(
+        (e: any) => {
+            sv.value = withSpring(1, { damping: 18, stiffness: 600, overshootClamping: true });
+            onPressOutProp?.(e);
         },
-        [animatedStyle, style],
+        [sv, onPressOutProp],
     );
 
     return (
-        <ReanimatedPressable
-            {...props}
-            onPressIn={onPressIn}
-            onPressOut={onPressOut}
-            style={combinedStyle}>
-            {children}
-        </ReanimatedPressable>
+        <Animated.View style={animatedStyle}>
+            <Pressable
+                {...props}
+                style={style}
+                onPressIn={onPressIn}
+                onPressOut={onPressOut}
+            >
+                {children}
+            </Pressable>
+        </Animated.View>
     );
 });

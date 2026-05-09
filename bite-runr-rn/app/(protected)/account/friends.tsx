@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
+import * as Haptics from "expo-haptics";
 import {
     View,
     Text,
@@ -18,6 +19,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
+import { AnimatedPressable } from "@/components/common/animated-pressable";
 import { Avatar } from "@/components/common/avatar";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
 import { FONTS, COLORS } from "@/lib/fonts";
@@ -37,9 +39,9 @@ const SQUAD_COLORS: { key: string; bg: string; deep: string; icon: keyof typeof 
 // ─── Tab pill ──────────────────────────────────────────────────────
 function TabPill({ label, active, badge, onPress }: { label: string; active: boolean; badge?: number; onPress: () => void }) {
     return (
-        <TouchableOpacity
+        <AnimatedPressable
+            scale={0.93}
             onPress={onPress}
-            activeOpacity={0.8}
             style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -60,7 +62,7 @@ function TabPill({ label, active, badge, onPress }: { label: string; active: boo
                     <Text style={{ fontFamily: FONTS.mono.bold, fontSize: 10, color: "#fff" }}>{badge > 9 ? "9+" : badge}</Text>
                 </View>
             )}
-        </TouchableOpacity>
+        </AnimatedPressable>
     );
 }
 
@@ -94,6 +96,7 @@ function CreateSquadSheet({
         if (!name.trim()) { Alert.alert("Name required", "Give your squad a name."); return; }
         setSaving(true);
         try {
+            void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             await createSquad({
                 name: name.trim(),
                 color: selectedColor,
@@ -119,7 +122,7 @@ function CreateSquadSheet({
     };
 
     return (
-        <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
+        <Modal visible={visible} animationType="slide" presentationStyle="formSheet" onRequestClose={handleClose}>
             <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
                 <View style={{ flex: 1, backgroundColor: COLORS.paper }}>
                     {/* Handle + header */}
@@ -238,23 +241,25 @@ function CreateSquadSheet({
                         )}
 
                         {/* CTA */}
-                        <Pressable
+                        <AnimatedPressable
+                            scale={0.97}
                             onPress={handleCreate}
                             disabled={saving}
-                            style={({ pressed }) => ({
-                                height: 58,
-                                borderRadius: 18,
-                                backgroundColor: pressed ? COLORS.orangeDeep : COLORS.orange,
+                            style={{
+                                height: 54,
+                                borderRadius: 16,
+                                backgroundColor: COLORS.orange,
                                 alignItems: "center",
                                 justifyContent: "center",
                                 flexDirection: "row",
                                 gap: 10,
-                                opacity: saving ? 0.75 : 1,
+                                opacity: saving ? 0.65 : 1,
                                 shadowColor: COLORS.orange,
-                                shadowOffset: { width: 0, height: 6 },
-                                shadowOpacity: 0.35,
-                                shadowRadius: 12,
-                            })}
+                                shadowOffset: { width: 0, height: 8 },
+                                shadowOpacity: 0.4,
+                                shadowRadius: 16,
+                                elevation: 6,
+                            }}
                         >
                             {saving ? <ActivityIndicator color="#fff" /> : (
                                 <>
@@ -262,7 +267,7 @@ function CreateSquadSheet({
                                     <Text style={{ fontFamily: FONTS.display.bold, fontSize: 16, color: "#fff" }}>Create squad</Text>
                                 </>
                             )}
-                        </Pressable>
+                        </AnimatedPressable>
                     </ScrollView>
                 </View>
             </KeyboardAvoidingView>
@@ -285,6 +290,7 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
     }) ?? [];
 
     const handleRemove = (id: Id<"users">, name: string) => {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         Alert.alert("Remove Friend", `Remove ${name} from your friends?`, [
             { text: "Cancel", style: "cancel" },
             {
@@ -372,7 +378,7 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
                         const fullName = `${friend.firstName} ${friend.lastName}`;
                         return (
                             <Animated.View key={friend.id} entering={FadeInUp.duration(300).delay(i * 40)}>
-                                <View style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 14, backgroundColor: COLORS.orangeTint, borderRadius: 18, borderWidth: 1, borderColor: "rgba(255,106,31,0.2)" }}>
+                                <AnimatedPressable scale={0.98} onLongPress={() => handleRemove(friend.id, `${friend.firstName} ${friend.lastName}`)} style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 14, backgroundColor: COLORS.orangeTint, borderRadius: 18, borderWidth: 1, borderColor: "rgba(255,106,31,0.2)" }}>
                                     <Avatar name={fullName} avatarUrl={friend.avatarUrl} size={46} />
                                     <View style={{ flex: 1 }}>
                                         <Text style={{ fontFamily: FONTS.display.bold, fontSize: 15, color: COLORS.ink }}>{fullName}</Text>
@@ -390,7 +396,7 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
                                             ? <ActivityIndicator size="small" color={COLORS.ink3} />
                                             : <Icon name="X" size={16} color={COLORS.ink} />}
                                     </Pressable>
-                                </View>
+                                </AnimatedPressable>
                             </Animated.View>
                         );
                     })}
@@ -408,6 +414,7 @@ function RequestsTab() {
     const [processingId, setProcessingId] = useState<string | null>(null);
 
     const handleAccept = async (id: Id<"friendRequests">) => {
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         setProcessingId(id);
         try { await acceptRequest({ requestId: id }); }
         catch (e: any) { Alert.alert("Error", e?.message ?? "Failed to accept"); }
@@ -415,6 +422,7 @@ function RequestsTab() {
     };
 
     const handleReject = async (id: Id<"friendRequests">) => {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         setProcessingId(id);
         try { await rejectRequest({ requestId: id }); }
         catch (e: any) { Alert.alert("Error", e?.message ?? "Failed to decline"); }
@@ -471,11 +479,11 @@ function RequestsTab() {
                                     </View>
                                 </View>
                                 <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
-                                    <TouchableOpacity
+                                    <AnimatedPressable
+                                        scale={0.94}
                                         onPress={() => handleReject(req.id)}
                                         disabled={isProcessing}
                                         style={{ flex: 1, height: 42, borderRadius: 12, backgroundColor: "#fff", borderWidth: 1, borderColor: COLORS.line, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6 }}
-                                        activeOpacity={0.8}
                                     >
                                         {isProcessing ? <ActivityIndicator size="small" color={COLORS.ink3} /> : (
                                             <>
@@ -483,12 +491,12 @@ function RequestsTab() {
                                                 <Text style={{ fontFamily: FONTS.display.semibold, fontSize: 13, color: COLORS.ink2 }}>Decline</Text>
                                             </>
                                         )}
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
+                                    </AnimatedPressable>
+                                    <AnimatedPressable
+                                        scale={0.94}
                                         onPress={() => handleAccept(req.id)}
                                         disabled={isProcessing}
                                         style={{ flex: 1, height: 42, borderRadius: 12, backgroundColor: COLORS.mint, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6 }}
-                                        activeOpacity={0.8}
                                     >
                                         {isProcessing ? <ActivityIndicator size="small" color="#fff" /> : (
                                             <>
@@ -496,7 +504,7 @@ function RequestsTab() {
                                                 <Text style={{ fontFamily: FONTS.display.semibold, fontSize: 13, color: "#fff" }}>Accept</Text>
                                             </>
                                         )}
-                                    </TouchableOpacity>
+                                    </AnimatedPressable>
                                 </View>
                             </View>
                         </Animated.View>
@@ -652,28 +660,28 @@ function SquadsTab({ onCreateSquad }: { onCreateSquad: () => void }) {
                     const colorDef = SQUAD_COLORS.find((c) => c.key === squad.color) ?? SQUAD_COLORS[0];
                     return (
                         <Animated.View key={squad.id} entering={FadeInUp.duration(300).delay(i * 50)}>
-                            <View style={{ flexDirection: "row", alignItems: "center", gap: 14, padding: 14, borderRadius: 18, backgroundColor: i === 0 && squads.length > 1 ? COLORS.ink : "#fff", borderWidth: i === 0 && squads.length > 1 ? 0 : 1, borderColor: COLORS.line }}>
+                            <View style={{ flexDirection: "row", alignItems: "center", gap: 14, padding: 14, borderRadius: 18, backgroundColor: COLORS.orangeTint, borderWidth: 1, borderColor: "rgba(255,106,31,0.2)" }}>
                                 <View style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: colorDef.bg, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                     <Icon name={colorDef.icon as keyof typeof icons} size={20} color="#fff" />
                                 </View>
                                 <View style={{ flex: 1 }}>
-                                    <Text style={{ fontFamily: FONTS.display.semibold, fontSize: 15, color: i === 0 && squads.length > 1 ? "#fff" : COLORS.ink }}>
+                                    <Text style={{ fontFamily: FONTS.display.bold, fontSize: 15, color: COLORS.ink }}>
                                         {squad.name}
                                     </Text>
-                                    <Text style={{ fontSize: 12, color: i === 0 && squads.length > 1 ? "rgba(255,255,255,0.6)" : COLORS.ink3, marginTop: 2 }}>
+                                    <Text style={{ fontSize: 12, color: COLORS.ink3, marginTop: 2 }}>
                                         {squad.members.length} {squad.members.length === 1 ? "person" : "people"}
                                     </Text>
                                 </View>
                                 {/* Stacked avatars */}
                                 <View style={{ flexDirection: "row", marginRight: 4 }}>
                                     {squad.members.slice(0, 4).map((m, j) => (
-                                        <View key={m.id} style={{ marginLeft: j > 0 ? -10 : 0, borderRadius: 999, borderWidth: 2, borderColor: i === 0 && squads.length > 1 ? COLORS.ink : "#fff" }}>
+                                        <View key={m.id} style={{ marginLeft: j > 0 ? -10 : 0, borderRadius: 999, borderWidth: 2, borderColor: COLORS.orangeTint }}>
                                             <Avatar name={`${m.firstName} ${m.lastName}`} avatarUrl={m.avatarUrl} size={26} />
                                         </View>
                                     ))}
                                     {squad.members.length > 4 && (
-                                        <View style={{ marginLeft: -10, width: 26, height: 26, borderRadius: 13, backgroundColor: COLORS.paper2, borderWidth: 2, borderColor: "#fff", alignItems: "center", justifyContent: "center" }}>
-                                            <Text style={{ fontFamily: FONTS.mono.bold, fontSize: 9, color: COLORS.ink2 }}>+{squad.members.length - 4}</Text>
+                                        <View style={{ marginLeft: -10, width: 26, height: 26, borderRadius: 13, backgroundColor: COLORS.orangeSoft, borderWidth: 2, borderColor: COLORS.orangeTint, alignItems: "center", justifyContent: "center" }}>
+                                            <Text style={{ fontFamily: FONTS.mono.bold, fontSize: 9, color: COLORS.orangeDeep }}>+{squad.members.length - 4}</Text>
                                         </View>
                                     )}
                                 </View>
@@ -681,11 +689,11 @@ function SquadsTab({ onCreateSquad }: { onCreateSquad: () => void }) {
                                     <Pressable
                                         onPress={() => handleDelete(squad.id, squad.name)}
                                         disabled={deletingId === squad.id}
-                                        style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: i === 0 && squads.length > 1 ? "rgba(255,255,255,0.12)" : COLORS.paper2, alignItems: "center", justifyContent: "center" }}
+                                        style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: "rgba(255,106,31,0.12)", alignItems: "center", justifyContent: "center" }}
                                     >
                                         {deletingId === squad.id
-                                            ? <ActivityIndicator size="small" color={i === 0 && squads.length > 1 ? "#fff" : COLORS.ink3} />
-                                            : <Icon name="Trash2" size={14} color={i === 0 && squads.length > 1 ? "rgba(255,255,255,0.7)" : COLORS.ink3} />}
+                                            ? <ActivityIndicator size="small" color={COLORS.orangeDeep} />
+                                            : <Icon name="Trash2" size={14} color={COLORS.orangeDeep} />}
                                     </Pressable>
                                 )}
                             </View>
@@ -694,29 +702,27 @@ function SquadsTab({ onCreateSquad }: { onCreateSquad: () => void }) {
                 })}
 
                 {/* Create squad CTA */}
-                <Pressable
+                <AnimatedPressable
+                    scale={0.97}
                     onPress={onCreateSquad}
-                    style={({ pressed }) => ({
+                    style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        gap: 14,
-                        padding: 14,
+                        justifyContent: "center",
+                        gap: 8,
+                        paddingVertical: 16,
+                        paddingHorizontal: 20,
                         borderRadius: 18,
-                        backgroundColor: pressed ? COLORS.paper2 : "transparent",
-                        borderWidth: 1.5,
-                        borderStyle: "dashed",
-                        borderColor: COLORS.line2,
-                    })}
-                >
-                    <View style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: COLORS.paper2, alignItems: "center", justifyContent: "center" }}>
-                        <Icon name="Plus" size={20} color={COLORS.ink2} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <Text style={{ fontFamily: FONTS.display.semibold, fontSize: 15, color: COLORS.ink }}>Create a squad</Text>
-                        <Text style={{ fontSize: 12, color: COLORS.ink3, marginTop: 2 }}>Group for fast runs & splits</Text>
-                    </View>
-                    <Icon name="ChevronRight" size={16} color={COLORS.ink3} />
-                </Pressable>
+                        backgroundColor: COLORS.orange,
+                        shadowColor: COLORS.orange,
+                        shadowOffset: { width: 0, height: 6 },
+                        shadowOpacity: 0.35,
+                        shadowRadius: 12,
+                        elevation: 4,
+                    }}>
+                    <Icon name="Sparkles" size={16} color="#fff" />
+                    <Text style={{ fontFamily: FONTS.display.bold, fontSize: 15, color: "#fff" }}>Create a squad</Text>
+                </AnimatedPressable>
             </View>
         </ScrollView>
     );
