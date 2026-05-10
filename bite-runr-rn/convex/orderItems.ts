@@ -118,24 +118,28 @@ const pausedAiSummaryLocationsValidator = v.array(
 );
 
 const aiLocationSummarySchema = z.object({
-  groups: z.array(
-    z.object({
-      displayName: z.string().min(1),
-      seedGroupIds: z.array(z.string()).min(1),
-    }),
-  ).min(1),
+  groups: z
+    .array(
+      z.object({
+        displayName: z.string().min(1),
+        seedGroupIds: z.array(z.string()).min(1),
+      }),
+    )
+    .min(1),
 });
 
 const voiceOrderItemsSchema = z.object({
-  items: z.array(
-    z.string()
-      .trim()
-      .min(1)
-      .max(120)
-      .describe(
-        "One clean food order line item. Preserve size, flavor, modifiers, combo names, sauces, and special instructions.",
-      ),
-  )
+  items: z
+    .array(
+      z
+        .string()
+        .trim()
+        .min(1)
+        .max(120)
+        .describe(
+          "One clean food order line item. Preserve size, flavor, modifiers, combo names, sauces, and special instructions.",
+        ),
+    )
     .max(25)
     .describe(
       "The complete updated order after applying spokenUpdate to existingItems. Return existingItems unchanged when spokenUpdate has no actionable order content.",
@@ -262,7 +266,9 @@ function reconcileVoiceOrderItems(items: string[]): string[] {
 
   return [...groups.values()]
     .map((entries) => {
-      const quantityEntries = entries.filter((entry) => entry.hasExplicitQuantity);
+      const quantityEntries = entries.filter(
+        (entry) => entry.hasExplicitQuantity,
+      );
       if (quantityEntries.length === 0) {
         return entries
           .sort((left, right) => left.originalIndex - right.originalIndex)
@@ -334,10 +340,9 @@ function buildAiSeedGroupsForLocation(
       seedGroupId: `g${index + 1}`,
       displayName: normalizeLabel(group.displayName),
       orderItemIds: group.items.map((item) => item.id),
-      variants: [...new Set(group.items.map((item) => normalizeLabel(item.text)))].slice(
-        0,
-        3,
-      ),
+      variants: [
+        ...new Set(group.items.map((item) => normalizeLabel(item.text))),
+      ].slice(0, 3),
       lineCount: group.lineCount,
       peopleCount: group.peopleCount,
     })),
@@ -352,7 +357,9 @@ function validateAiGroupsForLocation(
   }>,
 ): ResolvedOrderItemTextGroup[] {
   if (groups.length === 0) {
-    throw new Error(`AI returned no groups for ${locationSummary.locationName}`);
+    throw new Error(
+      `AI returned no groups for ${locationSummary.locationName}`,
+    );
   }
 
   const seedGroupById = new Map(
@@ -430,7 +437,13 @@ async function generateAiSummaryForLocation(
 
   try {
     const result = await generateText({
-      model: openrouter.chat("qwen/qwen-turbo"),
+      model: openrouter.chat("openai/gpt-oss-120b", {
+        // options: qwen/qwen-turbo / openai/gpt-oss-120b
+        provider: {
+          order: ["cerebras/fp16", "groq"], // qwen: "parasail/fp8", "alibaba" / openai: "cerebras/fp16", "groq"
+          allow_fallbacks: true,
+        },
+      }),
       temperature: 0,
       maxOutputTokens: Math.min(1200, Math.max(250, totalSeedGroups * 50)),
       abortSignal: abortController.signal,
@@ -832,7 +845,8 @@ export const listForOrderUser = query({
         id: orderItem._id,
         orderLocationId: orderItem.orderLocationId,
         locationName:
-          locationById.get(orderItem.orderLocationId)?.name ?? "Unknown Location",
+          locationById.get(orderItem.orderLocationId)?.name ??
+          "Unknown Location",
         text: orderItem.text,
         sortOrder: orderItem.sortOrder,
         priceInCents:
@@ -980,10 +994,7 @@ export const getOrderSummary = query({
 
         const hasAnyPrices = lines.some((line) => line.priceInCents !== null);
         const subtotalInCents = hasAnyPrices
-          ? lines.reduce(
-              (sum, line) => sum + (line.priceInCents ?? 0),
-              0,
-            )
+          ? lines.reduce((sum, line) => sum + (line.priceInCents ?? 0), 0)
           : null;
         const totalInCents =
           orderLocation.receiptTotalInCents !== undefined
