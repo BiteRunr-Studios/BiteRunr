@@ -351,18 +351,23 @@ export default function GroupsTab() {
 
   const currentUser = useQuery(api.users.getCurrentUser);
   const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
+  const hasCreatedOrder = useQuery(api.orders.hasCurrentUserCreatedOrder);
   const data = useQuery(api.orders.getWithDetails);
   const isPending =
-    data === undefined || currentUser === undefined || !isTransitionComplete;
+    data === undefined ||
+    currentUser === undefined ||
+    connectedAccount === undefined ||
+    hasCreatedOrder === undefined ||
+    !isTransitionComplete;
   const userId = currentUser?._id;
 
   const handleCreateOrder = useCallback(() => {
-    if (connectedAccount?.chargesEnabled) {
+    if (connectedAccount?.chargesEnabled || hasCreatedOrder) {
       router.push("/order/create");
     } else {
       setShowPaymentSplash(true);
     }
-  }, [connectedAccount]);
+  }, [connectedAccount, hasCreatedOrder]);
 
   const handleScanCode = (code: string) => {
     setShowScanner(false);

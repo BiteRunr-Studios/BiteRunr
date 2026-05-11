@@ -134,6 +134,7 @@ export default function HomeTab() {
   const pendingRequests = useQuery(api.friends.pendingRequestCount);
   const currentUser = useQuery(api.users.getCurrentUser);
   const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
+  const hasCreatedOrder = useQuery(api.orders.hasCurrentUserCreatedOrder);
 
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -169,7 +170,7 @@ export default function HomeTab() {
   }, []);
 
   const handleCreateOrder = () => {
-    if (connectedAccount?.chargesEnabled) {
+    if (connectedAccount?.chargesEnabled || hasCreatedOrder) {
       router.push("/order/create");
     } else {
       setShowPaymentSplash(true);
@@ -199,7 +200,9 @@ export default function HomeTab() {
     outstandingPayments !== undefined &&
     frequentGroups !== undefined &&
     friends !== undefined &&
-    pendingRequests !== undefined;
+    pendingRequests !== undefined &&
+    connectedAccount !== undefined &&
+    hasCreatedOrder !== undefined;
 
   const hasAnyData =
     (activeOrders?.length ?? 0) > 0 ||

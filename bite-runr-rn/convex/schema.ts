@@ -54,6 +54,7 @@ export default defineSchema({
         avatarUrl: v.optional(v.string()),
         avatarStorageId: v.optional(v.id("_storage")),
         stripeCustomerId: v.optional(v.string()),
+        hasCreatedOrder: v.optional(v.boolean()),
     })
         .index("email", ["email"])
         .searchIndex("search_name", { searchField: "firstName" })

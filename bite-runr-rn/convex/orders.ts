@@ -323,6 +323,31 @@ export const transferRunner = mutation({
   },
 });
 
+export const hasCurrentUserCreatedOrder = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return false;
+
+    const user = await ctx.db.get(userId);
+    if (user?.hasCreatedOrder) return true;
+
+    const userOrderUsers = await ctx.db
+      .query("orderUsers")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+
+    for (const userOrderUser of userOrderUsers) {
+      const order = await ctx.db.get(userOrderUser.orderId);
+      if (order?.creatorId === userId) {
+        return true;
+      }
+    }
+
+    return false;
+  },
+});
+
 export const create = mutation({
   args: {
     name: v.string(),
@@ -348,6 +373,8 @@ export const create = mutation({
       status: "active",
       paused: false,
     });
+
+    await ctx.db.patch(userId, { hasCreatedOrder: true });
 
     for (const locationName of normalizedLocationNames) {
       await ctx.db.insert("orderLocations", {
