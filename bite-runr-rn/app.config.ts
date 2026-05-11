@@ -1,9 +1,14 @@
 // app.config.ts
 import { ExpoConfig } from "expo/config";
 
-let localConfig: Partial<Pick<ExpoConfig, "owner" | "extra">> = {};
+type LocalExpoConfig = Partial<
+  Pick<ExpoConfig, "owner" | "extra" | "ios" | "android">
+>;
+
+let localConfig: LocalExpoConfig = {};
 try {
-  localConfig = require("./app.config.local").default;
+  const maybeLocalConfig = require("./app.config.local");
+  localConfig = maybeLocalConfig.default ?? maybeLocalConfig;
 } catch {}
 
 const SPLASH_IMAGE = "./assets/images/icon-no-bg.png";
@@ -22,10 +27,10 @@ const config: ExpoConfig = {
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
   ios: {
-    bundleIdentifier: "com.RunrStudios.BiteRunrRN",
+    bundleIdentifier: localConfig.ios?.bundleIdentifier ?? "",
     supportsTablet: true,
-    usesAppleSignIn: true,
-    appleTeamId: "6K8R8337BL",
+    usesAppleSignIn: localConfig.ios?.usesAppleSignIn ?? false,
+    appleTeamId: localConfig.ios?.appleTeamId ?? "",
     icon: {
       dark: "./assets/images/icon-dark.png",
       light: "./assets/images/icon.png",
@@ -64,7 +69,8 @@ const config: ExpoConfig = {
     },
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
-    package: "com.RunrStudios.BiteRunrRN",
+    package:
+      localConfig.android?.package ?? localConfig.ios?.bundleIdentifier ?? "",
   },
   web: {
     output: "static",
