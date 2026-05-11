@@ -1,6 +1,6 @@
 import { useLocalSearchParams, router } from "expo-router";
 import { View, Text, ScrollView, Pressable, StyleSheet, useWindowDimensions } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -66,7 +66,7 @@ export default function CompletedOrder() {
 
     if (!orderId || data === null) {
         return (
-            <View style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}>
+            <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
                 <View style={styles.header}>
                     <Pressable onPress={() => router.back()} style={styles.backBtn}>
                         <Icon name="ChevronLeft" size={20} color={BR.ink} />
@@ -79,13 +79,13 @@ export default function CompletedOrder() {
                 <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
                     <BrText style={{ color: BR.ink3 }}>This order is no longer available.</BrText>
                 </View>
-            </View>
+            </SafeAreaView>
         );
     }
 
     if (data === undefined) {
         return (
-            <View style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}>
+            <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
                 <View style={styles.header}>
                     <View style={styles.backBtn} />
                 </View>
@@ -102,7 +102,7 @@ export default function CompletedOrder() {
                         ))}
                     </View>
                 </Skeleton>
-            </View>
+            </SafeAreaView>
         );
     }
 
@@ -124,7 +124,7 @@ export default function CompletedOrder() {
     const locationName = data.locations[0]?.name ?? data.order.name;
 
     return (
-        <View style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}>
+        <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
             {/* Header */}
             <View style={styles.header}>
                 <Pressable onPress={() => router.back()} style={styles.backBtn}>
@@ -326,7 +326,7 @@ export default function CompletedOrder() {
                     </Animated.View>
                 )}
             </ScrollView>
-        </View>
+        </SafeAreaView>
     );
 }
 

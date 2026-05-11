@@ -9,7 +9,7 @@ import {
   InteractionManager,
 } from "react-native";
 import { Flow } from "react-native-animated-spinkit";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
@@ -333,7 +333,7 @@ export default function SpecificOrder() {
   // ── Skeleton ──────────────────────────────────────────────────
   if (isPending) {
     return (
-      <View style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}>
+      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
         <View style={styles.header}>
           <View style={styles.backBtn} />
           <SkeletonBlock width={120} height={18} />
@@ -349,7 +349,7 @@ export default function SpecificOrder() {
             ))}
           </View>
         </Skeleton>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -381,7 +381,7 @@ export default function SpecificOrder() {
   // ── Main render ───────────────────────────────────────────────
   return (
     <>
-      <View style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}>
+      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
         {/* Header */}
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
@@ -712,7 +712,7 @@ export default function SpecificOrder() {
             </View>
           )}
         </View>
-      </View>
+      </SafeAreaView>
 
       {/* QR Code Modal */}
       {isCreator && data && (

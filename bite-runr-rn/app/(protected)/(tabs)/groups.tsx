@@ -27,7 +27,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Icon from "@/components/common/icon";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { PaymentSetupSplash } from "@/components/payment-setup-splash";
 import { QRScannerModal } from "@/components/qr-scanner-modal";
 import { EnterCodeModal } from "@/components/enter-code-modal";
@@ -413,9 +413,7 @@ export default function GroupsTab() {
 
   return (
     <ErrorBoundary>
-      <View
-        style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}
-      >
+      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
         {/* Top bar */}
         <View style={styles.topBar}>
           <Image
@@ -670,7 +668,7 @@ export default function GroupsTab() {
             )}
           </View>
         </ScrollView>
-      </View>
+      </SafeAreaView>
 
       <PaymentSetupSplash
         visible={showPaymentSplash}

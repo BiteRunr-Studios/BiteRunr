@@ -13,8 +13,8 @@ import {
     KeyboardAvoidingView,
     Platform,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { router, useLocalSearchParams } from "expo-router";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -411,22 +411,22 @@ function RequestsTab() {
     const requests = useQuery(api.friends.listPendingRequests);
     const acceptRequest = useMutation(api.friends.acceptRequest);
     const rejectRequest = useMutation(api.friends.rejectRequest);
-    const [processingId, setProcessingId] = useState<string | null>(null);
+    const [processing, setProcessing] = useState<{ id: string; action: "accept" | "reject" } | null>(null);
 
     const handleAccept = async (id: Id<"friendRequests">) => {
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        setProcessingId(id);
+        setProcessing({ id, action: "accept" });
         try { await acceptRequest({ requestId: id }); }
         catch (e: any) { Alert.alert("Error", e?.message ?? "Failed to accept"); }
-        finally { setProcessingId(null); }
+        finally { setProcessing(null); }
     };
 
     const handleReject = async (id: Id<"friendRequests">) => {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        setProcessingId(id);
+        setProcessing({ id, action: "reject" });
         try { await rejectRequest({ requestId: id }); }
         catch (e: any) { Alert.alert("Error", e?.message ?? "Failed to decline"); }
-        finally { setProcessingId(null); }
+        finally { setProcessing(null); }
     };
 
     if (requests === undefined) {
@@ -462,7 +462,9 @@ function RequestsTab() {
                 {requests.map((req, i) => {
                     if (!req.sender) return null;
                     const fullName = `${req.sender.firstName} ${req.sender.lastName}`;
-                    const isProcessing = processingId === req.id;
+                    const isAccepting = processing?.id === req.id && processing.action === "accept";
+                    const isRejecting = processing?.id === req.id && processing.action === "reject";
+                    const isProcessing = isAccepting || isRejecting;
                     return (
                         <Animated.View key={req.id} entering={FadeInUp.duration(300).delay(i * 50)}>
                             <View style={{ padding: 14, borderRadius: 18, backgroundColor: COLORS.orangeTint, borderWidth: 1, borderColor: "rgba(255,106,31,0.2)" }}>
@@ -477,34 +479,28 @@ function RequestsTab() {
                                         <Text style={{ fontFamily: FONTS.display.bold, fontSize: 15, color: COLORS.ink }}>{fullName}</Text>
                                         <Text style={{ fontSize: 12, color: COLORS.ink3, marginTop: 2 }}>Wants to be your friend</Text>
                                     </View>
-                                </View>
-                                <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
-                                    <AnimatedPressable
-                                        scale={0.94}
-                                        onPress={() => handleReject(req.id)}
-                                        disabled={isProcessing}
-                                        style={{ flex: 1, height: 42, borderRadius: 12, backgroundColor: "#fff", borderWidth: 1, borderColor: COLORS.line, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6 }}
-                                    >
-                                        {isProcessing ? <ActivityIndicator size="small" color={COLORS.ink3} /> : (
-                                            <>
-                                                <Icon name="X" size={15} color={COLORS.ink2} />
-                                                <Text style={{ fontFamily: FONTS.display.semibold, fontSize: 13, color: COLORS.ink2 }}>Decline</Text>
-                                            </>
-                                        )}
-                                    </AnimatedPressable>
-                                    <AnimatedPressable
-                                        scale={0.94}
-                                        onPress={() => handleAccept(req.id)}
-                                        disabled={isProcessing}
-                                        style={{ flex: 1, height: 42, borderRadius: 12, backgroundColor: COLORS.mint, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6 }}
-                                    >
-                                        {isProcessing ? <ActivityIndicator size="small" color="#fff" /> : (
-                                            <>
-                                                <Icon name="Check" size={15} color="#fff" />
-                                                <Text style={{ fontFamily: FONTS.display.semibold, fontSize: 13, color: "#fff" }}>Accept</Text>
-                                            </>
-                                        )}
-                                    </AnimatedPressable>
+                                    <View style={{ flexDirection: "row", gap: 8 }}>
+                                        <AnimatedPressable
+                                            scale={0.9}
+                                            onPress={() => handleReject(req.id)}
+                                            disabled={isProcessing}
+                                            style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "#fff", borderWidth: 1.5, borderColor: COLORS.line2, alignItems: "center", justifyContent: "center" }}
+                                        >
+                                            {isRejecting
+                                                ? <ActivityIndicator size="small" color={COLORS.ink3} />
+                                                : <Icon name="X" size={18} color={COLORS.ink2} strokeWidth={2.5} />}
+                                        </AnimatedPressable>
+                                        <AnimatedPressable
+                                            scale={0.9}
+                                            onPress={() => handleAccept(req.id)}
+                                            disabled={isProcessing}
+                                            style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.mint, alignItems: "center", justifyContent: "center" }}
+                                        >
+                                            {isAccepting
+                                                ? <ActivityIndicator size="small" color="#fff" />
+                                                : <Icon name="Check" size={18} color="#fff" strokeWidth={3} />}
+                                        </AnimatedPressable>
+                                    </View>
                                 </View>
                             </View>
                         </Animated.View>
@@ -731,14 +727,15 @@ function SquadsTab({ onCreateSquad }: { onCreateSquad: () => void }) {
 // ─── Root screen ───────────────────────────────────────────────────
 export default function FriendsScreen() {
     const insets = useSafeAreaInsets();
-    const [activeTab, setActiveTab] = useState<Tab>("friends");
+    const { tab } = useLocalSearchParams<{ tab?: Tab }>();
+    const [activeTab, setActiveTab] = useState<Tab>(tab ?? "friends");
     const [showCreateSquad, setShowCreateSquad] = useState(false);
 
     const pendingCount = useQuery(api.friends.pendingRequestCount) ?? 0;
     const friends = useQuery(api.friends.list) ?? [];
 
     return (
-        <View style={{ flex: 1, backgroundColor: COLORS.paper, paddingTop: insets.top }}>
+        <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: COLORS.paper }}>
             {/* Header */}
             <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18, paddingVertical: 10, gap: 10 }}>
                 <Pressable
@@ -781,6 +778,6 @@ export default function FriendsScreen() {
                 onClose={() => setShowCreateSquad(false)}
                 friends={friends}
             />
-        </View>
+        </SafeAreaView>
     );
 }

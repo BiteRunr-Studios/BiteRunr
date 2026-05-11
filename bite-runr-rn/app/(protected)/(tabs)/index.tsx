@@ -20,7 +20,7 @@ import Animated, {
 import { LinearGradient } from "expo-linear-gradient";
 import { useQuery, useAction } from "convex/react";
 import { useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/convex/_generated/api";
 import Icon from "@/components/common/icon";
@@ -234,9 +234,7 @@ export default function HomeTab() {
 
   return (
     <ErrorBoundary>
-      <View
-        style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}
-      >
+      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
         {/* Top bar */}
         <View style={styles.topBar}>
           <Image
@@ -736,7 +734,7 @@ export default function HomeTab() {
             </>
           )}
         </ScrollView>
-      </View>
+      </SafeAreaView>
 
       <PaymentSetupSplash
         visible={showPaymentSplash}

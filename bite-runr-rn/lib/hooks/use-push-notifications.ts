@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Platform } from "react-native";
+import { router } from "expo-router";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
@@ -227,7 +228,11 @@ async function getExistingPushToken(): Promise<string | null> {
     }
 }
 
-function handleNotificationTap(_data: Record<string, unknown>) {
-    // Handle navigation based on notification type
-    // Navigation can be added here based on your app's routing
+function handleNotificationTap(data: Record<string, unknown>) {
+    const type = data?.type as string | undefined;
+    if (type === "friend_request") {
+        router.push("/account/friends?tab=requests");
+    } else if (type === "order_update" && data?.orderId) {
+        router.push(`/order/${data.orderId}`);
+    }
 }

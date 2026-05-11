@@ -6,6 +6,9 @@ import {
     ScrollView,
     Alert,
     ActivityIndicator,
+    StyleSheet,
+    TouchableOpacity,
+    TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -13,32 +16,19 @@ import * as WebBrowser from "expo-web-browser";
 import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Icon from "@/components/common/icon";
-import { Button } from "@/components/common/button";
-import { NAV_THEME } from "@/lib/constants";
-import { useColorScheme } from "@/lib/use-color-scheme";
+import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { BrText, BrAvatar } from "@/components/br";
+import Animated, {
+    FadeInUp,
+    useSharedValue,
+    useAnimatedProps,
+    withTiming,
+    Easing,
+} from "react-native-reanimated";
 
-const ONBOARDING_STEPS = [
-    {
-        icon: "UserCheck" as const,
-        title: "Verify your identity",
-        desc: "Stripe will ask for your name, date of birth, and address to confirm who you are.",
-    },
-    {
-        icon: "CreditCard" as const,
-        title: "Add a debit card",
-        desc: "Link a debit card for instant payouts — or a bank account if you prefer.",
-    },
-    {
-        icon: "ShieldCheck" as const,
-        title: "Quick review",
-        desc: "Stripe verifies your info — this usually only takes a few minutes.",
-    },
-    {
-        icon: "Banknote" as const,
-        title: "Start getting paid",
-        desc: "Once approved, order members can pay you directly with their card.",
-    },
-];
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+
+// ── Types ────────────────────────────────────────────────────────
 
 type PayoutBalanceData = {
     available: number;
@@ -58,63 +48,77 @@ type OnboardingStatus = {
     chargesEnabled: boolean;
 };
 
+// ── Utilities ────────────────────────────────────────────────────
+
 function sanitizeCurrencyAmount(value: number | null | undefined): number {
     if (typeof value !== "number" || !Number.isFinite(value)) return 0;
     return Math.max(0, Math.round(value));
 }
 
+function formatCurrency(amount: number): string {
+    return `$${(sanitizeCurrencyAmount(amount) / 100).toFixed(2)}`;
+}
+
+// ── Setup steps (no account + pending states) ─────────────────────
+
+const ONBOARDING_STEPS = [
+    { icon: "UserCheck" as const, title: "Verify your identity",   desc: "Stripe will ask for your name, date of birth, and address." },
+    { icon: "CreditCard" as const, title: "Add a debit card",      desc: "Link a debit card for instant payouts — or a bank account." },
+    { icon: "ShieldCheck" as const, title: "Quick review",         desc: "Stripe verifies your info — usually takes a few minutes." },
+    { icon: "Banknote" as const, title: "Start getting paid",      desc: "Once approved, squad members can pay you by card." },
+];
+
+const HOW_IT_WORKS = [
+    { icon: "ShoppingBag" as const, color: BR.orange,  title: "You run the order", sub: "Pick up food for your squad as the runner." },
+    { icon: "CreditCard" as const,  color: BR.lilac,   title: "Squad pays you",    sub: "Each member taps to pay their share by card." },
+    { icon: "Wallet" as const,      color: BR.mint,    title: "You get paid",      sub: "Funds land in your bank account in 1–2 days." },
+];
+
+// ── Main screen ──────────────────────────────────────────────────
+
 export default function PaymentsScreen() {
-    const { colorScheme } = useColorScheme();
     const [isSettingUp, setIsSettingUp] = useState(false);
     const [isChecking, setIsChecking] = useState(false);
     const [isOpeningDashboard, setIsOpeningDashboard] = useState(false);
     const [isLoadingBalance, setIsLoadingBalance] = useState(false);
     const [isRequestingPayout, setIsRequestingPayout] = useState(false);
-    const [isRequestingStandardPayout, setIsRequestingStandardPayout] =
-        useState(false);
-    const [balanceData, setBalanceData] = useState<PayoutBalanceData | null>(
-        null,
-    );
+    const [isRequestingStandardPayout, setIsRequestingStandardPayout] = useState(false);
+    const [balanceData, setBalanceData] = useState<PayoutBalanceData | null>(null);
+
+    // Animated counter for the balance number
+    const balanceSv = useSharedValue(0);
+    const animatedBalanceProps = useAnimatedProps(() => ({
+        defaultValue: `$${balanceSv.value.toFixed(2)}`,
+    }));
+
+    useEffect(() => {
+        if (balanceData !== null) {
+            balanceSv.value = 0;
+            balanceSv.value = withTiming(balanceData.available / 100, {
+                duration: 900,
+                easing: Easing.out(Easing.cubic),
+            });
+        }
+    }, [balanceData?.available]);
 
     const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
-    const createConnectAccount = useAction(
-        api.stripeConnect.createConnectAccount,
-    );
-    const checkOnboardingStatus = useAction(
-        api.stripeConnect.checkOnboardingStatus,
-    );
-    const createDashboardLink = useAction(
-        api.stripeConnect.createDashboardLink,
-    );
+    const createConnectAccount = useAction(api.stripeConnect.createConnectAccount);
+    const checkOnboardingStatus = useAction(api.stripeConnect.checkOnboardingStatus);
+    const createDashboardLink = useAction(api.stripeConnect.createDashboardLink);
     const getPayoutBalance = useAction(api.stripeConnect.getPayoutBalance);
-    const requestInstantPayout = useAction(
-        api.stripeConnect.requestInstantPayout,
-    );
-    const requestStandardPayout = useAction(
-        api.stripeConnect.requestStandardPayout,
-    );
+    const requestInstantPayout = useAction(api.stripeConnect.requestInstantPayout);
+    const requestStandardPayout = useAction(api.stripeConnect.requestStandardPayout);
 
     const showOnboardingStatusAlert = (status: OnboardingStatus) => {
         if (status.onboarded && status.chargesEnabled) {
-            Alert.alert(
-                "Setup Complete",
-                "Your account is ready to accept card payments!",
-            );
+            Alert.alert("Setup Complete", "Your account is ready to accept card payments!");
             return;
         }
-
         if (status.onboarded) {
-            Alert.alert(
-                "Almost There",
-                "Your account is set up but Stripe is still verifying your details. This usually takes a few minutes.",
-            );
+            Alert.alert("Almost There", "Your account is set up but Stripe is still verifying your details. This usually takes a few minutes.");
             return;
         }
-
-        Alert.alert(
-            "Setup Incomplete",
-            "You haven't finished setting up your payout account. Tap 'Continue Setup' to complete it.",
-        );
+        Alert.alert("Setup Incomplete", "You haven't finished setting up your payout account. Tap 'Continue Setup' to complete it.");
     };
 
     const handleSetupPayouts = async () => {
@@ -123,26 +127,14 @@ export default function PaymentsScreen() {
             const result = await createConnectAccount({});
             if (result.url) {
                 await WebBrowser.openBrowserAsync(result.url);
-                // Check status after browser closes
                 setIsChecking(true);
                 let status: OnboardingStatus | null = null;
-                try {
-                    status = await checkOnboardingStatus({});
-                } catch {
-                    // Status check failed silently — the webhook will update the state
-                }
+                try { status = await checkOnboardingStatus({}); } catch { /* webhook will update */ }
                 setIsChecking(false);
-                if (status) {
-                    showOnboardingStatusAlert(status);
-                }
+                if (status) showOnboardingStatusAlert(status);
             }
         } catch (error) {
-            Alert.alert(
-                "Error",
-                error instanceof Error
-                    ? error.message
-                    : "Failed to start payout setup",
-            );
+            Alert.alert("Error", error instanceof Error ? error.message : "Failed to start payout setup");
         }
         setIsSettingUp(false);
     };
@@ -150,74 +142,46 @@ export default function PaymentsScreen() {
     const handleCheckStatus = async () => {
         setIsChecking(true);
         let status: OnboardingStatus | null = null;
-        try {
-            status = await checkOnboardingStatus({});
-        } catch (error) {
-            Alert.alert(
-                "Error",
-                error instanceof Error
-                    ? error.message
-                    : "Failed to check status",
-            );
+        try { status = await checkOnboardingStatus({}); } catch (error) {
+            Alert.alert("Error", error instanceof Error ? error.message : "Failed to check status");
         }
         setIsChecking(false);
-        if (status) {
-            showOnboardingStatusAlert(status);
-        }
+        if (status) showOnboardingStatusAlert(status);
     };
 
     const isReady = connectedAccount?.chargesEnabled;
+    const isOnboarded = connectedAccount?.onboardingComplete;
+    const isLoading = connectedAccount === undefined;
+    const hasNoAccount = connectedAccount === null;
 
     const fetchBalance = useCallback(async () => {
         if (!isReady) return;
         setIsLoadingBalance(true);
         let payoutBalance: PayoutBalanceData | null = null;
-        try {
-            payoutBalance = await getPayoutBalance({});
-        } catch {
-            // Silently fail — balance card just won't show
-        }
+        try { payoutBalance = await getPayoutBalance({}); } catch { /* silently fail */ }
         setIsLoadingBalance(false);
         if (!payoutBalance) return;
-
-        const instantPayoutAmount = sanitizeCurrencyAmount(
-            payoutBalance.instantPayoutAmount,
-        );
-
+        const instantPayoutAmount = sanitizeCurrencyAmount(payoutBalance.instantPayoutAmount);
         setBalanceData({
             available: sanitizeCurrencyAmount(payoutBalance.available),
             pending: sanitizeCurrencyAmount(payoutBalance.pending),
-            instantAvailable: sanitizeCurrencyAmount(
-                payoutBalance.instantAvailable,
-            ),
+            instantAvailable: sanitizeCurrencyAmount(payoutBalance.instantAvailable),
             instantPayoutAmount,
-            instantPayoutFee: sanitizeCurrencyAmount(
-                payoutBalance.instantPayoutFee,
-            ),
+            instantPayoutFee: sanitizeCurrencyAmount(payoutBalance.instantPayoutFee),
             hasInstantPayoutCard: payoutBalance.hasInstantPayoutCard === true,
             hasBankPayoutAccount: payoutBalance.hasBankPayoutAccount === true,
-            instantPayoutsEnabled:
-                payoutBalance.instantPayoutsEnabled === true &&
-                instantPayoutAmount > 0,
+            instantPayoutsEnabled: payoutBalance.instantPayoutsEnabled === true && instantPayoutAmount > 0,
             currency: payoutBalance.currency || "cad",
         });
     }, [isReady, getPayoutBalance]);
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            void fetchBalance();
-        }, 0);
-
-        return () => clearTimeout(timeoutId);
+        const id = setTimeout(() => void fetchBalance(), 0);
+        return () => clearTimeout(id);
     }, [fetchBalance]);
-
-    const formatCurrency = (amount: number) => {
-        return `$${(sanitizeCurrencyAmount(amount) / 100).toFixed(2)}`;
-    };
 
     const handleInstantPayout = async () => {
         if (!balanceData || balanceData.instantPayoutAmount <= 0) return;
-
         Alert.alert(
             "Instant Payout",
             `Cash out to your debit card?\n\nBalance: ${formatCurrency(balanceData.instantAvailable)}\nStripe fee: -${formatCurrency(balanceData.instantPayoutFee)}\nYou'll receive: ${formatCurrency(balanceData.instantPayoutAmount)}`,
@@ -227,32 +191,14 @@ export default function PaymentsScreen() {
                     text: "Cash Out",
                     onPress: async () => {
                         setIsRequestingPayout(true);
-                        let payoutResult: {
-                            amount: number;
-                            fee: number;
-                        } | null = null;
-                        try {
-                            payoutResult = await requestInstantPayout({});
-                        } catch (error) {
-                            Alert.alert(
-                                "Payout Failed",
-                                error instanceof Error
-                                    ? error.message
-                                    : "Failed to create instant payout. Make sure you have a debit card linked to your Stripe account.",
-                            );
+                        let payoutResult: { amount: number; fee: number } | null = null;
+                        try { payoutResult = await requestInstantPayout({}); } catch (error) {
+                            Alert.alert("Payout Failed", error instanceof Error ? error.message : "Failed to create instant payout.");
                         }
                         setIsRequestingPayout(false);
                         if (!payoutResult) return;
-
-                        const feeMessage =
-                            payoutResult.fee > 0
-                                ? ` (Fee: ${formatCurrency(payoutResult.fee)})`
-                                : "";
-
-                        Alert.alert(
-                            "Payout Sent!",
-                            `${formatCurrency(payoutResult.amount)} is on its way to your debit card.${feeMessage}`,
-                        );
+                        const feeMsg = payoutResult.fee > 0 ? ` (Fee: ${formatCurrency(payoutResult.fee)})` : "";
+                        Alert.alert("Payout Sent!", `${formatCurrency(payoutResult.amount)} is on its way to your debit card.${feeMsg}`);
                         void fetchBalance();
                     },
                 },
@@ -261,14 +207,7 @@ export default function PaymentsScreen() {
     };
 
     const handleStandardPayout = async () => {
-        if (
-            !balanceData ||
-            balanceData.available <= 0 ||
-            !balanceData.hasBankPayoutAccount
-        ) {
-            return;
-        }
-
+        if (!balanceData || balanceData.available <= 0 || !balanceData.hasBankPayoutAccount) return;
         Alert.alert(
             "Payout to Bank",
             `Transfer ${formatCurrency(balanceData.available)} to your bank account?\n\nNo fees — funds typically arrive in 1-2 business days.`,
@@ -279,23 +218,12 @@ export default function PaymentsScreen() {
                     onPress: async () => {
                         setIsRequestingStandardPayout(true);
                         let payoutResult: { amount: number } | null = null;
-                        try {
-                            payoutResult = await requestStandardPayout({});
-                        } catch (error) {
-                            Alert.alert(
-                                "Payout Failed",
-                                error instanceof Error
-                                    ? error.message
-                                    : "Failed to create payout.",
-                            );
+                        try { payoutResult = await requestStandardPayout({}); } catch (error) {
+                            Alert.alert("Payout Failed", error instanceof Error ? error.message : "Failed to create payout.");
                         }
                         setIsRequestingStandardPayout(false);
                         if (!payoutResult) return;
-
-                        Alert.alert(
-                            "Payout Initiated",
-                            `${formatCurrency(payoutResult.amount)} will arrive in your bank account in 1-2 business days.`,
-                        );
+                        Alert.alert("Payout Initiated", `${formatCurrency(payoutResult.amount)} will arrive in your bank account in 1-2 business days.`);
                         void fetchBalance();
                     },
                 },
@@ -307,287 +235,150 @@ export default function PaymentsScreen() {
         setIsOpeningDashboard(true);
         try {
             const result = await createDashboardLink({});
-            if (result.url) {
-                await WebBrowser.openBrowserAsync(result.url);
-            }
+            if (result.url) await WebBrowser.openBrowserAsync(result.url);
         } catch (error) {
-            Alert.alert(
-                "Error",
-                error instanceof Error
-                    ? error.message
-                    : "Failed to open dashboard",
-            );
+            Alert.alert("Error", error instanceof Error ? error.message : "Failed to open dashboard");
         }
         setIsOpeningDashboard(false);
     };
 
-    const isOnboarded = connectedAccount?.onboardingComplete;
-    const isLoading = connectedAccount === undefined;
-    const hasNoAccount = connectedAccount === null;
-    const showInstantPayout =
-        !!balanceData?.instantPayoutsEnabled &&
-        (balanceData?.instantPayoutAmount ?? 0) > 0;
-    const showBankTransfer =
-        !!balanceData?.hasBankPayoutAccount && (balanceData?.available ?? 0) > 0;
-    const instantPayoutStatus =
-        balanceData && balanceData.available > 0 && !showInstantPayout
-            ? !balanceData.hasInstantPayoutCard
-                ? {
-                      icon: "CircleAlert" as const,
-                      color: "#f59e0b",
-                      title: "Instant payout unavailable",
-                      message:
-                          "Stripe does not currently show an instant-eligible debit card on this account. Add or replace the payout card in Stripe to enable instant cash out.",
-                  }
-                : balanceData.instantAvailable <= 0
-                  ? {
-                        icon: "Info" as const,
-                        color: NAV_THEME[colorScheme].primary,
-                        title: "No instant-eligible balance yet",
-                        message: `You have ${formatCurrency(balanceData.available)} available for standard payout, but Stripe is currently reporting ${formatCurrency(balanceData.instantAvailable)} as instant-eligible.`,
-                    }
-                  : {
-                        icon: "Info" as const,
-                        color: NAV_THEME[colorScheme].primary,
-                        title: "Instant payout unavailable",
-                        message:
-                            "Your instant-eligible balance is too small to cover Stripe's instant payout fee right now.",
-                    }
-            : null;
-
-    // Derive step completion from actual Stripe account state
     const getStepStatus = (index: number) => {
         if (!connectedAccount) return "pending";
-        // Step 0: Verify identity — done once onboarding is submitted
         if (index === 0) return isOnboarded ? "done" : "pending";
-        // Step 1: Add debit card — done once payouts are enabled
-        if (index === 1) {
-            if (connectedAccount.payoutsEnabled) return "done";
-            return isOnboarded ? "active" : "pending";
-        }
-        // Step 2: Quick review — done once charges are enabled
-        if (index === 2) {
-            if (connectedAccount.chargesEnabled) return "done";
-            if (isOnboarded) return "active";
-            return "pending";
-        }
-        // Step 3: Start getting paid — done once everything is ready
-        if (index === 3) {
-            return connectedAccount.chargesEnabled ? "done" : "pending";
-        }
+        if (index === 1) return connectedAccount.payoutsEnabled ? "done" : isOnboarded ? "active" : "pending";
+        if (index === 2) return connectedAccount.chargesEnabled ? "done" : isOnboarded ? "active" : "pending";
+        if (index === 3) return connectedAccount.chargesEnabled ? "done" : "pending";
         return "pending";
     };
 
+    const showInstantPayout = !!balanceData?.instantPayoutsEnabled && (balanceData?.instantPayoutAmount ?? 0) > 0;
+    const showBankTransfer = !!balanceData?.hasBankPayoutAccount && (balanceData?.available ?? 0) > 0;
+    const availableBalance = balanceData?.available ?? 0;
+    const isEmpty = availableBalance <= 0;
+
+    // ── Render ────────────────────────────────────────────────────
+
     return (
-        <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
+        <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
             {/* Header */}
-            <View className="flex-row items-center px-4 py-3 border-b border-border">
-                <Pressable
-                    onPress={() => router.back()}
-                    className="p-2 -ml-2 rounded-full active:opacity-70">
-                    <Icon
-                        name="ChevronLeft"
-                        size={24}
-                        color={NAV_THEME[colorScheme].primary}
-                    />
+            <View style={styles.header}>
+                <Pressable onPress={() => router.back()} style={styles.backBtn}>
+                    <Icon name="ChevronLeft" size={20} color={BR.ink} />
                 </Pressable>
-                <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
-                    Payments
-                </Text>
+                <BrText weight="bold" style={{ fontSize: 17 }}>Payments</BrText>
+                <View style={styles.stripeBadge}>
+                    <Icon name="ShieldCheck" size={11} color={BR.mintInk} />
+                    <Text style={styles.stripeBadgeText}>Stripe</Text>
+                </View>
             </View>
 
-            {isLoading && (
-                <View className="flex-1 justify-center items-center">
-                    <ActivityIndicator
-                        color={NAV_THEME[colorScheme].primary}
-                        size="large"
-                    />
+            {isLoading ? (
+                <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                    <ActivityIndicator color={BR.orange} size="large" />
                 </View>
-            )}
-
-            {!isLoading && (
+            ) : (
                 <ScrollView
-                    className="flex-1"
-                    contentContainerStyle={{ padding: 16 }}
-                    showsVerticalScrollIndicator={false}>
-                    {/* Card Payments Section */}
-                    <View className="mb-6">
-                        <View className="flex-row gap-3 items-center mb-4">
-                            <View className="justify-center items-center w-10 h-10 rounded-xl bg-purple-500/10">
-                                <Icon
-                                    name="CreditCard"
-                                    size={20}
-                                    color="#a855f7"
-                                />
-                            </View>
-                            <Text className="text-lg font-semibold text-foreground">
-                                Accept Card Payments
-                            </Text>
-                        </View>
+                    style={{ flex: 1 }}
+                    contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 60 }}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {/* Intro */}
+                    <Animated.View entering={FadeInUp.duration(300)} style={{ marginTop: 4 }}>
+                        <Text style={styles.eyebrow}>Get paid back</Text>
+                        <Text style={styles.pageTitle}>
+                            Accept card{" "}
+                            <Text style={styles.pageTitleAccent}>payments.</Text>
+                        </Text>
+                        <Text style={styles.introBody}>
+                            When you're the runner, your squad pays their share through BiteRunr. We deposit it straight to your bank.
+                        </Text>
+                    </Animated.View>
 
-                        {hasNoAccount && (
-                            <View className="p-4 rounded-2xl border border-muted bg-card">
-                                <Text className="mb-1 text-base text-foreground">
-                                    Get paid by your group
-                                </Text>
-                                <Text className="mb-4 text-sm text-muted-foreground">
-                                    Set up takes about 2 minutes. Here's what to
-                                    expect:
-                                </Text>
+                    {/* ── No account: setup CTA ── */}
+                    {hasNoAccount && (
+                        <Animated.View entering={FadeInUp.duration(300).delay(60)} style={{ marginTop: 24 }}>
+                            <View style={styles.setupCard}>
+                                <Text style={styles.setupCardTitle}>Set up in ~2 min</Text>
+                                <Text style={styles.setupCardSub}>Here's what to expect:</Text>
 
-                                <View className="mb-5">
-                                    {ONBOARDING_STEPS.map((step, index) => (
-                                        <View
-                                            key={step.title}
-                                            className="flex-row gap-3 items-start">
-                                            {/* Step indicator line */}
-                                            <View className="items-center w-8">
-                                                <View
-                                                    className="justify-center items-center w-8 h-8 rounded-full"
-                                                    style={{
-                                                        backgroundColor:
-                                                            NAV_THEME[
-                                                                colorScheme
-                                                            ].primary + "15",
-                                                    }}>
-                                                    <Icon
-                                                        name={step.icon}
-                                                        size={16}
-                                                        color={
-                                                            NAV_THEME[
-                                                                colorScheme
-                                                            ].primary
-                                                        }
-                                                    />
-                                                </View>
-                                                {index <
-                                                    ONBOARDING_STEPS.length -
-                                                        1 && (
-                                                    <View
-                                                        className="w-0.5 flex-1 my-1 rounded-full"
-                                                        style={{
-                                                            backgroundColor:
-                                                                NAV_THEME[
-                                                                    colorScheme
-                                                                ].primary +
-                                                                "30",
-                                                            minHeight: 20,
-                                                        }}
-                                                    />
-                                                )}
+                                <View style={{ marginTop: 18, gap: 16 }}>
+                                    {ONBOARDING_STEPS.map((step, i) => (
+                                        <View key={step.title} style={{ flexDirection: "row", alignItems: "flex-start", gap: 14 }}>
+                                            <View style={styles.setupStepIcon}>
+                                                <Icon name={step.icon} size={16} color={BR.orangeDeep} />
                                             </View>
-
-                                            <View className="flex-1 pb-4">
-                                                <Text className="text-sm font-medium text-foreground">
-                                                    {step.title}
-                                                </Text>
-                                                <Text className="text-xs text-muted-foreground mt-0.5">
-                                                    {step.desc}
-                                                </Text>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={styles.setupStepTitle}>{step.title}</Text>
+                                                <Text style={styles.setupStepDesc}>{step.desc}</Text>
                                             </View>
                                         </View>
                                     ))}
                                 </View>
 
-                                <Button
-                                    label="Get Started"
-                                    icon="ArrowRight"
+                                <TouchableOpacity
                                     onPress={handleSetupPayouts}
-                                    loading={isSettingUp}
-                                    color={NAV_THEME[colorScheme].primary}
-                                />
-
-                                <View className="flex-row items-center justify-center gap-1.5 mt-3">
-                                    <Icon
-                                        name="Lock"
-                                        size={12}
-                                        color={NAV_THEME[colorScheme].border}
-                                    />
-                                    <Text className="text-xs text-muted-foreground">
-                                        Secured by Stripe
+                                    disabled={isSettingUp}
+                                    style={[styles.primaryBtn, { marginTop: 22, opacity: isSettingUp ? 0.7 : 1 }]}
+                                    activeOpacity={0.85}
+                                >
+                                    {isSettingUp
+                                        ? <ActivityIndicator color="#fff" size="small" />
+                                        : <Icon name="ArrowRight" size={18} color="#fff" />}
+                                    <Text style={styles.primaryBtnText}>
+                                        {isSettingUp ? "Opening Stripe…" : "Get started"}
                                     </Text>
+                                </TouchableOpacity>
+
+                                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 12 }}>
+                                    <Icon name="Lock" size={11} color={BR.ink3} />
+                                    <Text style={{ fontSize: 11, color: BR.ink3, fontFamily: BR_FONT.mono }}>Secured by Stripe</Text>
                                 </View>
                             </View>
-                        )}
+                        </Animated.View>
+                    )}
 
-                        {connectedAccount && !isReady && (
-                            <View className="p-4 rounded-2xl border border-muted bg-card">
-                                <View className="flex-row gap-2 items-center mb-1">
-                                    <Icon
-                                        name={
-                                            isOnboarded
-                                                ? "Clock"
-                                                : "CircleAlert"
-                                        }
-                                        size={20}
-                                        color="#f59e0b"
-                                    />
-                                    <Text
-                                        className="text-base font-medium"
-                                        style={{ color: "#f59e0b" }}>
-                                        {isOnboarded
-                                            ? "Verification in progress"
-                                            : "Almost there"}
+                    {/* ── Pending: progress stepper ── */}
+                    {connectedAccount && !isReady && (
+                        <Animated.View entering={FadeInUp.duration(300).delay(60)} style={{ marginTop: 24 }}>
+                            <View style={styles.setupCard}>
+                                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                                    <Icon name={isOnboarded ? "Clock" : "CircleAlert"} size={18} color={BR.yolk} />
+                                    <Text style={[styles.setupCardTitle, { color: "#7A4A20" }]}>
+                                        {isOnboarded ? "Verification in progress" : "Almost there"}
                                     </Text>
                                 </View>
-                                <Text className="mb-4 text-sm text-muted-foreground">
+                                <Text style={styles.setupCardSub}>
                                     {isOnboarded
                                         ? "Stripe is reviewing your details. This usually takes just a few minutes — check back shortly."
                                         : "You're almost done! Finish the last few steps to start accepting card payments."}
                                 </Text>
 
-                                {/* Progress steps */}
-                                <View className="mb-4">
-                                    {ONBOARDING_STEPS.map((step, index) => {
-                                        const status = getStepStatus(index);
+                                <View style={{ marginTop: 18, gap: 10 }}>
+                                    {ONBOARDING_STEPS.map((step, i) => {
+                                        const status = getStepStatus(i);
                                         const isDone = status === "done";
                                         const isActive = status === "active";
-
                                         return (
                                             <View
                                                 key={step.title}
-                                                className="flex-row gap-3 items-center"
-                                                style={{
-                                                    paddingVertical: 6,
-                                                    opacity:
-                                                        isDone || isActive
-                                                            ? 1
-                                                            : 0.4,
-                                                }}>
-                                                <View
-                                                    className="justify-center items-center w-6 h-6 rounded-full"
-                                                    style={{
-                                                        backgroundColor: isDone
-                                                            ? "#22c55e20"
-                                                            : isActive
-                                                              ? "#f59e0b20"
-                                                              : NAV_THEME[
-                                                                    colorScheme
-                                                                ].primary +
-                                                                "10",
-                                                    }}>
+                                                style={[styles.progressStep, { opacity: isDone || isActive ? 1 : 0.4 }]}
+                                            >
+                                                <View style={[
+                                                    styles.progressStepIcon,
+                                                    isDone && { backgroundColor: BR.mintSoft },
+                                                    isActive && { backgroundColor: BR.yolkSoft },
+                                                ]}>
                                                     <Icon
-                                                        name={
-                                                            isDone
-                                                                ? "Check"
-                                                                : isActive
-                                                                  ? "LoaderCircle"
-                                                                  : step.icon
-                                                        }
+                                                        name={isDone ? "Check" : isActive ? "LoaderCircle" : step.icon}
                                                         size={13}
-                                                        color={
-                                                            isDone
-                                                                ? "#22c55e"
-                                                                : isActive
-                                                                  ? "#f59e0b"
-                                                                  : NAV_THEME[
-                                                                        colorScheme
-                                                                    ].primary
-                                                        }
+                                                        color={isDone ? BR.mint : isActive ? BR.yolk : BR.ink3}
+                                                        strokeWidth={isDone ? 3 : 2}
                                                     />
                                                 </View>
-                                                <Text
-                                                    className={`text-sm ${isDone ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                                                <Text style={[
+                                                    styles.progressStepText,
+                                                    isDone && { textDecorationLine: "line-through", color: BR.ink3 },
+                                                ]}>
                                                     {step.title}
                                                 </Text>
                                             </View>
@@ -595,319 +386,594 @@ export default function PaymentsScreen() {
                                     })}
                                 </View>
 
-                                <View className="gap-3">
+                                <View style={{ gap: 10, marginTop: 20 }}>
                                     {!isOnboarded && (
-                                        <Button
-                                            label="Continue Setup"
-                                            icon="ArrowRight"
+                                        <TouchableOpacity
                                             onPress={handleSetupPayouts}
-                                            loading={isSettingUp}
-                                            color={
-                                                NAV_THEME[colorScheme].primary
-                                            }
-                                        />
+                                            disabled={isSettingUp}
+                                            style={[styles.primaryBtn, { opacity: isSettingUp ? 0.7 : 1 }]}
+                                            activeOpacity={0.85}
+                                        >
+                                            {isSettingUp
+                                                ? <ActivityIndicator color="#fff" size="small" />
+                                                : <Icon name="ArrowRight" size={18} color="#fff" />}
+                                            <Text style={styles.primaryBtnText}>
+                                                {isSettingUp ? "Opening Stripe…" : "Continue setup"}
+                                            </Text>
+                                        </TouchableOpacity>
                                     )}
-                                    <Button
-                                        label="Check Status"
-                                        icon="RefreshCw"
+                                    <TouchableOpacity
                                         onPress={handleCheckStatus}
-                                        loading={isChecking}
-                                        color={NAV_THEME[colorScheme].border}
-                                    />
+                                        disabled={isChecking}
+                                        style={[styles.ghostBtn, { opacity: isChecking ? 0.7 : 1 }]}
+                                        activeOpacity={0.85}
+                                    >
+                                        {isChecking
+                                            ? <ActivityIndicator color={BR.ink} size="small" />
+                                            : <Icon name="RefreshCw" size={16} color={BR.ink} />}
+                                        <Text style={styles.ghostBtnText}>
+                                            {isChecking ? "Checking…" : "Check status"}
+                                        </Text>
+                                    </TouchableOpacity>
                                 </View>
                             </View>
-                        )}
+                        </Animated.View>
+                    )}
 
-                        {/* Balance — hero section when ready */}
-                        {connectedAccount && isReady && (
-                            <View className="p-5 rounded-2xl border border-muted bg-card">
-                                <View className="flex-row gap-3 items-center mb-4">
-                                    <View className="justify-center items-center w-10 h-10 rounded-xl bg-green-500/10">
-                                        <Icon
-                                            name="Wallet"
-                                            size={20}
-                                            color="#22c55e"
-                                        />
+                    {/* ── Ready: balance hero ── */}
+                    {isReady && (
+                        <>
+                            <Animated.View entering={FadeInUp.duration(300).delay(60)} style={{ marginTop: 24 }}>
+                                <View style={styles.balanceCard}>
+                                    {/* Decorative $ watermark */}
+                                    <Text style={styles.balanceWatermark} aria-hidden>$</Text>
+
+                                    {/* Active badge */}
+                                    <View style={styles.activeBadge}>
+                                        <View style={styles.activeDot} />
+                                        <Text style={styles.activeBadgeText}>Card payments active</Text>
                                     </View>
-                                    <Text className="text-lg font-semibold text-foreground">
-                                        Your Balance
-                                    </Text>
-                                </View>
 
-                                {isLoadingBalance && !balanceData && (
-                                    <View className="items-center py-6">
-                                        <ActivityIndicator
-                                            color={
-                                                NAV_THEME[colorScheme].primary
-                                            }
+                                    <View style={{ marginTop: 18 }}>
+                                        <Text style={styles.balanceEyebrow}>Available balance</Text>
+                                        <AnimatedTextInput
+                                            animatedProps={animatedBalanceProps}
+                                            editable={false}
+                                            style={styles.balanceAmount}
                                         />
+                                        <Text style={styles.balanceCurrency}>
+                                            {balanceData?.currency?.toUpperCase() ?? "USD"} · synced with Stripe
+                                        </Text>
                                     </View>
-                                )}
 
-                                {balanceData && (
-                                    <View>
-                                        <Text className="mb-1 text-3xl font-bold text-foreground">
-                                            {formatCurrency(
-                                                balanceData.available,
+                                    {balanceData && !isEmpty && (
+                                        <>
+                                            {balanceData.pending > 0 && (
+                                                <Text style={styles.pendingNote}>
+                                                    {formatCurrency(balanceData.pending)} pending
+                                                </Text>
                                             )}
-                                        </Text>
-                                        <Text className="mb-4 text-sm text-muted-foreground">
-                                            Available
-                                        </Text>
-
-                                        {balanceData.pending > 0 && (
-                                            <View className="flex-row gap-2 items-center px-3 py-2 mb-4 rounded-xl bg-muted">
-                                                <Icon
-                                                    name="Clock"
-                                                    size={14}
-                                                    color={
-                                                        NAV_THEME[colorScheme]
-                                                            .text
-                                                    }
-                                                />
-                                                <Text className="text-sm text-foreground">
-                                                    {formatCurrency(
-                                                        balanceData.pending,
-                                                    )}{" "}
-                                                    pending
-                                                </Text>
-                                            </View>
-                                        )}
-
-                                        {balanceData.available > 0 && (
-                                            <View className="mb-4 gap-2">
-                                                <View className="flex-row items-center justify-between px-3 py-2 rounded-xl bg-muted">
-                                                    <Text className="text-sm text-muted-foreground">
-                                                        Instant-eligible now
-                                                    </Text>
-                                                    <Text className="text-sm font-medium text-foreground">
-                                                        {balanceData.hasInstantPayoutCard
-                                                            ? formatCurrency(
-                                                                  balanceData.instantAvailable,
-                                                              )
-                                                            : "No eligible card"}
-                                                    </Text>
-                                                </View>
-
-                                                {instantPayoutStatus && (
-                                                    <View className="flex-row gap-2 items-start px-3 py-2 rounded-xl border border-muted bg-muted">
-                                                        <Icon
-                                                            name={
-                                                                instantPayoutStatus.icon
-                                                            }
-                                                            size={16}
-                                                            color={
-                                                                instantPayoutStatus.color
-                                                            }
-                                                        />
-                                                        <View className="flex-1">
-                                                            <Text
-                                                                className="text-sm font-medium"
-                                                                style={{
-                                                                    color: instantPayoutStatus.color,
-                                                                }}>
-                                                                {
-                                                                    instantPayoutStatus.title
-                                                                }
-                                                            </Text>
-                                                            <Text className="mt-0.5 text-xs text-muted-foreground">
-                                                                {
-                                                                    instantPayoutStatus.message
-                                                                }
-                                                            </Text>
-                                                        </View>
-                                                    </View>
-                                                )}
-                                            </View>
-                                        )}
-
-                                        {showInstantPayout &&
-                                        showBankTransfer ? (
-                                            <View className="gap-2">
-                                                <Button
-                                                    label={`Instant Payout: ${formatCurrency(balanceData.instantPayoutAmount)}`}
-                                                    icon="Zap"
-                                                    onPress={
-                                                        handleInstantPayout
-                                                    }
-                                                    loading={isRequestingPayout}
-                                                    color="#22c55e"
-                                                />
-                                                <Button
-                                                    label={`Bank Transfer: ${formatCurrency(balanceData.available)}`}
-                                                    icon="Building"
-                                                    variant="outline"
-                                                    onPress={
-                                                        handleStandardPayout
-                                                    }
-                                                    loading={
-                                                        isRequestingStandardPayout
-                                                    }
-                                                    color={
-                                                        NAV_THEME[colorScheme]
-                                                            .primary
-                                                    }
-                                                />
-                                                <Text className="text-xs text-center text-muted-foreground">
-                                                    Bank transfers are free and
-                                                    arrive in 1-2 business days.
-                                                </Text>
-                                            </View>
-                                        ) : showInstantPayout ? (
-                                            <View className="gap-2">
-                                                <Button
-                                                    label={`Instant Payout: ${formatCurrency(balanceData.instantPayoutAmount)}`}
-                                                    icon="Zap"
-                                                    onPress={
-                                                        handleInstantPayout
-                                                    }
-                                                    loading={isRequestingPayout}
-                                                    color="#22c55e"
-                                                />
-                                                <Text className="text-xs text-center text-muted-foreground">
-                                                    Instant payouts go to your
-                                                    debit card. Add a bank
-                                                    account in Stripe if you
-                                                    also want free standard
-                                                    transfers.
-                                                </Text>
-                                            </View>
-                                        ) : showBankTransfer ? (
-                                            <View className="gap-2">
-                                                <Button
-                                                    label={`Payout to Bank — ${formatCurrency(balanceData.available)}`}
-                                                    icon="Building"
-                                                    onPress={
-                                                        handleStandardPayout
-                                                    }
-                                                    loading={
-                                                        isRequestingStandardPayout
-                                                    }
-                                                    color="#22c55e"
-                                                />
-                                                <Text className="text-xs text-center text-muted-foreground">
-                                                    No fees — arrives in 1-2
-                                                    business days. Instant
-                                                    payout appears separately
-                                                    when Stripe reports an
-                                                    instant-eligible balance.
-                                                </Text>
-                                            </View>
-                                        ) : balanceData.available > 0 ? (
-                                            <View>
-                                                <Text className="text-xs text-center text-muted-foreground">
-                                                    {balanceData.hasInstantPayoutCard
-                                                        ? "Instant payout will appear here once Stripe marks part of this balance as instant-eligible."
-                                                        : "Add a bank account or an instant-eligible debit card in Stripe to cash out your balance."}
-                                                </Text>
-                                            </View>
-                                        ) : (
-                                            <View>
-                                                {balanceData.pending > 0 ? (
-                                                    <Text className="text-xs text-center text-muted-foreground">
-                                                        Funds are pending and
-                                                        typically become
-                                                        available in 1-2
-                                                        business days.
-                                                    </Text>
-                                                ) : (
-                                                    <Text className="text-xs text-center text-muted-foreground">
-                                                        No balance yet. Funds
-                                                        will appear here after
-                                                        order members pay.
-                                                    </Text>
-                                                )}
-                                            </View>
-                                        )}
-                                    </View>
-                                )}
-                            </View>
-                        )}
-
-                        {/* Card payments status + dashboard button */}
-                        {connectedAccount && isReady && (
-                            <View className="p-4 mt-3 rounded-2xl border border-muted bg-card">
-                                <View className="flex-row gap-2 items-center mb-3">
-                                    <Icon
-                                        name="CircleCheck"
-                                        size={16}
-                                        color="#22c55e"
-                                    />
-                                    <Text className="text-sm text-muted-foreground">
-                                        Card payments active
-                                    </Text>
+                                            <Text style={styles.payoutNote}>
+                                                Next payout · <Text style={{ color: BR.ink }}>Tomorrow</Text>
+                                            </Text>
+                                        </>
+                                    )}
                                 </View>
-                                <Button
-                                    label="View Earnings & Payouts"
-                                    icon="ExternalLink"
-                                    variant="outline"
+                            </Animated.View>
+
+                            {/* Payout buttons */}
+                            {balanceData && !isEmpty && (
+                                <Animated.View entering={FadeInUp.duration(300).delay(80)} style={{ gap: 10, marginTop: 12 }}>
+                                    {showInstantPayout && (
+                                        <TouchableOpacity
+                                            onPress={handleInstantPayout}
+                                            disabled={isRequestingPayout}
+                                            style={[styles.primaryBtn, { backgroundColor: BR.mint, opacity: isRequestingPayout ? 0.7 : 1 }]}
+                                            activeOpacity={0.85}
+                                        >
+                                            {isRequestingPayout
+                                                ? <ActivityIndicator color="#fff" size="small" />
+                                                : <Icon name="Zap" size={18} color="#fff" />}
+                                            <Text style={styles.primaryBtnText}>
+                                                Instant payout · {formatCurrency(balanceData.instantPayoutAmount)}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    {showBankTransfer && (
+                                        <TouchableOpacity
+                                            onPress={handleStandardPayout}
+                                            disabled={isRequestingStandardPayout}
+                                            style={[styles.ghostBtn, { opacity: isRequestingStandardPayout ? 0.7 : 1 }]}
+                                            activeOpacity={0.85}
+                                        >
+                                            {isRequestingStandardPayout
+                                                ? <ActivityIndicator color={BR.ink} size="small" />
+                                                : <Icon name="Building" size={16} color={BR.ink} />}
+                                            <Text style={styles.ghostBtnText}>
+                                                Bank transfer · {formatCurrency(balanceData.available)}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </Animated.View>
+                            )}
+
+                            {/* Stripe dashboard button */}
+                            <Animated.View entering={FadeInUp.duration(300).delay(100)} style={{ marginTop: 12 }}>
+                                <TouchableOpacity
                                     onPress={handleOpenDashboard}
-                                    loading={isOpeningDashboard}
-                                    color={NAV_THEME[colorScheme].primary}
-                                />
-                            </View>
-                        )}
-                    </View>
+                                    disabled={isOpeningDashboard}
+                                    style={[styles.dashboardBtn, { opacity: isOpeningDashboard ? 0.7 : 1 }]}
+                                    activeOpacity={0.85}
+                                >
+                                    <View style={styles.dashboardBtnIcon}>
+                                        <Icon name="TrendingUp" size={18} color="#fff" />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={styles.dashboardBtnTitle}>View earnings & payouts</Text>
+                                        <Text style={styles.dashboardBtnSub}>Opens Stripe dashboard</Text>
+                                    </View>
+                                    {isOpeningDashboard
+                                        ? <ActivityIndicator color="#fff" size="small" />
+                                        : <Icon name="ExternalLink" size={16} color="rgba(255,255,255,0.6)" />}
+                                </TouchableOpacity>
+                            </Animated.View>
 
-                    {/* How it Works — only show when not yet onboarded */}
-                    {connectedAccount && isReady && (
-                        <View className="mt-2 mb-6">
-                            <View className="flex-row gap-3 items-center mb-4">
-                                <View className="justify-center items-center w-10 h-10 rounded-xl bg-blue-500/10">
-                                    <Icon
-                                        name="Info"
-                                        size={20}
-                                        color="#3b82f6"
-                                    />
+                            {/* Stats grid */}
+                            <Animated.View
+                                entering={FadeInUp.duration(300).delay(120)}
+                                style={{ flexDirection: "row", gap: 10, marginTop: 12 }}
+                            >
+                                <View style={[styles.statCard, { flex: 1 }]}>
+                                    <Text style={styles.statLabel}>This month</Text>
+                                    <Text style={styles.statValue}>$0.00</Text>
+                                    <Text style={styles.statMeta}>0 runs</Text>
                                 </View>
-                                <Text className="text-lg font-semibold text-foreground">
-                                    How it Works
-                                </Text>
-                            </View>
+                                <View style={[styles.statCard, { flex: 1 }]}>
+                                    <Text style={styles.statLabel}>All time</Text>
+                                    <Text style={styles.statValue}>$0.00</Text>
+                                    <Text style={styles.statMeta}>0 payouts</Text>
+                                </View>
+                            </Animated.View>
+                        </>
+                    )}
 
-                            <View className="gap-3">
-                                {[
-                                    {
-                                        icon: "ShoppingBag" as const,
-                                        title: "You run the order",
-                                        desc: "Pick up food for your group as the runner.",
-                                    },
-                                    {
-                                        icon: "CreditCard" as const,
-                                        title: "Members pay you",
-                                        desc: "Each member can pay their share with a credit or debit card.",
-                                    },
-                                    {
-                                        icon: "Banknote" as const,
-                                        title: "You get paid",
-                                        desc: "Funds are deposited to your bank account.",
-                                    },
-                                ].map((item) => (
-                                    <View
-                                        key={item.title}
-                                        className="flex-row gap-3 items-start p-3 rounded-xl border border-muted bg-card">
-                                        <Icon
-                                            name={item.icon}
-                                            size={20}
-                                            color={
-                                                NAV_THEME[colorScheme].primary
-                                            }
-                                        />
-                                        <View className="flex-1">
-                                            <Text className="text-sm font-medium text-foreground">
-                                                {item.title}
-                                            </Text>
-                                            <Text className="text-sm text-muted-foreground">
-                                                {item.desc}
-                                            </Text>
+                    {/* Section divider */}
+                    <Animated.View
+                        entering={FadeInUp.duration(300).delay(160)}
+                        style={styles.sectionDivider}
+                    >
+                        <Text style={styles.sectionDividerEmoji}>💸</Text>
+                    </Animated.View>
+
+                    {/* How it works */}
+                    <Animated.View entering={FadeInUp.duration(300).delay(180)}>
+                        <Text style={styles.eyebrow}>
+                            How it works{" "}
+                            <Text style={{ color: BR.ink3, textTransform: "none", letterSpacing: 0 }}>· three steps</Text>
+                        </Text>
+
+                        <View style={{ gap: 10, marginTop: 12 }}>
+                            {HOW_IT_WORKS.map((step, i) => (
+                                <View key={step.title} style={styles.howItWorksCard}>
+                                    <View style={{ position: "relative", flexShrink: 0 }}>
+                                        <View style={[styles.howItWorksIcon, { backgroundColor: step.color, shadowColor: step.color }]}>
+                                            <Icon name={step.icon} size={20} color="#fff" />
+                                        </View>
+                                        <View style={styles.howItWorksIndex}>
+                                            <Text style={styles.howItWorksIndexText}>{i + 1}</Text>
                                         </View>
                                     </View>
-                                ))}
-                            </View>
+                                    <View style={{ flex: 1, paddingTop: 2 }}>
+                                        <Text style={styles.howItWorksTitle}>{step.title}</Text>
+                                        <Text style={styles.howItWorksSub}>{step.sub}</Text>
+                                    </View>
+                                </View>
+                            ))}
                         </View>
-                    )}
+                    </Animated.View>
+
+                    {/* Footer note */}
+                    <Animated.View entering={FadeInUp.duration(300).delay(220)} style={styles.footerNote}>
+                        <Icon name="ShieldCheck" size={14} color={BR.ink3} />
+                        <Text style={styles.footerNoteText}>
+                            Payments are processed by Stripe. BiteRunr never stores your card or bank details.
+                        </Text>
+                    </Animated.View>
                 </ScrollView>
             )}
         </SafeAreaView>
     );
 }
+
+// ── Styles ───────────────────────────────────────────────────────
+
+const styles = StyleSheet.create({
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: 18,
+        paddingTop: 8,
+        paddingBottom: 12,
+    },
+    backBtn: {
+        width: 38,
+        height: 38,
+        borderRadius: 999,
+        backgroundColor: BR.paper2,
+        borderWidth: 1,
+        borderColor: BR.line,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    stripeBadge: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 5,
+        paddingHorizontal: 12,
+        paddingVertical: 7,
+        borderRadius: 999,
+        backgroundColor: BR.mintSoft,
+    },
+    stripeBadgeText: {
+        fontSize: 12,
+        fontWeight: "700",
+        color: BR.mintInk,
+    },
+    eyebrow: {
+        fontSize: 11,
+        fontFamily: BR_FONT.mono,
+        color: BR.ink3,
+        letterSpacing: 1.2,
+        textTransform: "uppercase",
+    },
+    pageTitle: {
+        fontFamily: BR_FONT.displayExtraBold,
+        fontSize: 36,
+        color: BR.ink,
+        marginTop: 6,
+        lineHeight: 42,
+    },
+    pageTitleAccent: {
+        color: BR.orange,
+        fontStyle: "italic",
+        fontFamily: BR_FONT.displayExtraBold,
+    },
+    introBody: {
+        fontSize: 14,
+        color: BR.ink2,
+        marginTop: 10,
+        lineHeight: 21,
+    },
+    // Setup card (no account + pending)
+    setupCard: {
+        backgroundColor: BR.card,
+        borderRadius: BR_RADIUS.lg,
+        borderWidth: 1,
+        borderColor: BR.line,
+        padding: 20,
+    },
+    setupCardTitle: {
+        fontFamily: BR_FONT.display,
+        fontSize: 18,
+        fontWeight: "700",
+        color: BR.ink,
+    },
+    setupCardSub: {
+        fontSize: 13,
+        color: BR.ink3,
+        marginTop: 4,
+        lineHeight: 19,
+    },
+    setupStepIcon: {
+        width: 36,
+        height: 36,
+        borderRadius: 12,
+        backgroundColor: BR.orangeTint,
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+    },
+    setupStepTitle: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: BR.ink,
+    },
+    setupStepDesc: {
+        fontSize: 12,
+        color: BR.ink3,
+        marginTop: 2,
+        lineHeight: 17,
+    },
+    progressStep: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+    },
+    progressStepIcon: {
+        width: 28,
+        height: 28,
+        borderRadius: 999,
+        backgroundColor: BR.paper2,
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+    },
+    progressStepText: {
+        fontSize: 14,
+        color: BR.ink,
+        fontWeight: "500",
+    },
+    // Balance card
+    balanceCard: {
+        backgroundColor: BR.orangeTint,
+        borderRadius: BR_RADIUS.lg,
+        borderWidth: 1,
+        borderColor: "rgba(255,106,31,0.18)",
+        padding: 22,
+        overflow: "hidden",
+        position: "relative",
+        minHeight: 220,
+    },
+    balanceWatermark: {
+        position: "absolute",
+        right: -10,
+        bottom: -28,
+        fontFamily: BR_FONT.displayExtraBold,
+        fontStyle: "italic",
+        fontSize: 180,
+        lineHeight: 180,
+        color: "rgba(255,106,31,0.10)",
+        letterSpacing: -10,
+        pointerEvents: "none",
+    } as any,
+    activeBadge: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+        alignSelf: "flex-start",
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 999,
+        backgroundColor: "rgba(46,190,123,0.15)",
+    },
+    activeDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 999,
+        backgroundColor: BR.mint,
+    },
+    activeBadgeText: {
+        fontSize: 11,
+        fontWeight: "700",
+        letterSpacing: 0.8,
+        textTransform: "uppercase",
+        color: BR.mintInk,
+    },
+    balanceEyebrow: {
+        fontSize: 11,
+        fontFamily: BR_FONT.mono,
+        letterSpacing: 0.8,
+        color: BR.orangeDeep,
+        textTransform: "uppercase",
+    },
+    balanceAmount: {
+        fontFamily: BR_FONT.displayExtraBold,
+        fontSize: 52,
+        lineHeight: 60,
+        color: BR.ink,
+        marginTop: 4,
+        letterSpacing: -1,
+        // TextInput resets
+        padding: 0,
+        borderWidth: 0,
+        backgroundColor: "transparent",
+    },
+    balanceCurrency: {
+        fontSize: 11,
+        fontFamily: BR_FONT.mono,
+        color: BR.ink3,
+        marginTop: 4,
+        letterSpacing: 0.5,
+    },
+    emptyBalanceNote: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: 8,
+        marginTop: 16,
+        padding: 12,
+        borderRadius: 14,
+        backgroundColor: "rgba(255,255,255,0.7)",
+        borderWidth: 1,
+        borderStyle: "dashed",
+        borderColor: "rgba(26,20,16,0.16)",
+    },
+    emptyBalanceText: {
+        flex: 1,
+        fontSize: 12,
+        color: BR.ink2,
+        lineHeight: 18,
+    },
+    pendingNote: {
+        marginTop: 10,
+        fontSize: 12,
+        fontFamily: BR_FONT.mono,
+        color: BR.ink3,
+    },
+    payoutNote: {
+        marginTop: 6,
+        fontSize: 12,
+        fontFamily: BR_FONT.mono,
+        color: BR.ink3,
+    },
+    // Buttons
+    primaryBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        paddingVertical: 16,
+        borderRadius: BR_RADIUS.md,
+        backgroundColor: BR.orange,
+    },
+    primaryBtnText: {
+        fontSize: 16,
+        fontWeight: "700",
+        color: "#fff",
+    },
+    ghostBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        paddingVertical: 15,
+        borderRadius: BR_RADIUS.md,
+        backgroundColor: BR.card,
+        borderWidth: 1,
+        borderColor: BR.line2,
+    },
+    ghostBtnText: {
+        fontSize: 15,
+        fontWeight: "600",
+        color: BR.ink,
+    },
+    dashboardBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+        padding: 16,
+        borderRadius: BR_RADIUS.lg,
+        backgroundColor: BR.ink,
+    },
+    dashboardBtnIcon: {
+        width: 38,
+        height: 38,
+        borderRadius: 12,
+        backgroundColor: "rgba(255,255,255,0.1)",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    dashboardBtnTitle: {
+        fontSize: 14,
+        fontWeight: "700",
+        color: "#fff",
+    },
+    dashboardBtnSub: {
+        fontSize: 11,
+        color: "rgba(255,255,255,0.55)",
+        marginTop: 1,
+        fontFamily: BR_FONT.mono,
+    },
+    // Stats grid
+    statCard: {
+        backgroundColor: BR.card,
+        borderRadius: BR_RADIUS.md,
+        borderWidth: 1,
+        borderColor: BR.line,
+        padding: 14,
+    },
+    statLabel: {
+        fontSize: 10,
+        fontFamily: BR_FONT.mono,
+        color: BR.ink3,
+        letterSpacing: 1.2,
+        textTransform: "uppercase",
+    },
+    statValue: {
+        fontFamily: BR_FONT.displayExtraBold,
+        fontSize: 24,
+        color: BR.ink,
+        marginTop: 6,
+    },
+    statMeta: {
+        fontSize: 11,
+        color: BR.ink3,
+        marginTop: 2,
+        fontFamily: BR_FONT.mono,
+    },
+    // Section divider
+    sectionDivider: {
+        marginTop: 30,
+        marginBottom: 22,
+        marginHorizontal: -18,
+        paddingTop: 22,
+        borderTopWidth: 1,
+        borderStyle: "dashed",
+        borderColor: BR.line2,
+        alignItems: "center",
+    },
+    sectionDividerEmoji: {
+        position: "absolute",
+        top: -14,
+        fontSize: 22,
+        backgroundColor: BR.paper,
+        paddingHorizontal: 8,
+    },
+    // How it works
+    howItWorksCard: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: 14,
+        padding: 14,
+        backgroundColor: BR.card,
+        borderRadius: BR_RADIUS.md,
+        borderWidth: 1,
+        borderColor: BR.line,
+    },
+    howItWorksIcon: {
+        width: 44,
+        height: 44,
+        borderRadius: 14,
+        alignItems: "center",
+        justifyContent: "center",
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.35,
+        shadowRadius: 10,
+        elevation: 4,
+    },
+    howItWorksIndex: {
+        position: "absolute",
+        top: -6,
+        right: -6,
+        width: 22,
+        height: 22,
+        borderRadius: 999,
+        backgroundColor: "#fff",
+        borderWidth: 1.5,
+        borderColor: BR.ink,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    howItWorksIndexText: {
+        fontFamily: BR_FONT.monoBold,
+        fontSize: 11,
+        color: BR.ink,
+    },
+    howItWorksTitle: {
+        fontSize: 14,
+        fontWeight: "700",
+        color: BR.ink,
+    },
+    howItWorksSub: {
+        fontSize: 12.5,
+        color: BR.ink2,
+        marginTop: 3,
+        lineHeight: 18,
+    },
+    // Footer note
+    footerNote: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: 10,
+        marginTop: 22,
+        padding: 14,
+        borderRadius: BR_RADIUS.md,
+        backgroundColor: BR.paper2,
+    },
+    footerNoteText: {
+        flex: 1,
+        fontSize: 11,
+        color: BR.ink3,
+        lineHeight: 17,
+    },
+});

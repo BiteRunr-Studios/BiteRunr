@@ -15,7 +15,7 @@ import { api } from "@/convex/_generated/api";
 import { router } from "expo-router";
 import Icon from "@/components/common/icon";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BrAvatar, BrSticker, BrText } from "@/components/br";
 import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
 import Animated, { FadeInUp } from "react-native-reanimated";
@@ -149,9 +149,7 @@ export default function AccountTab() {
 
   return (
     <ErrorBoundary>
-      <View
-        style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}
-      >
+      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
         {/* Top bar */}
         <View style={styles.topBar}>
           <Image
@@ -313,7 +311,7 @@ export default function AccountTab() {
             </View>
           )}
         </ScrollView>
-      </View>
+      </SafeAreaView>
     </ErrorBoundary>
   );
 }
