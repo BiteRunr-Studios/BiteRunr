@@ -38,11 +38,18 @@ type FilterType = "all" | "active" | "completed" | "needs_payment";
 type TimeSection = "Today" | "This Week" | "Earlier";
 
 const FILTERS: { key: FilterType; label: string }[] = [
-  { key: "all", label: "All" },
+  { key: "all", label: "History" },
   { key: "active", label: "Live" },
   { key: "completed", label: "Settled" },
   { key: "needs_payment", label: "Needs Payment" },
 ];
+
+const END_OF_LABELS: Record<FilterType, string> = {
+  all: "history",
+  active: "live",
+  completed: "settled",
+  needs_payment: "needs payment",
+};
 
 function groupByTime<T extends { order: { createdAt: number } }>(
   items: T[],
@@ -432,7 +439,7 @@ export default function GroupsTab() {
               entering={FadeInUp.duration(300)}
               style={styles.titleRow}
             >
-              <View>
+              <View style={styles.titleText}>
                 <BrText variant="eyebrow">
                   {allCount} {allCount === 1 ? "run" : "runs"} total
                 </BrText>
@@ -443,6 +450,14 @@ export default function GroupsTab() {
                   </BrText>
                 </BrText>
               </View>
+              <AnimatedPressable
+                scale={0.93}
+                onPress={handleCreateOrder}
+                style={styles.newRunChip}
+              >
+                <Icon name="Plus" size={14} color="#fff" strokeWidth={3} />
+                <Text style={styles.newRunChipText}>New run</Text>
+              </AnimatedPressable>
             </Animated.View>
 
             {/* Filter row */}
@@ -494,16 +509,6 @@ export default function GroupsTab() {
                     </AnimatedPressable>
                   );
                 })}
-
-                {/* New run pill */}
-                <AnimatedPressable
-                  scale={0.93}
-                  onPress={handleCreateOrder}
-                  style={styles.newRunChip}
-                >
-                  <Icon name="Plus" size={14} color="#fff" strokeWidth={3} />
-                  <Text style={styles.newRunChipText}>New run</Text>
-                </AnimatedPressable>
               </ScrollView>
             </Animated.View>
 
@@ -652,8 +657,7 @@ export default function GroupsTab() {
 
                     {/* End of list */}
                     <Text style={styles.endOfList}>
-                      · end of{" "}
-                      {activeFilter === "all" ? "history" : activeFilter} ·
+                      · end of {END_OF_LABELS[activeFilter]} ·
                     </Text>
                   </View>
                 )}
@@ -713,10 +717,15 @@ const styles = StyleSheet.create({
   },
   titleRow: {
     flexDirection: "row",
-    alignItems: "flex-end",
+    alignItems: "center",
     justifyContent: "space-between",
+    gap: 12,
     marginTop: 10,
     marginBottom: 4,
+  },
+  titleText: {
+    flex: 1,
+    minWidth: 0,
   },
   filterRow: {
     flexDirection: "row",
@@ -755,7 +764,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 999,
     backgroundColor: BR.orange,
-    marginLeft: "auto",
+    flexShrink: 0,
     shadowColor: BR.orange,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.18,
