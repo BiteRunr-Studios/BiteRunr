@@ -211,9 +211,9 @@ export default function AccountTab() {
 
               {/* Stats row */}
               <View style={styles.statsRow}>
-                <StatCard label="Runs" value={runsCount} sub="all time" />
-                <StatCard label="Squad" value={friendsCount} sub="friends" />
-                <StatCard label="Items" value={itemsCount} sub="ordered" />
+                <StatCard label="All time runs" value={runsCount} />
+                <StatCard label="Friends" value={friendsCount} />
+                <StatCard label="Items ordered" value={itemsCount} />
               </View>
 
               {/* Sections */}
@@ -318,21 +318,11 @@ export default function AccountTab() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  sub,
-}: {
-  label: string;
-  value: number | string;
-  sub: string;
-}) {
+function StatCard({ label, value }: { label: string; value: number | string }) {
   return (
     <View style={styles.statCard}>
       <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>
-        {label} · {sub}
-      </Text>
+      <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }

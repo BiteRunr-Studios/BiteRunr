@@ -17,7 +17,7 @@ import { api } from "@/convex/_generated/api";
 import * as ImagePicker from "expo-image-picker";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
-import { BrAvatar, BrButton, BrInput, BrText } from "@/components/br";
+import { BrAvatar, BrInput, BrText } from "@/components/br";
 import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
@@ -255,15 +255,25 @@ export default function AccountInfoScreen() {
 
             {/* Save */}
             <Animated.View entering={FadeInUp.duration(300).delay(40)} style={{ marginTop: 28 }}>
-              <BrButton
-                label="Save changes"
-                variant="primary"
-                size="lg"
-                loading={isSaving}
-                disabled={!hasChanges}
+              <Pressable
                 onPress={handleSave}
-                rightSlot={<Icon name="Check" size={16} color="#fff" />}
-              />
+                disabled={!hasChanges}
+                className="flex-row gap-2 justify-center items-center p-4 w-full rounded-2xl border h-[55px] border-muted active:opacity-80 disabled:opacity-50"
+                accessibilityRole="button"
+                accessibilityLabel="Save changes"
+              >
+                {isSaving ? (
+                  <ActivityIndicator size="small" color={BR.ink} />
+                ) : (
+                  <Icon name="Check" color={BR.ink} size={22} />
+                )}
+                <Text
+                  className="text-lg font-semibold"
+                  style={{ color: BR.ink }}
+                >
+                  Save changes
+                </Text>
+              </Pressable>
             </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
