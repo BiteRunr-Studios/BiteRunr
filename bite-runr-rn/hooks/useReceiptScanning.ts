@@ -54,6 +54,7 @@ export interface UseReceiptScanningResult {
     matchedItems: MatchedItem[];
     receiptStoreName: string | null;
     receiptTotal: number | null;
+    photoUri: string | null;
     hasDraft: boolean;
     startScan: (source: "camera" | "library") => Promise<void>;
     updateMatch: (
@@ -81,6 +82,7 @@ export function useReceiptScanning(
         null,
     );
     const [receiptTotal, setReceiptTotal] = useState<number | null>(null);
+    const [photoUri, setPhotoUri] = useState<string | null>(null);
     const [hasDraft, setHasDraft] = useState(false);
 
     // Convex mutations and actions
@@ -184,6 +186,7 @@ export function useReceiptScanning(
         setMatchedItems([]);
         setReceiptStoreName(null);
         setReceiptTotal(null);
+        setPhotoUri(null);
     }, []);
 
     // Gentle close — sets state to idle but preserves the draft
@@ -272,6 +275,7 @@ export function useReceiptScanning(
                     [{ resize: { width: 1500 } }],
                     { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG },
                 );
+                setPhotoUri(manipulated.uri);
 
                 const uploadUrl = await generateUploadUrl();
 
@@ -485,6 +489,7 @@ export function useReceiptScanning(
         matchedItems,
         receiptStoreName,
         receiptTotal,
+        photoUri,
         hasDraft,
         startScan,
         updateMatch,
