@@ -7,11 +7,10 @@ import React, {
 } from "react";
 import { Pressable, Text, Animated, Alert, Platform } from "react-native";
 import { Flow } from "react-native-animated-spinkit";
-import { useColorScheme } from "@/lib/use-color-scheme";
-import { NAV_THEME } from "@/lib/constants";
 import { Ionicons } from "@expo/vector-icons";
 import { authClient } from "@/lib/auth-client";
 import * as AppleAuthentication from "expo-apple-authentication";
+import { BR } from "@/lib/br-theme";
 
 type OAuthProvider = "google" | "apple";
 
@@ -33,7 +32,6 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
     className,
     onError,
 }) => {
-    const { colorScheme } = useColorScheme();
     const [loading, setLoading] = useState(false);
 
     const defaultLabel = useMemo(() => {
@@ -148,17 +146,17 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
                     overflow: "hidden",
                 }}>
                 {loading && (
-                    <Flow color={NAV_THEME[colorScheme].text} size={22} />
+                    <Flow color={BR.ink} size={22} />
                 )}
             </Animated.View>
 
             <Ionicons
                 name={iconName}
-                color={NAV_THEME[colorScheme].text}
+                color={BR.ink}
                 size={24}
             />
 
-            <Text className={"text-lg font-semibold text-foreground"}>
+            <Text className="text-lg font-semibold" style={{ color: BR.ink }}>
                 {label ?? defaultLabel}
             </Text>
         </Pressable>

@@ -1,14 +1,11 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useEffect } from "react";
 import {
   View,
   Text,
   Pressable,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  TextInput,
   StyleSheet,
   Dimensions,
+  Linking,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,18 +20,11 @@ import Animated, {
 } from "react-native-reanimated";
 import { router } from "expo-router";
 
-import { BrButton, BrInput, BrText, BrSticker } from "@/components/br";
+import { BrText, BrSticker } from "@/components/br";
 import { OAuthButton } from "@/components/auth/oauth-button";
-import {
-  createFormHandlers,
-  FormState,
-  validateEmail,
-  getAuthErrorMessage,
-} from "@/lib/auth-helpers";
-import { useAuth } from "@/lib/convex-auth-context";
-import { authClient } from "@/lib/auth-client";
 import Icon from "@/components/common/icon";
 import { BR, BR_FONT } from "@/lib/br-theme";
+import { openURL } from "expo-linking";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 
@@ -173,8 +163,16 @@ function HeroBackdrop() {
           </View>
           <View style={styles.receiptDash} />
           <View style={styles.receiptRow}>
-            <Text style={[styles.receiptText, { fontWeight: "700", fontSize: 12 }]}>Total</Text>
-            <Text style={[styles.receiptText, { fontWeight: "700", fontSize: 12 }]}>$15.77</Text>
+            <Text
+              style={[styles.receiptText, { fontWeight: "700", fontSize: 12 }]}
+            >
+              Total
+            </Text>
+            <Text
+              style={[styles.receiptText, { fontWeight: "700", fontSize: 12 }]}
+            >
+              $15.77
+            </Text>
           </View>
         </View>
       </FloatCard>
@@ -221,183 +219,87 @@ function HeroBackdrop() {
 }
 
 export default function SignInScreen() {
-  const { refreshSession } = useAuth();
-  const [form, setForm] = useState<FormState>({
-    email: { label: "Email", value: "", error: null, touched: false },
-    password: { label: "Password", value: "", error: null, touched: false },
-  });
-  const { onChange, onBlur } = createFormHandlers(form, setForm);
-  const [loading, setLoading] = useState(false);
-  const [showEmail, setShowEmail] = useState(false);
-  const passwordRef = useRef<TextInput>(null);
-
-  const handleEmailSignIn = useCallback(async () => {
-    const email = form.email?.value?.trim()?.toLowerCase();
-    const password = form.password?.value;
-    let hasError = false;
-    const newForm = { ...form };
-
-    if (!email) {
-      newForm.email = { ...newForm.email!, error: "Email is required", touched: true };
-      hasError = true;
-    } else if (!validateEmail(email)) {
-      newForm.email = { ...newForm.email!, error: "Invalid email address", touched: true };
-      hasError = true;
-    }
-    if (!password) {
-      newForm.password = { ...newForm.password!, error: "Password is required", touched: true };
-      hasError = true;
-    }
-    if (hasError) { setForm(newForm); return; }
-
-    setLoading(true);
-    try {
-      const response = await authClient.signIn.email({ email: email!, password: password! });
-      if (response.error) throw new Error(response.error.message || "Sign in failed");
-      await refreshSession();
-    } catch (error) {
-      const errorResult = getAuthErrorMessage(error, "signIn");
-      if (errorResult.field === "email") {
-        setForm((prev) => ({ ...prev, email: { ...prev.email!, error: errorResult.message, touched: true } }));
-      } else if (errorResult.field === "password") {
-        setForm((prev) => ({ ...prev, password: { ...prev.password!, error: errorResult.message, touched: true } }));
-      } else {
-        Alert.alert("Sign In Error", errorResult.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [form, refreshSession]);
-
   return (
     <View style={{ flex: 1, backgroundColor: BR.orangeDeep }}>
       {/* Light status bar for the dark orange hero */}
       <StatusBar style="light" />
 
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
-        >
+        <View style={{ flex: 1 }}>
           {/* Hero: full-screen orange background */}
           <HeroBackdrop />
 
-
-          {/* Bottom paper sheet — static, not scrollable */}
-          <View style={[styles.sheet, showEmail && styles.sheetExpanded]}>
-            {!showEmail ? (
-              /* ── Landing state ── */
-              <View style={{ flex: 1 }}>
-                <BrSticker
-                  rotate={-3}
-                  background={BR.yolkSoft}
-                  leftSlot={<Icon name="Sparkles" size={11} color="#7A4A20" />}
-                >
+          {/* Bottom paper sheet */}
+          <View style={styles.sheet}>
+            <View style={{ flex: 1 }}>
+              <BrSticker
+                rotate={-3}
+                background={BR.yolkSoft}
+                leftSlot={<Icon name="Sparkles" size={11} color="#7A4A20" />}
+              >
+                <BrText weight="bold" style={{ fontSize: 12 }}>
                   Quick. Easy. Fun.
-                </BrSticker>
+                </BrText>
+              </BrSticker>
 
+              <BrText
+                variant="h1"
+                style={{ fontSize: 36, marginTop: 14, lineHeight: 38 }}
+              >
+                Order with the{"\n"}
                 <BrText
                   variant="h1"
-                  style={{ fontSize: 36, marginTop: 14, lineHeight: 38 }}
+                  italic
+                  color={BR.orange}
+                  style={{ fontSize: 36, lineHeight: 38 }}
                 >
-                  Order with the{"\n"}
-                  <BrText variant="h1" italic color={BR.orange} style={{ fontSize: 36, lineHeight: 38 }}>
-                    squad.
-                  </BrText>
+                  squad.
                 </BrText>
-                <BrText style={{ fontSize: 14, color: BR.ink2, marginTop: 8, lineHeight: 21 }}>
-                  Group orders, voice ordering, and bill splitting — without the math.
-                </BrText>
-
-                <View style={{ flex: 1 }} />
-
-                <View style={{ gap: 10 }}>
-                  <BrButton
-                    label="Continue with email"
-                    variant="primary"
-                    size="lg"
-                    onPress={() => setShowEmail(true)}
-                    leftSlot={<Icon name="Mail" size={16} color="#fff" />}
-                  />
-                  <OAuthButton provider="apple" disabled={loading} />
-                  <OAuthButton provider="google" disabled={loading} />
-                  <Text style={styles.legalText}>
-                    By continuing you agree to BiteRunr's{" "}
-                    <Text style={{ textDecorationLine: "underline" }}>Terms</Text>{" "}
-                    and{" "}
-                    <Text style={{ textDecorationLine: "underline" }}>Privacy</Text>
-                  </Text>
-                </View>
-
-                <View style={styles.signupRow}>
-                  <BrText style={{ color: BR.ink3 }}>No account?</BrText>
-                  <Pressable onPress={() => router.push("/(auth)/sign-up")}>
-                    <BrText weight="semibold" color={BR.orangeDeep}>Sign up</BrText>
-                  </Pressable>
-                </View>
-              </View>
-            ) : (
-              /* ── Email sign-in state ── */
-              <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-                style={{ flex: 1 }}
+              </BrText>
+              <BrText
+                style={{
+                  fontSize: 14,
+                  color: BR.ink2,
+                  marginTop: 8,
+                  lineHeight: 21,
+                }}
               >
-                <Pressable onPress={() => setShowEmail(false)} style={styles.backBtn}>
-                  <Icon name="ChevronLeft" size={18} color={BR.ink} />
+                Group orders, voice ordering, and bill splitting, without the
+                math.
+              </BrText>
+
+              <View style={{ flex: 1 }} />
+
+              <View style={{ gap: 10 }}>
+                <Pressable
+                  onPress={() => router.push("/(auth)/email-sign-in")}
+                  className="flex-row gap-2 justify-center items-center p-4 w-full rounded-2xl border h-[55px] border-muted active:opacity-80"
+                  accessibilityRole="button"
+                  accessibilityLabel="Continue with email"
+                >
+                  <Icon name="Mail" color={BR.ink} size={22} />
+                  <Text
+                    className="text-lg font-semibold"
+                    style={{ color: BR.ink }}
+                  >
+                    Continue with email
+                  </Text>
                 </Pressable>
-
-                <BrText variant="h1" style={{ marginTop: 12 }}>Welcome back.</BrText>
-                <BrText style={{ color: BR.ink2, marginTop: 6, fontSize: 14, lineHeight: 20 }}>
-                  Pick up where the squad left off.
-                </BrText>
-
-                <View style={{ marginTop: 22, gap: 12 }}>
-                  <BrInput
-                    value={form.email!.value}
-                    placeholder="Email"
-                    leftIcon="Mail"
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    returnKeyType="next"
-                    errorMessage={form.email!.error}
-                    onChangeText={(v) => onChange("email", v)}
-                    onBlur={() => onBlur("email")}
-                    onSubmitEditing={() => passwordRef.current?.focus()}
-                  />
-                  <BrInput
-                    ref={passwordRef}
-                    value={form.password!.value}
-                    placeholder="Password"
-                    leftIcon="Lock"
-                    secureTextEntry
-                    returnKeyType="done"
-                    errorMessage={form.password!.error}
-                    onChangeText={(v) => onChange("password", v)}
-                    onBlur={() => onBlur("password")}
-                    onSubmitEditing={handleEmailSignIn}
-                  />
-                </View>
-
-                <View style={{ marginTop: 18 }}>
-                  <BrButton
-                    label="Sign in"
-                    variant="primary"
-                    size="lg"
-                    loading={loading}
-                    onPress={handleEmailSignIn}
-                  />
-                </View>
-
-                <View style={styles.signupRow}>
-                  <BrText style={{ color: BR.ink3 }}>No account?</BrText>
-                  <Pressable onPress={() => router.push("/(auth)/sign-up")}>
-                    <BrText weight="semibold" color={BR.orangeDeep}>Sign up</BrText>
-                  </Pressable>
-                </View>
-              </KeyboardAvoidingView>
-            )}
+                <OAuthButton provider="apple" />
+                <OAuthButton provider="google" />
+                <Text style={styles.legalText}>
+                  By continuing you agree to BiteRunr's{" "}
+                  <Text
+                    onPress={() => openURL("https://app.biterunr.com/privacy")}
+                    style={{ textDecorationLine: "underline" }}
+                  >
+                    Terms and Privacy
+                  </Text>
+                </Text>
+              </View>
+            </View>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </SafeAreaView>
     </View>
   );
@@ -522,7 +424,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: "50%",
+    height: "62%",
     backgroundColor: BR.paper,
     borderTopLeftRadius: 36,
     borderTopRightRadius: 36,
@@ -535,29 +437,11 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
     elevation: 20,
   },
-  sheetExpanded: {
-    height: "80%",
-  },
   legalText: {
     fontSize: 11,
     color: BR.ink3,
     textAlign: "center",
     marginTop: 4,
     lineHeight: 16,
-  },
-  signupRow: {
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 16,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

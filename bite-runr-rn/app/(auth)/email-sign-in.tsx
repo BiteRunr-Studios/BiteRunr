@@ -1,71 +1,48 @@
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
-  View,
-  Pressable,
   Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Text,
-  TextInput,
+  Pressable,
   ScrollView,
   StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 import { router } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BrInput, BrText } from "@/components/br";
+import Icon from "@/components/common/icon";
 import {
   createFormHandlers,
   FormState,
-  validateEmail,
   getAuthErrorMessage,
+  validateEmail,
 } from "@/lib/auth-helpers";
-import { useAuth } from "@/lib/convex-auth-context";
 import { authClient } from "@/lib/auth-client";
-import Icon from "@/components/common/icon";
+import { useAuth } from "@/lib/convex-auth-context";
 import { BR } from "@/lib/br-theme";
 
-export default function SignUpScreen() {
-  const { setIsSigningUp } = useAuth();
+export default function EmailSignInScreen() {
+  const { refreshSession } = useAuth();
   const [form, setForm] = useState<FormState>({
-    firstName: { label: "First name", value: "", error: null, touched: false },
-    lastName: { label: "Last name", value: "", error: null, touched: false },
     email: { label: "Email", value: "", error: null, touched: false },
     password: { label: "Password", value: "", error: null, touched: false },
   });
   const { onChange, onBlur } = createFormHandlers(form, setForm);
   const [loading, setLoading] = useState(false);
-
-  const lastNameRef = useRef<TextInput>(null);
-  const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
 
-  const handleSignUp = useCallback(async () => {
-    const firstName = form.firstName?.value?.trim();
-    const lastName = form.lastName?.value?.trim();
-    const email = form.email?.value?.trim().toLowerCase();
+  const handleEmailSignIn = useCallback(async () => {
+    const email = form.email?.value?.trim()?.toLowerCase();
     const password = form.password?.value;
-
     let hasError = false;
     const newForm = { ...form };
 
-    if (!firstName) {
-      newForm.firstName = {
-        ...newForm.firstName!,
-        error: "First name is required",
-        touched: true,
-      };
-      hasError = true;
-    }
-    if (!lastName) {
-      newForm.lastName = {
-        ...newForm.lastName!,
-        error: "Last name is required",
-        touched: true,
-      };
-      hasError = true;
-    }
     if (!email) {
       newForm.email = {
         ...newForm.email!,
@@ -88,42 +65,24 @@ export default function SignUpScreen() {
         touched: true,
       };
       hasError = true;
-    } else if (password.length < 8) {
-      newForm.password = {
-        ...newForm.password!,
-        error: "Must be at least 8 characters",
-        touched: true,
-      };
-      hasError = true;
     }
-
     if (hasError) {
       setForm(newForm);
       return;
     }
 
     setLoading(true);
-    setIsSigningUp(true);
     try {
-      const response = await authClient.signUp.email({
+      const response = await authClient.signIn.email({
         email: email!,
         password: password!,
-        name: `${firstName} ${lastName}`.trim(),
       });
       if (response.error) {
-        throw new Error(response.error.message || "Failed to create account");
+        throw new Error(response.error.message || "Sign in failed");
       }
-      await authClient.emailOtp.sendVerificationOtp({
-        email: email!,
-        type: "email-verification",
-      });
-      router.push({
-        pathname: "/(auth)/verify-otp",
-        params: { email: email!, type: "sign-up" },
-      });
+      await refreshSession();
     } catch (error) {
-      setIsSigningUp(false);
-      const errorResult = getAuthErrorMessage(error, "signUp");
+      const errorResult = getAuthErrorMessage(error, "signIn");
       if (errorResult.field === "email") {
         setForm((prev) => ({
           ...prev,
@@ -139,15 +98,16 @@ export default function SignUpScreen() {
           },
         }));
       } else {
-        Alert.alert("Sign Up Error", errorResult.message);
+        Alert.alert("Sign In Error", errorResult.message);
       }
     } finally {
       setLoading(false);
     }
-  }, [form, setIsSigningUp]);
+  }, [form, refreshSession]);
 
   return (
     <View style={{ flex: 1, backgroundColor: BR.paper }}>
+      <StatusBar style="dark" />
       <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -163,63 +123,24 @@ export default function SignUpScreen() {
             </Pressable>
 
             <View style={{ marginTop: 18 }}>
-              <BrText variant="eyebrow">Create your account</BrText>
-              <BrText variant="h1" style={{ marginTop: 8, fontSize: 36 }}>
-                Hey,{" "}
-                <BrText
-                  variant="h1"
-                  italic
-                  color={BR.orange}
-                  style={{ fontSize: 36 }}
-                >
-                  hi.
-                </BrText>
+              <BrText variant="eyebrow">Sign in with email</BrText>
+              <BrText variant="h1" style={{ marginTop: 8 }}>
+                Welcome back.
               </BrText>
               <BrText
                 style={{
-                  fontSize: 14,
                   color: BR.ink2,
                   marginTop: 8,
+                  fontSize: 14,
                   lineHeight: 21,
                 }}
               >
-                One account for the whole crew. Order, scan, settle.
+                Pick up where the squad left off.
               </BrText>
             </View>
 
             <View style={{ marginTop: 24, gap: 12 }}>
-              <View style={{ flexDirection: "row", gap: 10 }}>
-                <View style={{ flex: 1 }}>
-                  <BrInput
-                    value={form.firstName!.value}
-                    placeholder="First name"
-                    leftIcon="IdCard"
-                    autoCapitalize="words"
-                    returnKeyType="next"
-                    errorMessage={form.firstName!.error}
-                    onChangeText={(v) => onChange("firstName", v)}
-                    onBlur={() => onBlur("firstName")}
-                    onSubmitEditing={() => lastNameRef.current?.focus()}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <BrInput
-                    ref={lastNameRef}
-                    value={form.lastName!.value}
-                    placeholder="Last name"
-                    leftIcon="IdCard"
-                    autoCapitalize="words"
-                    returnKeyType="next"
-                    errorMessage={form.lastName!.error}
-                    onChangeText={(v) => onChange("lastName", v)}
-                    onBlur={() => onBlur("lastName")}
-                    onSubmitEditing={() => emailRef.current?.focus()}
-                  />
-                </View>
-              </View>
-
               <BrInput
-                ref={emailRef}
                 value={form.email!.value}
                 placeholder="Email"
                 leftIcon="Mail"
@@ -231,55 +152,45 @@ export default function SignUpScreen() {
                 onBlur={() => onBlur("email")}
                 onSubmitEditing={() => passwordRef.current?.focus()}
               />
-
               <BrInput
                 ref={passwordRef}
                 value={form.password!.value}
-                placeholder="Password (8+ chars)"
+                placeholder="Password"
                 leftIcon="Lock"
                 secureTextEntry
                 returnKeyType="done"
                 errorMessage={form.password!.error}
                 onChangeText={(v) => onChange("password", v)}
                 onBlur={() => onBlur("password")}
-                onSubmitEditing={handleSignUp}
+                onSubmitEditing={handleEmailSignIn}
               />
             </View>
 
             <View style={{ marginTop: 18 }}>
               <Pressable
-                onPress={handleSignUp}
+                onPress={handleEmailSignIn}
                 disabled={loading}
                 className={`flex-row gap-2 justify-center items-center p-4 w-full rounded-2xl h-[55px] bg-primary active:opacity-80 ${
                   loading ? "opacity-50" : ""
                 }`}
                 accessibilityRole="button"
-                accessibilityLabel="Continue"
+                accessibilityLabel="Sign in"
               >
                 {loading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <>
-                    <Text className="text-lg font-semibold text-white">
-                      Continue
-                    </Text>
-                    <Icon name="ArrowRight" size={16} color="#fff" />
-                  </>
+                  <Text className="text-lg font-semibold text-white">
+                    Sign in
+                  </Text>
                 )}
               </Pressable>
             </View>
 
-            <View style={styles.signinRow}>
-              <BrText style={{ color: BR.ink3 }}>
-                Already have an account?
-              </BrText>
-              <Pressable
-                onPress={() => router.back()}
-                style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
-              >
-                <Icon name="ArrowLeft" size={14} color={BR.orangeDeep} />
+            <View style={styles.signupRow}>
+              <BrText style={{ color: BR.ink3 }}>No account?</BrText>
+              <Pressable onPress={() => router.push("/(auth)/sign-up")}>
                 <BrText weight="semibold" color={BR.orangeDeep}>
-                  Sign in
+                  Sign up
                 </BrText>
               </Pressable>
             </View>
@@ -304,17 +215,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  dividerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 22,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: BR.line,
-  },
-  signinRow: {
+  signupRow: {
     flexDirection: "row",
     gap: 8,
     justifyContent: "center",

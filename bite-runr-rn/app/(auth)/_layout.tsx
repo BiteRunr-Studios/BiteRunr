@@ -17,6 +17,12 @@ export default function AuthLayout() {
     <Stack screenOptions={{ headerTitleAlign: "center", headerShown: false, freezeOnBlur: true }}>
       <Stack.Screen name="sign-in" options={{ title: "Sign In" }} />
       <Stack.Screen
+        name="email-sign-in"
+        options={{
+          title: "Sign In",
+        }}
+      />
+      <Stack.Screen
         name="sign-up"
         options={{
           title: "Sign Up",
