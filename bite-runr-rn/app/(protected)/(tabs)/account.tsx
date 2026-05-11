@@ -72,7 +72,8 @@ export default function AccountTab() {
 
   const runsCount = orders?.length ?? 0;
   const friendsCount = friends?.length ?? 0;
-  const itemsCount = orders?.reduce((acc, o) => acc + (o.itemsCount ?? 0), 0) ?? 0;
+  const itemsCount =
+    orders?.reduce((acc, o) => acc + (o.itemsCount ?? 0), 0) ?? 0;
   const level = runnerLevel(runsCount);
 
   function onSignOut() {
@@ -96,28 +97,61 @@ export default function AccountTab() {
     {
       title: "Wallet",
       items: [
-        { key: "payments", icon: "CreditCard", label: "Payments", sub: "View & claim owed amounts", href: "/account/payments" },
-        { key: "friends", icon: "Users", label: "Friends", sub: "View, add & manage friends", href: "/account/friends", badge: pendingCount ?? 0 },
+        {
+          key: "payments",
+          icon: "CreditCard",
+          label: "Payments",
+          sub: "View & claim owed amounts",
+          href: "/account/payments",
+        },
+        {
+          key: "friends",
+          icon: "Users",
+          label: "Friends",
+          sub: "View, add & manage friends",
+          href: "/account/friends",
+          badge: pendingCount ?? 0,
+        },
       ],
     },
     {
       title: "App",
       items: [
-        { key: "support", icon: "Headset", label: "Support", sub: "Report an issue", href: "/account/support" },
-        { key: "about", icon: "Info", label: "About", sub: "Release notes & about us", href: "/account/about" },
+        {
+          key: "support",
+          icon: "Headset",
+          label: "Support",
+          sub: "Report an issue",
+          href: "/account/support",
+        },
+        {
+          key: "about",
+          icon: "Info",
+          label: "About",
+          sub: "Release notes & about us",
+          href: "/account/about",
+        },
       ],
     },
     {
       title: "More",
       items: [
-        { key: "signout", icon: "LogOut", label: "Sign out", danger: true, onPress: onSignOut },
+        {
+          key: "signout",
+          icon: "LogOut",
+          label: "Sign out",
+          danger: true,
+          onPress: onSignOut,
+        },
       ],
     },
   ];
 
   return (
     <ErrorBoundary>
-      <View style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}>
+      <View
+        style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}
+      >
         {/* Top bar */}
         <View style={styles.topBar}>
           <Image
@@ -125,20 +159,29 @@ export default function AccountTab() {
             style={{ width: 44, height: 44 }}
             resizeMode="contain"
           />
-          <Pressable style={styles.iconBtn} onPress={() => router.push("/account/account-info")}>
+          <Pressable
+            style={styles.iconBtn}
+            onPress={() => router.push("/account/account-info")}
+          >
             <Icon name="Settings" size={16} color={BR.ink} />
           </Pressable>
         </View>
 
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 50 + insets.bottom }}
+          contentContainerStyle={{
+            paddingHorizontal: 18,
+            paddingBottom: 80 + insets.bottom,
+          }}
           showsVerticalScrollIndicator={false}
         >
           {isLoading && <ProfileSkeleton />}
 
           {!isLoading && user && (
-            <Animated.View entering={FadeInUp.duration(300)} style={{ gap: 10 }}>
+            <Animated.View
+              entering={FadeInUp.duration(300)}
+              style={{ gap: 10 }}
+            >
               {/* Profile hero */}
               <View style={styles.profileHero}>
                 {/* Level sticker */}
@@ -155,7 +198,10 @@ export default function AccountTab() {
                   size={88}
                   ring="#fff"
                 />
-                <BrText variant="h2" style={{ marginTop: 12, textAlign: "center" }}>
+                <BrText
+                  variant="h2"
+                  style={{ marginTop: 12, textAlign: "center" }}
+                >
                   {fullName || "Unknown User"}
                 </BrText>
                 <Text style={styles.heroHandle}>
@@ -177,22 +223,32 @@ export default function AccountTab() {
                   entering={FadeInUp.duration(300).delay(60 + si * 25)}
                   style={{ marginTop: 12 }}
                 >
-                  <BrText variant="eyebrow" style={{ marginBottom: 8 }}>{sec.title}</BrText>
+                  <BrText variant="eyebrow" style={{ marginBottom: 8 }}>
+                    {sec.title}
+                  </BrText>
                   <View style={styles.sectionCard}>
                     {sec.items.map((item, i) => (
                       <Pressable
                         key={item.key}
-                        onPress={item.onPress ?? (() => router.push(item.href as any))}
+                        onPress={
+                          item.onPress ?? (() => router.push(item.href as any))
+                        }
                         style={({ pressed }) => [
                           i < sec.items.length - 1 && styles.sectionRowBorder,
                           pressed && { opacity: 0.82 },
                         ]}
                       >
                         <View style={styles.sectionRow}>
-                          <View style={[
-                            styles.rowIcon,
-                            { backgroundColor: item.danger ? BR.coralSoft : BR.paper2 },
-                          ]}>
+                          <View
+                            style={[
+                              styles.rowIcon,
+                              {
+                                backgroundColor: item.danger
+                                  ? BR.coralSoft
+                                  : BR.paper2,
+                              },
+                            ]}
+                          >
                             <Icon
                               name={item.icon}
                               size={16}
@@ -201,7 +257,12 @@ export default function AccountTab() {
                           </View>
 
                           <View style={{ flex: 1 }}>
-                            <Text style={[styles.rowLabel, item.danger && { color: BR.coralInk }]}>
+                            <Text
+                              style={[
+                                styles.rowLabel,
+                                item.danger && { color: BR.coralInk },
+                              ]}
+                            >
                               {item.label}
                             </Text>
                             {item.sub ? (
@@ -218,7 +279,11 @@ export default function AccountTab() {
                           )}
 
                           {!item.danger && (
-                            <Icon name="ChevronRight" size={16} color={BR.ink3} />
+                            <Icon
+                              name="ChevronRight"
+                              size={16}
+                              color={BR.ink3}
+                            />
                           )}
                         </View>
                       </Pressable>
@@ -232,8 +297,17 @@ export default function AccountTab() {
           {!isLoading && !user && (
             <View style={styles.notSignedIn}>
               <Text style={{ fontSize: 40 }}>👤</Text>
-              <BrText variant="h3" style={{ marginTop: 12 }}>Not signed in</BrText>
-              <BrText style={{ fontSize: 13, color: BR.ink3, marginTop: 4, textAlign: "center" }}>
+              <BrText variant="h3" style={{ marginTop: 12 }}>
+                Not signed in
+              </BrText>
+              <BrText
+                style={{
+                  fontSize: 13,
+                  color: BR.ink3,
+                  marginTop: 4,
+                  textAlign: "center",
+                }}
+              >
                 Please sign in to see your profile.
               </BrText>
             </View>
@@ -244,11 +318,21 @@ export default function AccountTab() {
   );
 }
 
-function StatCard({ label, value, sub }: { label: string; value: number | string; sub: string }) {
+function StatCard({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: number | string;
+  sub: string;
+}) {
   return (
     <View style={styles.statCard}>
       <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label} · {sub}</Text>
+      <Text style={styles.statLabel}>
+        {label} · {sub}
+      </Text>
     </View>
   );
 }
@@ -277,7 +361,13 @@ function ProfileSkeleton() {
             <SkeletonBlock width={80} height={12} style={{ marginBottom: 8 }} />
             <View style={styles.sectionCard}>
               {[1, 2].map((j) => (
-                <View key={j} style={[styles.sectionRow, j === 1 && styles.sectionRowBorder]}>
+                <View
+                  key={j}
+                  style={[
+                    styles.sectionRow,
+                    j === 1 && styles.sectionRowBorder,
+                  ]}
+                >
                   <SkeletonBlock width={34} height={34} rounded="rounded-xl" />
                   <View style={{ flex: 1, marginLeft: 12, gap: 6 }}>
                     <SkeletonBlock width={120} height={14} />

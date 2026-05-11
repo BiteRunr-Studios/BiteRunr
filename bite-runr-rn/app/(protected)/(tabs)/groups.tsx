@@ -48,13 +48,22 @@ function groupByTime<T extends { order: { createdAt: number } }>(
   items: T[],
 ): { title: TimeSection; data: T[] }[] {
   const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  ).getTime();
   const startOfWeek = startOfToday - now.getDay() * 86400000;
 
-  const groups: Record<TimeSection, T[]> = { Today: [], "This Week": [], Earlier: [] };
+  const groups: Record<TimeSection, T[]> = {
+    Today: [],
+    "This Week": [],
+    Earlier: [],
+  };
   for (const item of items) {
     if (item.order.createdAt >= startOfToday) groups.Today.push(item);
-    else if (item.order.createdAt >= startOfWeek) groups["This Week"].push(item);
+    else if (item.order.createdAt >= startOfWeek)
+      groups["This Week"].push(item);
     else groups.Earlier.push(item);
   }
 
@@ -63,14 +72,18 @@ function groupByTime<T extends { order: { createdAt: number } }>(
     .map((t) => ({ title: t, data: groups[t] }));
 }
 
-const SECTION_ICONS: Record<TimeSection, React.ComponentProps<typeof Icon>["name"]> = {
+const SECTION_ICONS: Record<
+  TimeSection,
+  React.ComponentProps<typeof Icon>["name"]
+> = {
   Today: "Flame",
   "This Week": "Calendar",
   Earlier: "Archive",
 };
 
-
-type OrderItem = NonNullable<ReturnType<typeof useQuery<typeof api.orders.getWithDetails>>>[number];
+type OrderItem = NonNullable<
+  ReturnType<typeof useQuery<typeof api.orders.getWithDetails>>
+>[number];
 
 function PulseDot({ active, color }: { active: boolean; color: string }) {
   const scale = useSharedValue(1);
@@ -79,12 +92,18 @@ function PulseDot({ active, color }: { active: boolean; color: string }) {
   useEffect(() => {
     if (active) {
       scale.value = withRepeat(
-        withSequence(withTiming(1.5, { duration: 700 }), withTiming(1, { duration: 700 })),
+        withSequence(
+          withTiming(1.5, { duration: 700 }),
+          withTiming(1, { duration: 700 }),
+        ),
         -1,
         false,
       );
       opacity.value = withRepeat(
-        withSequence(withTiming(0.5, { duration: 700 }), withTiming(1, { duration: 700 })),
+        withSequence(
+          withTiming(0.5, { duration: 700 }),
+          withTiming(1, { duration: 700 }),
+        ),
         -1,
         false,
       );
@@ -103,9 +122,26 @@ function PulseDot({ active, color }: { active: boolean; color: string }) {
 
   return (
     <View style={{ width: 6, height: 6 }}>
-      <View style={{ width: 6, height: 6, borderRadius: 999, backgroundColor: color, position: "absolute" }} />
+      <View
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: 999,
+          backgroundColor: color,
+          position: "absolute",
+        }}
+      />
       <Animated.View
-        style={[{ width: 6, height: 6, borderRadius: 999, backgroundColor: color, position: "absolute" }, animStyle]}
+        style={[
+          {
+            width: 6,
+            height: 6,
+            borderRadius: 999,
+            backgroundColor: color,
+            position: "absolute",
+          },
+          animStyle,
+        ]}
       />
     </View>
   );
@@ -134,19 +170,27 @@ function RunCard({
   let cardBorder: string;
 
   if (isLive) {
-    bg = BR.orangeSoft; fg = BR.orangeDeep; dotColor = BR.orange;
+    bg = BR.orangeSoft;
+    fg = BR.orangeDeep;
+    dotColor = BR.orange;
     statusLabel = "Live";
     cardBorder = "rgba(255,106,31,0.25)";
   } else if (isOrdering) {
-    bg = BR.yolkSoft; fg = "#7A4A20"; dotColor = BR.yolk;
+    bg = BR.yolkSoft;
+    fg = "#7A4A20";
+    dotColor = BR.yolk;
     statusLabel = "Ordering";
     cardBorder = "rgba(255,197,66,0.3)";
   } else if (isCompleted) {
-    bg = BR.mintSoft; fg = BR.mintInk; dotColor = BR.mint;
+    bg = BR.mintSoft;
+    fg = BR.mintInk;
+    dotColor = BR.mint;
     statusLabel = "Settled";
     cardBorder = BR.line;
   } else {
-    bg = BR.paper2; fg = BR.ink2; dotColor = BR.ink3;
+    bg = BR.paper2;
+    fg = BR.ink2;
+    dotColor = BR.ink3;
     statusLabel = "Cancelled";
     cardBorder = BR.line;
   }
@@ -184,13 +228,19 @@ function RunCard({
             <Icon name="Calendar" size={11} color={BR.ink3} />
             <Text style={styles.runDateText}>{dateLabel}</Text>
           </View>
-          <BrText weight="bold" style={{ fontSize: 17, marginTop: 2 }} numberOfLines={1}>
+          <BrText
+            weight="bold"
+            style={{ fontSize: 17, marginTop: 2 }}
+            numberOfLines={1}
+          >
             {order.name}
           </BrText>
           {locationName ? (
             <View style={styles.locationRow}>
               <Icon name="MapPin" size={11} color={BR.orange} />
-              <Text style={styles.locationText} numberOfLines={1}>{locationName}</Text>
+              <Text style={styles.locationText} numberOfLines={1}>
+                {locationName}
+              </Text>
             </View>
           ) : null}
         </View>
@@ -198,7 +248,9 @@ function RunCard({
         {/* Status pill */}
         <View style={[styles.statusPill, { backgroundColor: bg }]}>
           <PulseDot active={pulsing} color={dotColor} />
-          <Text style={[styles.statusPillText, { color: fg }]}>{statusLabel}</Text>
+          <Text style={[styles.statusPillText, { color: fg }]}>
+            {statusLabel}
+          </Text>
         </View>
       </View>
 
@@ -206,7 +258,11 @@ function RunCard({
       <View
         style={[
           styles.runCardFooter,
-          { backgroundColor: pulsing ? "rgba(255,255,255,0.6)" : "rgba(252,239,224,0.4)" },
+          {
+            backgroundColor: pulsing
+              ? "rgba(255,255,255,0.6)"
+              : "rgba(252,239,224,0.4)",
+          },
         ]}
       >
         {/* Avatars */}
@@ -227,7 +283,7 @@ function RunCard({
           {users.length} {users.length === 1 ? "person" : "people"}
         </Text>
         <Text style={styles.footerMeta}>
-          · {itemsCount ?? 0} {itemsCount === 1 ? "line" : "lines"}
+          · {itemsCount ?? 0} {itemsCount === 1 ? "item" : "items"}
         </Text>
 
         <View style={{ flex: 1 }} />
@@ -262,7 +318,11 @@ export default function GroupsTab() {
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
 
   useEffect(() => {
-    if (filter === "active" || filter === "completed" || filter === "needs_payment") {
+    if (
+      filter === "active" ||
+      filter === "completed" ||
+      filter === "needs_payment"
+    ) {
       setActiveFilter(filter);
     } else {
       setActiveFilter("all");
@@ -276,14 +336,17 @@ export default function GroupsTab() {
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
-    const task = InteractionManager.runAfterInteractions(() => setIsTransitionComplete(true));
+    const task = InteractionManager.runAfterInteractions(() =>
+      setIsTransitionComplete(true),
+    );
     return () => task.cancel();
   }, []);
 
   const currentUser = useQuery(api.users.getCurrentUser);
   const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
   const data = useQuery(api.orders.getWithDetails);
-  const isPending = data === undefined || currentUser === undefined || !isTransitionComplete;
+  const isPending =
+    data === undefined || currentUser === undefined || !isTransitionComplete;
   const userId = currentUser?._id;
 
   const handleCreateOrder = useCallback(() => {
@@ -313,7 +376,10 @@ export default function GroupsTab() {
       if (item.order.status !== "active" || !item.order.paused) return false;
       if (item.order.creatorId === userId) return false;
       if (Number(myOrderUser.amountOwed) <= 0) return false;
-      return myOrderUser.settlementStatus === "unpaid" || myOrderUser.settlementStatus === "claimed";
+      return (
+        myOrderUser.settlementStatus === "unpaid" ||
+        myOrderUser.settlementStatus === "claimed"
+      );
     }
     return true;
   });
@@ -322,8 +388,10 @@ export default function GroupsTab() {
 
   // Filter counts
   const allCount = data?.length ?? 0;
-  const liveCount = data?.filter((i) => i.order.status === "active").length ?? 0;
-  const doneCount = data?.filter((i) => i.order.status === "completed").length ?? 0;
+  const liveCount =
+    data?.filter((i) => i.order.status === "active").length ?? 0;
+  const doneCount =
+    data?.filter((i) => i.order.status === "completed").length ?? 0;
   const countFor = (key: FilterType) => {
     if (key === "all") return allCount;
     if (key === "active") return liveCount;
@@ -333,7 +401,9 @@ export default function GroupsTab() {
 
   return (
     <ErrorBoundary>
-      <View style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}>
+      <View
+        style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}
+      >
         {/* Top bar */}
         <View style={styles.topBar}>
           <Image
@@ -342,7 +412,10 @@ export default function GroupsTab() {
             resizeMode="contain"
           />
           <View style={{ flexDirection: "row", gap: 8 }}>
-            <Pressable onPress={() => setShowScanner(true)} style={styles.iconBtn}>
+            <Pressable
+              onPress={() => setShowScanner(true)}
+              style={styles.iconBtn}
+            >
               <Icon name="ScanLine" size={18} color={BR.ink} />
             </Pressable>
           </View>
@@ -355,14 +428,19 @@ export default function GroupsTab() {
         >
           <View style={{ paddingHorizontal: 18 }}>
             {/* Title */}
-            <Animated.View entering={FadeInUp.duration(300)} style={styles.titleRow}>
+            <Animated.View
+              entering={FadeInUp.duration(300)}
+              style={styles.titleRow}
+            >
               <View>
                 <BrText variant="eyebrow">
                   {allCount} {allCount === 1 ? "run" : "runs"} total
                 </BrText>
                 <BrText variant="h1" style={{ marginTop: 4 }}>
                   Your{" "}
-                  <BrText variant="h1" color={BR.orange}>runs.</BrText>
+                  <BrText variant="h1" color={BR.orange}>
+                    runs.
+                  </BrText>
                 </BrText>
               </View>
             </Animated.View>
@@ -392,14 +470,21 @@ export default function GroupsTab() {
                         },
                       ]}
                     >
-                      <Text style={[styles.filterChipText, { color: active ? "#fff" : BR.ink2 }]}>
+                      <Text
+                        style={[
+                          styles.filterChipText,
+                          { color: active ? "#fff" : BR.ink2 },
+                        ]}
+                      >
                         {f.label}
                       </Text>
                       <Text
                         style={[
                           styles.filterCount,
                           {
-                            backgroundColor: active ? "rgba(255,255,255,0.18)" : BR.paper2,
+                            backgroundColor: active
+                              ? "rgba(255,255,255,0.18)"
+                              : BR.paper2,
                             color: active ? "#fff" : BR.ink3,
                           },
                         ]}
@@ -411,7 +496,11 @@ export default function GroupsTab() {
                 })}
 
                 {/* New run pill */}
-                <AnimatedPressable scale={0.93} onPress={handleCreateOrder} style={styles.newRunChip}>
+                <AnimatedPressable
+                  scale={0.93}
+                  onPress={handleCreateOrder}
+                  style={styles.newRunChip}
+                >
                   <Icon name="Plus" size={14} color="#fff" strokeWidth={3} />
                   <Text style={styles.newRunChipText}>New run</Text>
                 </AnimatedPressable>
@@ -426,8 +515,18 @@ export default function GroupsTab() {
                     <View key={g} style={{ gap: 10 }}>
                       <SkeletonBlock width={100} height={14} />
                       {[1, 2].map((c) => (
-                        <View key={c} style={{ borderRadius: BR_RADIUS.lg, overflow: "hidden" }}>
-                          <SkeletonBlock width="100%" height={120} rounded="rounded-3xl" />
+                        <View
+                          key={c}
+                          style={{
+                            borderRadius: BR_RADIUS.lg,
+                            overflow: "hidden",
+                          }}
+                        >
+                          <SkeletonBlock
+                            width="100%"
+                            height={120}
+                            rounded="rounded-3xl"
+                          />
                         </View>
                       ))}
                     </View>
@@ -442,13 +541,33 @@ export default function GroupsTab() {
                 {grouped.length === 0 ? (
                   <View style={styles.emptyState}>
                     <Text style={{ fontSize: 36 }}>🍽️</Text>
-                    <BrText variant="h3" style={{ marginTop: 12 }}>No runs here</BrText>
-                    <BrText style={{ fontSize: 13, color: BR.ink3, marginTop: 4, textAlign: "center" }}>
+                    <BrText variant="h3" style={{ marginTop: 12 }}>
+                      No runs here
+                    </BrText>
+                    <BrText
+                      style={{
+                        fontSize: 13,
+                        color: BR.ink3,
+                        marginTop: 4,
+                        textAlign: "center",
+                      }}
+                    >
                       Try a different filter — or start something new.
                     </BrText>
-                    <Pressable onPress={handleCreateOrder} style={styles.emptyBtn}>
+                    <Pressable
+                      onPress={handleCreateOrder}
+                      style={styles.emptyBtn}
+                    >
                       <Icon name="Plus" size={16} color="#fff" />
-                      <Text style={{ color: "#fff", fontWeight: "700", fontSize: 14 }}>New run</Text>
+                      <Text
+                        style={{
+                          color: "#fff",
+                          fontWeight: "700",
+                          fontSize: 14,
+                        }}
+                      >
+                        New run
+                      </Text>
                     </Pressable>
                   </View>
                 ) : (
@@ -460,9 +579,15 @@ export default function GroupsTab() {
                       >
                         {/* Section header */}
                         <View style={styles.sectionHeader}>
-                          <Icon name={SECTION_ICONS[section.title]} size={12} color={BR.ink3} />
+                          <Icon
+                            name={SECTION_ICONS[section.title]}
+                            size={12}
+                            color={BR.ink3}
+                          />
                           <BrText variant="eyebrow">{section.title}</BrText>
-                          <Text style={styles.sectionCount}>· {section.data.length}</Text>
+                          <Text style={styles.sectionCount}>
+                            · {section.data.length}
+                          </Text>
                           <View style={styles.sectionLine} />
                         </View>
 
@@ -476,7 +601,11 @@ export default function GroupsTab() {
                                 userId={userId}
                                 onReorder={() => {
                                   const locationNamesParam = encodeURIComponent(
-                                    JSON.stringify(item.orderLocations?.map((ol) => ol.name) ?? []),
+                                    JSON.stringify(
+                                      item.orderLocations?.map(
+                                        (ol) => ol.name,
+                                      ) ?? [],
+                                    ),
                                   );
                                   const friendIds = item.orderUsers
                                     .filter((ou) => ou.userId !== userId)
@@ -491,8 +620,14 @@ export default function GroupsTab() {
 
                             if (item.order.status === "active") {
                               return (
-                                <Link href={`/order/${item.order.id}`} key={item.order.id} asChild>
-                                  <AnimatedPressable scale={0.98}>{card}</AnimatedPressable>
+                                <Link
+                                  href={`/order/${item.order.id}`}
+                                  key={item.order.id}
+                                  asChild
+                                >
+                                  <AnimatedPressable scale={0.98}>
+                                    {card}
+                                  </AnimatedPressable>
                                 </Link>
                               );
                             }
@@ -503,7 +638,9 @@ export default function GroupsTab() {
                                   key={item.order.id}
                                   asChild
                                 >
-                                  <AnimatedPressable scale={0.98}>{card}</AnimatedPressable>
+                                  <AnimatedPressable scale={0.98}>
+                                    {card}
+                                  </AnimatedPressable>
                                 </Link>
                               );
                             }
@@ -515,7 +652,8 @@ export default function GroupsTab() {
 
                     {/* End of list */}
                     <Text style={styles.endOfList}>
-                      · end of {activeFilter === "all" ? "history" : activeFilter} ·
+                      · end of{" "}
+                      {activeFilter === "all" ? "history" : activeFilter} ·
                     </Text>
                   </View>
                 )}
@@ -527,8 +665,14 @@ export default function GroupsTab() {
 
       <PaymentSetupSplash
         visible={showPaymentSplash}
-        onSetUp={() => { setShowPaymentSplash(false); router.push("/account/payments"); }}
-        onSkip={() => { setShowPaymentSplash(false); router.push("/order/create"); }}
+        onSetUp={() => {
+          setShowPaymentSplash(false);
+          router.push("/account/payments");
+        }}
+        onSkip={() => {
+          setShowPaymentSplash(false);
+          router.push("/order/create");
+        }}
       />
       <QRScannerModal
         visible={showScanner}
@@ -538,7 +682,10 @@ export default function GroupsTab() {
       />
       <EnterCodeModal
         visible={showEnterCode}
-        onSubmit={(code) => { setShowEnterCode(false); router.push(`/join/${encodeURIComponent(code)}`); }}
+        onSubmit={(code) => {
+          setShowEnterCode(false);
+          router.push(`/join/${encodeURIComponent(code)}`);
+        }}
         onClose={() => setShowEnterCode(false)}
       />
     </ErrorBoundary>

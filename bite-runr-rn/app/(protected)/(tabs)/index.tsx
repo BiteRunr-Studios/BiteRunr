@@ -1,8 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ScrollView,
   Text,
@@ -33,13 +29,7 @@ import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
 import { PaymentSetupSplash } from "@/components/payment-setup-splash";
 import { QRScannerModal } from "@/components/qr-scanner-modal";
 import { EnterCodeModal } from "@/components/enter-code-modal";
-import {
-  BrCard,
-  BrChip,
-  BrText,
-  BrAvatar,
-  BrSticker,
-} from "@/components/br";
+import { BrCard, BrChip, BrText, BrAvatar, BrSticker } from "@/components/br";
 import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
 
 const SQUAD_COLOR_MAP: Record<string, string> = {
@@ -50,7 +40,13 @@ const SQUAD_COLOR_MAP: Record<string, string> = {
   yolk: BR.yolk,
 };
 
-function PulseDot({ color = "#fff", size = 8 }: { color?: string; size?: number }) {
+function PulseDot({
+  color = "#fff",
+  size = 8,
+}: {
+  color?: string;
+  size?: number;
+}) {
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
   useEffect(() => {
@@ -230,7 +226,8 @@ export default function HomeTab() {
   const owedToMe = (settlementSummary?.owedToMe ?? 0) / 100;
   const iOwe = (settlementSummary?.iOwe ?? 0) / 100;
   const activeOrder = (activeOrders?.[0] ?? null) as
-    | (NonNullable<typeof activeOrders>[number] | null);
+    | NonNullable<typeof activeOrders>[number]
+    | null;
 
   return (
     <ErrorBoundary>
@@ -245,15 +242,7 @@ export default function HomeTab() {
             resizeMode="contain"
           />
           <View style={{ flexDirection: "row", gap: 8 }}>
-            <IconButton
-              name="Bell"
-              badge={pendingRequestCount}
-              onPress={() => router.push("/account/friends")}
-            />
-            <IconButton
-              name="ScanLine"
-              onPress={() => setShowScanner(true)}
-            />
+            <IconButton name="ScanLine" onPress={() => setShowScanner(true)} />
           </View>
         </View>
 
@@ -369,7 +358,12 @@ export default function HomeTab() {
               >
                 <Pressable onPress={handleCreateOrder} style={styles.newRunCta}>
                   <View style={styles.newRunPlus}>
-                    <Icon name="Plus" size={18} color="#fff" strokeWidth={2.5} />
+                    <Icon
+                      name="Plus"
+                      size={18}
+                      color="#fff"
+                      strokeWidth={2.5}
+                    />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.newRunTitle}>Start a new run</Text>
@@ -444,7 +438,9 @@ export default function HomeTab() {
                     >
                       <View style={styles.statHeaderRow}>
                         <Icon name="Hand" size={14} color={BR.coralInk} />
-                        <Text style={[styles.statLabel, { color: BR.coralInk }]}>
+                        <Text
+                          style={[styles.statLabel, { color: BR.coralInk }]}
+                        >
                           YOU OWE
                         </Text>
                       </View>
@@ -475,7 +471,9 @@ export default function HomeTab() {
                     >
                       <View style={styles.statHeaderRow}>
                         <Icon name="Wallet" size={14} color={BR.lilacInk} />
-                        <Text style={[styles.statLabel, { color: BR.lilacInk }]}>
+                        <Text
+                          style={[styles.statLabel, { color: BR.lilacInk }]}
+                        >
                           BALANCE
                         </Text>
                       </View>
@@ -517,7 +515,8 @@ export default function HomeTab() {
                     style={{ marginHorizontal: -18, paddingHorizontal: 18 }}
                   >
                     {squads.map((squad) => {
-                      const tileColor = SQUAD_COLOR_MAP[squad.color] ?? BR.orange;
+                      const tileColor =
+                        SQUAD_COLOR_MAP[squad.color] ?? BR.orange;
                       const memberIds = (squad.memberIds as string[]).join(",");
                       return (
                         <Pressable
@@ -547,7 +546,11 @@ export default function HomeTab() {
                               }}
                             >
                               <Icon
-                                name={squad.icon as React.ComponentProps<typeof Icon>["name"]}
+                                name={
+                                  squad.icon as React.ComponentProps<
+                                    typeof Icon
+                                  >["name"]
+                                }
                                 size={20}
                                 color="#fff"
                               />
@@ -563,7 +566,14 @@ export default function HomeTab() {
                             </BrText>
 
                             {/* Members row */}
-                            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10 }}>
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: 8,
+                                marginTop: 10,
+                              }}
+                            >
                               <View style={{ flexDirection: "row" }}>
                                 {squad.members.slice(0, 4).map((m, idx) => (
                                   <View
@@ -579,8 +589,17 @@ export default function HomeTab() {
                                   </View>
                                 ))}
                               </View>
-                              <Text style={{ fontSize: 12, color: BR.ink3, fontFamily: BR_FONT.mono }}>
-                                {squad.members.length} {squad.members.length === 1 ? "person" : "people"}
+                              <Text
+                                style={{
+                                  fontSize: 12,
+                                  color: BR.ink3,
+                                  fontFamily: BR_FONT.mono,
+                                }}
+                              >
+                                {squad.members.length}{" "}
+                                {squad.members.length === 1
+                                  ? "person"
+                                  : "people"}
                               </Text>
                             </View>
                           </BrCard>
@@ -623,13 +642,12 @@ export default function HomeTab() {
                         >
                           <BrCard padding={14} style={styles.runRow}>
                             <View
-                              style={[styles.runIcon, { backgroundColor: color }]}
+                              style={[
+                                styles.runIcon,
+                                { backgroundColor: color },
+                              ]}
                             >
-                              <Icon
-                                name="ShoppingBag"
-                                size={20}
-                                color="#fff"
-                              />
+                              <Icon name="ShoppingBag" size={20} color="#fff" />
                             </View>
                             <View style={{ flex: 1, minWidth: 0 }}>
                               <View
@@ -695,11 +713,7 @@ export default function HomeTab() {
                   style={styles.empty}
                 >
                   <View style={styles.emptyIcon}>
-                    <Icon
-                      name="Utensils"
-                      size={44}
-                      color={BR.orange}
-                    />
+                    <Icon name="Utensils" size={44} color={BR.orange} />
                   </View>
                   <BrText variant="h3" style={{ marginTop: 18 }}>
                     Welcome to BiteRunr
@@ -760,16 +774,8 @@ function HomeSkeleton() {
         <SkeletonBlock width="100%" height={140} rounded="rounded-3xl" />
         <SkeletonBlock width="100%" height={66} rounded="rounded-2xl" />
         <View style={{ flexDirection: "row", gap: 10 }}>
-          <SkeletonBlock
-            width="50%"
-            height={92}
-            rounded="rounded-3xl"
-          />
-          <SkeletonBlock
-            width="46%"
-            height={92}
-            rounded="rounded-3xl"
-          />
+          <SkeletonBlock width="50%" height={92} rounded="rounded-3xl" />
+          <SkeletonBlock width="46%" height={92} rounded="rounded-3xl" />
         </View>
         <View style={{ gap: 10 }}>
           <SkeletonBlock width={140} height={20} />
