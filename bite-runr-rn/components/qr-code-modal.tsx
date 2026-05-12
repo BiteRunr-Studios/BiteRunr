@@ -1,10 +1,19 @@
 import React, { useEffect } from "react";
-import { View, Text, Modal, Pressable, Share, ActivityIndicator } from "react-native";
+import {
+    View,
+    Text,
+    Modal,
+    Pressable,
+    Share,
+    ActivityIndicator,
+    StyleSheet,
+    TouchableOpacity,
+} from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import Icon from "@/components/common/icon";
-import { useColorScheme } from "@/lib/use-color-scheme";
-import { NAV_THEME } from "@/lib/constants";
-import { useQuery, useMutation } from "convex/react";
+import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
+import { BrText } from "@/components/br";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
@@ -21,13 +30,11 @@ export function QRCodeModal({
     orderName,
     onClose,
 }: QRCodeModalProps) {
-    const { colorScheme } = useColorScheme();
     const activeInvite = useQuery(api.orderInvites.getActiveInvite, { orderId });
     const createInvite = useMutation(api.orderInvites.createInvite);
     const [isCreating, setIsCreating] = React.useState(false);
     const [createAttempted, setCreateAttempted] = React.useState(false);
 
-    // Create invite when modal opens if none exists (one-time attempt)
     useEffect(() => {
         if (visible && activeInvite === null && !isCreating && !createAttempted) {
             setIsCreating(true);
@@ -38,7 +45,6 @@ export function QRCodeModal({
         }
     }, [visible, activeInvite, orderId, createInvite, isCreating, createAttempted]);
 
-    // Reset attempt state when modal closes
     useEffect(() => {
         if (!visible) {
             setCreateAttempted(false);
@@ -48,7 +54,6 @@ export function QRCodeModal({
     const inviteCode = activeInvite?.code;
     const deepLink = inviteCode ? `biterunr://join/${inviteCode}` : null;
 
-    // Calculate time remaining
     const getTimeRemaining = () => {
         if (!activeInvite?.expiresAt) return null;
         const remaining = activeInvite.expiresAt - Date.now();
@@ -84,109 +89,90 @@ export function QRCodeModal({
             transparent={true}
             statusBarTranslucent
             onRequestClose={onClose}>
-            <Pressable
-                className="flex-1 justify-center items-center bg-black/50 px-6"
-                onPress={onClose}>
+            <Pressable style={styles.backdrop} onPress={onClose}>
                 <Pressable
-                    className="w-full rounded-3xl p-6 items-center border border-border"
-                    style={{
-                        backgroundColor:
-                            colorScheme === "dark"
-                                ? "hsl(0, 0%, 7%)"
-                                : "hsl(0, 0%, 96%)",
-                    }}
+                    style={styles.card}
                     onPress={(e) => e.stopPropagation()}>
                     {/* Close button */}
-                    <Pressable
+                    <TouchableOpacity
                         onPress={onClose}
-                        className="absolute top-4 right-4 p-2 rounded-full active:opacity-70">
-                        <Icon
-                            name="X"
-                            size={24}
-                            color={NAV_THEME[colorScheme].border}
-                        />
-                    </Pressable>
+                        style={styles.closeBtn}
+                        activeOpacity={0.7}>
+                        <Icon name="X" size={17} color={BR.ink} />
+                    </TouchableOpacity>
 
-                    {/* Header */}
-                    <View className="w-16 h-16 rounded-full bg-primary/10 items-center justify-center mb-4">
-                        <Icon
-                            name="QrCode"
-                            size={32}
-                            color={NAV_THEME[colorScheme].primary}
-                        />
+                    {/* Header icon */}
+                    <View style={styles.headerIcon}>
+                        <Icon name="QrCode" size={30} color={BR.orange} />
                     </View>
 
-                    <Text className="text-xl font-bold text-foreground text-center mb-1">
+                    <BrText variant="h3" style={styles.title}>
                         Invite to Order
-                    </Text>
-                    <Text className="text-sm text-muted-foreground text-center mb-6">
+                    </BrText>
+                    <Text style={styles.subtitle}>
                         Scan QR code or share the link to join
                     </Text>
 
                     {isLoading ? (
-                        <View className="w-48 h-48 items-center justify-center">
-                            <ActivityIndicator
-                                size="large"
-                                color={NAV_THEME[colorScheme].primary}
-                            />
-                            <Text className="text-muted-foreground mt-4">
-                                Generating invite...
+                        <View style={styles.loadingArea}>
+                            <ActivityIndicator size="large" color={BR.orange} />
+                            <Text style={styles.loadingText}>
+                                Generating invite…
                             </Text>
                         </View>
                     ) : deepLink ? (
                         <>
                             {/* QR Code */}
-                            <View className="p-4 bg-white rounded-2xl mb-4">
+                            <View style={styles.qrFrame}>
                                 <QRCode
                                     value={deepLink}
                                     size={180}
-                                    backgroundColor="white"
-                                    color="black"
+                                    backgroundColor="#FFFFFF"
+                                    color={BR.ink}
                                 />
                             </View>
 
                             {/* Invite Code Display */}
-                            <View className="w-full bg-muted rounded-xl p-4 mb-4">
-                                <Text className="text-xs text-muted-foreground text-center mb-1">
-                                    INVITE CODE
-                                </Text>
-                                <Text className="text-2xl font-bold text-foreground text-center tracking-widest">
+                            <View style={styles.codeBox}>
+                                <Text style={styles.codeLabel}>INVITE CODE</Text>
+                                <Text style={styles.codeValue}>
                                     {inviteCode}
                                 </Text>
                             </View>
 
                             {/* Expiry info */}
                             {getTimeRemaining() && (
-                                <View className="flex-row items-center gap-2 mb-4">
+                                <View style={styles.expiryRow}>
                                     <Icon
                                         name="Clock"
-                                        size={14}
-                                        color={NAV_THEME[colorScheme].border}
+                                        size={13}
+                                        color={BR.ink3}
                                     />
-                                    <Text className="text-sm text-muted-foreground">
+                                    <Text style={styles.expiryText}>
                                         {getTimeRemaining()}
                                     </Text>
                                 </View>
                             )}
 
                             {/* Share button */}
-                            <Pressable
+                            <TouchableOpacity
                                 onPress={handleShare}
-                                className="w-full flex-row items-center justify-center gap-2 py-4 rounded-xl bg-primary active:opacity-80">
-                                <Icon name="Share" size={20} color="white" />
-                                <Text className="text-white font-semibold text-base">
+                                activeOpacity={0.85}
+                                style={styles.shareBtn}>
+                                <Icon name="Share" size={18} color="#fff" />
+                                <Text style={styles.shareBtnText}>
                                     Share Invite
                                 </Text>
-                            </Pressable>
+                            </TouchableOpacity>
                         </>
                     ) : (
-                        <View className="w-48 h-48 items-center justify-center">
+                        <View style={styles.errorArea}>
                             <Icon
                                 name="CircleAlert"
-                                size={48}
-                                color={NAV_THEME[colorScheme].notification}
+                                size={44}
+                                color={BR.coral}
                             />
-                            <Text className="text-muted-foreground text-center mt-4">
+                            <Text style={styles.errorText}>
                                 Failed to create invite. Please try again.
                             </Text>
                         </View>
@@ -196,3 +182,143 @@ export function QRCodeModal({
         </Modal>
     );
 }
+
+const styles = StyleSheet.create({
+    backdrop: {
+        flex: 1,
+        backgroundColor: "rgba(26, 20, 16, 0.55)",
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 24,
+    },
+    card: {
+        width: "100%",
+        backgroundColor: BR.paper,
+        borderRadius: BR_RADIUS.xl,
+        paddingVertical: 28,
+        paddingHorizontal: 24,
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: BR.line,
+        ...BR_SHADOW.pop,
+    },
+    closeBtn: {
+        position: "absolute",
+        top: 14,
+        right: 14,
+        width: 34,
+        height: 34,
+        borderRadius: 999,
+        backgroundColor: BR.paper2,
+        borderWidth: 1,
+        borderColor: BR.line,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    headerIcon: {
+        width: 60,
+        height: 60,
+        borderRadius: 999,
+        backgroundColor: BR.orangeSoft,
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 14,
+    },
+    title: {
+        textAlign: "center",
+        marginBottom: 4,
+    },
+    subtitle: {
+        fontSize: 13,
+        color: BR.ink3,
+        textAlign: "center",
+        marginBottom: 22,
+        fontFamily: BR_FONT.mono,
+    },
+    loadingArea: {
+        width: 192,
+        height: 192,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    loadingText: {
+        marginTop: 14,
+        color: BR.ink3,
+        fontSize: 13,
+        fontFamily: BR_FONT.mono,
+    },
+    qrFrame: {
+        padding: 16,
+        backgroundColor: "#FFFFFF",
+        borderRadius: BR_RADIUS.lg,
+        borderWidth: 1,
+        borderColor: BR.line2,
+        marginBottom: 16,
+    },
+    codeBox: {
+        width: "100%",
+        backgroundColor: BR.paper2,
+        borderRadius: BR_RADIUS.md,
+        borderWidth: 1,
+        borderColor: BR.line,
+        paddingVertical: 14,
+        paddingHorizontal: 16,
+        marginBottom: 14,
+    },
+    codeLabel: {
+        fontSize: 10,
+        fontFamily: BR_FONT.monoBold,
+        color: BR.ink3,
+        letterSpacing: 1.4,
+        textAlign: "center",
+        marginBottom: 4,
+    },
+    codeValue: {
+        fontSize: 24,
+        fontFamily: BR_FONT.monoBold,
+        color: BR.ink,
+        textAlign: "center",
+        letterSpacing: 4,
+    },
+    expiryRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+        marginBottom: 18,
+    },
+    expiryText: {
+        fontSize: 12,
+        color: BR.ink3,
+        fontFamily: BR_FONT.mono,
+    },
+    shareBtn: {
+        width: "100%",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        paddingVertical: 16,
+        borderRadius: BR_RADIUS.md,
+        backgroundColor: BR.orange,
+        ...BR_SHADOW.primary,
+    },
+    shareBtnText: {
+        fontSize: 15,
+        fontWeight: "700",
+        color: "#fff",
+        letterSpacing: -0.2,
+    },
+    errorArea: {
+        width: 192,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: 16,
+    },
+    errorText: {
+        color: BR.ink3,
+        textAlign: "center",
+        marginTop: 12,
+        fontSize: 13,
+        fontFamily: BR_FONT.mono,
+    },
+});
