@@ -9,6 +9,8 @@ import {
     StyleSheet,
     TouchableOpacity,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
+import * as Haptics from "expo-haptics";
 import QRCode from "react-native-qrcode-svg";
 import Icon from "@/components/common/icon";
 import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
@@ -34,6 +36,7 @@ export function QRCodeModal({
     const createInvite = useMutation(api.orderInvites.createInvite);
     const [isCreating, setIsCreating] = React.useState(false);
     const [createAttempted, setCreateAttempted] = React.useState(false);
+    const [copied, setCopied] = React.useState(false);
 
     useEffect(() => {
         if (visible && activeInvite === null && !isCreating && !createAttempted) {
@@ -48,11 +51,19 @@ export function QRCodeModal({
     useEffect(() => {
         if (!visible) {
             setCreateAttempted(false);
+            setCopied(false);
         }
     }, [visible]);
 
     const inviteCode = activeInvite?.code;
     const deepLink = inviteCode ? `biterunr://join/${inviteCode}` : null;
+
+    useEffect(() => {
+        if (!copied) return;
+
+        const timeout = setTimeout(() => setCopied(false), 1600);
+        return () => clearTimeout(timeout);
+    }, [copied, inviteCode]);
 
     const getTimeRemaining = () => {
         if (!activeInvite?.expiresAt) return null;
@@ -77,6 +88,20 @@ export function QRCodeModal({
             });
         } catch (error) {
             console.error("Error sharing:", error);
+        }
+    };
+
+    const handleCopyInviteCode = async () => {
+        if (!inviteCode) return;
+
+        try {
+            await Clipboard.setStringAsync(inviteCode);
+            setCopied(true);
+            Haptics.notificationAsync(
+                Haptics.NotificationFeedbackType.Success,
+            ).catch(() => {});
+        } catch (error) {
+            console.error("Error copying invite code:", error);
         }
     };
 
@@ -133,12 +158,33 @@ export function QRCodeModal({
                             </View>
 
                             {/* Invite Code Display */}
-                            <View style={styles.codeBox}>
-                                <Text style={styles.codeLabel}>INVITE CODE</Text>
+                            <TouchableOpacity
+                                onPress={handleCopyInviteCode}
+                                activeOpacity={0.82}
+                                style={styles.codeBox}
+                                accessibilityRole="button"
+                                accessibilityLabel={`Copy invite code ${inviteCode}`}>
+                                <View style={styles.codeLabelRow}>
+                                    <Text style={styles.codeLabel}>
+                                        INVITE CODE
+                                    </Text>
+                                    <Icon
+                                        name={copied ? "Check" : "Copy"}
+                                        size={13}
+                                        color={copied ? BR.mint : BR.ink3}
+                                    />
+                                </View>
                                 <Text style={styles.codeValue}>
                                     {inviteCode}
                                 </Text>
-                            </View>
+                                <Text
+                                    style={[
+                                        styles.copyHint,
+                                        copied && styles.copyHintActive,
+                                    ]}>
+                                    {copied ? "Copied" : "Tap to copy"}
+                                </Text>
+                            </TouchableOpacity>
 
                             {/* Expiry info */}
                             {getTimeRemaining() && (
@@ -265,13 +311,19 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         marginBottom: 14,
     },
+    codeLabelRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        marginBottom: 4,
+    },
     codeLabel: {
         fontSize: 10,
         fontFamily: BR_FONT.monoBold,
         color: BR.ink3,
         letterSpacing: 1.4,
         textAlign: "center",
-        marginBottom: 4,
     },
     codeValue: {
         fontSize: 24,
@@ -279,6 +331,16 @@ const styles = StyleSheet.create({
         color: BR.ink,
         textAlign: "center",
         letterSpacing: 4,
+    },
+    copyHint: {
+        marginTop: 6,
+        fontSize: 11,
+        color: BR.ink3,
+        fontFamily: BR_FONT.mono,
+        textAlign: "center",
+    },
+    copyHintActive: {
+        color: BR.mint,
     },
     expiryRow: {
         flexDirection: "row",

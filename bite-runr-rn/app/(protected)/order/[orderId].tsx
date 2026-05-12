@@ -338,7 +338,7 @@ export default function SpecificOrder() {
         <View style={styles.header}>
           <View style={styles.backBtn} />
           <SkeletonBlock width={120} height={18} />
-          <View style={{ width: 36 }} />
+          <View style={{ width: 38 }} />
         </View>
         <Skeleton>
           <View style={{ paddingHorizontal: 18, gap: 14, marginTop: 4 }}>
@@ -391,10 +391,10 @@ export default function SpecificOrder() {
           <BrText weight="bold" style={{ fontSize: 17 }}>Run details</BrText>
           {isCreator ? (
             <Pressable onPress={handleMoreMenu} style={styles.moreBtn}>
-              <Icon name="Ellipsis" size={18} color={BR.orangeDeep} />
+              <Icon name="Ellipsis" size={18} color={BR.ink} />
             </Pressable>
           ) : (
-            <View style={{ width: 36 }} />
+            <View style={{ width: 38 }} />
           )}
         </View>
 
@@ -856,10 +856,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   moreBtn: {
-    width: 36,
-    height: 36,
+    width: 38,
+    height: 38,
     borderRadius: 999,
-    backgroundColor: BR.orangeSoft,
+    backgroundColor: BR.paper2,
+    borderWidth: 1,
+    borderColor: BR.line,
     alignItems: "center",
     justifyContent: "center",
   },
