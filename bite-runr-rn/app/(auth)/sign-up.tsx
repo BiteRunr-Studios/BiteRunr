@@ -183,7 +183,7 @@ export default function SignUpScreen() {
                   lineHeight: 21,
                 }}
               >
-                One account for the whole crew. Order, scan, settle.
+                One run for the whole crew. Order, scan, settle.
               </BrText>
             </View>
 
@@ -277,7 +277,6 @@ export default function SignUpScreen() {
                 onPress={() => router.back()}
                 style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
               >
-                <Icon name="ArrowLeft" size={14} color={BR.orangeDeep} />
                 <BrText weight="semibold" color={BR.orangeDeep}>
                   Sign in
                 </BrText>

@@ -195,7 +195,7 @@ function RootAppShell({ fontsLoaded }: { fontsLoaded: boolean }) {
 
   return (
     <>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Stack screenOptions={{ headerShown: false, freezeOnBlur: true }}>
           <Stack.Screen

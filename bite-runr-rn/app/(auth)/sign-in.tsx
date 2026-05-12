@@ -221,8 +221,7 @@ function HeroBackdrop() {
 export default function SignInScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: BR.orangeDeep }}>
-      {/* Light status bar for the dark orange hero */}
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
         <View style={{ flex: 1 }}>

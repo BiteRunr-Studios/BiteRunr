@@ -29,7 +29,7 @@ const config: ExpoConfig = {
   ios: {
     bundleIdentifier: localConfig.ios?.bundleIdentifier ?? "",
     supportsTablet: true,
-    usesAppleSignIn: localConfig.ios?.usesAppleSignIn ?? false,
+    usesAppleSignIn: localConfig.ios?.usesAppleSignIn ?? true,
     appleTeamId: localConfig.ios?.appleTeamId ?? "",
     icon: {
       dark: "./assets/images/icon-dark.png",
@@ -78,6 +78,7 @@ const config: ExpoConfig = {
   },
   plugins: [
     "expo-router",
+    "expo-apple-authentication",
     [
       "expo-build-properties",
       {
