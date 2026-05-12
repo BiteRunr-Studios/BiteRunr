@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Pressable,
 } from "react-native";
-import { BR, BR_RADIUS } from "@/lib/br-theme";
+import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
 import Icon, { IconName } from "@/components/common/icon";
 import { BrText } from "./text";
 
@@ -75,8 +75,11 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    fontFamily: BR_FONT.displayMedium,
     fontSize: 16,
+    lineHeight: 22,
     color: BR.ink,
+    letterSpacing: 0,
     paddingVertical: 0,
     includeFontPadding: false,
     textAlignVertical: "center",

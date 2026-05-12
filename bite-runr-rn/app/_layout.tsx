@@ -16,12 +16,16 @@ import Toast, { type BaseToastProps } from "react-native-toast-message";
 import * as SplashScreen from "expo-splash-screen";
 import {
   useFonts as useBricolage,
+  BricolageGrotesque_400Regular,
   BricolageGrotesque_500Medium,
+  BricolageGrotesque_600SemiBold,
   BricolageGrotesque_700Bold,
   BricolageGrotesque_800ExtraBold,
 } from "@expo-google-fonts/bricolage-grotesque";
 import {
+  JetBrainsMono_400Regular,
   JetBrainsMono_500Medium,
+  JetBrainsMono_600SemiBold,
   JetBrainsMono_700Bold,
 } from "@expo-google-fonts/jetbrains-mono";
 import { NAV_THEME } from "@/lib/constants";
@@ -216,7 +220,7 @@ function RootAppShell({ fontsLoaded }: { fontsLoaded: boolean }) {
             name="join/[code]"
             options={{
               headerShown: false,
-              presentation: "modal",
+              presentation: "fullScreenModal",
             }}
           />
         </Stack>
@@ -236,10 +240,14 @@ function RootAppShell({ fontsLoaded }: { fontsLoaded: boolean }) {
 export default function RootLayout() {
   const { colorScheme } = useColorScheme();
   const [fontsLoaded] = useBricolage({
+    BricolageGrotesque_400Regular,
     BricolageGrotesque_500Medium,
+    BricolageGrotesque_600SemiBold,
     BricolageGrotesque_700Bold,
     BricolageGrotesque_800ExtraBold,
+    JetBrainsMono_400Regular,
     JetBrainsMono_500Medium,
+    JetBrainsMono_600SemiBold,
     JetBrainsMono_700Bold,
   });
 

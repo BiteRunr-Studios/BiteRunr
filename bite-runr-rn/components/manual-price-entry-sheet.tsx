@@ -380,8 +380,10 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 13,
         color: BR.ink,
-        fontFamily: BR_FONT.mono,
+        fontFamily: BR_FONT.displayMedium,
+        letterSpacing: 0,
         padding: 0,
+        includeFontPadding: false,
     },
     modalFooter: {
         paddingHorizontal: 18,

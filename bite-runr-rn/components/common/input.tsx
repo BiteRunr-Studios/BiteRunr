@@ -70,6 +70,7 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
                     secureTextEntry={secureTextEntry}
                     className={inputClassName}
                     style={{
+                        letterSpacing: 0,
                         lineHeight: 19,
                         paddingVertical: 0,
                         includeFontPadding: false,

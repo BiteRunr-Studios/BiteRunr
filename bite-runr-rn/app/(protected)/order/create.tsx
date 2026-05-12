@@ -774,13 +774,14 @@ const styles = StyleSheet.create({
   nameInput: {
     flex: 1,
     paddingHorizontal: 18,
-    paddingTop: 20,
+    paddingTop: 18,
     paddingBottom: 16,
-    fontFamily: BR_FONT.displayExtraBold,
-    fontStyle: "italic",
-    fontSize: 22,
-    lineHeight: 30,
+    fontFamily: BR_FONT.displayMedium,
+    fontSize: 20,
+    lineHeight: 26,
     color: BR.ink,
+    letterSpacing: 0,
+    includeFontPadding: false,
   },
   requiredHint: {
     fontFamily: BR_FONT.mono,
@@ -842,11 +843,12 @@ const styles = StyleSheet.create({
   },
   spotInput: {
     flex: 1,
-    fontFamily: BR_FONT.display,
+    fontFamily: BR_FONT.displayMedium,
     fontSize: 15,
-    fontWeight: "600",
     color: BR.ink,
+    letterSpacing: 0,
     paddingVertical: 2,
+    includeFontPadding: false,
   },
   spotRemoveBtn: {
     width: 26,
@@ -950,10 +952,12 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontFamily: BR_FONT.display,
+    fontFamily: BR_FONT.displayMedium,
     fontSize: 14,
     color: BR.ink,
+    letterSpacing: 0,
     paddingVertical: 0,
+    includeFontPadding: false,
   },
   searchClearBtn: {
     width: 22,
@@ -1030,10 +1034,14 @@ const styles = StyleSheet.create({
     ...BR_SHADOW.card,
   },
   notesInput: {
-    fontFamily: BR_FONT.display,
+    fontFamily: BR_FONT.displayMedium,
     fontSize: 14,
+    lineHeight: 20,
     color: BR.ink,
+    letterSpacing: 0,
     minHeight: 72,
+    padding: 0,
+    includeFontPadding: false,
   },
   // footer
   footer: {

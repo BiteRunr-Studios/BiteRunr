@@ -276,9 +276,9 @@ function CreateSquadSheet({
               placeholder="e.g. Lunch crew, Roomies…"
               placeholderTextColor={COLORS.ink3}
               style={{
-                fontFamily: FONTS.display.bold,
-                fontStyle: "italic",
+                fontFamily: FONTS.display.medium,
                 fontSize: 18,
+                letterSpacing: 0,
                 color: COLORS.ink,
                 backgroundColor: "#fff",
                 borderRadius: 16,
@@ -589,8 +589,9 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
             placeholderTextColor={COLORS.ink3}
             style={{
               flex: 1,
-              fontFamily: FONTS.display.regular,
+              fontFamily: FONTS.display.medium,
               fontSize: 14,
+              letterSpacing: 0,
               color: COLORS.ink,
             }}
           />
@@ -1042,8 +1043,9 @@ function SearchTab() {
           autoCorrect={false}
           style={{
             flex: 1,
-            fontFamily: FONTS.display.regular,
+            fontFamily: FONTS.display.medium,
             fontSize: 14,
+            letterSpacing: 0,
             color: COLORS.ink,
           }}
         />

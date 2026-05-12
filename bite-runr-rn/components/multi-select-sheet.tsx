@@ -105,6 +105,7 @@ export function MultiSelectSheet({
                     <View className="flex-row items-center px-4 border rounded-xl border-input bg-background">
                         <TextInput
                             className="flex-1 py-3 text-foreground"
+                            style={{ letterSpacing: 0 }}
                             placeholder="Search..."
                             placeholderTextColor="hsl(215.4 16.3% 46.9%)"
                             value={searchQuery}

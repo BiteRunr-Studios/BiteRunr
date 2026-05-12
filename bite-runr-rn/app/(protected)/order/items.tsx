@@ -1400,9 +1400,11 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     minHeight: 36,
+    fontFamily: BR_FONT.displayMedium,
     fontSize: 15,
     lineHeight: 20,
     color: BR.ink,
+    letterSpacing: 0,
     paddingVertical: 8,
     paddingHorizontal: 0,
     textAlignVertical: "center",
