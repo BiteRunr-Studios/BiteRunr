@@ -1,12 +1,20 @@
 import React from "react";
-import { View, Text, Modal, Pressable } from "react-native";
+import { View, Text, Modal, Pressable, StyleSheet } from "react-native";
 import Icon from "@/components/common/icon";
+import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
+import { BrText } from "@/components/br";
 
 type NotificationPermissionModalProps = {
     visible: boolean;
     onAllow: () => void;
     onDeny: () => void;
 };
+
+const FEATURES = [
+    { icon: "UserPlus" as const, color: BR.mintInk, bg: BR.mintSoft, label: "Friend requests" },
+    { icon: "Users" as const, color: BR.lilac, bg: BR.lilacSoft, label: "Group order invitations" },
+    { icon: "CircleCheck" as const, color: BR.orangeDeep, bg: BR.orangeTint, label: "Order ready alerts" },
+];
 
 export function NotificationPermissionModal({
     visible,
@@ -17,73 +25,150 @@ export function NotificationPermissionModal({
         <Modal
             visible={visible}
             animationType="fade"
-            transparent={true}
-            statusBarTranslucent>
-            <View className="flex-1 justify-center items-center bg-black/50 px-6">
-                <View className="w-full bg-card rounded-3xl p-6 items-center">
+            transparent
+            statusBarTranslucent
+        >
+            <View style={styles.backdrop}>
+                <View style={styles.sheet}>
                     {/* Icon */}
-                    <View className="w-20 h-20 rounded-full bg-primary/10 items-center justify-center mb-5">
-                        <Icon name="Bell" size={40} color="#4A90D9" />
+                    <View style={styles.iconTile}>
+                        <Icon name="Bell" size={32} color={BR.orangeDeep} />
                     </View>
 
                     {/* Title */}
-                    <Text className="text-2xl font-bold text-foreground text-center mb-3">
-                        Stay in the Loop
-                    </Text>
+                    <BrText weight="bold" style={styles.title}>
+                        Stay in the loop
+                    </BrText>
 
                     {/* Description */}
-                    <Text className="text-base text-muted-foreground text-center mb-6 leading-6">
-                        Get notified when friends send you requests, group
-                        orders start, and when everyone's ready to order.
+                    <Text style={styles.desc}>
+                        Get notified when friends send requests, group orders start, and when it's time to pay up.
                     </Text>
 
                     {/* Feature list */}
-                    <View className="w-full mb-6 gap-3">
-                        <View className="flex-row items-center gap-3">
-                            <View className="w-10 h-10 rounded-full bg-green-500/10 items-center justify-center">
-                                <Icon name="UserPlus" size={20} color="#22c55e" />
+                    <View style={styles.featureList}>
+                        {FEATURES.map((f) => (
+                            <View key={f.label} style={styles.featureRow}>
+                                <View style={[styles.featureIcon, { backgroundColor: f.bg }]}>
+                                    <Icon name={f.icon} size={18} color={f.color} />
+                                </View>
+                                <Text style={styles.featureLabel}>{f.label}</Text>
                             </View>
-                            <Text className="flex-1 text-sm text-foreground">
-                                Friend requests
-                            </Text>
-                        </View>
-                        <View className="flex-row items-center gap-3">
-                            <View className="w-10 h-10 rounded-full bg-blue-500/10 items-center justify-center">
-                                <Icon name="Users" size={20} color="#3b82f6" />
-                            </View>
-                            <Text className="flex-1 text-sm text-foreground">
-                                Group order invitations
-                            </Text>
-                        </View>
-                        <View className="flex-row items-center gap-3">
-                            <View className="w-10 h-10 rounded-full bg-purple-500/10 items-center justify-center">
-                                <Icon name="CircleCheck" size={20} color="#a855f7" />
-                            </View>
-                            <Text className="flex-1 text-sm text-foreground">
-                                Orders ready alerts
-                            </Text>
-                        </View>
+                        ))}
                     </View>
 
-                    {/* Allow Button */}
-                    <Pressable
-                        onPress={onAllow}
-                        className="w-full py-4 rounded-xl bg-primary items-center mb-3 active:opacity-80">
-                        <Text className="text-white font-semibold text-base">
-                            Allow Notifications
-                        </Text>
+                    {/* Allow button */}
+                    <Pressable onPress={onAllow} style={styles.allowBtn}>
+                        <Icon name="Bell" size={16} color="#fff" />
+                        <Text style={styles.allowBtnText}>Allow notifications</Text>
                     </Pressable>
 
-                    {/* Deny Button */}
-                    <Pressable
-                        onPress={onDeny}
-                        className="w-full py-4 rounded-xl items-center active:opacity-80">
-                        <Text className="text-muted-foreground font-medium text-base">
-                            Maybe Later
-                        </Text>
+                    {/* Deny button */}
+                    <Pressable onPress={onDeny} style={styles.denyBtn}>
+                        <Text style={styles.denyBtnText}>Maybe later</Text>
                     </Pressable>
                 </View>
             </View>
         </Modal>
     );
 }
+
+const styles = StyleSheet.create({
+    backdrop: {
+        flex: 1,
+        justifyContent: "flex-end",
+        alignItems: "center",
+        backgroundColor: "rgba(0,0,0,0.5)",
+        paddingHorizontal: 18,
+        paddingBottom: 32,
+    },
+    sheet: {
+        width: "100%",
+        backgroundColor: BR.paper,
+        borderRadius: 28,
+        padding: 24,
+        alignItems: "center",
+        ...BR_SHADOW.card,
+    },
+    iconTile: {
+        width: 72,
+        height: 72,
+        borderRadius: 22,
+        backgroundColor: BR.orangeTint,
+        borderWidth: 1,
+        borderColor: "rgba(255,106,31,0.18)",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 16,
+    },
+    title: {
+        fontSize: 22,
+        lineHeight: 28,
+        textAlign: "center",
+        color: BR.ink,
+        marginBottom: 8,
+    },
+    desc: {
+        fontSize: 14,
+        lineHeight: 21,
+        color: BR.ink3,
+        textAlign: "center",
+        marginBottom: 20,
+    },
+    featureList: {
+        width: "100%",
+        gap: 10,
+        marginBottom: 24,
+    },
+    featureRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+        backgroundColor: BR.card,
+        borderRadius: BR_RADIUS.md,
+        borderWidth: 1,
+        borderColor: BR.line,
+        padding: 12,
+    },
+    featureIcon: {
+        width: 36,
+        height: 36,
+        borderRadius: 11,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    featureLabel: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: BR.ink,
+    },
+    allowBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        width: "100%",
+        height: 54,
+        borderRadius: BR_RADIUS.md,
+        backgroundColor: BR.orange,
+        marginBottom: 10,
+        ...BR_SHADOW.primary,
+    },
+    allowBtnText: {
+        color: "#fff",
+        fontSize: 16,
+        fontWeight: "700",
+        fontFamily: BR_FONT.display,
+    },
+    denyBtn: {
+        width: "100%",
+        height: 44,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    denyBtnText: {
+        fontSize: 14,
+        color: BR.ink3,
+        fontWeight: "500",
+    },
+});

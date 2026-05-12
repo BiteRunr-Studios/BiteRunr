@@ -1,7 +1,4 @@
-import { Button } from "@/components/common/button";
 import Icon from "@/components/common/icon";
-import { NAV_THEME } from "@/lib/constants";
-import { useColorScheme } from "@/lib/use-color-scheme";
 import { useAuth } from "@/lib/convex-auth-context";
 import { authClient } from "@/lib/auth-client";
 import { getAuthErrorMessage } from "@/lib/auth-helpers";
@@ -17,19 +14,18 @@ import {
     Platform,
     Keyboard,
     TouchableWithoutFeedback,
+    StyleSheet,
+    ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
+import { BrText } from "@/components/br";
 
 const OTP_LENGTH = 6;
 
 export default function VerifyOtpScreen() {
-    const { colorScheme } = useColorScheme();
     const { setIsSigningUp, refreshSession } = useAuth();
-    const params = useLocalSearchParams<{
-        email: string;
-        type: "sign-up"; // Only used for sign-up email verification now
-    }>();
-
+    const params = useLocalSearchParams<{ email: string; type: "sign-up" }>();
     const email = params.email?.toLowerCase();
 
     const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
@@ -40,36 +36,25 @@ export default function VerifyOtpScreen() {
 
     const inputRefs = useRef<(TextInput | null)[]>([]);
 
-    // Focus first input on mount
     useEffect(() => {
-        setTimeout(() => {
-            inputRefs.current[0]?.focus();
-        }, 100);
+        setTimeout(() => inputRefs.current[0]?.focus(), 100);
     }, []);
 
-    // Cooldown timer for resend
     useEffect(() => {
         if (resendCooldown > 0) {
-            const timer = setTimeout(
-                () => setResendCooldown((c) => c - 1),
-                1000,
-            );
+            const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
             return () => clearTimeout(timer);
         }
     }, [resendCooldown]);
 
     const handleOtpChange = useCallback((index: number, value: string) => {
-        // Only allow digits
         const digit = value.replace(/[^0-9]/g, "").slice(-1);
-
         setOtp((prev) => {
-            const newOtp = [...prev];
-            newOtp[index] = digit;
-            return newOtp;
+            const next = [...prev];
+            next[index] = digit;
+            return next;
         });
         setError(null);
-
-        // Auto-advance to next input
         if (digit && index < OTP_LENGTH - 1) {
             inputRefs.current[index + 1]?.focus();
         }
@@ -86,38 +71,20 @@ export default function VerifyOtpScreen() {
 
     const handleVerify = useCallback(async () => {
         const otpCode = otp.join("");
-
         if (otpCode.length !== OTP_LENGTH) {
             setError("Please enter the complete verification code");
             return;
         }
-
         setLoading(true);
         setError(null);
-
         try {
-            // Verify email with OTP code
-            const response = await authClient.emailOtp.verifyEmail({
-                email: email!,
-                otp: otpCode,
-            });
-
-            if (response.error) {
-                throw new Error(
-                    response.error.message || "Verification failed",
-                );
-            }
-
-            // Refresh session to ensure Convex picks up the new auth token.
+            const response = await authClient.emailOtp.verifyEmail({ email: email!, otp: otpCode });
+            if (response.error) throw new Error(response.error.message || "Verification failed");
             await refreshSession();
-
-            // Allow AuthLayout's <Redirect> to navigate to protected area.
-            // ProtectedLayout handles syncUser on mount.
             setIsSigningUp(false);
         } catch (err) {
             console.error("Verification error:", err);
-            const errorResult = getAuthErrorMessage(err, "verify");
-            setError(errorResult.message);
+            setError(getAuthErrorMessage(err, "verify").message);
         } finally {
             setLoading(false);
         }
@@ -125,144 +92,239 @@ export default function VerifyOtpScreen() {
 
     const handleResend = useCallback(async () => {
         if (resendCooldown > 0 || resending) return;
-
         setResending(true);
         setError(null);
-
         try {
-            // Resend email verification OTP
             const response = await authClient.emailOtp.sendVerificationOtp({
                 email: email!,
                 type: "email-verification",
             });
-
-            if (response.error) {
-                throw new Error(
-                    response.error.message || "Failed to resend code",
-                );
-            }
-
-            Alert.alert(
-                "Code Sent",
-                "A new verification code has been sent to your email.",
-            );
-            setResendCooldown(60); // 60 second cooldown
+            if (response.error) throw new Error(response.error.message || "Failed to resend code");
+            Alert.alert("Code Sent", "A new verification code has been sent to your email.");
+            setResendCooldown(60);
             setOtp(Array(OTP_LENGTH).fill(""));
             inputRefs.current[0]?.focus();
-        } catch (err) {
-            console.error("Resend error:", err);
-            Alert.alert(
-                "Error",
-                "Failed to resend verification code. Please try again.",
-            );
+        } catch {
+            Alert.alert("Error", "Failed to resend verification code. Please try again.");
         } finally {
             setResending(false);
         }
     }, [email, resendCooldown, resending]);
 
+    const filledCount = otp.filter(Boolean).length;
+
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <SafeAreaView className="flex-1 px-4 transition-all duration-200">
+            <SafeAreaView edges={["top"]} style={styles.root}>
                 {/* Back button */}
-                <Pressable
-                    onPress={() => router.back()}
-                    className="flex-row items-center p-2 self-start">
-                    <Icon
-                        name="ArrowLeft"
-                        size={20}
-                        color={NAV_THEME[colorScheme].text}
-                    />
-                    <Text className="ml-1 text-foreground">Back</Text>
+                <Pressable onPress={() => router.back()} style={styles.backBtn}>
+                    <Icon name="ChevronLeft" size={20} color={BR.ink} />
                 </Pressable>
 
                 <KeyboardAvoidingView
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
-                    className="justify-center flex-1">
-                    {/* Title */}
-                <Text className="mb-2 text-3xl font-bold text-foreground">
-                    Check your email
-                </Text>
-                <Text className="text-lg text-muted-foreground">
-                    We sent a verification code to
-                </Text>
-                <Text className="text-lg font-semibold text-foreground">
-                    {email}
-                </Text>
+                    style={styles.body}
+                >
+                    {/* Icon */}
+                    <View style={styles.iconTile}>
+                        <Icon name="Mail" size={28} color={BR.orangeDeep} />
+                    </View>
 
-                <View className="mt-8" />
+                    {/* Heading */}
+                    <BrText weight="bold" style={styles.heading}>
+                        Check your email
+                    </BrText>
+                    <Text style={styles.subText}>We sent a 6-digit code to</Text>
+                    <Text style={styles.emailText}>{email}</Text>
 
-                {/* OTP Input */}
-                <View className="flex-row justify-center gap-2">
-                    {otp.map((digit, index) => (
-                        <TextInput
-                            key={index}
-                            ref={(ref) => {
-                                inputRefs.current[index] = ref;
-                            }}
-                            value={digit}
-                            onChangeText={(value) =>
-                                handleOtpChange(index, value)
-                            }
-                            onKeyPress={({ nativeEvent }) =>
-                                handleKeyPress(index, nativeEvent.key)
-                            }
-                            keyboardType="number-pad"
-                            maxLength={1}
-                            selectTextOnFocus
-                            className={`w-12 h-14 text-center text-2xl font-bold rounded-xl border-2 ${
-                                error
-                                    ? "border-destructive"
-                                    : digit
-                                      ? "border-primary"
-                                      : "border-muted"
-                            } bg-background text-foreground`}
-                        />
-                    ))}
-                </View>
+                    {/* OTP inputs */}
+                    <View style={styles.otpRow}>
+                        {otp.map((digit, index) => (
+                            <TextInput
+                                key={index}
+                                ref={(ref) => { inputRefs.current[index] = ref; }}
+                                value={digit}
+                                onChangeText={(v) => handleOtpChange(index, v)}
+                                onKeyPress={({ nativeEvent }) => handleKeyPress(index, nativeEvent.key)}
+                                keyboardType="number-pad"
+                                maxLength={1}
+                                selectTextOnFocus
+                                style={[
+                                    styles.otpBox,
+                                    digit ? styles.otpBoxFilled : null,
+                                    error ? styles.otpBoxError : null,
+                                ]}
+                            />
+                        ))}
+                    </View>
 
-                {/* Error message */}
-                {error && (
-                    <Text className="mt-3 text-center text-destructive">
-                        {error}
-                    </Text>
-                )}
+                    {/* Error */}
+                    {error && (
+                        <View style={styles.errorRow}>
+                            <Icon name="CircleAlert" size={13} color={BR.coralInk} />
+                            <Text style={styles.errorText}>{error}</Text>
+                        </View>
+                    )}
 
-                <View className="mt-6" />
-
-                {/* Verify Button */}
-                <Button
-                    variant="full"
-                    label="Verify"
-                    loading={loading}
-                    onPress={handleVerify}
-                />
-
-                <View className="mt-6" />
-
-                {/* Resend link */}
-                <View className="flex-row items-center justify-center">
-                    <Text className="text-muted-foreground">
-                        Didn't receive the code?{" "}
-                    </Text>
+                    {/* Verify button */}
                     <Pressable
-                        onPress={handleResend}
-                        disabled={resendCooldown > 0 || resending}>
-                        <Text
-                            className={`font-semibold ${
-                                resendCooldown > 0
-                                    ? "text-muted-foreground"
-                                    : "text-primary"
-                            }`}>
-                            {resendCooldown > 0
-                                ? `Resend in ${resendCooldown}s`
-                                : resending
-                                  ? "Sending..."
-                                  : "Resend"}
-                        </Text>
+                        onPress={handleVerify}
+                        disabled={loading || filledCount < OTP_LENGTH}
+                        style={[
+                            styles.verifyBtn,
+                            (loading || filledCount < OTP_LENGTH) && styles.verifyBtnDisabled,
+                        ]}
+                    >
+                        {loading ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={styles.verifyBtnText}>Verify email</Text>
+                        )}
                     </Pressable>
-                </View>
+
+                    {/* Resend */}
+                    <View style={styles.resendRow}>
+                        <Text style={styles.resendLabel}>Didn't get the code? </Text>
+                        <Pressable
+                            onPress={handleResend}
+                            disabled={resendCooldown > 0 || resending}
+                        >
+                            <Text style={[
+                                styles.resendBtn,
+                                (resendCooldown > 0 || resending) && { opacity: 0.45 },
+                            ]}>
+                                {resendCooldown > 0
+                                    ? `Resend in ${resendCooldown}s`
+                                    : resending
+                                      ? "Sending…"
+                                      : "Resend"}
+                            </Text>
+                        </Pressable>
+                    </View>
                 </KeyboardAvoidingView>
             </SafeAreaView>
         </TouchableWithoutFeedback>
     );
 }
+
+const styles = StyleSheet.create({
+    root: {
+        flex: 1,
+        backgroundColor: BR.paper,
+        paddingHorizontal: 24,
+    },
+    backBtn: {
+        width: 38,
+        height: 38,
+        borderRadius: 999,
+        backgroundColor: BR.paper2,
+        borderWidth: 1,
+        borderColor: BR.line,
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: 8,
+    },
+    body: {
+        flex: 1,
+        justifyContent: "center",
+        paddingBottom: 40,
+    },
+    iconTile: {
+        width: 64,
+        height: 64,
+        borderRadius: 20,
+        backgroundColor: BR.orangeTint,
+        borderWidth: 1,
+        borderColor: "rgba(255,106,31,0.18)",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 20,
+    },
+    heading: {
+        fontSize: 28,
+        lineHeight: 34,
+        color: BR.ink,
+        marginBottom: 6,
+    },
+    subText: {
+        fontSize: 15,
+        color: BR.ink3,
+        lineHeight: 22,
+    },
+    emailText: {
+        fontSize: 15,
+        fontWeight: "700",
+        color: BR.orangeDeep,
+        marginBottom: 32,
+    },
+    otpRow: {
+        flexDirection: "row",
+        gap: 10,
+        marginBottom: 16,
+    },
+    otpBox: {
+        flex: 1,
+        height: 56,
+        borderRadius: BR_RADIUS.md,
+        borderWidth: 1.5,
+        borderColor: BR.line,
+        backgroundColor: BR.card,
+        textAlign: "center",
+        fontSize: 22,
+        fontWeight: "700",
+        color: BR.ink,
+    },
+    otpBoxFilled: {
+        borderColor: BR.orange,
+        backgroundColor: BR.orangeTint,
+        color: BR.orangeDeep,
+    },
+    otpBoxError: {
+        borderColor: BR.coral,
+        backgroundColor: BR.coralSoft,
+    },
+    errorRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+        marginBottom: 16,
+    },
+    errorText: {
+        fontSize: 13,
+        color: BR.coralInk,
+    },
+    verifyBtn: {
+        height: 54,
+        borderRadius: BR_RADIUS.md,
+        backgroundColor: BR.orange,
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 20,
+        ...BR_SHADOW.primary,
+    },
+    verifyBtnDisabled: {
+        opacity: 0.5,
+        shadowOpacity: 0,
+        elevation: 0,
+    },
+    verifyBtnText: {
+        color: "#fff",
+        fontSize: 16,
+        fontWeight: "700",
+        fontFamily: BR_FONT.display,
+    },
+    resendRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    resendLabel: {
+        fontSize: 14,
+        color: BR.ink3,
+    },
+    resendBtn: {
+        fontSize: 14,
+        fontWeight: "700",
+        color: BR.orangeDeep,
+    },
+});
