@@ -5,245 +5,238 @@ import {
     Pressable,
     Linking,
     ScrollView,
+    StyleSheet,
     TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import Icon from "@/components/common/icon";
-import { NAV_THEME } from "@/lib/constants";
-import { useColorScheme } from "@/lib/use-color-scheme";
+import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { BrText } from "@/components/br";
+import Animated, { FadeInUp } from "react-native-reanimated";
 
-type FAQItemProps = {
-    question: string;
-    answer: string;
-};
+const SUPPORT_EMAIL = "biterunr@gmail.com";
 
-function FAQItem({ question, answer }: FAQItemProps) {
-    const [isExpanded, setIsExpanded] = useState(false);
-    const { colorScheme } = useColorScheme();
-
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+    const [open, setOpen] = useState(false);
     return (
         <Pressable
-            onPress={() => setIsExpanded(!isExpanded)}
-            className="overflow-hidden border rounded-xl active:opacity-80 border-muted bg-card">
-            <View className="flex-row items-center justify-between p-4">
-                <View className="flex-row items-center flex-1 gap-3">
-                    <View className="items-center justify-center w-8 h-8 rounded-lg bg-purple-500/10">
-                        <Icon name="MessageCircleQuestionMark" size={16} color="#a855f7" />
-                    </View>
-                    <Text className="flex-1 pr-2 font-medium text-foreground">
-                        {question}
-                    </Text>
-                </View>
-                <Icon
-                    name={isExpanded ? "ChevronUp" : "ChevronDown"}
-                    size={20}
-                    color={NAV_THEME[colorScheme].border}
-                />
+            onPress={() => setOpen((v) => !v)}
+            style={styles.faqCard}
+        >
+            <View style={styles.faqRow}>
+                <Text style={[styles.faqQuestion, { flex: 1, marginRight: 12 }]}>{question}</Text>
+                <Icon name={open ? "ChevronUp" : "ChevronDown"} size={18} color={BR.ink3} />
             </View>
-            {isExpanded && (
-                <View className="px-4 pb-4 ml-11">
-                    <Text className="leading-5 text-muted-foreground">
-                        {answer}
-                    </Text>
-                </View>
-            )}
+            {open && <Text style={styles.faqAnswer}>{answer}</Text>}
         </Pressable>
     );
 }
 
+const CONTACT_OPTIONS = [
+    { icon: "Mail" as const, color: BR.lilac, bg: BR.lilacSoft, title: "Email support", sub: "Get help from our team", url: `mailto:${SUPPORT_EMAIL}?subject=BiteRunr%20Support` },
+    { icon: "Bug" as const, color: BR.coral, bg: BR.coralSoft, title: "Report a bug", sub: "Let us know if something's broken", url: `mailto:${SUPPORT_EMAIL}?subject=BiteRunr%20Bug%20Report` },
+    { icon: "Lightbulb" as const, color: BR.yolk, bg: BR.yolkSoft, title: "Request a feature", sub: "Tell us what you'd like to see", url: `mailto:${SUPPORT_EMAIL}?subject=BiteRunr%20Feature%20Request` },
+];
+
+const FAQS = [
+    { question: "How do I create a group order?", answer: "Tap the '+' button on the home screen, give your order a name, add the pickup locations, and invite your friends. Everyone can then add their order lines under each location." },
+    { question: "How do I invite friends to an order?", answer: "When creating or viewing an order, tap 'Invite Friends' to add people from your friends list. They'll receive a notification and can join to add their items." },
+    { question: "How does payment splitting work?", answer: "BiteRunr automatically tracks what each person ordered and calculates what they owe. After the order is complete, the runner can collect payments through the settlement screen." },
+    { question: "Can I order from multiple restaurants?", answer: "Yes. Each order can have multiple pickup locations, and everyone can add separate order lines for each one." },
+    { question: "How do I add friends?", answer: "Go to Account → Friends and use the Search tab to find other BiteRunr users by name, then send a friend request." },
+];
+
 export default function SupportScreen() {
-    const { colorScheme } = useColorScheme();
-
-    const handleEmailSupport = () => {
-        Linking.openURL("mailto:biterunr@gmail.com?subject=BiteRunr%20Support");
-    };
-
-    const handleReportBug = () => {
-        Linking.openURL(
-            "mailto:biterunr@gmail.com?subject=BiteRunr%20Bug%20Report"
-        );
-    };
-
-    const handleFeatureRequest = () => {
-        Linking.openURL(
-            "mailto:biterunr@gmail.com?subject=BiteRunr%20Feature%20Request"
-        );
-    };
-
-    const faqs: FAQItemProps[] = [
-        {
-            question: "How do I create a group order?",
-            answer: "Tap the '+' button on the home screen, give your order a name, add the pickup locations for that order, and invite your friends. Everyone can then write their order lines under each location.",
-        },
-        {
-            question: "How do I invite friends to an order?",
-            answer: "When creating or viewing an order, tap 'Invite Friends' to add people from your friends list. They'll receive a notification and can join the order to add their items.",
-        },
-        {
-            question: "How does payment splitting work?",
-            answer: "BiteRunr automatically tracks what each person ordered and calculates what they owe. After the order is complete, you can see the breakdown in the order details and mark payments as received.",
-        },
-        {
-            question: "Can I order from multiple restaurants?",
-            answer: "Yes. Each order can have multiple pickup locations, and everyone can add separate order lines for each one.",
-        },
-        {
-            question: "How do I add friends?",
-            answer: "Go to Account → Friends and tap 'Add Friend'. You can search for other BiteRunr users by their name or email and send them a friend request.",
-        },
-    ];
-
-    const contactOptions = [
-        {
-            icon: "Mail" as const,
-            iconBg: "bg-blue-500/10",
-            iconColor: "#3b82f6",
-            title: "Email Support",
-            subtitle: "Get help from our team",
-            onPress: handleEmailSupport,
-        },
-        {
-            icon: "Bug" as const,
-            iconBg: "bg-red-500/10",
-            iconColor: "#ef4444",
-            title: "Report a Bug",
-            subtitle: "Let us know if something's broken",
-            onPress: handleReportBug,
-        },
-        {
-            icon: "Lightbulb" as const,
-            iconBg: "bg-yellow-500/10",
-            iconColor: "#eab308",
-            title: "Request a Feature",
-            subtitle: "Tell us what you'd like to see",
-            onPress: handleFeatureRequest,
-        },
-    ];
-
     return (
-        <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
-            {/* Header */}
-            <View className="flex-row items-center px-4 py-3 border-b border-border">
-                <Pressable
-                    onPress={() => router.back()}
-                    className="p-2 -ml-2 rounded-full active:opacity-70">
-                    <Icon
-                        name="ChevronLeft"
-                        size={24}
-                        color={NAV_THEME[colorScheme].primary}
-                    />
+        <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
+            <View style={styles.header}>
+                <Pressable onPress={() => router.back()} style={styles.backBtn}>
+                    <Icon name="ChevronLeft" size={20} color={BR.ink} />
                 </Pressable>
-                <Text className="flex-1 ml-2 text-xl font-semibold text-foreground">
-                    Support
-                </Text>
+                <BrText weight="bold" style={{ fontSize: 17, lineHeight: 24 }}>Support</BrText>
+                <View style={{ width: 38 }} />
             </View>
 
             <ScrollView
-                className="flex-1"
-                contentContainerStyle={{ padding: 16 }}
-                showsVerticalScrollIndicator={false}>
-                {/* Support Header */}
-                <View className="items-center p-6 mb-6">
-                    <View className="items-center justify-center w-20 h-20 mb-4 rounded-2xl bg-primary/10">
-                        <Icon
-                            name="Headset"
-                            size={40}
-                            color={NAV_THEME[colorScheme].primary}
-                        />
+                style={{ flex: 1 }}
+                contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 48 }}
+                showsVerticalScrollIndicator={false}
+            >
+                {/* Hero */}
+                <Animated.View entering={FadeInUp.duration(300)} style={styles.hero}>
+                    <View style={styles.heroIcon}>
+                        <Icon name="Headset" size={32} color={BR.orangeDeep} />
                     </View>
-                    <Text className="text-2xl font-bold text-center text-foreground">
+                    <BrText weight="bold" style={{ fontSize: 26, lineHeight: 34, marginTop: 14, textAlign: "center" }}>
                         How can we help?
-                    </Text>
-                    <Text className="mt-2 text-center text-muted-foreground">
+                    </BrText>
+                    <Text style={styles.heroSub}>
                         Find answers below or reach out to our team
                     </Text>
-                </View>
+                </Animated.View>
 
-                {/* Contact Options */}
-                <View className="mb-6">
-                    <View className="flex-row items-center gap-3 mb-4">
-                        <View className="items-center justify-center w-10 h-10 rounded-xl bg-blue-500/10">
-                            <Icon name="MessageCircle" size={20} color="#3b82f6" />
-                        </View>
-                        <Text className="text-lg font-semibold text-foreground">
-                            Contact Us
-                        </Text>
-                    </View>
-
-                    <View className="gap-3">
-                        {contactOptions.map((option) => (
+                {/* Contact options */}
+                <Animated.View entering={FadeInUp.duration(300).delay(60)}>
+                    <Text style={styles.sectionLabel}>Contact us</Text>
+                    <View style={{ gap: 10, marginTop: 10 }}>
+                        {CONTACT_OPTIONS.map((opt) => (
                             <TouchableOpacity
-                                key={option.title}
-                                onPress={option.onPress}
-                                className="flex-row items-center p-4 border rounded-xl border-muted bg-card active:opacity-80">
-                                <View
-                                    className={`items-center justify-center w-12 h-12 rounded-xl ${option.iconBg}`}>
-                                    <Icon
-                                        name={option.icon}
-                                        size={24}
-                                        color={option.iconColor}
-                                    />
+                                key={opt.title}
+                                onPress={() => Linking.openURL(opt.url)}
+                                style={styles.contactRow}
+                                activeOpacity={0.85}
+                            >
+                                <View style={[styles.contactIcon, { backgroundColor: opt.bg }]}>
+                                    <Icon name={opt.icon} size={20} color={opt.color} />
                                 </View>
-                                <View className="flex-1 ml-3">
-                                    <Text className="text-base font-semibold text-foreground">
-                                        {option.title}
-                                    </Text>
-                                    <Text className="mt-0.5 text-sm text-muted-foreground">
-                                        {option.subtitle}
-                                    </Text>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.contactTitle}>{opt.title}</Text>
+                                    <Text style={styles.contactSub}>{opt.sub}</Text>
                                 </View>
-                                <Icon
-                                    name="ChevronRight"
-                                    size={20}
-                                    color={NAV_THEME[colorScheme].border}
-                                />
+                                <Icon name="ChevronRight" size={16} color={BR.ink3} />
                             </TouchableOpacity>
                         ))}
                     </View>
-                </View>
+                </Animated.View>
 
                 {/* FAQs */}
-                <View className="mb-6">
-                    <View className="flex-row items-center gap-3 mb-4">
-                        <View className="items-center justify-center w-10 h-10 rounded-xl bg-purple-500/10">
-                            <Icon name="BookOpen" size={20} color="#a855f7" />
-                        </View>
-                        <Text className="text-lg font-semibold text-foreground">
-                            Frequently Asked Questions
-                        </Text>
-                    </View>
-
-                    <View className="gap-3">
-                        {faqs.map((faq, index) => (
-                            <FAQItem
-                                key={index}
-                                question={faq.question}
-                                answer={faq.answer}
-                            />
+                <Animated.View entering={FadeInUp.duration(300).delay(120)} style={{ marginTop: 28 }}>
+                    <Text style={styles.sectionLabel}>Frequently asked questions</Text>
+                    <View style={{ gap: 8, marginTop: 10 }}>
+                        {FAQS.map((faq, i) => (
+                            <FAQItem key={i} question={faq.question} answer={faq.answer} />
                         ))}
                     </View>
-                </View>
+                </Animated.View>
 
-                {/* Email Footer */}
-                <View className="items-center p-4 bg-card">
-                    <View className="flex-row items-center gap-2">
-                        <Icon
-                            name="Mail"
-                            size={16}
-                            color={NAV_THEME[colorScheme].border}
-                        />
-                        <Text className="text-sm text-muted-foreground">
-                            You can also reach us directly at
-                        </Text>
-                    </View>
-                    <TouchableOpacity onPress={handleEmailSupport}>
-                        <Text className="mt-1 text-base font-semibold text-primary">
-                            biterunr@gmail.com
-                        </Text>
+                {/* Email footer */}
+                <Animated.View entering={FadeInUp.duration(300).delay(160)} style={styles.emailFooter}>
+                    <Text style={styles.emailFooterLabel}>You can also reach us directly at</Text>
+                    <TouchableOpacity onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}`)}>
+                        <Text style={styles.emailFooterAddress}>{SUPPORT_EMAIL}</Text>
                     </TouchableOpacity>
-                </View>
+                </Animated.View>
             </ScrollView>
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: 18,
+        paddingTop: 8,
+        paddingBottom: 12,
+    },
+    backBtn: {
+        width: 38,
+        height: 38,
+        borderRadius: 999,
+        backgroundColor: BR.paper2,
+        borderWidth: 1,
+        borderColor: BR.line,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    hero: {
+        alignItems: "center",
+        paddingVertical: 28,
+    },
+    heroIcon: {
+        width: 72,
+        height: 72,
+        borderRadius: 22,
+        backgroundColor: BR.orangeTint,
+        borderWidth: 1,
+        borderColor: "rgba(255,106,31,0.18)",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    heroSub: {
+        fontSize: 14,
+        color: BR.ink3,
+        marginTop: 6,
+        textAlign: "center",
+        lineHeight: 20,
+    },
+    sectionLabel: {
+        fontSize: 11,
+        fontFamily: BR_FONT.mono,
+        color: BR.ink3,
+        letterSpacing: 1.2,
+        textTransform: "uppercase",
+    },
+    contactRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 14,
+        padding: 14,
+        backgroundColor: BR.card,
+        borderRadius: BR_RADIUS.md,
+        borderWidth: 1,
+        borderColor: BR.line,
+    },
+    contactIcon: {
+        width: 44,
+        height: 44,
+        borderRadius: 14,
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+    },
+    contactTitle: {
+        fontSize: 15,
+        fontWeight: "700",
+        color: BR.ink,
+    },
+    contactSub: {
+        fontSize: 12,
+        color: BR.ink3,
+        marginTop: 2,
+    },
+    faqCard: {
+        backgroundColor: BR.card,
+        borderRadius: BR_RADIUS.md,
+        borderWidth: 1,
+        borderColor: BR.line,
+        padding: 14,
+    },
+    faqRow: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    faqQuestion: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: BR.ink,
+        lineHeight: 20,
+    },
+    faqAnswer: {
+        fontSize: 13,
+        color: BR.ink3,
+        lineHeight: 19,
+        marginTop: 10,
+    },
+    emailFooter: {
+        alignItems: "center",
+        marginTop: 32,
+        padding: 20,
+        backgroundColor: BR.card,
+        borderRadius: BR_RADIUS.md,
+        borderWidth: 1,
+        borderColor: BR.line,
+        gap: 4,
+    },
+    emailFooterLabel: {
+        fontSize: 13,
+        color: BR.ink3,
+    },
+    emailFooterAddress: {
+        fontSize: 14,
+        fontWeight: "700",
+        color: BR.orangeDeep,
+    },
+});

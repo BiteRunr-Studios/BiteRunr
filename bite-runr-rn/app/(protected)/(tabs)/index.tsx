@@ -389,33 +389,55 @@ export default function HomeTab() {
                 >
                   {owedToMe > 0 && (
                     <Pressable
-                      onPress={() => router.push("/groups?filter=active")}
-                      style={[
-                        styles.statCard,
-                        {
-                          backgroundColor: BR.mintSoft,
-                          borderColor: "rgba(46,190,123,0.2)",
-                          flex: 1.4,
-                        },
-                      ]}
+                      onPress={() => {
+                        const first = outstandingDebts?.[0];
+                        if (first) {
+                          router.push(`/order/settlement?orderId=${first.orderId}`);
+                        }
+                      }}
+                      style={styles.owedCard}
                     >
-                      <View style={styles.statHeaderRow}>
-                        <Icon name="TrendingUp" size={14} color={BR.mintInk} />
-                        <Text style={[styles.statLabel, { color: BR.mintInk }]}>
-                          YOU&apos;RE OWED
-                        </Text>
+                      {/* Top row: label + stacked avatars */}
+                      <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
+                        <View style={styles.statHeaderRow}>
+                          <Icon name="TrendingUp" size={12} color={BR.mintInk} />
+                          <Text style={[styles.statLabel, { color: BR.mintInk }]}>
+                            YOU&apos;RE OWED
+                          </Text>
+                        </View>
+                        {outstandingDebts && outstandingDebts.length > 0 && (
+                          <View style={{ flexDirection: "row" }}>
+                            {outstandingDebts.slice(0, 3).map((d, i) => (
+                              <View key={d.userId} style={{ marginLeft: i ? -10 : 0 }}>
+                                <BrAvatar
+                                  name={`${d.firstName} ${d.lastName}`}
+                                  avatarUrl={d.avatarUrl}
+                                  size={26}
+                                  ring={BR.mintSoft}
+                                />
+                              </View>
+                            ))}
+                          </View>
+                        )}
                       </View>
-                      <Text style={[styles.statValue, { color: BR.mintInk }]}>
+
+                      {/* Amount */}
+                      <Text style={[styles.statValue, { color: BR.mintInk, marginTop: 8 }]}>
                         ${owedToMe.toFixed(2)}
                       </Text>
-                      <Text
-                        style={[
-                          styles.statSub,
-                          { color: BR.mintInk, opacity: 0.7 },
-                        ]}
-                      >
-                        {outstandingDebts?.length ?? 0} pending
-                      </Text>
+
+                      {/* Bottom row: name + collect pill */}
+                      <View style={styles.owedFooter}>
+                        <Text style={[styles.statSub, { color: BR.mintInk, opacity: 0.75, flex: 1 }]} numberOfLines={1}>
+                          {outstandingDebts && outstandingDebts.length === 1
+                            ? `${outstandingDebts[0].firstName} owes you`
+                            : `${outstandingDebts?.length ?? 0} people owe you`}
+                        </Text>
+                        <View style={styles.collectPill}>
+                          <Text style={styles.collectPillText}>Collect</Text>
+                          <Icon name="ArrowRight" size={10} color={BR.mintInk} />
+                        </View>
+                      </View>
                     </Pressable>
                   )}
                   {iOwe > 0 && (
@@ -952,6 +974,34 @@ const styles = StyleSheet.create({
   statSub: {
     fontSize: 11,
     marginTop: 2,
+  },
+  owedCard: {
+    padding: 14,
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+    backgroundColor: BR.mintSoft,
+    borderColor: "rgba(46,190,123,0.2)",
+    flex: 1.4,
+  },
+  owedFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 8,
+  },
+  collectPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "rgba(46,190,123,0.18)",
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  collectPillText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: BR.mintInk,
   },
   sectionHeader: {
     flexDirection: "row",

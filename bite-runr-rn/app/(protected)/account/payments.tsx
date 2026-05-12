@@ -265,7 +265,7 @@ export default function PaymentsScreen() {
                 <Pressable onPress={() => router.back()} style={styles.backBtn}>
                     <Icon name="ChevronLeft" size={20} color={BR.ink} />
                 </Pressable>
-                <BrText weight="bold" style={{ fontSize: 17 }}>Payments</BrText>
+                <BrText weight="bold" style={{ fontSize: 17, lineHeight: 24 }}>Payments</BrText>
                 <View style={styles.stripeBadge}>
                     <Icon name="ShieldCheck" size={11} color={BR.mintInk} />
                     <Text style={styles.stripeBadgeText}>Stripe</Text>
