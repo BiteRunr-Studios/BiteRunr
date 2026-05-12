@@ -27,6 +27,7 @@ type Member = {
     firstName: string;
     lastName: string;
     email: string;
+    avatarUrl: string | null;
     amountOwed: bigint | number;
     settlementStatus: string;
     stripePayment: { status: string; amount: number } | null;
@@ -113,7 +114,7 @@ function MemberRow({
                 },
             ]}
         >
-            <BrAvatar name={`${m.firstName} ${m.lastName}`} size={44} />
+            <BrAvatar name={`${m.firstName} ${m.lastName}`} avatarUrl={m.avatarUrl} size={44} />
 
             <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
                 <Text style={styles.memberName} numberOfLines={1}>

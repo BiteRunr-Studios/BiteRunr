@@ -446,6 +446,7 @@ export const getOrderPaymentStatus = query({
                     firstName: user?.firstName ?? "Unknown",
                     lastName: user?.lastName ?? "",
                     email: user?.email ?? "",
+                    avatarUrl: user?.avatarUrl ?? null,
                     amountOwed: ou.amountOwed,
                     settlementStatus: ou.settlementStatus,
                     stripePayment: latestPayment
