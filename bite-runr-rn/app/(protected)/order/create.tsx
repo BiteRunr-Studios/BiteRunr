@@ -1048,7 +1048,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingTop: 14,
     gap: 10,
-    backgroundColor: "transparent",
+    backgroundColor: BR.paper,
   },
   readyBadge: {
     flexDirection: "row",
