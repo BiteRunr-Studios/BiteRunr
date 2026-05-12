@@ -80,12 +80,10 @@ function MemberRow({
     m,
     idx,
     onMarkCash,
-    onNudge,
 }: {
     m: Member;
     idx: number;
     onMarkCash: () => void;
-    onNudge: () => void;
 }) {
     const status = getMemberVisualStatus(m);
     const isPaid = status === "paid";
@@ -144,9 +142,6 @@ function MemberRow({
                 </Text>
                 {isOut && (
                     <View style={{ flexDirection: "row", gap: 6 }}>
-                        <Pressable onPress={onNudge} hitSlop={6} style={styles.iconBtn}>
-                            <Icon name="Bell" size={13} color={BR.ink2} />
-                        </Pressable>
                         <Pressable onPress={onMarkCash} style={styles.cashBtn}>
                             <Text style={styles.cashBtnText}>CASH</Text>
                         </Pressable>
@@ -169,12 +164,14 @@ export default function Settlement() {
     const orderId = Array.isArray(params.orderId) ? params.orderId[0] : params.orderId;
     const insets = useSafeAreaInsets();
     const [isCompleting, setIsCompleting] = useState(false);
+    const [isNudging, setIsNudging] = useState(false);
 
     const paymentStatus = useQuery(
         api.payments.getOrderPaymentStatus,
         orderId ? { orderId: orderId as Id<"orders"> } : "skip",
     );
     const markSettledInPerson = useMutation(api.payments.markSettledInPerson);
+    const nudgeUnsettledMembers = useMutation(api.payments.nudgeUnsettledMembers);
     const updateOrder = useMutation(api.orders.update);
 
     const handleCompleteOrder = async () => {
@@ -218,6 +215,25 @@ export default function Settlement() {
         );
     };
 
+    const handleNudgeAll = async () => {
+        if (!orderId || isNudging) return;
+        setIsNudging(true);
+        try {
+            const result = await nudgeUnsettledMembers({ orderId: orderId as Id<"orders"> });
+            const count = result.nudgedCount;
+            Alert.alert(
+                count > 0 ? "Nudges sent" : "No nudges sent",
+                count > 0
+                    ? `Sent ${count} payment reminder${count === 1 ? "" : "s"}.`
+                    : "Everyone with a balance has already settled.",
+            );
+        } catch (error) {
+            Alert.alert("Error", error instanceof Error ? error.message : "Failed to send nudges");
+        } finally {
+            setIsNudging(false);
+        }
+    };
+
     if (paymentStatus === undefined) {
         return (
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: BR.paper }}>
@@ -248,7 +264,9 @@ export default function Settlement() {
         .every((m) => m.settlementStatus === "confirmed" || m.settlementStatus === "settled_in_person");
     const paidCount = nonCreatorMembers.filter((m) => getMemberVisualStatus(m) === "paid").length;
     const pct = totalOwed > 0 ? Math.round((totalPaid / totalOwed) * 100) : 0;
-    const outstandingCount = nonCreatorMembers.filter((m) => getMemberVisualStatus(m) !== "paid").length;
+    const outstandingCount = nonCreatorMembers.filter(
+        (m) => Number(m.amountOwed) > 0 && getMemberVisualStatus(m) !== "paid",
+    ).length;
 
     return (
         <>
@@ -259,7 +277,11 @@ export default function Settlement() {
                 <Pressable onPress={() => router.back()} style={styles.backBtn}>
                     <Icon name="ChevronLeft" size={20} color={BR.ink} />
                 </Pressable>
-                <Text style={styles.headerTitle}>Settle up</Text>
+                <View pointerEvents="none" style={styles.headerTitle}>
+                    <BrText weight="bold" style={{ fontSize: 17, lineHeight: 24 }}>
+                        Settle up
+                    </BrText>
+                </View>
                 <View style={{ width: 38 }} />
             </View>
 
@@ -368,11 +390,22 @@ export default function Settlement() {
                     <View style={styles.ledgerHeader}>
                         <BrText variant="eyebrow">Ledger · {nonCreatorMembers.length}</BrText>
                         <Pressable
+                            onPress={handleNudgeAll}
+                            disabled={isNudging || outstandingCount === 0}
                             hitSlop={8}
-                            style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
+                            style={[
+                                { flexDirection: "row", alignItems: "center", gap: 5 },
+                                (isNudging || outstandingCount === 0) && { opacity: 0.45 },
+                            ]}
                         >
-                            <Icon name="Bell" size={11} color={BR.orangeDeep} />
-                            <Text style={styles.nudgeAllText}>NUDGE ALL</Text>
+                            {isNudging ? (
+                                <ActivityIndicator size="small" color={BR.orangeDeep} />
+                            ) : (
+                                <Icon name="Bell" size={11} color={BR.orangeDeep} />
+                            )}
+                            <Text style={styles.nudgeAllText}>
+                                {isNudging ? "NUDGING" : "NUDGE ALL"}
+                            </Text>
                         </Pressable>
                     </View>
 
@@ -383,9 +416,6 @@ export default function Settlement() {
                                 m={m}
                                 idx={i}
                                 onMarkCash={() => handleMarkSettled(m)}
-                                onNudge={() =>
-                                    Alert.alert("Nudge sent", `A reminder has been sent to ${m.firstName}.`)
-                                }
                             />
                         ))}
                     </View>
@@ -451,6 +481,7 @@ const styles = StyleSheet.create({
         paddingTop: 8,
         paddingBottom: 12,
         backgroundColor: BR.paper,
+        position: "relative",
     },
     backBtn: {
         width: 38,
@@ -463,10 +494,13 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     headerTitle: {
-        fontFamily: BR_FONT.display,
-        fontSize: 17,
-        fontWeight: "700",
-        color: BR.ink,
+        position: "absolute",
+        left: 0,
+        right: 0,
+        top: 8,
+        bottom: 12,
+        alignItems: "center",
+        justifyContent: "center",
     },
     receipt: {
         backgroundColor: BR.card,
@@ -567,16 +601,6 @@ const styles = StyleSheet.create({
     memberAmount: {
         fontFamily: BR_FONT.displayExtraBold,
         fontSize: 17,
-    },
-    iconBtn: {
-        width: 28,
-        height: 28,
-        borderRadius: 999,
-        backgroundColor: BR.paper2,
-        borderWidth: 1,
-        borderColor: BR.line2,
-        alignItems: "center",
-        justifyContent: "center",
     },
     cashBtn: {
         height: 28,

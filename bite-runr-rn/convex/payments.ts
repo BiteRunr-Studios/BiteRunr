@@ -568,6 +568,51 @@ export const markSettledInPerson = mutation({
     },
 });
 
+// Public: send settlement reminders to every unpaid member in an order.
+export const nudgeUnsettledMembers = mutation({
+    args: {
+        orderId: v.id("orders"),
+    },
+    handler: async (ctx, args) => {
+        const userId = await getUserId(ctx);
+        if (!userId) throw new Error("Not authenticated");
+
+        const order = await ctx.db.get(args.orderId);
+        if (!order) throw new Error("Order not found");
+        if (order.creatorId !== userId) {
+            throw new Error("Only the runner can nudge members");
+        }
+
+        const orderUsers = await ctx.db
+            .query("orderUsers")
+            .withIndex("by_orderId", (q) => q.eq("orderId", args.orderId))
+            .collect();
+
+        const unsettledMembers = orderUsers.filter(
+            (orderUser) =>
+                orderUser.userId !== order.creatorId &&
+                orderUser.amountOwed > 0n &&
+                orderUser.settlementStatus !== "confirmed" &&
+                orderUser.settlementStatus !== "settled_in_person",
+        );
+
+        for (const orderUser of unsettledMembers) {
+            const amount = Number(orderUser.amountOwed);
+            await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUser, {
+                userId: orderUser.userId,
+                title: "Settle Up Reminder",
+                body: `Please settle your ${order.name} balance of $${(amount / 100).toFixed(2)}.`,
+                data: {
+                    type: "settlement_reminder",
+                    orderId: args.orderId,
+                },
+            });
+        }
+
+        return { nudgedCount: unsettledMembers.length };
+    },
+});
+
 // Public: get stripe payment for a specific order user (for status display)
 export const getStripePaymentForOrderUser = query({
     args: { orderUserId: v.id("orderUsers") },

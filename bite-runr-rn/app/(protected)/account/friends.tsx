@@ -22,6 +22,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
+import { BrText } from "@/components/br";
 import { AnimatedPressable } from "@/components/common/animated-pressable";
 import { Avatar } from "@/components/common/avatar";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
@@ -1242,9 +1243,10 @@ export default function FriendsScreen() {
         style={{
           flexDirection: "row",
           alignItems: "center",
+          justifyContent: "space-between",
           paddingHorizontal: 18,
           paddingVertical: 10,
-          gap: 10,
+          position: "relative",
         }}
       >
         <Pressable
@@ -1262,17 +1264,23 @@ export default function FriendsScreen() {
         >
           <Icon name="ChevronLeft" size={20} color={COLORS.ink} />
         </Pressable>
-        <Text
+        <View
           style={{
-            fontFamily: FONTS.display.bold,
-            fontSize: 20,
-            letterSpacing: -0.4,
-            color: COLORS.ink,
-            flex: 1,
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 10,
+            bottom: 10,
+            alignItems: "center",
+            justifyContent: "center",
           }}
+          pointerEvents="none"
         >
-          Friends
-        </Text>
+          <BrText weight="bold" style={{ fontSize: 17, lineHeight: 24 }}>
+            Friends
+          </BrText>
+        </View>
+        <View style={{ width: 36 }} />
       </View>
 
       {/* Tab row */}

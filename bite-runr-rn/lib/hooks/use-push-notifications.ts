@@ -234,5 +234,7 @@ function handleNotificationTap(data: Record<string, unknown>) {
         router.push("/account/friends?tab=requests");
     } else if (type === "order_update" && data?.orderId) {
         router.push(`/order/${data.orderId}`);
+    } else if (type === "settlement_reminder" && data?.orderId) {
+        router.push(`/order/my-settlement?orderId=${data.orderId}`);
     }
 }

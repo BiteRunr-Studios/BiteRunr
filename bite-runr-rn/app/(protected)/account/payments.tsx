@@ -384,9 +384,11 @@ export default function PaymentsScreen() {
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
           <Icon name="ChevronLeft" size={20} color={BR.ink} />
         </Pressable>
-        <BrText weight="bold" style={{ fontSize: 17, lineHeight: 24 }}>
-          Payments
-        </BrText>
+        <View pointerEvents="none" style={styles.headerTitle}>
+          <BrText weight="bold" style={{ fontSize: 17, lineHeight: 24 }}>
+            Payments
+          </BrText>
+        </View>
         <Pressable
           onPress={() => openURL("https://stripe.com/payments")}
           style={styles.stripeTrustPill}
@@ -859,11 +861,20 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-start",
-    gap: 10,
+    justifyContent: "space-between",
     paddingHorizontal: 18,
     paddingTop: 8,
     paddingBottom: 12,
+    position: "relative",
+  },
+  headerTitle: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 8,
+    bottom: 12,
+    alignItems: "center",
+    justifyContent: "center",
   },
   backBtn: {
     width: 38,
