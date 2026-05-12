@@ -802,7 +802,7 @@ const styles = StyleSheet.create({
     locationChip: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 6,
+        gap: 5,
         paddingHorizontal: 14,
         paddingVertical: 8,
         borderRadius: 999,
@@ -811,12 +811,12 @@ const styles = StyleSheet.create({
         borderColor: BR.line,
     },
     locationChipActive: {
-        backgroundColor: BR.orange,
-        borderColor: BR.orange,
+        backgroundColor: BR.ink,
+        borderColor: BR.ink,
     },
     locationChipText: {
         fontSize: 13,
-        fontWeight: "600",
+        fontWeight: "700",
         color: BR.ink2,
     },
     locationChipTextActive: {

@@ -439,6 +439,12 @@ export const update = mutation({
     if (args.name !== undefined) updates.name = args.name;
     if (args.comments !== undefined) updates.comments = args.comments;
     if (args.status !== undefined) updates.status = args.status;
+    if (args.paused === true) {
+      const totalItems = await countLinesForOrder(ctx, args.orderId);
+      if (totalItems === 0) {
+        throw new Error("Add at least one item before starting the run");
+      }
+    }
     if (args.paused !== undefined) updates.paused = args.paused;
     if (args.paused === false) updates.pausedAiSummary = undefined;
 

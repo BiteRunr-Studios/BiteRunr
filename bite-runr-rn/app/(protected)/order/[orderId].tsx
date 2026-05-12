@@ -154,6 +154,7 @@ export default function SpecificOrder() {
 
   const getButtonState = (): ButtonState => {
     if (!data?.orderUsers || data.orderUsers.length === 0) return "disabled";
+    if (data.count === 0) return "disabled";
     const allDone = data.orderUsers.every((u) => u.status === "done");
     const someDone = data.orderUsers.some((u) => u.status === "done");
     if (allDone) return "readyToRun";
@@ -470,8 +471,13 @@ export default function SpecificOrder() {
                   ]}
                 />
               </View>
-              <Text style={[styles.progressStatus, { color: data.completionStats?.allDone ? BR.mint : BR.ink3 }]}>
-                {data.completionStats?.allDone
+              <Text style={[
+                styles.progressStatus,
+                { color: data.count > 0 && data.completionStats?.allDone ? BR.mint : BR.ink3 },
+              ]}>
+                {data.count === 0
+                  ? "At least one item is needed before the run can start"
+                  : data.completionStats?.allDone
                   ? "✨ Everyone's done — ready to roll"
                   : `Waiting on ${(data.completionStats?.total ?? 0) - (data.completionStats?.done ?? 0)} squad member`}
               </Text>
@@ -694,7 +700,11 @@ export default function SpecificOrder() {
                     styles.footerBtnText,
                     { color: isButtonDisabled ? BR.ink3 : buttonState === "readyToRun" ? "#fff" : BR.mintInk },
                   ]}>
-                    {buttonState === "readyToRun" ? "Start the run" : "Start anyway"}
+                    {data.count === 0
+                      ? "Add items first"
+                      : buttonState === "readyToRun"
+                        ? "Start the run"
+                        : "Start anyway"}
                   </Text>
                 </TouchableOpacity>
               )}
