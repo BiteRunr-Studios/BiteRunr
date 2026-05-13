@@ -1,15 +1,9 @@
 // app.config.ts
-import { ExpoConfig } from "expo/config";
+import path from "node:path";
+import { config as loadDotenv } from "dotenv";
+import type { ExpoConfig } from "expo/config";
 
-type LocalExpoConfig = Partial<
-  Pick<ExpoConfig, "owner" | "extra" | "ios" | "android">
->;
-
-let localConfig: LocalExpoConfig = {};
-try {
-  const maybeLocalConfig = require("./app.config.local");
-  localConfig = maybeLocalConfig.default ?? maybeLocalConfig;
-} catch {}
+loadDotenv({ path: path.resolve(process.cwd(), ".env.local") });
 
 const SPLASH_IMAGE = "./assets/images/icon-no-bg.png";
 const LIGHT_SPLASH_BACKGROUND = "#FFFFFF";
@@ -18,7 +12,7 @@ const SPLASH_IMAGE_WIDTH = 140;
 
 const config: ExpoConfig = {
   name: "BiteRunr",
-  owner: localConfig.owner ?? "",
+  owner: process.env.EXPO_OWNER,
   slug: "biterunr",
   version: "1.1.0",
   orientation: "portrait",
@@ -27,10 +21,10 @@ const config: ExpoConfig = {
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
   ios: {
-    bundleIdentifier: localConfig.ios?.bundleIdentifier ?? "",
+    bundleIdentifier: process.env.EXPO_IOS_BUNDLE_IDENTIFIER,
     supportsTablet: true,
-    usesAppleSignIn: localConfig.ios?.usesAppleSignIn ?? true,
-    appleTeamId: localConfig.ios?.appleTeamId ?? "",
+    usesAppleSignIn: process.env.EXPO_USES_APPLE_SIGN_IN === "true",
+    appleTeamId: process.env.EXPO_IOS_APPLE_TEAM_ID,
     icon: {
       dark: "./assets/images/icon-dark.png",
       light: "./assets/images/icon.png",
@@ -69,14 +63,15 @@ const config: ExpoConfig = {
     },
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
-    package:
-      localConfig.android?.package ?? localConfig.ios?.bundleIdentifier ?? "",
+    package: process.env.EXPO_ANDROID_PACKAGE,
   },
   web: {
     output: "static",
     favicon: "./assets/images/favicon.png",
   },
   plugins: [
+    "expo-asset",
+    "expo-web-browser",
     "expo-router",
     "expo-apple-authentication",
     [
@@ -144,7 +139,7 @@ const config: ExpoConfig = {
   },
   extra: {
     eas: {
-      projectId: localConfig.extra?.eas?.projectId ?? "",
+      projectId: process.env.EXPO_EAS_PROJECT_ID,
     },
   },
 };
