@@ -182,7 +182,8 @@ export default function CreateOrder() {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setSelectedFriendIds((prev) => {
       const prevSet = new Set(prev);
-      const allSelected = memberIds.every((id) => prevSet.has(id));
+      const allSelected =
+        memberIds.length > 0 && memberIds.every((id) => prevSet.has(id));
       if (allSelected) {
         return prev.filter((id) => !memberIds.includes(id));
       }

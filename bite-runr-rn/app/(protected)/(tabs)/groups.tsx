@@ -404,10 +404,24 @@ export default function GroupsTab() {
     data?.filter((i) => i.order.status === "active").length ?? 0;
   const doneCount =
     data?.filter((i) => i.order.status === "completed").length ?? 0;
+  const needsPaymentCount =
+    data?.filter((item) => {
+      if (!userId) return false;
+      const myOrderUser = item.orderUsers.find((ou) => ou.userId === userId);
+      if (!myOrderUser) return false;
+      if (item.order.status !== "active" || !item.order.paused) return false;
+      if (item.order.creatorId === userId) return false;
+      if (Number(myOrderUser.amountOwed) <= 0) return false;
+      return (
+        myOrderUser.settlementStatus === "unpaid" ||
+        myOrderUser.settlementStatus === "claimed"
+      );
+    }).length ?? 0;
   const countFor = (key: FilterType) => {
     if (key === "all") return allCount;
     if (key === "active") return liveCount;
     if (key === "completed") return doneCount;
+    if (key === "needs_payment") return needsPaymentCount;
     return 0;
   };
 

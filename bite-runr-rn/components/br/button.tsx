@@ -41,7 +41,7 @@ export function BrButton({
     <Pressable
       {...rest}
       disabled={disabled || loading}
-      style={({ pressed }) => [
+      style={(state) => [
         styles.base,
         {
           backgroundColor: v.bg,
@@ -52,10 +52,10 @@ export function BrButton({
           paddingHorizontal: 18,
           opacity: disabled ? 0.5 : 1,
           alignSelf: fullWidth ? "stretch" : "flex-start",
-          transform: [{ scale: pressed ? 0.98 : 1 }],
+          transform: [{ scale: state.pressed ? 0.98 : 1 }],
         },
         v.shadow,
-        style as ViewStyle,
+        typeof style === "function" ? style(state) : style,
       ]}
     >
       {loading ? (

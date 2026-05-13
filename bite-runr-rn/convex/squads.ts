@@ -99,7 +99,11 @@ export const update = mutation({
     if (squad.creatorId !== userId) throw new Error("Not authorized");
 
     const patch: Partial<{ name: string; color: string; icon: string; memberIds: Id<"users">[] }> = {};
-    if (args.name !== undefined) patch.name = args.name.trim();
+    if (args.name !== undefined) {
+      const name = args.name.trim();
+      if (!name) throw new Error("Squad name is required");
+      patch.name = name;
+    }
     if (args.color !== undefined) patch.color = args.color;
     if (args.icon !== undefined) patch.icon = args.icon;
     if (args.memberIds !== undefined) {

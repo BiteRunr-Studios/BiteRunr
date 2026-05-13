@@ -87,7 +87,9 @@ export default function CompletedOrder() {
         return (
             <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
                 <View style={styles.header}>
-                    <View style={styles.backBtn} />
+                    <Pressable onPress={() => router.back()} style={styles.backBtn}>
+                        <Icon name="ChevronLeft" size={20} color={BR.ink} />
+                    </Pressable>
                 </View>
                 <Skeleton>
                     <View style={{ paddingHorizontal: 18, gap: 16, marginTop: 8 }}>

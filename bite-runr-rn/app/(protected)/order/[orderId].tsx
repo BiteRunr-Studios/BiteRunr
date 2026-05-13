@@ -369,6 +369,8 @@ export default function SpecificOrder() {
     data.completionStats && data.completionStats.total > 0
       ? (data.completionStats.done / data.completionStats.total) * 100
       : 0;
+  const remainingOrderingCount =
+    (data.completionStats?.total ?? 0) - (data.completionStats?.done ?? 0);
 
   const dateLabel = new Date(data.order.createdAt).toLocaleDateString("en-US", {
     weekday: "short",
@@ -479,7 +481,9 @@ export default function SpecificOrder() {
                   ? "At least one item is needed before the run can start"
                   : data.completionStats?.allDone
                   ? "✨ Everyone's done — ready to roll"
-                  : `Waiting on ${(data.completionStats?.total ?? 0) - (data.completionStats?.done ?? 0)} squad member`}
+                  : `Waiting on ${remainingOrderingCount} squad ${
+                      remainingOrderingCount === 1 ? "member" : "members"
+                    }`}
               </Text>
             </ReAnimated.View>
           )}

@@ -184,9 +184,11 @@ export default function AccountTab() {
               <View style={styles.profileHero}>
                 {/* Level sticker */}
                 <View style={styles.stickerWrap}>
-                  <BrSticker rotate={4}>
-                    <Icon name="Flame" size={11} color={BR.orange} />
-                    {"  "}Lvl {level} Runner
+                  <BrSticker
+                    rotate={4}
+                    leftSlot={<Icon name="Flame" size={11} color={BR.orange} />}
+                  >
+                    Lvl {level} Runner
                   </BrSticker>
                 </View>
 

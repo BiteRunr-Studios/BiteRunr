@@ -382,7 +382,9 @@ export default function HomeTab() {
               </Animated.View>
 
               {/* Stats row */}
-              {(owedToMe > 0 || iOwe > 0 || hasStripe) && (
+              {(owedToMe > 0 ||
+                iOwe > 0 ||
+                (hasStripe && balanceAmount !== null && owedToMe === 0)) && (
                 <Animated.View
                   entering={FadeInUp.duration(300).delay(30)}
                   style={styles.statsRow}

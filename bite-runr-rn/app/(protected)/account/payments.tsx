@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, type ComponentType } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  type TextInputProps,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -27,7 +28,13 @@ import Animated, {
 } from "react-native-reanimated";
 import { openURL } from "expo-linking";
 
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+type AnimatedTextInputProps = TextInputProps & {
+  text?: string;
+};
+
+const AnimatedTextInput = Animated.createAnimatedComponent(
+  TextInput as ComponentType<AnimatedTextInputProps>,
+);
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -123,7 +130,7 @@ export default function PaymentsScreen() {
   // Animated counter for the balance number
   const balanceSv = useSharedValue(0);
   const animatedBalanceProps = useAnimatedProps(() => ({
-    defaultValue: `$${balanceSv.value.toFixed(2)}`,
+    text: `$${balanceSv.value.toFixed(2)}`,
   }));
 
   useEffect(() => {
