@@ -1,0 +1,312 @@
+<p align="center">
+  <img
+    src="./assets/readme/hero.svg"
+    alt="BiteRunr. Coordinate group food runs. Order together, pick up once, split the bill in seconds."
+    width="100%"
+  />
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a>
+  ·
+  <a href="#features">Features</a>
+  ·
+  <a href="#tech-stack">Tech stack</a>
+  ·
+  <a href="#architecture-notes">Architecture</a>
+  ·
+  <a href="#scripts">Scripts</a>
+</p>
+
+<p>
+  BiteRunr is an Expo/React Native app for coordinating group food runs. A
+  runner creates an order, invites friends, collects everyone's items, picks up
+  from one or more locations, scans the receipt, and settles the split through
+  Stripe Connect.
+</p>
+
+<p>
+  This repository is primarily the mobile app. The <code>admin/</code> and
+  <code>landing/</code> directories are separate Vite apps with their own
+  dependencies and Convex deployments.
+</p>
+
+<p>
+  GitHub strips README <code>style</code> and <code>link</code> tags, so the
+  custom visual design lives inside SVG panels in <code>assets/readme/</code>.
+  The rest stays plain, searchable HTML.
+</p>
+
+<h2 id="quick-start">Quick Start</h2>
+
+<h3>Prerequisites</h3>
+
+<ul>
+  <li>Node.js 18 or newer</li>
+  <li>npm, or Bun if you prefer matching <code>packageManager</code></li>
+  <li>Xcode/iOS Simulator for iOS development</li>
+  <li>Android Studio/Android Emulator for Android development</li>
+  <li>Convex access for the target deployment</li>
+  <li>Stripe keys for payment flows</li>
+</ul>
+
+<h3>Install</h3>
+
+<pre><code class="language-bash">npm install</code></pre>
+
+<p>Create local environment files:</p>
+
+<pre><code class="language-bash">cp .env.example .env.local</code></pre>
+
+<p>Fill in at least the public mobile app values:</p>
+
+<pre><code class="language-bash">CONVEX_DEPLOYMENT=
+EXPO_PUBLIC_CONVEX_URL=
+EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+EXPO_PUBLIC_CONVEX_SITE_URL=
+
+EXPO_IOS_BUNDLE_IDENTIFIER=com.company.example
+EXPO_ANDROID_PACKAGE=com.company.example
+EXPO_IOS_APPLE_TEAM_ID=
+EXPO_USES_APPLE_SIGN_IN=false
+EXPO_EAS_PROJECT_ID=
+EXPO_OWNER=</code></pre>
+
+<p>
+  Convex server secrets such as <code>STRIPE_SECRET_KEY</code>,
+  <code>STRIPE_WEBHOOK_SECRET</code>, <code>AUTH_RESEND_KEY</code>, OAuth
+  provider secrets, and <code>SITE_URL</code> should be configured on the Convex
+  deployment, not committed to the repo.
+</p>
+
+<h3>Run</h3>
+
+<p>
+  Most app commands run <code>npm run sync-styles</code> first. That script
+  converts CSS variables from <code>global.css</code> into
+  <code>tokens.json</code> so navigation and JavaScript theme code stay in sync.
+</p>
+
+<pre><code class="language-bash">npm run dev      # Expo dev server
+npm run ios      # Build and run on iOS simulator
+npm run android  # Build and run on Android emulator
+npm run phone    # Build and run on a physical iPhone; set IPHONE if needed
+npm run web      # Expo web target</code></pre>
+
+<p>Run Convex locally against one of the configured cloud deployments:</p>
+
+<pre><code class="language-bash">npm run convex:br      # production project
+npm run convex:brtest  # test project</code></pre>
+
+<h2 id="features">Features</h2>
+
+<p align="center">
+  <img
+    src="./assets/readme/features.svg"
+    alt="BiteRunr features: group orders, multi-stop pickup, voice or manual entry, receipt scanning, Stripe Connect settlement, and secure sign in."
+    width="100%"
+  />
+</p>
+
+<ul>
+  <li>
+    Create group food orders and invite people with join codes or QR codes
+  </li>
+  <li>Split one run across multiple pickup locations</li>
+  <li>Add order items manually or by voice</li>
+  <li>Scan receipts and match receipt lines back to members</li>
+  <li>Track per-member settlement status</li>
+  <li>Support card payments to runners through Stripe Connect</li>
+  <li>Manage friends, groups, account details, and payment setup</li>
+  <li>Sign in with Better Auth email OTP and optional social providers</li>
+</ul>
+
+<h2 id="tech-stack">Tech Stack</h2>
+
+<p align="center">
+  <img
+    src="./assets/readme/stack.svg"
+    alt="BiteRunr tech stack: Expo, React Native, Convex, Better Auth, Stripe, NativeWind, TypeScript, Biome, Resend, and EAS."
+    width="100%"
+  />
+</p>
+
+<ul>
+  <li><a href="https://expo.dev">Expo</a> and React Native</li>
+  <li>
+    <a href="https://docs.expo.dev/router/introduction/">Expo Router</a> for
+    file-based routing
+  </li>
+  <li>
+    <a href="https://convex.dev">Convex</a> for backend functions, database,
+    auth integration, and push notifications
+  </li>
+  <li>
+    <a href="https://www.better-auth.com/">Better Auth</a> with the Convex
+    component and Expo SecureStore
+  </li>
+  <li>
+    <a href="https://github.com/stripe/stripe-react-native"
+      >Stripe React Native</a
+    >
+    and Stripe Connect
+  </li>
+  <li>
+    NativeWind/Tailwind plus the newer BiteRunr design system in
+    <code>components/br/</code>
+  </li>
+  <li>Biome for linting and Prettier for formatting</li>
+</ul>
+
+<h2 id="scripts">Scripts</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Command</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>npm run dev</code></td>
+      <td>Start Expo with a cleared Metro cache</td>
+    </tr>
+    <tr>
+      <td><code>npm run ios</code></td>
+      <td>Build and run the iOS app</td>
+    </tr>
+    <tr>
+      <td><code>npm run android</code></td>
+      <td>Build and run the Android app</td>
+    </tr>
+    <tr>
+      <td><code>npm run phone</code></td>
+      <td>Run on a physical iPhone</td>
+    </tr>
+    <tr>
+      <td><code>npm run web</code></td>
+      <td>Start the Expo web target</td>
+    </tr>
+    <tr>
+      <td><code>npm run prebuild</code></td>
+      <td>
+        Regenerate native <code>ios/</code> and <code>android/</code> projects
+      </td>
+    </tr>
+    <tr>
+      <td><code>npm run convex:br</code></td>
+      <td>Start Convex dev for the production project</td>
+    </tr>
+    <tr>
+      <td><code>npm run convex:brtest</code></td>
+      <td>Start Convex dev for the test project</td>
+    </tr>
+    <tr>
+      <td><code>npm run lint</code></td>
+      <td>Run Biome lint</td>
+    </tr>
+    <tr>
+      <td><code>npm run lint:fix</code></td>
+      <td>Run Biome lint with autofixes</td>
+    </tr>
+    <tr>
+      <td><code>npm run format</code></td>
+      <td>Check formatting with Prettier</td>
+    </tr>
+    <tr>
+      <td><code>npm run format:write</code></td>
+      <td>Format files with Prettier</td>
+    </tr>
+    <tr>
+      <td><code>npm run check</code></td>
+      <td>Run lint and formatting checks</td>
+    </tr>
+    <tr>
+      <td><code>npm run eas:build</code></td>
+      <td>Build a production iOS <code>.ipa</code> locally</td>
+    </tr>
+    <tr>
+      <td><code>npm run eas:build:android</code></td>
+      <td>Build a production Android <code>.aab</code> locally</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  There is no dedicated test runner or typecheck script. Use
+  <code>npx tsc --noEmit</code> for a one-shot TypeScript check.
+</p>
+
+<h2 id="project-structure">Project Structure</h2>
+
+<pre><code class="language-text">app/                    Expo Router routes
+  (auth)/               Sign-in, sign-up, and OTP screens
+  (protected)/          Authenticated tabs, orders, account, and settlement flows
+  join/[code].tsx       Invite-code join modal
+components/             Shared React Native components
+  br/                   New BiteRunr design system components
+  common/               Older shared UI primitives
+convex/                 Convex backend functions, schema, auth, payments, receipts
+hooks/                  Shared React hooks
+lib/                    App utilities, auth client, theme, grouping and matching logic
+assets/                 App icons, splash images, and static assets
+admin/                  Separate admin app
+landing/                Separate landing page app</code></pre>
+
+<h2 id="architecture-notes">Architecture Notes</h2>
+
+<h3>Routing</h3>
+
+<p>
+  <code>app/_layout.tsx</code> mounts the provider stack for Stripe, Convex
+  Better Auth, app auth state, theming, safe areas, and the root stack.
+  Protected screens live under <code>app/(protected)</code> and redirect
+  unauthenticated users back to <code>app/(auth)</code>.
+</p>
+
+<h3>Auth</h3>
+
+<p>
+  Better Auth owns its own Convex component tables. The app also has a separate
+  <code>users</code> table in <code>convex/schema.ts</code>, linked to the
+  Better Auth user by email. Backend helpers in
+  <code>convex/authHelper.ts</code> expose <code>getUserId</code>,
+  <code>ensureUser</code>, and related utilities for this bridge.
+</p>
+
+<h3>Money</h3>
+
+<p>
+  Monetary values are stored as integer cents. Platform fee logic lives in
+  <code>convex/fees.ts</code> and is reused by payment-related backend
+  functions.
+</p>
+
+<h3>Styling</h3>
+
+<p>Two styling systems coexist:</p>
+
+<ul>
+  <li>
+    NativeWind/Tailwind with HSL CSS variables from <code>global.css</code>
+  </li>
+  <li>
+    The newer BiteRunr design system in <code>components/br/</code>, backed by
+    <code>lib/br-theme.ts</code>
+  </li>
+</ul>
+
+<p>When changing CSS variables, regenerate <code>tokens.json</code>:</p>
+
+<pre><code class="language-bash">npm run sync-styles</code></pre>
+
+<h2 id="native-projects">Native Projects</h2>
+
+<p>
+  The <code>ios/</code> and <code>android/</code> directories are generated by
+  Expo prebuild. Prefer changing native configuration through
+  <code>app.config.ts</code>, then run:
+</p>
+
+<pre><code class="language-bash">npm run prebuild</code></pre>

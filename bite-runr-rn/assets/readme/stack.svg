@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" width="1200" height="540" role="img" aria-label="BiteRunr tech stack">
+  <title>Tech stack</title>
+
+  <defs>
+    <linearGradient id="bgStack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A1410"/>
+      <stop offset="100%" stop-color="#3A2D24"/>
+    </linearGradient>
+    <pattern id="dotsDark" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.4" fill="#FFF7EE" opacity="0.06"/>
+    </pattern>
+    <filter id="cardShadowDark" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="6" stdDeviation="14" flood-color="#000000" flood-opacity="0.40"/>
+    </filter>
+    <radialGradient id="glowOrange2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF6A1F" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#FF6A1F" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="540" fill="url(#bgStack)" rx="32"/>
+  <rect width="1200" height="540" fill="url(#dotsDark)" rx="32"/>
+  <circle cx="1100" cy="60" r="280" fill="url(#glowOrange2)"/>
+  <circle cx="80" cy="500" r="240" fill="url(#glowOrange2)" opacity="0.6"/>
+
+  <!-- Header -->
+  <g transform="translate(60, 70)">
+    <g>
+      <rect width="116" height="28" rx="14" fill="#FF6A1F"/>
+      <text x="58" y="19" text-anchor="middle" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#FFF7EE" letter-spacing="1.2">TECH STACK</text>
+    </g>
+    <text x="0" y="76" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="48" font-weight="900" fill="#FFF7EE" letter-spacing="-1.5">Built on a modern stack.</text>
+    <text x="0" y="112" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="18" font-weight="500" fill="#FCEFE0" opacity="0.7">Type-safe, real-time, and shipping to App Store + Play Store.</text>
+  </g>
+
+  <!-- Stack rows: 5 cols × 2 rows of dark-card chips -->
+  <!-- Row 1 -->
+
+  <!-- Expo -->
+  <g transform="translate(60, 260)">
+    <rect width="200" height="88" rx="22" fill="#FFFFFF" filter="url(#cardShadowDark)"/>
+    <g transform="translate(20, 22)">
+      <rect width="44" height="44" rx="14" fill="#1A1410"/>
+      <text x="22" y="29" text-anchor="middle" font-family="'Bricolage Grotesque', sans-serif" font-size="20" font-weight="900" fill="#FFF7EE">E</text>
+    </g>
+    <text x="76" y="46" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="18" font-weight="800" fill="#1A1410">Expo</text>
+    <text x="76" y="66" font-family="'Bricolage Grotesque', sans-serif" font-size="12" font-weight="500" fill="#4A3C32">Router · EAS · OTA</text>
+  </g>
+
+  <!-- React Native -->
+  <g transform="translate(280, 260)">
+    <rect width="200" height="88" rx="22" fill="#FFFFFF" filter="url(#cardShadowDark)"/>
+    <g transform="translate(20, 22)">
+      <rect width="44" height="44" rx="14" fill="#1A1410"/>
+      <g transform="translate(22, 22)" stroke="#61DAFB" stroke-width="1.6" fill="none">
+        <ellipse rx="14" ry="5"/>
+        <ellipse rx="14" ry="5" transform="rotate(60)"/>
+        <ellipse rx="14" ry="5" transform="rotate(120)"/>
+        <circle r="2.6" fill="#61DAFB" stroke="none"/>
+      </g>
+    </g>
+    <text x="76" y="46" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="18" font-weight="800" fill="#1A1410">React Native</text>
+    <text x="76" y="66" font-family="'Bricolage Grotesque', sans-serif" font-size="12" font-weight="500" fill="#4A3C32">New architecture</text>
+  </g>
+
+  <!-- Convex -->
+  <g transform="translate(500, 260)">
+    <rect width="200" height="88" rx="22" fill="#FFFFFF" filter="url(#cardShadowDark)"/>
+    <g transform="translate(20, 22)">
+      <rect width="44" height="44" rx="14" fill="#6E5BFF"/>
+      <g transform="translate(11, 11)" fill="#FFFFFF">
+        <path d="M11 0 L22 11 L11 22 L0 11 Z" opacity="0.9"/>
+      </g>
+    </g>
+    <text x="76" y="46" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="18" font-weight="800" fill="#1A1410">Convex</text>
+    <text x="76" y="66" font-family="'Bricolage Grotesque', sans-serif" font-size="12" font-weight="500" fill="#4A3C32">Real-time backend</text>
+  </g>
+
+  <!-- Better Auth -->
+  <g transform="translate(720, 260)">
+    <rect width="200" height="88" rx="22" fill="#FFFFFF" filter="url(#cardShadowDark)"/>
+    <g transform="translate(20, 22)">
+      <rect width="44" height="44" rx="14" fill="#2EBE7B"/>
+      <g transform="translate(13, 9)" fill="#FFFFFF">
+        <path d="M9 0 L18 4 L18 12 Q18 20 9 24 Q0 20 0 12 L0 4 Z"/>
+        <path d="M5 12 L8 15 L13 9" stroke="#2EBE7B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      </g>
+    </g>
+    <text x="76" y="46" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="18" font-weight="800" fill="#1A1410">Better Auth</text>
+    <text x="76" y="66" font-family="'Bricolage Grotesque', sans-serif" font-size="12" font-weight="500" fill="#4A3C32">OTP + social</text>
+  </g>
+
+  <!-- Stripe -->
+  <g transform="translate(940, 260)">
+    <rect width="200" height="88" rx="22" fill="#FFFFFF" filter="url(#cardShadowDark)"/>
+    <g transform="translate(20, 22)">
+      <rect width="44" height="44" rx="14" fill="#6E5BFF"/>
+      <text x="22" y="30" text-anchor="middle" font-family="'Bricolage Grotesque', sans-serif" font-size="22" font-weight="900" fill="#FFFFFF">$</text>
+    </g>
+    <text x="76" y="46" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="18" font-weight="800" fill="#1A1410">Stripe</text>
+    <text x="76" y="66" font-family="'Bricolage Grotesque', sans-serif" font-size="12" font-weight="500" fill="#4A3C32">Connect payments</text>
+  </g>
+
+  <!-- Row 2 -->
+
+  <!-- NativeWind -->
+  <g transform="translate(60, 368)">
+    <rect width="200" height="88" rx="22" fill="#FFFFFF" filter="url(#cardShadowDark)"/>
+    <g transform="translate(20, 22)">
+      <rect width="44" height="44" rx="14" fill="#0EA5E9"/>
+      <g transform="translate(6, 12)" fill="#FFFFFF">
+        <path d="M16 0 C11.733 0 9.067 2.133 8 6.4 C9.6 4.267 11.467 3.467 13.6 4 C14.819 4.305 15.69 5.188 16.654 6.166 C18.225 7.76 20.043 9.6 24 9.6 C28.267 9.6 30.933 7.467 32 3.2 C30.4 5.333 28.533 6.133 26.4 5.6 C25.181 5.295 24.31 4.412 23.346 3.434 C21.775 1.84 19.957 0 16 0 Z M8 9.6 C3.733 9.6 1.067 11.733 0 16 C1.6 13.867 3.467 13.067 5.6 13.6 C6.819 13.905 7.69 14.788 8.654 15.766 C10.225 17.36 12.043 19.2 16 19.2 C20.267 19.2 22.933 17.067 24 12.8 C22.4 14.933 20.533 15.733 18.4 15.2 C17.181 14.895 16.31 14.012 15.346 13.034 C13.775 11.44 11.957 9.6 8 9.6 Z"/>
+      </g>
+    </g>
+    <text x="76" y="46" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="18" font-weight="800" fill="#1A1410">NativeWind</text>
+    <text x="76" y="66" font-family="'Bricolage Grotesque', sans-serif" font-size="12" font-weight="500" fill="#4A3C32">Tailwind on RN</text>
+  </g>
+
+  <!-- TypeScript -->
+  <g transform="translate(280, 368)">
+    <rect width="200" height="88" rx="22" fill="#FFFFFF" filter="url(#cardShadowDark)"/>
+    <g transform="translate(20, 22)">
+      <rect width="44" height="44" rx="14" fill="#3178C6"/>
+      <text x="22" y="30" text-anchor="middle" font-family="'Bricolage Grotesque', sans-serif" font-size="20" font-weight="900" fill="#FFFFFF">TS</text>
+    </g>
+    <text x="76" y="46" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="18" font-weight="800" fill="#1A1410">TypeScript</text>
+    <text x="76" y="66" font-family="'Bricolage Grotesque', sans-serif" font-size="12" font-weight="500" fill="#4A3C32">End-to-end types</text>
+  </g>
+
+  <!-- Biome -->
+  <g transform="translate(500, 368)">
+    <rect width="200" height="88" rx="22" fill="#FFFFFF" filter="url(#cardShadowDark)"/>
+    <g transform="translate(20, 22)">
+      <rect width="44" height="44" rx="14" fill="#60A5FA"/>
+      <g transform="translate(13, 11)" fill="#FFFFFF">
+        <path d="M9 0 c-5 8-9 13-9 16 0 4 4 6 9 6 s9-2 9-6c0-3-4-8-9-16z"/>
+      </g>
+    </g>
+    <text x="76" y="46" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="18" font-weight="800" fill="#1A1410">Biome</text>
+    <text x="76" y="66" font-family="'Bricolage Grotesque', sans-serif" font-size="12" font-weight="500" fill="#4A3C32">Lint · format</text>
+  </g>
+
+  <!-- Resend -->
+  <g transform="translate(720, 368)">
+    <rect width="200" height="88" rx="22" fill="#FFFFFF" filter="url(#cardShadowDark)"/>
+    <g transform="translate(20, 22)">
+      <rect width="44" height="44" rx="14" fill="#1A1410"/>
+      <g transform="translate(13, 16)" fill="#FFFFFF">
+        <path d="M0 0 h18 v12 h-18 z"/>
+        <path d="M0 0 L9 7 L18 0" stroke="#1A1410" stroke-width="1.6" fill="none"/>
+      </g>
+    </g>
+    <text x="76" y="46" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="18" font-weight="800" fill="#1A1410">Resend</text>
+    <text x="76" y="66" font-family="'Bricolage Grotesque', sans-serif" font-size="12" font-weight="500" fill="#4A3C32">OTP delivery</text>
+  </g>
+
+  <!-- EAS -->
+  <g transform="translate(940, 368)">
+    <rect width="200" height="88" rx="22" fill="#FFFFFF" filter="url(#cardShadowDark)"/>
+    <g transform="translate(20, 22)">
+      <rect width="44" height="44" rx="14" fill="#FFC542"/>
+      <text x="22" y="30" text-anchor="middle" font-family="'Bricolage Grotesque', sans-serif" font-size="14" font-weight="900" fill="#7A4A20">EAS</text>
+    </g>
+    <text x="76" y="46" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="18" font-weight="800" fill="#1A1410">EAS</text>
+    <text x="76" y="66" font-family="'Bricolage Grotesque', sans-serif" font-size="12" font-weight="500" fill="#4A3C32">Cloud builds</text>
+  </g>
+</svg>

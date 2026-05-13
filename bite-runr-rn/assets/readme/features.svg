@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 780" width="1200" height="780" role="img" aria-label="BiteRunr features">
+  <title>Features</title>
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFF7EE"/>
+      <stop offset="100%" stop-color="#FCEFE0"/>
+    </linearGradient>
+    <pattern id="dotPattern" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#1A1410" opacity="0.05"/>
+    </pattern>
+    <filter id="cardShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="6" stdDeviation="14" flood-color="#1A1410" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="780" fill="url(#bg)" rx="32"/>
+  <rect width="1200" height="780" fill="url(#dotPattern)" rx="32"/>
+
+  <!-- Section title -->
+  <g transform="translate(60, 70)">
+    <g>
+      <rect width="100" height="28" rx="14" fill="#FFE7D4"/>
+      <text x="50" y="19" text-anchor="middle" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#B85A1F" letter-spacing="1.2">FEATURES</text>
+    </g>
+    <text x="0" y="76" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="48" font-weight="900" fill="#1A1410" letter-spacing="-1.5">Everything for a group run.</text>
+    <text x="0" y="112" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="18" font-weight="500" fill="#4A3C32">From the join code to the final settlement, in one place.</text>
+  </g>
+
+  <!-- ==== Feature cards: 3 cols × 2 rows ==== -->
+  <!-- card layout: 360 wide, 240 tall, 24 gutter; start at y=240 -->
+
+  <!-- Row 1 -->
+
+  <!-- Card 1: Group orders -->
+  <g transform="translate(60, 240)">
+    <rect width="360" height="240" rx="28" fill="#FFFFFF" filter="url(#cardShadow)"/>
+    <!-- icon -->
+    <g transform="translate(28, 28)">
+      <rect width="56" height="56" rx="18" fill="#FFE7D4"/>
+      <g transform="translate(14, 14)" fill="#FF6A1F">
+        <circle cx="9" cy="10" r="7"/>
+        <circle cx="22" cy="10" r="7"/>
+        <path d="M0 28c0-5 4-9 9-9s9 4 9 9z"/>
+        <path d="M13 28c0-5 4-9 9-9s9 4 9 9z"/>
+      </g>
+    </g>
+    <text x="28" y="124" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="22" font-weight="800" fill="#1A1410">Group orders</text>
+    <text x="28" y="156" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A3C32">Spin up a run, share a code or QR,</text>
+    <text x="28" y="178" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A3C32">and pull everyone&apos;s items into one cart.</text>
+    <g transform="translate(28, 198)">
+      <rect width="78" height="24" rx="12" fill="#FFF7EE"/>
+      <text x="39" y="16" text-anchor="middle" font-family="ui-monospace, monospace" font-size="10" font-weight="700" fill="#1A1410" letter-spacing="0.8">/join/[code]</text>
+    </g>
+  </g>
+
+  <!-- Card 2: Multi-stop -->
+  <g transform="translate(444, 240)">
+    <rect width="360" height="240" rx="28" fill="#FFFFFF" filter="url(#cardShadow)"/>
+    <g transform="translate(28, 28)">
+      <rect width="56" height="56" rx="18" fill="#DDF5E8"/>
+      <g transform="translate(14, 12)" fill="none" stroke="#2EBE7B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="8" cy="10" r="3" fill="#2EBE7B"/>
+        <path d="M8 13 v8"/>
+        <circle cx="8" cy="24" r="2" fill="#2EBE7B"/>
+        <circle cx="24" cy="10" r="3" fill="#2EBE7B"/>
+        <path d="M24 13 v8"/>
+        <circle cx="24" cy="24" r="2" fill="#2EBE7B"/>
+        <path d="M11 16 h10" stroke-dasharray="2,3"/>
+      </g>
+    </g>
+    <text x="28" y="124" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="22" font-weight="800" fill="#1A1410">Multi-stop pickup</text>
+    <text x="28" y="156" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A3C32">Split one run across several pickup</text>
+    <text x="28" y="178" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A3C32">locations without losing the thread.</text>
+    <g transform="translate(28, 198)">
+      <circle cx="6" cy="12" r="4" fill="#2EBE7B"/>
+      <line x1="14" y1="12" x2="34" y2="12" stroke="#2EBE7B" stroke-width="2" stroke-dasharray="2,3"/>
+      <circle cx="40" cy="12" r="4" fill="#FF6A1F"/>
+      <line x1="48" y1="12" x2="68" y2="12" stroke="#FF6A1F" stroke-width="2" stroke-dasharray="2,3"/>
+      <circle cx="74" cy="12" r="4" fill="#6E5BFF"/>
+    </g>
+  </g>
+
+  <!-- Card 3: Voice + manual entry -->
+  <g transform="translate(828, 240)">
+    <rect width="312" height="240" rx="28" fill="#FFFFFF" filter="url(#cardShadow)"/>
+    <g transform="translate(28, 28)">
+      <rect width="56" height="56" rx="18" fill="#E6E2FF"/>
+      <g transform="translate(18, 14)" fill="#6E5BFF">
+        <rect x="4" y="0" width="12" height="20" rx="6"/>
+        <path d="M0 16 a10 10 0 0 0 20 0" stroke="#6E5BFF" stroke-width="2" fill="none"/>
+        <rect x="9" y="26" width="2" height="4" fill="#6E5BFF"/>
+      </g>
+    </g>
+    <text x="28" y="124" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="22" font-weight="800" fill="#1A1410">Voice or manual</text>
+    <text x="28" y="156" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A3C32">Type out the order, or just talk —</text>
+    <text x="28" y="178" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A3C32">items parse straight into the cart.</text>
+    <g transform="translate(28, 198)">
+      <rect width="6" height="14" rx="3" fill="#6E5BFF" opacity="0.4"/>
+      <rect x="10" width="6" height="20" y="-3" rx="3" fill="#6E5BFF" opacity="0.7"/>
+      <rect x="20" width="6" height="10" y="2" rx="3" fill="#6E5BFF"/>
+      <rect x="30" width="6" height="18" y="-2" rx="3" fill="#6E5BFF" opacity="0.7"/>
+      <rect x="40" width="6" height="14" rx="3" fill="#6E5BFF" opacity="0.4"/>
+      <rect x="50" width="6" height="22" y="-4" rx="3" fill="#6E5BFF" opacity="0.9"/>
+      <rect x="60" width="6" height="12" y="1" rx="3" fill="#6E5BFF" opacity="0.6"/>
+    </g>
+  </g>
+
+  <!-- Row 2 -->
+
+  <!-- Card 4: Receipt scanning -->
+  <g transform="translate(60, 504)">
+    <rect width="360" height="240" rx="28" fill="#FFFFFF" filter="url(#cardShadow)"/>
+    <g transform="translate(28, 28)">
+      <rect width="56" height="56" rx="18" fill="#FFE0E6"/>
+      <g transform="translate(16, 12)">
+        <rect x="0" y="0" width="24" height="32" rx="3" fill="#FF4D6D"/>
+        <rect x="4" y="6" width="16" height="2" fill="#FFE0E6"/>
+        <rect x="4" y="11" width="12" height="2" fill="#FFE0E6"/>
+        <rect x="4" y="16" width="14" height="2" fill="#FFE0E6"/>
+        <rect x="4" y="21" width="10" height="2" fill="#FFE0E6"/>
+        <rect x="4" y="26" width="16" height="2" fill="#FFE0E6"/>
+      </g>
+    </g>
+    <text x="28" y="124" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="22" font-weight="800" fill="#1A1410">Receipt scanning</text>
+    <text x="28" y="156" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A3C32">Snap the receipt and match every line</text>
+    <text x="28" y="178" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A3C32">back to the right person automatically.</text>
+    <g transform="translate(28, 198)">
+      <rect width="46" height="20" rx="10" fill="#FFE0E6"/>
+      <text x="23" y="14" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#B82340">OCR</text>
+      <g transform="translate(54, 0)">
+        <rect width="98" height="20" rx="10" fill="#DDF5E8"/>
+        <text x="49" y="14" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#1B6B43">AUTO MATCH</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Card 5: Stripe Connect -->
+  <g transform="translate(444, 504)">
+    <rect width="360" height="240" rx="28" fill="#FFFFFF" filter="url(#cardShadow)"/>
+    <g transform="translate(28, 28)">
+      <rect width="56" height="56" rx="18" fill="#E6E2FF"/>
+      <g transform="translate(13, 16)">
+        <rect x="0" y="0" width="30" height="22" rx="4" fill="#6E5BFF"/>
+        <rect x="0" y="5" width="30" height="4" fill="#3A2DC2"/>
+        <rect x="4" y="14" width="10" height="4" rx="1" fill="#E6E2FF"/>
+        <circle cx="24" cy="16" r="3" fill="#FFC542"/>
+      </g>
+    </g>
+    <text x="28" y="124" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="22" font-weight="800" fill="#1A1410">Pay the runner</text>
+    <text x="28" y="156" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A3C32">Card payments to the runner via</text>
+    <text x="28" y="178" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A3C32">Stripe Connect, with per-member status.</text>
+    <g transform="translate(28, 198)">
+      <rect width="72" height="20" rx="10" fill="#1A1410"/>
+      <text x="36" y="14" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#FFF7EE">STRIPE</text>
+      <g transform="translate(80, 0)">
+        <rect width="82" height="20" rx="10" fill="#DDF5E8"/>
+        <circle cx="12" cy="10" r="3" fill="#2EBE7B"/>
+        <text x="50" y="14" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#1B6B43">SETTLED</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Card 6: Auth + identity -->
+  <g transform="translate(828, 504)">
+    <rect width="312" height="240" rx="28" fill="#FFFFFF" filter="url(#cardShadow)"/>
+    <g transform="translate(28, 28)">
+      <rect width="56" height="56" rx="18" fill="#FFF1C4"/>
+      <g transform="translate(14, 14)" fill="#FFC542" stroke="#7A4A20" stroke-width="0">
+        <path d="M14 0 L28 6 L28 16 Q28 26 14 30 Q0 26 0 16 L0 6 Z" fill="#FFC542"/>
+        <path d="M8 16 L12 20 L20 11" stroke="#7A4A20" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+    </g>
+    <text x="28" y="124" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="22" font-weight="800" fill="#1A1410">Sign in, securely</text>
+    <text x="28" y="156" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A3C32">Better Auth email OTP, social sign-in,</text>
+    <text x="28" y="178" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="500" fill="#4A3C32">Expo SecureStore session storage.</text>
+    <g transform="translate(28, 198)">
+      <rect width="46" height="20" rx="10" fill="#FFF1C4"/>
+      <text x="23" y="14" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#7A4A20">OTP</text>
+      <g transform="translate(54, 0)">
+        <rect width="98" height="20" rx="10" fill="#FFE7D4"/>
+        <text x="49" y="14" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#B85A1F">BETTER AUTH</text>
+      </g>
+    </g>
+  </g>
+</svg>

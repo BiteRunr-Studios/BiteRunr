@@ -1,31 +1,39 @@
-# BiteRunr
+<p align="center">
+  <img
+    src="./assets/readme/hero.svg"
+    alt="BiteRunr. Coordinate group food runs. Order together, pick up once, split the bill in seconds."
+    width="100%"
+  />
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a>
+  ·
+  <a href="#features">Features</a>
+  ·
+  <a href="#tech-stack">Tech stack</a>
+  ·
+  <a href="#architecture-notes">Architecture</a>
+  ·
+  <a href="#scripts">Scripts</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Expo-53-1A1410?style=for-the-badge&amp;logo=expo&amp;logoColor=white" alt="Expo 53" />
+  <img src="https://img.shields.io/badge/React%20Native-0.81-61DAFB?style=for-the-badge&amp;logo=react&amp;logoColor=1A1410" alt="React Native 0.81" />
+  <img src="https://img.shields.io/badge/Convex-realtime-6E5BFF?style=for-the-badge" alt="Convex realtime backend" />
+  <img src="https://img.shields.io/badge/Stripe-Connect-635BFF?style=for-the-badge&amp;logo=stripe&amp;logoColor=white" alt="Stripe Connect" />
+</p>
 
 BiteRunr is an Expo/React Native app for coordinating group food runs. A runner creates an order, invites friends, collects everyone's items, picks up from one or more locations, scans the receipt, and settles the split through Stripe Connect.
 
 This repository is primarily the mobile app. The `admin/` and `landing/` directories are separate Vite apps with their own dependencies and Convex deployments.
 
-## Features
+> GitHub strips README `<style>`, `<link>`, and script tags. The custom visual design for this README lives in standalone SVG panels under `assets/readme/`, then gets embedded here with normal `<img>` tags.
 
-- Create group food orders and invite people with join codes or QR codes
-- Split one run across multiple pickup locations
-- Add order items manually or by voice
-- Scan receipts and match receipt lines back to members
-- Track per-member settlement status
-- Support card payments to runners through Stripe Connect
-- Manage friends, groups, account details, and payment setup
-- Sign in with Better Auth email OTP and optional social providers
+## Quick Start
 
-## Tech Stack
-
-- [Expo](https://expo.dev) and React Native
-- [Expo Router](https://docs.expo.dev/router/introduction/) for file-based routing
-- [Convex](https://convex.dev) for backend functions, database, auth integration, and push notifications
-- [Better Auth](https://www.better-auth.com/) with the Convex component and Expo SecureStore
-- [Stripe React Native](https://github.com/stripe/stripe-react-native) and Stripe Connect
-- NativeWind/Tailwind plus the newer BiteRunr design system in `components/br/`
-- Biome for linting and Prettier for formatting
-
-## Prerequisites
+### Prerequisites
 
 - Node.js 18 or newer
 - npm, or Bun if you prefer matching `packageManager`
@@ -34,9 +42,7 @@ This repository is primarily the mobile app. The `admin/` and `landing/` directo
 - Convex access for the target deployment
 - Stripe keys for payment flows
 
-## Setup
-
-Install dependencies:
+### Install
 
 ```bash
 npm install
@@ -66,7 +72,7 @@ EXPO_OWNER=
 
 Convex server secrets such as `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `AUTH_RESEND_KEY`, OAuth provider secrets, and `SITE_URL` should be configured on the Convex deployment, not committed to the repo.
 
-## Running The App
+### Run
 
 Most app commands run `npm run sync-styles` first. That script converts CSS variables from `global.css` into `tokens.json` so navigation and JavaScript theme code stay in sync.
 
@@ -84,6 +90,43 @@ Run Convex locally against one of the configured cloud deployments:
 npm run convex:br      # production project
 npm run convex:brtest  # test project
 ```
+
+## Features
+
+<p align="center">
+  <img
+    src="./assets/readme/features.svg"
+    alt="BiteRunr features: group orders, multi-stop pickup, voice or manual entry, receipt scanning, Stripe Connect settlement, and secure sign in."
+    width="100%"
+  />
+</p>
+
+- Create group food orders and invite people with join codes or QR codes
+- Split one run across multiple pickup locations
+- Add order items manually or by voice
+- Scan receipts and match receipt lines back to members
+- Track per-member settlement status
+- Support card payments to runners through Stripe Connect
+- Manage friends, groups, account details, and payment setup
+- Sign in with Better Auth email OTP and optional social providers
+
+## Tech Stack
+
+<p align="center">
+  <img
+    src="./assets/readme/stack.svg"
+    alt="BiteRunr tech stack: Expo, React Native, Convex, Better Auth, Stripe, NativeWind, TypeScript, Biome, Resend, and EAS."
+    width="100%"
+  />
+</p>
+
+- [Expo](https://expo.dev) and React Native
+- [Expo Router](https://docs.expo.dev/router/introduction/) for file-based routing
+- [Convex](https://convex.dev) for backend functions, database, auth integration, and push notifications
+- [Better Auth](https://www.better-auth.com/) with the Convex component and Expo SecureStore
+- [Stripe React Native](https://github.com/stripe/stripe-react-native) and Stripe Connect
+- NativeWind/Tailwind plus the newer BiteRunr design system in `components/br/`
+- Biome for linting and Prettier for formatting
 
 ## Scripts
 
