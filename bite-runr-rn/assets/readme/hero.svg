@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" width="1200" height="520" role="img" aria-label="BiteRunr — Coordinate group food runs.">
+  <title>BiteRunr</title>
+
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFF7EE"/>
+      <stop offset="100%" stop-color="#FCEFE0"/>
+    </linearGradient>
+    <linearGradient id="orangeG" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FF6A1F"/>
+      <stop offset="100%" stop-color="#E8551A"/>
+    </linearGradient>
+    <linearGradient id="inkG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A1410"/>
+      <stop offset="100%" stop-color="#3A2D24"/>
+    </linearGradient>
+    <radialGradient id="glowOrange" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF6A1F" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#FF6A1F" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowMint" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2EBE7B" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#2EBE7B" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.6" fill="#1A1410" opacity="0.06"/>
+    </pattern>
+    <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#1A1410" flood-opacity="0.12"/>
+    </filter>
+    <filter id="popShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="12" stdDeviation="22" flood-color="#1A1410" flood-opacity="0.18"/>
+    </filter>
+    <filter id="primaryShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#FF6A1F" flood-opacity="0.42"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="520" fill="url(#paper)" rx="32"/>
+  <rect width="1200" height="520" fill="url(#dots)" rx="32"/>
+
+  <!-- Soft glows -->
+  <circle cx="980" cy="80" r="260" fill="url(#glowOrange)"/>
+  <circle cx="60" cy="460" r="220" fill="url(#glowMint)"/>
+
+  <!-- ==== LEFT COLUMN — text ==== -->
+
+  <!-- eyebrow pill -->
+  <g transform="translate(60, 60)">
+    <rect width="232" height="36" rx="18" fill="#FFFFFF" filter="url(#softShadow)"/>
+    <circle cx="22" cy="18" r="5" fill="#2EBE7B"/>
+    <circle cx="22" cy="18" r="9" fill="#2EBE7B" opacity="0.22"/>
+    <text x="40" y="23" font-family="ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, monospace" font-size="11.5" font-weight="700" fill="#1A1410" letter-spacing="1.2">EXPO · CONVEX · STRIPE</text>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="60" y="220" font-family="'Bricolage Grotesque', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="124" font-weight="900" fill="url(#orangeG)" letter-spacing="-5">BiteRunr</text>
+
+  <!-- Underline accent -->
+  <rect x="62" y="232" width="120" height="8" rx="4" fill="#1A1410"/>
+  <rect x="190" y="232" width="36" height="8" rx="4" fill="#2EBE7B"/>
+  <rect x="234" y="232" width="20" height="8" rx="4" fill="#FFC542"/>
+
+  <!-- Tagline -->
+  <text x="60" y="288" font-family="'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="30" font-weight="700" fill="#1A1410">Coordinate group food runs.</text>
+  <text x="60" y="324" font-family="'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="500" fill="#4A3C32">Order together · Pick up once · Split the bill in seconds.</text>
+
+  <!-- CTA buttons -->
+  <g transform="translate(60, 360)">
+    <!-- Primary -->
+    <g filter="url(#primaryShadow)">
+      <rect width="186" height="52" rx="26" fill="url(#orangeG)"/>
+    </g>
+    <text x="93" y="34" text-anchor="middle" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="800" fill="#FFF7EE" letter-spacing="0.5">Get started →</text>
+
+    <g transform="translate(204, 0)" filter="url(#softShadow)">
+      <rect width="186" height="52" rx="26" fill="#FFFFFF"/>
+      <text x="93" y="34" text-anchor="middle" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="15" font-weight="800" fill="#1A1410" letter-spacing="0.5">Read the docs</text>
+    </g>
+  </g>
+
+  <!-- Tech chips row -->
+  <g transform="translate(60, 444)">
+    <g>
+      <rect width="74" height="28" rx="14" fill="#FFE7D4" stroke="#FF6A1F" stroke-opacity="0.25"/>
+      <text x="37" y="19" text-anchor="middle" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#B85A1F" letter-spacing="0.6">EXPO</text>
+    </g>
+    <g transform="translate(84, 0)">
+      <rect width="100" height="28" rx="14" fill="#DDF5E8" stroke="#2EBE7B" stroke-opacity="0.30"/>
+      <text x="50" y="19" text-anchor="middle" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#1B6B43" letter-spacing="0.6">RN 0.81</text>
+    </g>
+    <g transform="translate(194, 0)">
+      <rect width="92" height="28" rx="14" fill="#E6E2FF" stroke="#6E5BFF" stroke-opacity="0.30"/>
+      <text x="46" y="19" text-anchor="middle" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#3A2DC2" letter-spacing="0.6">CONVEX</text>
+    </g>
+    <g transform="translate(296, 0)">
+      <rect width="84" height="28" rx="14" fill="#FFE0E6" stroke="#FF4D6D" stroke-opacity="0.30"/>
+      <text x="42" y="19" text-anchor="middle" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#B82340" letter-spacing="0.6">STRIPE</text>
+    </g>
+    <g transform="translate(390, 0)">
+      <rect width="96" height="28" rx="14" fill="#FFF1C4" stroke="#FFC542" stroke-opacity="0.50"/>
+      <text x="48" y="19" text-anchor="middle" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#7A4A20" letter-spacing="0.6">TYPESCRIPT</text>
+    </g>
+  </g>
+
+  <!-- ==== RIGHT COLUMN — phone mockup ==== -->
+  <g transform="translate(820, 50)">
+    <!-- back card (depth) -->
+    <g transform="translate(20, 28) rotate(6 130 240)">
+      <rect width="260" height="440" rx="40" fill="#FCEFE0" stroke="#1A1410" stroke-opacity="0.08"/>
+    </g>
+
+    <!-- phone -->
+    <g filter="url(#popShadow)">
+      <rect width="260" height="440" rx="40" fill="#FFFFFF"/>
+      <rect x="14" y="14" width="232" height="412" rx="28" fill="#FFF7EE"/>
+    </g>
+
+    <!-- notch -->
+    <rect x="100" y="22" width="60" height="14" rx="7" fill="#1A1410"/>
+
+    <!-- header -->
+    <g transform="translate(30, 56)">
+      <text x="0" y="14" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="10" font-weight="700" fill="#8A7A6E" letter-spacing="1.2">FRIDAY · 7:12 PM</text>
+      <text x="0" y="42" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="22" font-weight="800" fill="#1A1410">Pizza Run</text>
+      <g transform="translate(0, 54)">
+        <rect width="78" height="22" rx="11" fill="#FF6A1F"/>
+        <text x="39" y="15" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#FFF7EE" letter-spacing="0.8">4 RUNNERS</text>
+      </g>
+      <g transform="translate(86, 54)">
+        <rect width="74" height="22" rx="11" fill="#DDF5E8"/>
+        <text x="37" y="15" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#1B6B43" letter-spacing="0.8">CODE 8K2A</text>
+      </g>
+    </g>
+
+    <!-- order list -->
+    <g transform="translate(30, 158)">
+      <!-- row 1 -->
+      <g>
+        <rect width="200" height="44" rx="14" fill="#FFFFFF" filter="url(#softShadow)"/>
+        <rect x="10" y="10" width="24" height="24" rx="12" fill="#FFC542"/>
+        <text x="22" y="27" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="900" fill="#7A4A20">M</text>
+        <text x="44" y="22" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1A1410">Margherita</text>
+        <text x="44" y="36" font-family="ui-monospace, monospace" font-size="10" font-weight="600" fill="#8A7A6E">Marcus</text>
+        <text x="188" y="29" text-anchor="end" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#1A1410">$14</text>
+      </g>
+      <!-- row 2 -->
+      <g transform="translate(0, 54)">
+        <rect width="200" height="44" rx="14" fill="#FFFFFF" filter="url(#softShadow)"/>
+        <rect x="10" y="10" width="24" height="24" rx="12" fill="#DDF5E8"/>
+        <text x="22" y="27" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="900" fill="#1B6B43">S</text>
+        <text x="44" y="22" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1A1410">Caesar Salad</text>
+        <text x="44" y="36" font-family="ui-monospace, monospace" font-size="10" font-weight="600" fill="#8A7A6E">Sara</text>
+        <text x="188" y="29" text-anchor="end" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#1A1410">$11</text>
+      </g>
+      <!-- row 3 -->
+      <g transform="translate(0, 108)">
+        <rect width="200" height="44" rx="14" fill="#FFFFFF" filter="url(#softShadow)"/>
+        <rect x="10" y="10" width="24" height="24" rx="12" fill="#E6E2FF"/>
+        <text x="22" y="27" text-anchor="middle" font-family="-apple-system, sans-serif" font-size="11" font-weight="900" fill="#3A2DC2">J</text>
+        <text x="44" y="22" font-family="'Bricolage Grotesque', -apple-system, sans-serif" font-size="13" font-weight="700" fill="#1A1410">Garlic Bread</text>
+        <text x="44" y="36" font-family="ui-monospace, monospace" font-size="10" font-weight="600" fill="#8A7A6E">Jordan</text>
+        <text x="188" y="29" text-anchor="end" font-family="ui-monospace, monospace" font-size="12" font-weight="700" fill="#1A1410">$7</text>
+      </g>
+    </g>
+
+    <!-- divider -->
+    <line x1="30" y1="334" x2="230" y2="334" stroke="#1A1410" stroke-opacity="0.10" stroke-dasharray="2,5"/>
+
+    <!-- total -->
+    <text x="30" y="358" font-family="'Bricolage Grotesque', sans-serif" font-size="12" font-weight="600" fill="#8A7A6E">SPLIT TOTAL</text>
+    <text x="230" y="360" text-anchor="end" font-family="'Bricolage Grotesque', sans-serif" font-size="18" font-weight="800" fill="#1A1410">$42.18</text>
+
+    <!-- pay button -->
+    <g transform="translate(30, 374)" filter="url(#primaryShadow)">
+      <rect width="200" height="42" rx="21" fill="url(#orangeG)"/>
+      <text x="100" y="27" text-anchor="middle" font-family="'Bricolage Grotesque', sans-serif" font-size="13" font-weight="800" fill="#FFF7EE" letter-spacing="0.4">Settle up →</text>
+    </g>
+  </g>
+
+  <!-- Floating receipt accent (top right) -->
+  <g transform="translate(1080, 60) rotate(8 60 70)">
+    <rect width="120" height="160" rx="10" fill="#FFFFFF" filter="url(#softShadow)"/>
+    <text x="60" y="22" text-anchor="middle" font-family="ui-monospace, monospace" font-size="9" font-weight="700" fill="#1A1410" letter-spacing="1.4">RECEIPT</text>
+    <line x1="14" y1="32" x2="106" y2="32" stroke="#1A1410" stroke-opacity="0.15" stroke-dasharray="1,3"/>
+    <g font-family="ui-monospace, monospace" font-size="8" fill="#4A3C32">
+      <text x="14" y="48">Margherita</text>
+      <text x="106" y="48" text-anchor="end" fill="#1A1410" font-weight="700">14.00</text>
+      <text x="14" y="64">Caesar</text>
+      <text x="106" y="64" text-anchor="end" fill="#1A1410" font-weight="700">11.00</text>
+      <text x="14" y="80">G. Bread</text>
+      <text x="106" y="80" text-anchor="end" fill="#1A1410" font-weight="700">7.00</text>
+      <text x="14" y="96">Tax</text>
+      <text x="106" y="96" text-anchor="end" fill="#1A1410" font-weight="700">3.18</text>
+      <text x="14" y="112">Tip</text>
+      <text x="106" y="112" text-anchor="end" fill="#1A1410" font-weight="700">7.00</text>
+    </g>
+    <line x1="14" y1="122" x2="106" y2="122" stroke="#1A1410" stroke-opacity="0.20"/>
+    <text x="14" y="140" font-family="'Bricolage Grotesque', sans-serif" font-size="11" font-weight="800" fill="#1A1410">TOTAL</text>
+    <text x="106" y="140" text-anchor="end" font-family="'Bricolage Grotesque', sans-serif" font-size="11" font-weight="800" fill="#FF6A1F">42.18</text>
+  </g>
+</svg>
