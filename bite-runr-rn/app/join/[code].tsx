@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Pressable,
@@ -129,7 +129,7 @@ export default function JoinOrderPage() {
           </BrText>
           <Pressable
             onPress={() =>
-              router.replace(`/(protected)/order/${validation.order!.id}`)
+              router.replace(`/(protected)/order/${validation.order?.id}`)
             }
             style={({ pressed }) => [
               styles.stateButton,

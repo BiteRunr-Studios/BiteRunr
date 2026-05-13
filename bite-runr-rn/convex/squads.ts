@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { getUserId } from "./authHelper";
-import { Id } from "./_generated/dataModel";
+import type { Id } from "./_generated/dataModel";
 
 // List all squads the current user is a member of or created
 export const list = query({
@@ -18,7 +18,7 @@ export const list = query({
     // Also find squads where user is a member but not creator
     const allSquads = await ctx.db.query("squads").collect();
     const memberOf = allSquads.filter(
-      (s) => s.creatorId !== userId && s.memberIds.includes(userId)
+      (s) => s.creatorId !== userId && s.memberIds.includes(userId),
     );
 
     const squads = [...created, ...memberOf];
@@ -31,9 +31,14 @@ export const list = query({
             squad.memberIds.map(async (memberId) => {
               const user = await ctx.db.get(memberId as Id<"users">);
               return user
-                ? { id: user._id, firstName: user.firstName, lastName: user.lastName, avatarUrl: user.avatarUrl }
+                ? {
+                    id: user._id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    avatarUrl: user.avatarUrl,
+                  }
                 : null;
-            })
+            }),
           )
         ).filter((m) => m !== null);
 
@@ -46,9 +51,11 @@ export const list = query({
           memberIds: squad.memberIds,
           members,
           isCreator: squad.creatorId === userId,
-          creatorName: creator ? `${creator.firstName} ${creator.lastName}` : "",
+          creatorName: creator
+            ? `${creator.firstName} ${creator.lastName}`
+            : "",
         };
-      })
+      }),
     );
   },
 });
@@ -69,7 +76,9 @@ export const create = mutation({
     if (!name) throw new Error("Squad name is required");
 
     // Deduplicate memberIds and ensure creator is not in the list
-    const memberIds = [...new Set(args.memberIds.filter((id) => id !== userId))];
+    const memberIds = [
+      ...new Set(args.memberIds.filter((id) => id !== userId)),
+    ];
 
     return ctx.db.insert("squads", {
       name,
@@ -98,7 +107,12 @@ export const update = mutation({
     if (!squad) throw new Error("Squad not found");
     if (squad.creatorId !== userId) throw new Error("Not authorized");
 
-    const patch: Partial<{ name: string; color: string; icon: string; memberIds: Id<"users">[] }> = {};
+    const patch: Partial<{
+      name: string;
+      color: string;
+      icon: string;
+      memberIds: Id<"users">[];
+    }> = {};
     if (args.name !== undefined) {
       const name = args.name.trim();
       if (!name) throw new Error("Squad name is required");
@@ -107,7 +121,9 @@ export const update = mutation({
     if (args.color !== undefined) patch.color = args.color;
     if (args.icon !== undefined) patch.icon = args.icon;
     if (args.memberIds !== undefined) {
-      patch.memberIds = [...new Set(args.memberIds.filter((id) => id !== userId))];
+      patch.memberIds = [
+        ...new Set(args.memberIds.filter((id) => id !== userId)),
+      ];
     }
 
     await ctx.db.patch(args.squadId, patch);

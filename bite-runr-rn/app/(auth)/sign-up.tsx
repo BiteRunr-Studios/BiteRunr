@@ -7,7 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Text,
-  TextInput,
+  type TextInput,
   ScrollView,
   StyleSheet,
 } from "react-native";
@@ -17,7 +17,7 @@ import { router } from "expo-router";
 import { BrInput, BrText } from "@/components/br";
 import {
   createFormHandlers,
-  FormState,
+  type FormState,
   validateEmail,
   getAuthErrorMessage,
 } from "@/lib/auth-helpers";
@@ -51,53 +51,65 @@ export default function SignUpScreen() {
     const newForm = { ...form };
 
     if (!firstName) {
+      const firstNameField = newForm.firstName;
+      if (!firstNameField) return;
       newForm.firstName = {
-        ...newForm.firstName!,
+        ...firstNameField,
         error: "First name is required",
         touched: true,
       };
       hasError = true;
     }
     if (!lastName) {
+      const lastNameField = newForm.lastName;
+      if (!lastNameField) return;
       newForm.lastName = {
-        ...newForm.lastName!,
+        ...lastNameField,
         error: "Last name is required",
         touched: true,
       };
       hasError = true;
     }
     if (!email) {
+      const emailField = newForm.email;
+      if (!emailField) return;
       newForm.email = {
-        ...newForm.email!,
+        ...emailField,
         error: "Email is required",
         touched: true,
       };
       hasError = true;
     } else if (!validateEmail(email)) {
+      const emailField = newForm.email;
+      if (!emailField) return;
       newForm.email = {
-        ...newForm.email!,
+        ...emailField,
         error: "Invalid email address",
         touched: true,
       };
       hasError = true;
     }
     if (!password) {
+      const passwordField = newForm.password;
+      if (!passwordField) return;
       newForm.password = {
-        ...newForm.password!,
+        ...passwordField,
         error: "Password is required",
         touched: true,
       };
       hasError = true;
     } else if (password.length < 8) {
+      const passwordField = newForm.password;
+      if (!passwordField) return;
       newForm.password = {
-        ...newForm.password!,
+        ...passwordField,
         error: "Must be at least 8 characters",
         touched: true,
       };
       hasError = true;
     }
 
-    if (hasError) {
+    if (hasError || !firstName || !lastName || !email || !password) {
       setForm(newForm);
       return;
     }
@@ -106,20 +118,20 @@ export default function SignUpScreen() {
     setIsSigningUp(true);
     try {
       const response = await authClient.signUp.email({
-        email: email!,
-        password: password!,
+        email,
+        password,
         name: `${firstName} ${lastName}`.trim(),
       });
       if (response.error) {
         throw new Error(response.error.message || "Failed to create account");
       }
       await authClient.emailOtp.sendVerificationOtp({
-        email: email!,
+        email,
         type: "email-verification",
       });
       router.push({
         pathname: "/(auth)/verify-otp",
-        params: { email: email!, type: "sign-up" },
+        params: { email, type: "sign-up" },
       });
     } catch (error) {
       setIsSigningUp(false);
@@ -127,16 +139,16 @@ export default function SignUpScreen() {
       if (errorResult.field === "email") {
         setForm((prev) => ({
           ...prev,
-          email: { ...prev.email!, error: errorResult.message, touched: true },
+          email: prev.email
+            ? { ...prev.email, error: errorResult.message, touched: true }
+            : prev.email,
         }));
       } else if (errorResult.field === "password") {
         setForm((prev) => ({
           ...prev,
-          password: {
-            ...prev.password!,
-            error: errorResult.message,
-            touched: true,
-          },
+          password: prev.password
+            ? { ...prev.password, error: errorResult.message, touched: true }
+            : prev.password,
         }));
       } else {
         Alert.alert("Sign Up Error", errorResult.message);
@@ -191,12 +203,12 @@ export default function SignUpScreen() {
               <View style={{ flexDirection: "row", gap: 10 }}>
                 <View style={{ flex: 1 }}>
                   <BrInput
-                    value={form.firstName!.value}
+                    value={form.firstName?.value}
                     placeholder="First name"
                     leftIcon="IdCard"
                     autoCapitalize="words"
                     returnKeyType="next"
-                    errorMessage={form.firstName!.error}
+                    errorMessage={form.firstName?.error}
                     onChangeText={(v) => onChange("firstName", v)}
                     onBlur={() => onBlur("firstName")}
                     onSubmitEditing={() => lastNameRef.current?.focus()}
@@ -205,12 +217,12 @@ export default function SignUpScreen() {
                 <View style={{ flex: 1 }}>
                   <BrInput
                     ref={lastNameRef}
-                    value={form.lastName!.value}
+                    value={form.lastName?.value}
                     placeholder="Last name"
                     leftIcon="IdCard"
                     autoCapitalize="words"
                     returnKeyType="next"
-                    errorMessage={form.lastName!.error}
+                    errorMessage={form.lastName?.error}
                     onChangeText={(v) => onChange("lastName", v)}
                     onBlur={() => onBlur("lastName")}
                     onSubmitEditing={() => emailRef.current?.focus()}
@@ -220,13 +232,13 @@ export default function SignUpScreen() {
 
               <BrInput
                 ref={emailRef}
-                value={form.email!.value}
+                value={form.email?.value}
                 placeholder="Email"
                 leftIcon="Mail"
                 autoCapitalize="none"
                 keyboardType="email-address"
                 returnKeyType="next"
-                errorMessage={form.email!.error}
+                errorMessage={form.email?.error}
                 onChangeText={(v) => onChange("email", v)}
                 onBlur={() => onBlur("email")}
                 onSubmitEditing={() => passwordRef.current?.focus()}
@@ -234,12 +246,12 @@ export default function SignUpScreen() {
 
               <BrInput
                 ref={passwordRef}
-                value={form.password!.value}
+                value={form.password?.value}
                 placeholder="Password (8+ chars)"
                 leftIcon="Lock"
                 secureTextEntry
                 returnKeyType="done"
-                errorMessage={form.password!.error}
+                errorMessage={form.password?.error}
                 onChangeText={(v) => onChange("password", v)}
                 onBlur={() => onBlur("password")}
                 onSubmitEditing={handleSignUp}

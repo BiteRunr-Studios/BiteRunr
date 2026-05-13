@@ -1,5 +1,5 @@
-import React from "react";
-import { View, ViewProps, StyleSheet } from "react-native";
+import type React from "react";
+import { View, type ViewProps, StyleSheet } from "react-native";
 import { BR } from "@/lib/br-theme";
 import { BrText } from "./text";
 

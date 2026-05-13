@@ -4,7 +4,7 @@ import React from "react";
 import {
   AccessibilityInfo,
   Image,
-  LayoutChangeEvent,
+  type LayoutChangeEvent,
   StyleSheet,
   useWindowDimensions,
 } from "react-native";
@@ -218,8 +218,14 @@ export default function AnimatedSplashScreen({
       return;
     }
 
-    exitTimerRef.current = setTimeout(runExit, remainingVisibleMs);
-    return clearExitTimer;
+    const timeoutId = setTimeout(runExit, remainingVisibleMs);
+    exitTimerRef.current = timeoutId;
+    return () => {
+      clearTimeout(timeoutId);
+      if (exitTimerRef.current === timeoutId) {
+        exitTimerRef.current = null;
+      }
+    };
   }, [clearExitTimer, ready, startExit]);
 
   React.useEffect(() => {

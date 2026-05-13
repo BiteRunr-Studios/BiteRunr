@@ -264,28 +264,26 @@ function reconcileVoiceOrderItems(items: string[]): string[] {
     groups.set(parsed.baseLabel, existing);
   });
 
-  return [...groups.values()]
-    .map((entries) => {
-      const quantityEntries = entries.filter(
-        (entry) => entry.hasExplicitQuantity,
-      );
-      if (quantityEntries.length === 0) {
-        return entries
-          .sort((left, right) => left.originalIndex - right.originalIndex)
-          .map((entry) => entry.originalItem);
-      }
+  return [...groups.values()].flatMap((entries) => {
+    const quantityEntries = entries.filter(
+      (entry) => entry.hasExplicitQuantity,
+    );
+    if (quantityEntries.length === 0) {
+      return entries
+        .sort((left, right) => left.originalIndex - right.originalIndex)
+        .map((entry) => entry.originalItem);
+    }
 
-      const bestQuantityEntry = quantityEntries.reduce((best, entry) =>
-        entry.quantity > best.quantity ? entry : best,
-      );
+    const bestQuantityEntry = quantityEntries.reduce((best, entry) =>
+      entry.quantity > best.quantity ? entry : best,
+    );
 
-      return [
-        bestQuantityEntry.quantity > 1
-          ? `${bestQuantityEntry.quantity}x ${bestQuantityEntry.displayLabel}`
-          : bestQuantityEntry.displayLabel,
-      ];
-    })
-    .flat();
+    return [
+      bestQuantityEntry.quantity > 1
+        ? `${bestQuantityEntry.quantity}x ${bestQuantityEntry.displayLabel}`
+        : bestQuantityEntry.displayLabel,
+    ];
+  });
 }
 
 function extractJsonObject(text: string): string {
@@ -920,7 +918,7 @@ export const savePausedAiOrderSummary = internalMutation({
   },
   handler: async (ctx, args) => {
     const order = await ctx.db.get(args.orderId);
-    if (!order || !order.paused) {
+    if (!order?.paused) {
       return null;
     }
 

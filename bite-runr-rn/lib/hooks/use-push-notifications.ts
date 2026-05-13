@@ -13,228 +13,232 @@ const DISMISSED_KEY = "push-permission-dismissed";
 
 // Configure how notifications are handled when app is in foreground
 Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-        shouldShowBanner: true,
-        shouldShowList: true,
-    }),
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
 });
 
 export function usePushNotifications() {
-    const { isLoggedIn, isReady } = useAuth();
-    const registerToken = useMutation(api.pushNotifications.registerPushToken);
-    const unregisterToken = useMutation(api.pushNotifications.unregisterPushToken);
-    const hasToken = useQuery(
-        api.pushNotifications.hasToken,
-        isReady && isLoggedIn ? {} : "skip"
-    );
+  const { isLoggedIn, isReady } = useAuth();
+  const registerToken = useMutation(api.pushNotifications.registerPushToken);
+  const unregisterToken = useMutation(
+    api.pushNotifications.unregisterPushToken,
+  );
+  const hasToken = useQuery(
+    api.pushNotifications.hasToken,
+    isReady && isLoggedIn ? {} : "skip",
+  );
 
-    const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
-    const [showPermissionModal, setShowPermissionModal] = useState(false);
-    const isRegistering = useRef(false);
-    const notificationListener = useRef<Notifications.EventSubscription | null>(null);
-    const responseListener = useRef<Notifications.EventSubscription | null>(null);
+  const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const isRegistering = useRef(false);
+  const notificationListener = useRef<Notifications.EventSubscription | null>(
+    null,
+  );
+  const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
-    // Check if we should show the permission modal, or auto-register if OS permission already granted
-    useEffect(() => {
-        if (!isReady || !isLoggedIn) return;
-        if (hasToken === undefined) return; // Still loading
-        if (hasToken === true) return; // Already registered
+  // Check if we should show the permission modal, or auto-register if OS permission already granted
+  useEffect(() => {
+    if (!isReady || !isLoggedIn) return;
+    if (hasToken === undefined) return; // Still loading
+    if (hasToken === true) return; // Already registered
 
-        let cancelled = false;
+    let cancelled = false;
 
-        (async () => {
-            // If OS-level permission is already granted (e.g. previous account on same device),
-            // silently register the token for this user without showing the modal
-            const { status } = await Notifications.getPermissionsAsync();
-            if (cancelled) return;
+    (async () => {
+      // If OS-level permission is already granted (e.g. previous account on same device),
+      // silently register the token for this user without showing the modal
+      const { status } = await Notifications.getPermissionsAsync();
+      if (cancelled) return;
 
-            if (status === "granted") {
-                if (!isRegistering.current) {
-                    isRegistering.current = true;
-                    try {
-                        const token = await getExistingPushToken();
-                        if (token && !cancelled) {
-                            setExpoPushToken(token);
-                            await registerToken({ token });
-                        }
-                    } catch (error) {
-                        console.error("Failed to auto-register push token:", error);
-                    } finally {
-                        isRegistering.current = false;
-                    }
-                }
-                return;
-            }
-
-            // OS permission not granted — check if we should show the modal
-            const dismissed = await AsyncStorage.getItem(DISMISSED_KEY);
-            if (cancelled) return;
-            if (dismissed === null) {
-                setShowPermissionModal(true);
-            }
-        })();
-
-        return () => { cancelled = true; };
-    }, [isReady, isLoggedIn, hasToken, registerToken]);
-
-    // Sync local token state for returning users who already have a token registered
-    useEffect(() => {
-        if (!isReady || !isLoggedIn || hasToken !== true) return;
-        if (expoPushToken) return; // Already synced
-
-        (async () => {
+      if (status === "granted") {
+        if (!isRegistering.current) {
+          isRegistering.current = true;
+          try {
             const token = await getExistingPushToken();
-            if (token) {
-                setExpoPushToken(token);
+            if (token && !cancelled) {
+              setExpoPushToken(token);
+              await registerToken({ token });
             }
-        })();
-    }, [isReady, isLoggedIn, hasToken, expoPushToken]);
-
-    // Handle user allowing notifications
-    const handleAllowNotifications = useCallback(async () => {
-        if (isRegistering.current) return;
-        isRegistering.current = true;
-        setShowPermissionModal(false);
-        // Clear dismissal flag since user engaged positively
-        await AsyncStorage.removeItem(DISMISSED_KEY).catch(() => {});
-
-        try {
-            const token = await registerForPushNotificationsAsync();
-            if (token) {
-                setExpoPushToken(token);
-                await registerToken({ token });
-            }
-        } catch (error) {
-            console.error("Failed to register push token:", error);
-        } finally {
+          } catch (error) {
+            console.error("Failed to auto-register push token:", error);
+          } finally {
             isRegistering.current = false;
+          }
         }
-    }, [registerToken]);
+        return;
+      }
 
-    // Handle user denying notifications
-    const handleDenyNotifications = useCallback(() => {
-        setShowPermissionModal(false);
-        // Persist dismissal so modal doesn't reappear on remount
-        AsyncStorage.setItem(DISMISSED_KEY, Date.now().toString()).catch(() => {});
-    }, []);
+      // OS permission not granted — check if we should show the modal
+      const dismissed = await AsyncStorage.getItem(DISMISSED_KEY);
+      if (cancelled) return;
+      if (dismissed === null) {
+        setShowPermissionModal(true);
+      }
+    })();
 
-    // Set up notification listeners when we have a token
-    useEffect(() => {
-        if (!isReady || !isLoggedIn || !hasToken) return;
-
-        // Listen for incoming notifications while app is foregrounded
-        notificationListener.current = Notifications.addNotificationReceivedListener(
-            (_notification) => {
-                // Handle foreground notification if needed
-            }
-        );
-
-        // Listen for user tapping on notification
-        responseListener.current = Notifications.addNotificationResponseReceivedListener(
-            (response) => {
-                const data = response.notification.request.content.data;
-                handleNotificationTap(data);
-            }
-        );
-
-        return () => {
-            if (notificationListener.current) {
-                notificationListener.current.remove();
-            }
-            if (responseListener.current) {
-                responseListener.current.remove();
-            }
-        };
-    }, [isReady, isLoggedIn, hasToken]);
-
-    // Unregister token on logout
-    useEffect(() => {
-        if (isReady && !isLoggedIn && expoPushToken) {
-            // Pass the token so the backend can clean up without auth
-            unregisterToken({ token: expoPushToken }).catch(() => {});
-            setExpoPushToken(null);
-            isRegistering.current = false;
-            // Clear the dismissal flag so new user on this device gets the modal
-            AsyncStorage.removeItem(DISMISSED_KEY).catch(() => {});
-        }
-    }, [isReady, isLoggedIn, unregisterToken, expoPushToken]);
-
-    return {
-        expoPushToken,
-        showPermissionModal,
-        handleAllowNotifications,
-        handleDenyNotifications,
+    return () => {
+      cancelled = true;
     };
+  }, [isReady, isLoggedIn, hasToken, registerToken]);
+
+  // Sync local token state for returning users who already have a token registered
+  useEffect(() => {
+    if (!isReady || !isLoggedIn || hasToken !== true) return;
+    if (expoPushToken) return; // Already synced
+
+    (async () => {
+      const token = await getExistingPushToken();
+      if (token) {
+        setExpoPushToken(token);
+      }
+    })();
+  }, [isReady, isLoggedIn, hasToken, expoPushToken]);
+
+  // Handle user allowing notifications
+  const handleAllowNotifications = useCallback(async () => {
+    if (isRegistering.current) return;
+    isRegistering.current = true;
+    setShowPermissionModal(false);
+    // Clear dismissal flag since user engaged positively
+    await AsyncStorage.removeItem(DISMISSED_KEY).catch(() => {});
+
+    try {
+      const token = await registerForPushNotificationsAsync();
+      if (token) {
+        setExpoPushToken(token);
+        await registerToken({ token });
+      }
+    } catch (error) {
+      console.error("Failed to register push token:", error);
+    } finally {
+      isRegistering.current = false;
+    }
+  }, [registerToken]);
+
+  // Handle user denying notifications
+  const handleDenyNotifications = useCallback(() => {
+    setShowPermissionModal(false);
+    // Persist dismissal so modal doesn't reappear on remount
+    AsyncStorage.setItem(DISMISSED_KEY, Date.now().toString()).catch(() => {});
+  }, []);
+
+  // Set up notification listeners when we have a token
+  useEffect(() => {
+    if (!isReady || !isLoggedIn || !hasToken) return;
+
+    // Listen for incoming notifications while app is foregrounded
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((_notification) => {
+        // Handle foreground notification if needed
+      });
+
+    // Listen for user tapping on notification
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        const data = response.notification.request.content.data;
+        handleNotificationTap(data);
+      });
+
+    return () => {
+      if (notificationListener.current) {
+        notificationListener.current.remove();
+      }
+      if (responseListener.current) {
+        responseListener.current.remove();
+      }
+    };
+  }, [isReady, isLoggedIn, hasToken]);
+
+  // Unregister token on logout
+  useEffect(() => {
+    if (isReady && !isLoggedIn && expoPushToken) {
+      // Pass the token so the backend can clean up without auth
+      unregisterToken({ token: expoPushToken }).catch(() => {});
+      setExpoPushToken(null);
+      isRegistering.current = false;
+      // Clear the dismissal flag so new user on this device gets the modal
+      AsyncStorage.removeItem(DISMISSED_KEY).catch(() => {});
+    }
+  }, [isReady, isLoggedIn, unregisterToken, expoPushToken]);
+
+  return {
+    expoPushToken,
+    showPermissionModal,
+    handleAllowNotifications,
+    handleDenyNotifications,
+  };
 }
 
 async function registerForPushNotificationsAsync(): Promise<string | null> {
-    // Push notifications only work on physical devices
-    if (!Device.isDevice) {
-        console.log("Push notifications require a physical device");
-        return null;
-    }
+  // Push notifications only work on physical devices
+  if (!Device.isDevice) {
+    console.log("Push notifications require a physical device");
+    return null;
+  }
 
-    // Check/request permissions
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+  // Check/request permissions
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
 
-    if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-    }
+  if (existingStatus !== "granted") {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
 
-    if (finalStatus !== "granted") {
-        console.log("Push notification permission not granted");
-        return null;
-    }
+  if (finalStatus !== "granted") {
+    console.log("Push notification permission not granted");
+    return null;
+  }
 
-    // Get the Expo push token
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-    const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId: projectId || undefined,
+  // Get the Expo push token
+  const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+  const tokenData = await Notifications.getExpoPushTokenAsync({
+    projectId: projectId || undefined,
+  });
+
+  // Android-specific channel setup
+  if (Platform.OS === "android") {
+    await Notifications.setNotificationChannelAsync("default", {
+      name: "Default",
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: "#4A90D9",
     });
+  }
 
-    // Android-specific channel setup
-    if (Platform.OS === "android") {
-        await Notifications.setNotificationChannelAsync("default", {
-            name: "Default",
-            importance: Notifications.AndroidImportance.MAX,
-            vibrationPattern: [0, 250, 250, 250],
-            lightColor: "#4A90D9",
-        });
-    }
-
-    return tokenData.data;
+  return tokenData.data;
 }
 
 // Get existing push token without requesting permissions (for returning users)
 async function getExistingPushToken(): Promise<string | null> {
-    if (!Device.isDevice) return null;
+  if (!Device.isDevice) return null;
 
-    const { status } = await Notifications.getPermissionsAsync();
-    if (status !== "granted") return null;
+  const { status } = await Notifications.getPermissionsAsync();
+  if (status !== "granted") return null;
 
-    try {
-        const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-        const tokenData = await Notifications.getExpoPushTokenAsync({
-            projectId: projectId || undefined,
-        });
-        return tokenData.data;
-    } catch {
-        return null;
-    }
+  try {
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    const tokenData = await Notifications.getExpoPushTokenAsync({
+      projectId: projectId || undefined,
+    });
+    return tokenData.data;
+  } catch {
+    return null;
+  }
 }
 
 function handleNotificationTap(data: Record<string, unknown>) {
-    const type = data?.type as string | undefined;
-    if (type === "friend_request") {
-        router.push("/account/friends?tab=requests");
-    } else if (type === "order_update" && data?.orderId) {
-        router.push(`/order/${data.orderId}`);
-    } else if (type === "settlement_reminder" && data?.orderId) {
-        router.push(`/order/my-settlement?orderId=${data.orderId}`);
-    }
+  const type = data?.type as string | undefined;
+  if (type === "friend_request") {
+    router.push("/account/friends?tab=requests");
+  } else if (type === "order_update" && data?.orderId) {
+    router.push(`/order/${data.orderId}`);
+  } else if (type === "settlement_reminder" && data?.orderId) {
+    router.push(`/order/my-settlement?orderId=${data.orderId}`);
+  }
 }

@@ -18,6 +18,11 @@ npm run android            # build + run on emulator
 npm run phone              # build + run on a physical iPhone
 npm run web                # web target
 npm run prebuild           # regenerate ios/ + android/ native projects
+npm run lint               # Biome lint
+npm run lint:fix           # Biome lint with autofixes
+npm run format             # Prettier formatting check
+npm run format:write       # Prettier write
+npm run check              # lint + format check
 
 # Convex backend (two deployments exist — pick one)
 npm run convex:br          # production project (biterunr-d182d)
@@ -28,7 +33,7 @@ npm run eas:build          # iOS .ipa
 npm run eas:build:android  # Android .aab
 ```
 
-There is no test runner, no linter command, and no typecheck script — type errors surface through Metro and the editor. Run `npx tsc --noEmit` if you want a one-shot typecheck.
+There is no test runner and no typecheck script — type errors surface through Metro and the editor. Run `npx tsc --noEmit` if you want a one-shot typecheck.
 
 `npm run sync-styles` (auto-runs before every `expo` command) parses `global.css` CSS variables into `tokens.json` so JS code can read theme HSL values at build time. **If you edit CSS variables in `global.css`, regenerate `tokens.json`** — otherwise `lib/constants.ts` (`NAV_THEME`) gets out of sync.
 

@@ -32,10 +32,7 @@ function normalizeLocationNames(locationNames: string[]) {
   return normalized;
 }
 
-async function getOrderLocationsForOrder(
-  ctx: any,
-  orderId: Id<"orders">,
-) {
+async function getOrderLocationsForOrder(ctx: any, orderId: Id<"orders">) {
   const orderLocations = await ctx.db
     .query("orderLocations")
     .withIndex("by_orderId", (q: any) => q.eq("orderId", orderId))
@@ -60,10 +57,7 @@ async function countLinesForLocation(
   return orderItems.length;
 }
 
-async function countLinesForOrder(
-  ctx: any,
-  orderId: Id<"orders">,
-) {
+async function countLinesForOrder(ctx: any, orderId: Id<"orders">) {
   const orderLocations = await getOrderLocationsForOrder(ctx, orderId);
   let totalLines = 0;
 
@@ -211,7 +205,9 @@ export const get = query({
 
     const orderLocations = await getOrderLocationsForOrder(ctx, args.orderId);
     const totalItems = await countLinesForOrder(ctx, args.orderId);
-    const doneCount = orderUsers.filter((orderUser) => orderUser.status === "done").length;
+    const doneCount = orderUsers.filter(
+      (orderUser) => orderUser.status === "done",
+    ).length;
 
     return {
       count: totalItems,
@@ -463,12 +459,16 @@ export const update = mutation({
         .filter((memberId) => memberId !== userId);
 
       if (memberUserIds.length > 0) {
-        await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUsers, {
-          userIds: memberUserIds,
-          title: "Run Started!",
-          body: `${creatorName} is heading out for ${orderName}`,
-          data: { type: "run_started", orderId: args.orderId },
-        });
+        await ctx.scheduler.runAfter(
+          0,
+          internal.pushNotifications.sendToUsers,
+          {
+            userIds: memberUserIds,
+            title: "Run Started!",
+            body: `${creatorName} is heading out for ${orderName}`,
+            data: { type: "run_started", orderId: args.orderId },
+          },
+        );
       }
     }
 
@@ -567,8 +567,8 @@ export const getPastOrders = query({
         const orderLocations = await getOrderLocationsForOrder(ctx, order._id);
         const itemsCount = await countLinesForOrder(ctx, order._id);
         const userAmount =
-          orderUsers.find((orderUser) => orderUser.userId === userId)?.amountOwed ??
-          0n;
+          orderUsers.find((orderUser) => orderUser.userId === userId)
+            ?.amountOwed ?? 0n;
 
         return {
           id: order._id,
@@ -667,7 +667,11 @@ export const getOutstandingDebts = query({
 
     for (const userOrderUser of userOrderUsers) {
       const order = await ctx.db.get(userOrderUser.orderId);
-      if (!order || order.status === "cancelled" || order.creatorId !== userId) {
+      if (
+        !order ||
+        order.status === "cancelled" ||
+        order.creatorId !== userId
+      ) {
         continue;
       }
 
@@ -726,7 +730,11 @@ export const getOutstandingPayments = query({
 
     for (const userOrderUser of userOrderUsers) {
       const order = await ctx.db.get(userOrderUser.orderId);
-      if (!order || order.status === "cancelled" || order.creatorId === userId) {
+      if (
+        !order ||
+        order.status === "cancelled" ||
+        order.creatorId === userId
+      ) {
         continue;
       }
       if (userOrderUser.amountOwed <= 0n) continue;
@@ -795,12 +803,15 @@ export const getCompletedOrderDetails = query({
               locationById.get(left.orderLocationId)?._creationTime ?? 0;
             const rightLocation =
               locationById.get(right.orderLocationId)?._creationTime ?? 0;
-            return leftLocation - rightLocation || left.sortOrder - right.sortOrder;
+            return (
+              leftLocation - rightLocation || left.sortOrder - right.sortOrder
+            );
           })
           .map((orderItem) => ({
             text: orderItem.text,
             locationName:
-              locationById.get(orderItem.orderLocationId)?.name ?? "Unknown Location",
+              locationById.get(orderItem.orderLocationId)?.name ??
+              "Unknown Location",
             priceInCents:
               orderItem.priceInCents !== undefined
                 ? Number(orderItem.priceInCents)
@@ -833,7 +844,9 @@ export const getCompletedOrderDetails = query({
       );
     });
 
-    const callerOrderUser = orderUsers.find((orderUser) => orderUser.userId === userId);
+    const callerOrderUser = orderUsers.find(
+      (orderUser) => orderUser.userId === userId,
+    );
 
     return {
       order: {
@@ -936,8 +949,13 @@ export const getFrequentGroups = query({
         if (orders.length > 0) {
           const mostRecent = orders[0];
           lastOrderName = mostRecent.name ?? "";
-          const orderLocations = await getOrderLocationsForOrder(ctx, mostRecent._id);
-          locationNames = orderLocations.map((orderLocation) => orderLocation.name);
+          const orderLocations = await getOrderLocationsForOrder(
+            ctx,
+            mostRecent._id,
+          );
+          locationNames = orderLocations.map(
+            (orderLocation) => orderLocation.name,
+          );
         }
 
         return {

@@ -684,8 +684,10 @@ export const confirmReceiptMatches = mutation({
     );
 
     const memberUserIds = orderUserDocs
-      .filter((ou) => ou !== null && ou.userId !== userId)
-      .map((ou) => ou!.userId);
+      .filter((ou): ou is NonNullable<typeof ou> => {
+        return ou !== null && ou.userId !== userId;
+      })
+      .map((ou) => ou.userId);
 
     if (memberUserIds.length > 0) {
       const locationName = orderLocation.name || "the restaurant";

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Pressable,
   ScrollView,
@@ -17,7 +17,6 @@ import Animated, {
   withSequence,
   withTiming,
   cancelAnimation,
-  Easing,
 } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { AnimatedPressable } from "@/components/common/animated-pressable";
@@ -27,11 +26,14 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Icon from "@/components/common/icon";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { PaymentSetupSplash } from "@/components/payment-setup-splash";
 import { QRScannerModal } from "@/components/qr-scanner-modal";
 import { EnterCodeModal } from "@/components/enter-code-modal";
-import { BrAvatar, BrChip, BrText } from "@/components/br";
+import { BrAvatar, BrText } from "@/components/br";
 import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
 
 type FilterType = "all" | "active" | "completed" | "needs_payment";
@@ -156,11 +158,9 @@ function PulseDot({ active, color }: { active: boolean; color: string }) {
 
 function RunCard({
   item,
-  userId,
   onReorder,
 }: {
   item: OrderItem;
-  userId: string | undefined;
   onReorder: () => void;
 }) {
   const { order, orderUsers, orderLocations, itemsCount } = item;
@@ -427,7 +427,10 @@ export default function GroupsTab() {
 
   return (
     <ErrorBoundary>
-      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
+      <SafeAreaView
+        edges={["top"]}
+        style={{ flex: 1, backgroundColor: BR.paper }}
+      >
         {/* Top bar */}
         <View style={styles.topBar}>
           <Image
@@ -620,7 +623,6 @@ export default function GroupsTab() {
                               <RunCard
                                 key={item.order.id}
                                 item={item}
-                                userId={userId}
                                 onReorder={() => {
                                   const locationNamesParam = encodeURIComponent(
                                     JSON.stringify(

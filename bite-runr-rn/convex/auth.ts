@@ -14,42 +14,42 @@ const siteUrl = process.env.SITE_URL ?? "";
 
 // Check which OAuth providers have complete credentials
 const githubCredentials =
-    process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET
-        ? {
-              clientId: process.env.AUTH_GITHUB_ID,
-              clientSecret: process.env.AUTH_GITHUB_SECRET,
-              redirectURI: `${siteUrl}/api/auth/callback/github`,
-          }
-        : null;
+  process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET
+    ? {
+        clientId: process.env.AUTH_GITHUB_ID,
+        clientSecret: process.env.AUTH_GITHUB_SECRET,
+        redirectURI: `${siteUrl}/api/auth/callback/github`,
+      }
+    : null;
 
 const googleCredentials =
-    process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
-        ? {
-              clientId: process.env.AUTH_GOOGLE_ID,
-              clientSecret: process.env.AUTH_GOOGLE_SECRET,
-              redirectURI: `${siteUrl}/api/auth/callback/google`,
-          }
-        : null;
+  process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
+    ? {
+        clientId: process.env.AUTH_GOOGLE_ID,
+        clientSecret: process.env.AUTH_GOOGLE_SECRET,
+        redirectURI: `${siteUrl}/api/auth/callback/google`,
+      }
+    : null;
 
 const appleCredentials =
-    process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET
-        ? {
-              clientId: process.env.AUTH_APPLE_ID,
-              clientSecret: process.env.AUTH_APPLE_SECRET,
-              redirectURI: `${siteUrl}/api/auth/callback/apple`,
-              appBundleIdentifier:
-                  process.env.AUTH_APPLE_BUNDLE_ID ??
-                  "com.RunrStudios.BiteRunrRN",
-          }
-        : null;
+  process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET
+    ? {
+        clientId: process.env.AUTH_APPLE_ID,
+        clientSecret: process.env.AUTH_APPLE_SECRET,
+        redirectURI: `${siteUrl}/api/auth/callback/apple`,
+        appBundleIdentifier:
+          process.env.AUTH_APPLE_BUNDLE_ID ?? "com.RunrStudios.BiteRunrRN",
+      }
+    : null;
 
 // Validate SITE_URL when OAuth providers are configured
-const hasOAuthProviders = githubCredentials || googleCredentials || appleCredentials;
+const hasOAuthProviders =
+  githubCredentials || googleCredentials || appleCredentials;
 if (!siteUrl && hasOAuthProviders) {
-    throw new Error(
-        "SITE_URL environment variable is required when OAuth providers are configured. " +
-            "OAuth redirect URIs require a full URL (e.g., https://example.com).",
-    );
+  throw new Error(
+    "SITE_URL environment variable is required when OAuth providers are configured. " +
+      "OAuth redirect URIs require a full URL (e.g., https://example.com).",
+  );
 }
 
 // Create the Better Auth client for Convex
@@ -58,55 +58,51 @@ export const authComponent = createClient(components.betterAuth);
 // Create the Better Auth instance
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const createAuth = (ctx: any) => {
-    return betterAuth({
-        database: authComponent.adapter(ctx),
-        baseURL: siteUrl,
-        trustedOrigins: [
-            "biterunr://",
-            "biterunr://*",
-            "https://appleid.apple.com",
-            // Development Expo URLs
-            ...(process.env.NODE_ENV === "development"
-                ? ["exp://", "exp://**"]
-                : []),
-            siteUrl,
-        ],
-        emailAndPassword: {
-            enabled: true,
-        },
-        plugins: [
-            convex({ authConfig }),
-            expo(),
-            emailOTP({
-                async sendVerificationOTP({ email, otp, type }) {
-                    const subjectMap = {
-                        "sign-in": "Sign in to BiteRunr",
-                        "email-verification": "Verify your BiteRunr account",
-                        "forget-password": "Reset your BiteRunr password",
-                    };
-                    const titleMap = {
-                        "sign-in": "Sign In Code",
-                        "email-verification": "Welcome to BiteRunr!",
-                        "forget-password": "Password Reset Request",
-                    };
-                    const bodyMap = {
-                        "sign-in": "Use this code to sign in:",
-                        "email-verification": "Your verification code is:",
-                        "forget-password":
-                            "You requested to reset your password. Use the code below:",
-                    };
+  return betterAuth({
+    database: authComponent.adapter(ctx),
+    baseURL: siteUrl,
+    trustedOrigins: [
+      "biterunr://",
+      "biterunr://*",
+      "https://appleid.apple.com",
+      // Development Expo URLs
+      ...(process.env.NODE_ENV === "development" ? ["exp://", "exp://**"] : []),
+      siteUrl,
+    ],
+    emailAndPassword: {
+      enabled: true,
+    },
+    plugins: [
+      convex({ authConfig }),
+      expo(),
+      emailOTP({
+        async sendVerificationOTP({ email, otp, type }) {
+          const subjectMap = {
+            "sign-in": "Sign in to BiteRunr",
+            "email-verification": "Verify your BiteRunr account",
+            "forget-password": "Reset your BiteRunr password",
+          };
+          const titleMap = {
+            "sign-in": "Sign In Code",
+            "email-verification": "Welcome to BiteRunr!",
+            "forget-password": "Password Reset Request",
+          };
+          const bodyMap = {
+            "sign-in": "Use this code to sign in:",
+            "email-verification": "Your verification code is:",
+            "forget-password":
+              "You requested to reset your password. Use the code below:",
+          };
 
-                    const subject =
-                        subjectMap[type] ?? "Your BiteRunr verification code";
-                    const title = titleMap[type] ?? "Verification Code";
-                    const bodyText =
-                        bodyMap[type] ?? "Your verification code is:";
+          const subject = subjectMap[type] ?? "Your BiteRunr verification code";
+          const title = titleMap[type] ?? "Verification Code";
+          const bodyText = bodyMap[type] ?? "Your verification code is:";
 
-                    const { error } = await resend.emails.send({
-                        from: "BiteRunr <onboarding@biterunr.com>",
-                        to: [email],
-                        subject,
-                        html: `
+          const { error } = await resend.emails.send({
+            from: "BiteRunr <onboarding@biterunr.com>",
+            to: [email],
+            subject,
+            html: `
                             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                                 <h1 style="color: #333;">${title}</h1>
                                 <p style="font-size: 16px; color: #666;">
@@ -122,32 +118,32 @@ export const createAuth = (ctx: any) => {
                                 </p>
                             </div>
                         `,
-                        text: `${subject}: ${otp}. This code expires in 10 minutes.`,
-                    });
+            text: `${subject}: ${otp}. This code expires in 10 minutes.`,
+          });
 
-                    if (error) {
-                        console.error(`Failed to send OTP email:`, error);
-                        throw new Error("Could not send verification email");
-                    }
-                },
-                otpLength: 6,
-                expiresIn: 600, // 10 minutes
-            }),
+          if (error) {
+            console.error(`Failed to send OTP email:`, error);
+            throw new Error("Could not send verification email");
+          }
+        },
+        otpLength: 6,
+        expiresIn: 600, // 10 minutes
+      }),
+    ],
+    account: {
+      accountLinking: {
+        enabled: true,
+        trustedProviders: [
+          ...(googleCredentials ? ["google" as const] : []),
+          ...(githubCredentials ? ["github" as const] : []),
+          ...(appleCredentials ? ["apple" as const] : []),
         ],
-        account: {
-            accountLinking: {
-                enabled: true,
-                trustedProviders: [
-                    ...(googleCredentials ? ["google" as const] : []),
-                    ...(githubCredentials ? ["github" as const] : []),
-                    ...(appleCredentials ? ["apple" as const] : []),
-                ],
-            },
-        },
-        socialProviders: {
-            ...(githubCredentials && { github: githubCredentials }),
-            ...(googleCredentials && { google: googleCredentials }),
-            ...(appleCredentials && { apple: appleCredentials }),
-        },
-    });
+      },
+    },
+    socialProviders: {
+      ...(githubCredentials && { github: githubCredentials }),
+      ...(googleCredentials && { google: googleCredentials }),
+      ...(appleCredentials && { apple: appleCredentials }),
+    },
+  });
 };

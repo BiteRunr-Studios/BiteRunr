@@ -328,53 +328,56 @@ export default function CreateOrder() {
             </View>
 
             <View style={{ gap: 8, marginTop: 10 }}>
-              {spots.map((s, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.spotCard,
-                    fieldErrors.order_locations &&
-                      i === 0 &&
-                      !s.trim() && { borderColor: BR.coral },
-                  ]}
-                >
-                  <View style={styles.spotBadge}>
-                    {spots.length > 1 ? (
-                      <Text style={styles.spotBadgeText}>{i + 1}</Text>
-                    ) : (
-                      <Icon name="MapPin" size={15} color={BR.orangeDeep} />
+              {spots.map((s, i) => {
+                const spotKey = s.trim() || `empty-location-${i}`;
+                return (
+                  <View
+                    key={spotKey}
+                    style={[
+                      styles.spotCard,
+                      fieldErrors.order_locations &&
+                        i === 0 &&
+                        !s.trim() && { borderColor: BR.coral },
+                    ]}
+                  >
+                    <View style={styles.spotBadge}>
+                      {spots.length > 1 ? (
+                        <Text style={styles.spotBadgeText}>{i + 1}</Text>
+                      ) : (
+                        <Icon name="MapPin" size={15} color={BR.orangeDeep} />
+                      )}
+                    </View>
+                    <TextInput
+                      value={s}
+                      onChangeText={(v) => {
+                        setSpotAt(i, v);
+                        if (fieldErrors.order_locations)
+                          clearError("order_locations");
+                      }}
+                      placeholder={
+                        i === 0 ? `Costco` : `Stop ${i + 1} — another place`
+                      }
+                      placeholderTextColor={BR.ink3}
+                      style={styles.spotInput}
+                      returnKeyType="done"
+                      onSubmitEditing={() => Keyboard.dismiss()}
+                      inputAccessoryViewID={INPUT_ACCESSORY_ID}
+                    />
+                    {(s.trim().length > 0 || spots.length > 1) && (
+                      <Pressable
+                        onPress={() => removeSpot(i)}
+                        hitSlop={8}
+                        style={styles.spotRemoveBtn}
+                      >
+                        <Icon name="X" size={12} color={BR.ink2} />
+                      </Pressable>
+                    )}
+                    {!s.trim() && spots.length === 1 && (
+                      <Text style={styles.requiredHint}>required</Text>
                     )}
                   </View>
-                  <TextInput
-                    value={s}
-                    onChangeText={(v) => {
-                      setSpotAt(i, v);
-                      if (fieldErrors.order_locations)
-                        clearError("order_locations");
-                    }}
-                    placeholder={
-                      i === 0 ? `Costco` : `Stop ${i + 1} — another place`
-                    }
-                    placeholderTextColor={BR.ink3}
-                    style={styles.spotInput}
-                    returnKeyType="done"
-                    onSubmitEditing={() => Keyboard.dismiss()}
-                    inputAccessoryViewID={INPUT_ACCESSORY_ID}
-                  />
-                  {(s.trim().length > 0 || spots.length > 1) && (
-                    <Pressable
-                      onPress={() => removeSpot(i)}
-                      hitSlop={8}
-                      style={styles.spotRemoveBtn}
-                    >
-                      <Icon name="X" size={12} color={BR.ink2} />
-                    </Pressable>
-                  )}
-                  {!s.trim() && spots.length === 1 && (
-                    <Text style={styles.requiredHint}>required</Text>
-                  )}
-                </View>
-              ))}
+                );
+              })}
 
               {fieldErrors.order_locations && (
                 <Text style={styles.fieldError}>

@@ -1,10 +1,10 @@
-import React from "react";
+import type React from "react";
 import {
   Pressable,
-  PressableProps,
+  type PressableProps,
   ActivityIndicator,
   View,
-  ViewStyle,
+  type ViewStyle,
   StyleSheet,
 } from "react-native";
 import { BR, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
@@ -85,7 +85,11 @@ const VARIANTS: Record<
   ghost: { bg: "transparent", fg: BR.ink, border: BR.line2 },
   ink: { bg: BR.ink, fg: "#fff" },
   mint: { bg: BR.mint, fg: "#fff", shadow: BR_SHADOW.mint },
-  mintSoft: { bg: BR.mintSoft, fg: BR.mintInk, border: "rgba(46,190,123,0.25)" },
+  mintSoft: {
+    bg: BR.mintSoft,
+    fg: BR.mintInk,
+    border: "rgba(46,190,123,0.25)",
+  },
 };
 
 const styles = StyleSheet.create({

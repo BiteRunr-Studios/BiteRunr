@@ -9,18 +9,20 @@ import {
   InteractionManager,
 } from "react-native";
 import { Flow } from "react-native-animated-spinkit";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
+import ActionSheet, { type ActionSheetRef } from "react-native-actions-sheet";
 import ReAnimated, {
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
   withSequence,
   withTiming,
-  Easing,
-  SharedValue,
+  type SharedValue,
   interpolate,
   Extrapolation,
   FadeInUp,
@@ -30,7 +32,7 @@ import ReAnimated, {
 import Icon from "@/components/common/icon";
 import { useAction, useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/convex/_generated/dataModel";
 import { QRCodeModal } from "@/components/qr-code-modal";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
@@ -39,6 +41,7 @@ import { BrAvatar, BrButton, BrText } from "@/components/br";
 import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
 
 type ButtonState = "readyToRun" | "enabled" | "disabled";
+type SwipeableRef = { close: () => void };
 
 function UserItemsList({ orderUserId }: { orderUserId: Id<"orderUsers"> }) {
   const items = useQuery(api.orderItems.listForOrderUser, { orderUserId });
@@ -54,16 +57,26 @@ function UserItemsList({ orderUserId }: { orderUserId: Id<"orderUsers"> }) {
   if (items.length === 0) {
     return (
       <View style={{ padding: 14 }}>
-        <Text style={{ fontSize: 13, color: BR.ink3, fontStyle: "italic" }}>No items added</Text>
+        <Text style={{ fontSize: 13, color: BR.ink3, fontStyle: "italic" }}>
+          No items added
+        </Text>
       </View>
     );
   }
 
   return (
-    <View style={{ paddingHorizontal: 14, paddingTop: 10, paddingBottom: 14, gap: 6 }}>
+    <View
+      style={{
+        paddingHorizontal: 14,
+        paddingTop: 10,
+        paddingBottom: 14,
+        gap: 6,
+      }}
+    >
       {items.map((item, index) => {
         const showLocation =
-          index === 0 || items[index - 1].orderLocationId !== item.orderLocationId;
+          index === 0 ||
+          items[index - 1].orderLocationId !== item.orderLocationId;
         return (
           <View key={item.id}>
             {showLocation && (
@@ -84,20 +97,72 @@ function UserItemsList({ orderUserId }: { orderUserId: Id<"orderUsers"> }) {
   );
 }
 
+function RemoveRightAction({
+  progress,
+  targetUserId,
+  memberName,
+  swipeable,
+  onConfirmRemove,
+}: {
+  progress: SharedValue<number>;
+  targetUserId: Id<"users">;
+  memberName: string;
+  swipeable: SwipeableRef;
+  onConfirmRemove: (
+    targetUserId: Id<"users">,
+    memberName: string,
+    swipeable: SwipeableRef,
+  ) => void;
+}) {
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        scale: interpolate(
+          progress.value,
+          [0, 1],
+          [0.5, 1],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+    opacity: interpolate(
+      progress.value,
+      [0, 0.5, 1],
+      [0, 0.5, 1],
+      Extrapolation.CLAMP,
+    ),
+  }));
+  return (
+    <View style={{ justifyContent: "center", paddingLeft: 10 }}>
+      <ReAnimated.View style={animatedStyle}>
+        <TouchableOpacity
+          onPress={() => onConfirmRemove(targetUserId, memberName, swipeable)}
+          style={styles.removeBtn}
+          activeOpacity={0.75}
+        >
+          <Icon name="UserMinus" size={20} color="white" />
+        </TouchableOpacity>
+      </ReAnimated.View>
+    </View>
+  );
+}
+
 export default function SpecificOrder() {
   const { orderId } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
 
   const [showQRModal, setShowQRModal] = useState(false);
   const [isSelectingItems, setIsSelectingItems] = useState(false);
-  const [removingUserId, setRemovingUserId] = useState<string | null>(null);
+  const [_removingUserId, setRemovingUserId] = useState<string | null>(null);
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [isTransferringRunner, setIsTransferringRunner] = useState(false);
   const [isTransitionComplete, setIsTransitionComplete] = useState(false);
   const transferRunnerSheetRef = useRef<ActionSheetRef>(null);
 
   useEffect(() => {
-    const task = InteractionManager.runAfterInteractions(() => setIsTransitionComplete(true));
+    const task = InteractionManager.runAfterInteractions(() =>
+      setIsTransitionComplete(true),
+    );
     return () => task.cancel();
   }, []);
 
@@ -110,14 +175,22 @@ export default function SpecificOrder() {
   const pulseOpacity = useSharedValue(1);
   useEffect(() => {
     pulseScale.value = withRepeat(
-      withSequence(withTiming(1.5, { duration: 700 }), withTiming(1, { duration: 700 })),
-      -1, false,
+      withSequence(
+        withTiming(1.5, { duration: 700 }),
+        withTiming(1, { duration: 700 }),
+      ),
+      -1,
+      false,
     );
     pulseOpacity.value = withRepeat(
-      withSequence(withTiming(0.5, { duration: 700 }), withTiming(1, { duration: 700 })),
-      -1, false,
+      withSequence(
+        withTiming(0.5, { duration: 700 }),
+        withTiming(1, { duration: 700 }),
+      ),
+      -1,
+      false,
     );
-  }, []);
+  }, [pulseOpacity, pulseScale]);
   const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulseScale.value }],
     opacity: pulseOpacity.value,
@@ -136,7 +209,9 @@ export default function SpecificOrder() {
   const transferRunner = useMutation(api.orders.transferRunner);
   const leaveOrder = useMutation(api.orderUsers.leaveOrder);
   const removeFromOrder = useMutation(api.orderUsers.removeFromOrder);
-  const generateAiOrderSummary = useAction(api.orderItems.generateAiOrderSummary);
+  const generateAiOrderSummary = useAction(
+    api.orderItems.generateAiOrderSummary,
+  );
 
   const prevStatusRef = useRef<string | null>(null);
   useEffect(() => {
@@ -172,7 +247,9 @@ export default function SpecificOrder() {
     setIsSelectingItems(true);
     try {
       await setStatus({ orderId: orderId as Id<"orders">, status: "ordering" });
-      router.push(`/order/items?orderUserId=${orderUser.id}&orderId=${orderId}`);
+      router.push(
+        `/order/items?orderUserId=${orderUser.id}&orderId=${orderId}`,
+      );
     } catch (error) {
       if (__DEV__) console.error("Failed to set status:", error);
     } finally {
@@ -181,33 +258,39 @@ export default function SpecificOrder() {
   }
 
   function handleCancelOrder() {
-    Alert.alert(
-      "Cancel order",
-      "Are you sure? This cannot be undone.",
-      [
-        { text: "No", style: "cancel" },
-        {
-          text: "Yes, cancel",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await updateOrder({ orderId: orderId as Id<"orders">, status: "cancelled" });
-            } catch (error) {
-              Alert.alert("Error", "Failed to cancel order. Please try again.");
-            }
-          },
+    Alert.alert("Cancel order", "Are you sure? This cannot be undone.", [
+      { text: "No", style: "cancel" },
+      {
+        text: "Yes, cancel",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await updateOrder({
+              orderId: orderId as Id<"orders">,
+              status: "cancelled",
+            });
+          } catch (_error) {
+            Alert.alert("Error", "Failed to cancel order. Please try again.");
+          }
         },
-      ],
-    );
+      },
+    ]);
   }
 
   function handleMoreMenu() {
     const options: any[] = [];
     if (!data?.order.paused) {
       options.push({ text: "QR Code", onPress: () => setShowQRModal(true) });
-      options.push({ text: "Transfer runner", onPress: () => transferRunnerSheetRef.current?.show() });
+      options.push({
+        text: "Transfer runner",
+        onPress: () => transferRunnerSheetRef.current?.show(),
+      });
     }
-    options.push({ text: "Cancel order", style: "destructive", onPress: handleCancelOrder });
+    options.push({
+      text: "Cancel order",
+      style: "destructive",
+      onPress: handleCancelOrder,
+    });
     options.push({ text: "Close", style: "cancel" });
     Alert.alert("Run options", undefined, options);
   }
@@ -236,35 +319,38 @@ export default function SpecificOrder() {
   }
 
   function handleLeaveGroup() {
-    Alert.alert(
-      "Leave group",
-      "Your items will be removed.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Leave",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await leaveOrder({ orderId: orderId as Id<"orders"> });
-              router.back();
-            } catch {
-              Alert.alert("Error", "Failed to leave order. Please try again.");
-            }
-          },
+    Alert.alert("Leave group", "Your items will be removed.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Leave",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await leaveOrder({ orderId: orderId as Id<"orders"> });
+            router.back();
+          } catch {
+            Alert.alert("Error", "Failed to leave order. Please try again.");
+          }
         },
-      ],
-    );
+      },
+    ]);
   }
 
   function openOrderSummary(aiHint: "cached" | "generate") {
     if (aiHint === "generate") {
-      void primeAiOrderSummaryRequest(generateAiOrderSummary, orderId as Id<"orders">);
+      void primeAiOrderSummaryRequest(
+        generateAiOrderSummary,
+        orderId as Id<"orders">,
+      );
     }
     router.push(`/order/summary?orderId=${orderId}&aiHint=${aiHint}`);
   }
 
-  function confirmRemoveMember(targetUserId: Id<"users">, memberName: string, swipeable: any) {
+  function confirmRemoveMember(
+    targetUserId: Id<"users">,
+    memberName: string,
+    swipeable: SwipeableRef,
+  ) {
     Alert.alert(
       "Remove member",
       `Remove ${memberName} from this order? Their items will be deleted.`,
@@ -276,7 +362,10 @@ export default function SpecificOrder() {
           onPress: async () => {
             setRemovingUserId(targetUserId);
             try {
-              await removeFromOrder({ orderId: orderId as Id<"orders">, targetUserId });
+              await removeFromOrder({
+                orderId: orderId as Id<"orders">,
+                targetUserId,
+              });
             } catch {
               Alert.alert("Error", "Failed to remove member.");
             } finally {
@@ -289,52 +378,29 @@ export default function SpecificOrder() {
     );
   }
 
-  function RemoveRightAction({
-    progress,
-    targetUserId,
-    memberName,
-    swipeable,
-  }: {
-    progress: SharedValue<number>;
-    targetUserId: Id<"users">;
-    memberName: string;
-    swipeable: any;
-  }) {
-    const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: interpolate(progress.value, [0, 1], [0.5, 1], Extrapolation.CLAMP) }],
-      opacity: interpolate(progress.value, [0, 0.5, 1], [0, 0.5, 1], Extrapolation.CLAMP),
-    }));
-    return (
-      <View style={{ justifyContent: "center", paddingLeft: 10 }}>
-        <ReAnimated.View style={animatedStyle}>
-          <TouchableOpacity
-            onPress={() => confirmRemoveMember(targetUserId, memberName, swipeable)}
-            style={styles.removeBtn}
-            activeOpacity={0.75}>
-            <Icon name="UserMinus" size={20} color="white" />
-          </TouchableOpacity>
-        </ReAnimated.View>
-      </View>
-    );
-  }
-
-  const renderRemoveRightActions = useCallback(
+  const renderRemoveRightActions =
     (targetUserId: Id<"users">, memberName: string) =>
-      (progress: SharedValue<number>, _drag: SharedValue<number>, swipeable: any) => (
-        <RemoveRightAction
-          progress={progress}
-          targetUserId={targetUserId}
-          memberName={memberName}
-          swipeable={swipeable}
-        />
-      ),
-    [],
-  );
+    (
+      progress: SharedValue<number>,
+      _drag: SharedValue<number>,
+      swipeable: SwipeableRef,
+    ) => (
+      <RemoveRightAction
+        progress={progress}
+        targetUserId={targetUserId}
+        memberName={memberName}
+        swipeable={swipeable}
+        onConfirmRemove={confirmRemoveMember}
+      />
+    );
 
   // ── Skeleton ──────────────────────────────────────────────────
   if (isPending) {
     return (
-      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
+      <SafeAreaView
+        edges={["top"]}
+        style={{ flex: 1, backgroundColor: BR.paper }}
+      >
         <View style={styles.header}>
           <View style={styles.backBtn} />
           <SkeletonBlock width={120} height={18} />
@@ -346,7 +412,12 @@ export default function SpecificOrder() {
             <SkeletonBlock width="100%" height={80} rounded="rounded-2xl" />
             <SkeletonBlock width={100} height={14} />
             {[1, 2, 3].map((i) => (
-              <SkeletonBlock key={i} width="100%" height={72} rounded="rounded-2xl" />
+              <SkeletonBlock
+                key={i}
+                width="100%"
+                height={72}
+                rounded="rounded-2xl"
+              />
             ))}
           </View>
         </Skeleton>
@@ -356,7 +427,14 @@ export default function SpecificOrder() {
 
   if (!data) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: BR.paper }}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: BR.paper,
+        }}
+      >
         <BrText style={{ color: BR.coralInk }}>Order not found</BrText>
       </View>
     );
@@ -364,7 +442,8 @@ export default function SpecificOrder() {
 
   const buttonState = getButtonState();
   const isButtonDisabled = buttonState === "disabled";
-  const transferCandidates = data.orderUsers.filter((ou) => !ou.isCreator) ?? [];
+  const transferCandidates =
+    data.orderUsers.filter((ou) => !ou.isCreator) ?? [];
   const progressPercent =
     data.completionStats && data.completionStats.total > 0
       ? (data.completionStats.done / data.completionStats.total) * 100
@@ -384,13 +463,18 @@ export default function SpecificOrder() {
   // ── Main render ───────────────────────────────────────────────
   return (
     <>
-      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
+      <SafeAreaView
+        edges={["top"]}
+        style={{ flex: 1, backgroundColor: BR.paper }}
+      >
         {/* Header */}
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backBtn}>
             <Icon name="ChevronLeft" size={20} color={BR.ink} />
           </Pressable>
-          <BrText weight="bold" style={{ fontSize: 17 }}>Run details</BrText>
+          <BrText weight="bold" style={{ fontSize: 17 }}>
+            Run details
+          </BrText>
           {isCreator ? (
             <Pressable onPress={handleMoreMenu} style={styles.moreBtn}>
               <Icon name="Ellipsis" size={18} color={BR.ink} />
@@ -409,16 +493,26 @@ export default function SpecificOrder() {
           <ReAnimated.View entering={FadeInUp.duration(300)}>
             <View style={styles.heroCard}>
               {/* "R" watermark */}
-              <Text style={styles.heroWatermark} aria-hidden>R</Text>
+              <Text style={styles.heroWatermark} aria-hidden>
+                R
+              </Text>
 
               <View style={styles.heroTop}>
                 <View style={{ flex: 1 }}>
                   <BrText style={styles.heroEyebrow}>{dateLabel}</BrText>
-                  <BrText weight="bold" style={styles.heroTitle}>{data.order.name}</BrText>
+                  <BrText weight="bold" style={styles.heroTitle}>
+                    {data.order.name}
+                  </BrText>
                   {data.orderLocations?.[0]?.name && (
                     <View style={styles.heroLocationRow}>
-                      <Icon name="MapPin" size={12} color="rgba(255,255,255,0.6)" />
-                      <Text style={styles.heroLocationText}>{data.orderLocations[0].name}</Text>
+                      <Icon
+                        name="MapPin"
+                        size={12}
+                        color="rgba(255,255,255,0.6)"
+                      />
+                      <Text style={styles.heroLocationText}>
+                        {data.orderLocations[0].name}
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -426,8 +520,19 @@ export default function SpecificOrder() {
                 {/* Status pill */}
                 <View style={styles.statusPill}>
                   <View style={{ width: 6, height: 6, position: "relative" }}>
-                    <View style={[styles.statusDot, { backgroundColor: BR.orange, position: "absolute" }]} />
-                    <ReAnimated.View style={[styles.statusDot, { backgroundColor: BR.orange, position: "absolute" }, pulseStyle]} />
+                    <View
+                      style={[
+                        styles.statusDot,
+                        { backgroundColor: BR.orange, position: "absolute" },
+                      ]}
+                    />
+                    <ReAnimated.View
+                      style={[
+                        styles.statusDot,
+                        { backgroundColor: BR.orange, position: "absolute" },
+                        pulseStyle,
+                      ]}
+                    />
                   </View>
                   <Text style={styles.statusPillText}>{statusLabel}</Text>
                 </View>
@@ -438,12 +543,18 @@ export default function SpecificOrder() {
                 <View style={styles.heroStatPill}>
                   <Icon name="Users" size={13} color="rgba(255,255,255,0.7)" />
                   <Text style={styles.heroStatText}>
-                    <Text style={{ fontWeight: "700" }}>{data.orderUsers.length}</Text>
+                    <Text style={{ fontWeight: "700" }}>
+                      {data.orderUsers.length}
+                    </Text>
                     {" people"}
                   </Text>
                 </View>
                 <View style={styles.heroStatPill}>
-                  <Icon name="ShoppingBag" size={13} color="rgba(255,255,255,0.7)" />
+                  <Icon
+                    name="ShoppingBag"
+                    size={13}
+                    color="rgba(255,255,255,0.7)"
+                  />
                   <Text style={styles.heroStatText}>
                     <Text style={{ fontWeight: "700" }}>{data.count}</Text>
                     {data.count === 1 ? " item" : " items"}
@@ -455,9 +566,14 @@ export default function SpecificOrder() {
 
           {/* Progress section */}
           {!data.order.paused && (
-            <ReAnimated.View entering={FadeInUp.duration(300).delay(40)} style={{ marginTop: 18 }}>
+            <ReAnimated.View
+              entering={FadeInUp.duration(300).delay(40)}
+              style={{ marginTop: 18 }}
+            >
               <View style={styles.progressHeader}>
-                <BrText weight="bold" style={{ fontSize: 16 }}>Order progress</BrText>
+                <BrText weight="bold" style={{ fontSize: 16 }}>
+                  Order progress
+                </BrText>
                 <Text style={styles.progressFraction}>
                   {data.completionStats?.done}/{data.completionStats?.total}
                 </Text>
@@ -468,32 +584,49 @@ export default function SpecificOrder() {
                     styles.progressFill,
                     {
                       width: `${progressPercent}%` as any,
-                      backgroundColor: data.completionStats?.allDone ? BR.mint : BR.orange,
+                      backgroundColor: data.completionStats?.allDone
+                        ? BR.mint
+                        : BR.orange,
                     },
                   ]}
                 />
               </View>
-              <Text style={[
-                styles.progressStatus,
-                { color: data.count > 0 && data.completionStats?.allDone ? BR.mint : BR.ink3 },
-              ]}>
+              <Text
+                style={[
+                  styles.progressStatus,
+                  {
+                    color:
+                      data.count > 0 && data.completionStats?.allDone
+                        ? BR.mint
+                        : BR.ink3,
+                  },
+                ]}
+              >
                 {data.count === 0
                   ? "At least one item is needed before the run can start"
                   : data.completionStats?.allDone
-                  ? "✨ Everyone's done — ready to roll"
-                  : `Waiting on ${remainingOrderingCount} squad ${
-                      remainingOrderingCount === 1 ? "member" : "members"
-                    }`}
+                    ? "✨ Everyone's done — ready to roll"
+                    : `Waiting on ${remainingOrderingCount} squad ${
+                        remainingOrderingCount === 1 ? "member" : "members"
+                      }`}
               </Text>
             </ReAnimated.View>
           )}
 
           {/* Squad section */}
-          <ReAnimated.View entering={FadeInUp.duration(300).delay(80)} style={{ marginTop: 22 }}>
+          <ReAnimated.View
+            entering={FadeInUp.duration(300).delay(80)}
+            style={{ marginTop: 22 }}
+          >
             <View style={styles.squadHeader}>
-              <BrText weight="bold" style={{ fontSize: 16 }}>Squad</BrText>
+              <BrText weight="bold" style={{ fontSize: 16 }}>
+                Squad
+              </BrText>
               {isCreator && !data.order.paused && (
-                <Pressable onPress={() => setShowQRModal(true)} style={styles.inviteBtn}>
+                <Pressable
+                  onPress={() => setShowQRModal(true)}
+                  style={styles.inviteBtn}
+                >
                   <Icon name="UserPlus" size={13} color={BR.orangeDeep} />
                   <Text style={styles.inviteBtnText}>Invite</Text>
                 </Pressable>
@@ -505,7 +638,8 @@ export default function SpecificOrder() {
                 const isCurrentUser = orderUser.userId === currentUserId;
                 const isDone = orderUser.status === "done";
                 const isExpanded = expandedUserId === orderUser.id;
-                const memberName = `${orderUser.user?.firstName ?? ""} ${orderUser.user?.lastName ?? ""}`.trim();
+                const memberName =
+                  `${orderUser.user?.firstName ?? ""} ${orderUser.user?.lastName ?? ""}`.trim();
 
                 const cardContent = (
                   <>
@@ -517,10 +651,12 @@ export default function SpecificOrder() {
                           avatarUrl={orderUser.user?.avatarUrl ?? null}
                           size={44}
                         />
-                        <View style={[
-                          styles.statusDotBadge,
-                          { backgroundColor: isDone ? BR.mint : BR.yolk },
-                        ]}>
+                        <View
+                          style={[
+                            styles.statusDotBadge,
+                            { backgroundColor: isDone ? BR.mint : BR.yolk },
+                          ]}
+                        >
                           <Icon
                             name={isDone ? "Check" : "Clock"}
                             size={9}
@@ -532,9 +668,22 @@ export default function SpecificOrder() {
 
                       {/* Info */}
                       <View style={{ flex: 1, minWidth: 0 }}>
-                        <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                          <Text style={[styles.participantName, { color: isCurrentUser ? BR.orangeDeep : BR.ink }]}>
-                            {memberName || "Unknown"}{isCurrentUser && " (you)"}
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 6,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.participantName,
+                              { color: isCurrentUser ? BR.orangeDeep : BR.ink },
+                            ]}
+                          >
+                            {memberName || "Unknown"}
+                            {isCurrentUser && " (you)"}
                           </Text>
                           {orderUser.isCreator && (
                             <View style={styles.hostPill}>
@@ -543,11 +692,18 @@ export default function SpecificOrder() {
                           )}
                         </View>
                         <View style={styles.participantMeta}>
-                          <Text style={{ fontSize: 12, fontWeight: "600", color: isDone ? BR.mint : "#B27500" }}>
+                          <Text
+                            style={{
+                              fontSize: 12,
+                              fontWeight: "600",
+                              color: isDone ? BR.mint : "#B27500",
+                            }}
+                          >
                             {isDone ? "Done ordering" : "Still ordering…"}
                           </Text>
                           <Text style={{ fontSize: 12, color: BR.ink3 }}>
-                            · {orderUser.itemCount} {orderUser.itemCount === 1 ? "item" : "items"}
+                            · {orderUser.itemCount}{" "}
+                            {orderUser.itemCount === 1 ? "item" : "items"}
                           </Text>
                         </View>
                       </View>
@@ -563,14 +719,22 @@ export default function SpecificOrder() {
 
                     {/* Expanded items */}
                     {isDone && isExpanded && (
-                      <View style={[styles.expandedItems, { backgroundColor: "rgba(0,0,0,0.02)" }]}>
-                        <UserItemsList orderUserId={orderUser.id as Id<"orderUsers">} />
+                      <View
+                        style={[
+                          styles.expandedItems,
+                          { backgroundColor: "rgba(0,0,0,0.02)" },
+                        ]}
+                      >
+                        <UserItemsList
+                          orderUserId={orderUser.id as Id<"orderUsers">}
+                        />
                       </View>
                     )}
                   </>
                 );
 
-                const canSwipeRemove = isCreator && !orderUser.isCreator && !data.order.paused;
+                const canSwipeRemove =
+                  isCreator && !orderUser.isCreator && !data.order.paused;
 
                 const card = isDone ? (
                   <Pressable
@@ -578,21 +742,31 @@ export default function SpecificOrder() {
                     style={[
                       styles.participantCard,
                       {
-                        backgroundColor: isCurrentUser ? BR.orangeTint : BR.card,
-                        borderColor: isCurrentUser ? "rgba(255,106,31,0.25)" : BR.line,
+                        backgroundColor: isCurrentUser
+                          ? BR.orangeTint
+                          : BR.card,
+                        borderColor: isCurrentUser
+                          ? "rgba(255,106,31,0.25)"
+                          : BR.line,
                       },
                     ]}
                   >
                     {cardContent}
                   </Pressable>
                 ) : (
-                  <View style={[
-                    styles.participantCard,
-                    {
-                      backgroundColor: isCurrentUser ? BR.orangeTint : BR.card,
-                      borderColor: isCurrentUser ? "rgba(255,106,31,0.25)" : BR.line,
-                    },
-                  ]}>
+                  <View
+                    style={[
+                      styles.participantCard,
+                      {
+                        backgroundColor: isCurrentUser
+                          ? BR.orangeTint
+                          : BR.card,
+                        borderColor: isCurrentUser
+                          ? "rgba(255,106,31,0.25)"
+                          : BR.line,
+                      },
+                    ]}
+                  >
                     {cardContent}
                   </View>
                 );
@@ -613,7 +787,9 @@ export default function SpecificOrder() {
                       >
                         {card}
                       </Swipeable>
-                    ) : card}
+                    ) : (
+                      card
+                    )}
                   </ReAnimated.View>
                 );
               })}
@@ -622,21 +798,41 @@ export default function SpecificOrder() {
         </ScrollView>
 
         {/* Footer */}
-        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) + 8 }]}>
+        <View
+          style={[
+            styles.footer,
+            { paddingBottom: Math.max(insets.bottom, 16) + 8 },
+          ]}
+        >
           {data.order.paused && !isCreator ? (
             <View style={{ alignItems: "center", marginBottom: 8 }}>
               <View style={styles.truckIcon}>
                 <Icon name="Truck" size={22} color={BR.orange} />
               </View>
-              <BrText weight="bold" style={{ fontSize: 16, marginTop: 10, textAlign: "center" }}>
+              <BrText
+                weight="bold"
+                style={{ fontSize: 16, marginTop: 10, textAlign: "center" }}
+              >
                 Your order is being picked up
               </BrText>
-              <BrText style={{ fontSize: 13, color: BR.ink3, marginTop: 4, textAlign: "center" }}>
+              <BrText
+                style={{
+                  fontSize: 13,
+                  color: BR.ink3,
+                  marginTop: 4,
+                  textAlign: "center",
+                }}
+              >
                 Sit tight! You'll be notified when it's ready.
               </BrText>
               <TouchableOpacity
-                onPress={() => router.push(`/order/my-settlement?orderId=${orderId}`)}
-                style={[styles.footerBtn, { backgroundColor: BR.orange, marginTop: 14 }]}
+                onPress={() =>
+                  router.push(`/order/my-settlement?orderId=${orderId}`)
+                }
+                style={[
+                  styles.footerBtn,
+                  { backgroundColor: BR.orange, marginTop: 14 },
+                ]}
                 activeOpacity={0.85}
               >
                 <Icon name="Receipt" size={18} color="#fff" />
@@ -656,7 +852,11 @@ export default function SpecificOrder() {
 
               {data.order.paused && isCreator ? (
                 <TouchableOpacity
-                  onPress={() => openOrderSummary(data.order.hasPausedAiSummary ? "cached" : "generate")}
+                  onPress={() =>
+                    openOrderSummary(
+                      data.order.hasPausedAiSummary ? "cached" : "generate",
+                    )
+                  }
                   style={[styles.footerBtn, { backgroundColor: BR.orange }]}
                   activeOpacity={0.85}
                 >
@@ -667,12 +867,20 @@ export default function SpecificOrder() {
                 <TouchableOpacity
                   onPress={handleSelectItems}
                   disabled={isSelectingItems}
-                  style={[styles.footerBtn, { backgroundColor: BR.orange, opacity: isSelectingItems ? 0.7 : 1 }]}
+                  style={[
+                    styles.footerBtn,
+                    {
+                      backgroundColor: BR.orange,
+                      opacity: isSelectingItems ? 0.7 : 1,
+                    },
+                  ]}
                   activeOpacity={0.85}
                 >
-                  {isSelectingItems
-                    ? <Flow size={20} color="#fff" />
-                    : <Icon name="Plus" size={18} color="#fff" />}
+                  {isSelectingItems ? (
+                    <Flow size={20} color="#fff" />
+                  ) : (
+                    <Icon name="Plus" size={18} color="#fff" />
+                  )}
                   <Text style={styles.footerBtnText}>Add my items</Text>
                 </TouchableOpacity>
               )}
@@ -690,7 +898,11 @@ export default function SpecificOrder() {
                           ? BR.mint
                           : BR.mintSoft,
                       borderWidth: 1,
-                      borderColor: isButtonDisabled ? BR.line : buttonState === "readyToRun" ? BR.mint : "rgba(46,190,123,0.25)",
+                      borderColor: isButtonDisabled
+                        ? BR.line
+                        : buttonState === "readyToRun"
+                          ? BR.mint
+                          : "rgba(46,190,123,0.25)",
                     },
                   ]}
                   activeOpacity={0.85}
@@ -698,12 +910,26 @@ export default function SpecificOrder() {
                   <Icon
                     name="Play"
                     size={16}
-                    color={isButtonDisabled ? BR.ink3 : buttonState === "readyToRun" ? "#fff" : BR.mintInk}
+                    color={
+                      isButtonDisabled
+                        ? BR.ink3
+                        : buttonState === "readyToRun"
+                          ? "#fff"
+                          : BR.mintInk
+                    }
                   />
-                  <Text style={[
-                    styles.footerBtnText,
-                    { color: isButtonDisabled ? BR.ink3 : buttonState === "readyToRun" ? "#fff" : BR.mintInk },
-                  ]}>
+                  <Text
+                    style={[
+                      styles.footerBtnText,
+                      {
+                        color: isButtonDisabled
+                          ? BR.ink3
+                          : buttonState === "readyToRun"
+                            ? "#fff"
+                            : BR.mintInk,
+                      },
+                    ]}
+                  >
                     {data.count === 0
                       ? "Add items first"
                       : buttonState === "readyToRun"
@@ -716,11 +942,20 @@ export default function SpecificOrder() {
               {!isCreator && !data.order.paused && (
                 <TouchableOpacity
                   onPress={handleLeaveGroup}
-                  style={[styles.footerBtn, { backgroundColor: BR.paper2, borderWidth: 1, borderColor: BR.line2 }]}
+                  style={[
+                    styles.footerBtn,
+                    {
+                      backgroundColor: BR.paper2,
+                      borderWidth: 1,
+                      borderColor: BR.line2,
+                    },
+                  ]}
                   activeOpacity={0.85}
                 >
                   <Icon name="LogOut" size={16} color={BR.ink} />
-                  <Text style={[styles.footerBtnText, { color: BR.ink }]}>Leave group</Text>
+                  <Text style={[styles.footerBtnText, { color: BR.ink }]}>
+                    Leave group
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -751,9 +986,19 @@ export default function SpecificOrder() {
         }}
       >
         <View style={{ paddingHorizontal: 18, paddingTop: 8 }}>
-          <BrText weight="bold" style={{ fontSize: 20 }}>Choose a new runner</BrText>
-          <BrText style={{ fontSize: 13, color: BR.ink3, marginTop: 6, lineHeight: 19 }}>
-            Anyone in the group can take over. If they don't have Stripe set up yet, members can settle in cash.
+          <BrText weight="bold" style={{ fontSize: 20 }}>
+            Choose a new runner
+          </BrText>
+          <BrText
+            style={{
+              fontSize: 13,
+              color: BR.ink3,
+              marginTop: 6,
+              lineHeight: 19,
+            }}
+          >
+            Anyone in the group can take over. If they don't have Stripe set up
+            yet, members can settle in cash.
           </BrText>
         </View>
 
@@ -769,12 +1014,16 @@ export default function SpecificOrder() {
           ) : (
             transferCandidates.map((candidate) => {
               const candidateName =
-                `${candidate.user?.firstName ?? ""} ${candidate.user?.lastName ?? ""}`.trim() || "Unknown";
+                `${candidate.user?.firstName ?? ""} ${candidate.user?.lastName ?? ""}`.trim() ||
+                "Unknown";
               const isEligible = candidate.hasStripePaymentsEnabled;
               return (
                 <Pressable
                   key={candidate.id}
-                  style={({ pressed }) => [styles.participantCard, { borderColor: BR.line, opacity: pressed ? 0.85 : 1 }]}
+                  style={({ pressed }) => [
+                    styles.participantCard,
+                    { borderColor: BR.line, opacity: pressed ? 0.85 : 1 },
+                  ]}
                   disabled={isTransferringRunner}
                   onPress={async () => {
                     transferRunnerSheetRef.current?.hide();
@@ -795,9 +1044,17 @@ export default function SpecificOrder() {
                                   orderId: orderId as Id<"orders">,
                                   newCreatorId: candidate.userId as Id<"users">,
                                 });
-                                Alert.alert("Done", `${candidateName} is now the runner.`);
+                                Alert.alert(
+                                  "Done",
+                                  `${candidateName} is now the runner.`,
+                                );
                               } catch (error) {
-                                Alert.alert("Error", error instanceof Error ? error.message : "Failed to transfer.");
+                                Alert.alert(
+                                  "Error",
+                                  error instanceof Error
+                                    ? error.message
+                                    : "Failed to transfer.",
+                                );
                               } finally {
                                 setIsTransferringRunner(false);
                               }
@@ -808,16 +1065,41 @@ export default function SpecificOrder() {
                     }, 250);
                   }}
                 >
-                  <View style={[styles.participantRow, { paddingVertical: 12 }]}>
+                  <View
+                    style={[styles.participantRow, { paddingVertical: 12 }]}
+                  >
                     <BrAvatar name={candidateName} size={40} />
                     <View style={{ flex: 1 }}>
-                      <BrText weight="semibold" style={{ fontSize: 15 }}>{candidateName}</BrText>
-                      <Text style={{ fontSize: 12, color: isEligible ? BR.mintInk : BR.ink3, marginTop: 2 }}>
+                      <BrText weight="semibold" style={{ fontSize: 15 }}>
+                        {candidateName}
+                      </BrText>
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: isEligible ? BR.mintInk : BR.ink3,
+                          marginTop: 2,
+                        }}
+                      >
                         {isEligible ? "Stripe ready" : "Cash only"}
                       </Text>
                     </View>
-                    <View style={[styles.eligibilityPill, { backgroundColor: isEligible ? BR.mintSoft : BR.yolkSoft }]}>
-                      <Text style={{ fontSize: 11, fontWeight: "700", color: isEligible ? BR.mintInk : "#7A4A20" }}>
+                    <View
+                      style={[
+                        styles.eligibilityPill,
+                        {
+                          backgroundColor: isEligible
+                            ? BR.mintSoft
+                            : BR.yolkSoft,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontWeight: "700",
+                          color: isEligible ? BR.mintInk : "#7A4A20",
+                        }}
+                      >
                         {isEligible ? "Ready" : "Cash"}
                       </Text>
                     </View>

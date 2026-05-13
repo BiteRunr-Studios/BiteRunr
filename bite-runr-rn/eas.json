@@ -1,29 +1,29 @@
 {
-    "cli": {
-        "version": ">= 16.28.0",
-        "appVersionSource": "remote"
+  "cli": {
+    "version": ">= 16.28.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
     },
-    "build": {
-        "development": {
-            "developmentClient": true,
-            "distribution": "internal"
-        },
-        "preview": {
-            "distribution": "internal",
-            "env": {
-                "EXPO_PUBLIC_CONVEX_URL": "https://famous-mastiff-881.convex.cloud",
-                "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_51QVjUYJ4h8gVKBqNzKoqsk1kc7lN8EiuFvpixveA94T9mAuHM4eM4X6d3EvPkywVSYK9Ym1NkpCPwzUjNye1auOP00nkzXZMbD"
-            }
-        },
-        "production": {
-            "autoIncrement": true,
-            "env": {
-                "EXPO_PUBLIC_CONVEX_URL": "https://famous-mastiff-881.convex.cloud",
-                "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_51QVjUYJ4h8gVKBqNzKoqsk1kc7lN8EiuFvpixveA94T9mAuHM4eM4X6d3EvPkywVSYK9Ym1NkpCPwzUjNye1auOP00nkzXZMbD"
-            }
-        }
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_CONVEX_URL": "https://famous-mastiff-881.convex.cloud",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_51QVjUYJ4h8gVKBqNzKoqsk1kc7lN8EiuFvpixveA94T9mAuHM4eM4X6d3EvPkywVSYK9Ym1NkpCPwzUjNye1auOP00nkzXZMbD"
+      }
     },
-    "submit": {
-        "production": {}
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_CONVEX_URL": "https://famous-mastiff-881.convex.cloud",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_live_51QVjUYJ4h8gVKBqNzKoqsk1kc7lN8EiuFvpixveA94T9mAuHM4eM4X6d3EvPkywVSYK9Ym1NkpCPwzUjNye1auOP00nkzXZMbD"
+      }
     }
+  },
+  "submit": {
+    "production": {}
+  }
 }

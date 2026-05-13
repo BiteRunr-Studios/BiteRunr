@@ -7,24 +7,24 @@ import * as SecureStore from "expo-secure-store";
 // Get the Convex site URL from environment
 const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
 if (!convexUrl) {
-    throw new Error(
-        "EXPO_PUBLIC_CONVEX_URL environment variable is required. " +
-            "Add it to your .env file (e.g., EXPO_PUBLIC_CONVEX_URL=https://your-app.convex.cloud)"
-    );
+  throw new Error(
+    "EXPO_PUBLIC_CONVEX_URL environment variable is required. " +
+      "Add it to your .env file (e.g., EXPO_PUBLIC_CONVEX_URL=https://your-app.convex.cloud)",
+  );
 }
 const siteUrl = convexUrl.replace(".cloud", ".site");
 
 export const authClient = createAuthClient({
-    baseURL: `${siteUrl}/api/auth`,
-    plugins: [
-        emailOTPClient(),
-        convexClient(),
-        expoClient({
-            scheme: "biterunr",
-            storagePrefix: "biterunr-auth",
-            storage: SecureStore,
-        }),
-    ],
+  baseURL: `${siteUrl}/api/auth`,
+  plugins: [
+    emailOTPClient(),
+    convexClient(),
+    expoClient({
+      scheme: "biterunr",
+      storagePrefix: "biterunr-auth",
+      storage: SecureStore,
+    }),
+  ],
 });
 
 // Export types for use in components

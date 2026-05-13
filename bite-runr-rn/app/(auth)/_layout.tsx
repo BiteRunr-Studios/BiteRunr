@@ -1,4 +1,3 @@
-import React from "react";
 import { Redirect, Stack } from "expo-router";
 import { useAuth } from "@/lib/convex-auth-context";
 
@@ -14,7 +13,13 @@ export default function AuthLayout() {
   // Always render the Stack to preserve navigation state.
   // Initial auth loading is now covered by the root splash.
   return (
-    <Stack screenOptions={{ headerTitleAlign: "center", headerShown: false, freezeOnBlur: true }}>
+    <Stack
+      screenOptions={{
+        headerTitleAlign: "center",
+        headerShown: false,
+        freezeOnBlur: true,
+      }}
+    >
       <Stack.Screen name="sign-in" options={{ title: "Sign In" }} />
       <Stack.Screen
         name="email-sign-in"

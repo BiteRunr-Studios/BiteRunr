@@ -8,153 +8,153 @@ import { getUserId, ensureUser } from "./authHelper";
  * Returns the user's data if successful, null if not authenticated.
  */
 export const syncUser = mutation({
-    args: {},
-    returns: v.union(
-        v.object({
-            _id: v.id("users"),
-            _creationTime: v.number(),
-            email: v.string(),
-            firstName: v.string(),
-            lastName: v.string(),
-            avatarUrl: v.optional(v.string()),
-            avatarStorageId: v.optional(v.id("_storage")),
-        }),
-        v.null()
-    ),
-    handler: async (ctx) => {
-        const userId = await ensureUser(ctx);
-        if (!userId) return null;
+  args: {},
+  returns: v.union(
+    v.object({
+      _id: v.id("users"),
+      _creationTime: v.number(),
+      email: v.string(),
+      firstName: v.string(),
+      lastName: v.string(),
+      avatarUrl: v.optional(v.string()),
+      avatarStorageId: v.optional(v.id("_storage")),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx) => {
+    const userId = await ensureUser(ctx);
+    if (!userId) return null;
 
-        const user = await ctx.db.get(userId);
-        if (!user) return null;
+    const user = await ctx.db.get(userId);
+    if (!user) return null;
 
-        return {
-            _id: user._id,
-            _creationTime: user._creationTime,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            avatarUrl: user.avatarUrl,
-            avatarStorageId: user.avatarStorageId,
-        };
-    },
+    return {
+      _id: user._id,
+      _creationTime: user._creationTime,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      avatarUrl: user.avatarUrl,
+      avatarStorageId: user.avatarStorageId,
+    };
+  },
 });
 
 // Get the current authenticated user's profile
 export const getCurrentUser = query({
-    args: {},
-    handler: async (ctx) => {
-        const userId = await getUserId(ctx);
-        if (!userId) return null;
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return null;
 
-        const user = await ctx.db.get(userId);
-        if (!user) return null;
+    const user = await ctx.db.get(userId);
+    if (!user) return null;
 
-        return {
-            _id: user._id,
-            _creationTime: user._creationTime,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            avatarUrl: user.avatarUrl,
-            avatarStorageId: user.avatarStorageId,
-        };
-    },
+    return {
+      _id: user._id,
+      _creationTime: user._creationTime,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      avatarUrl: user.avatarUrl,
+      avatarStorageId: user.avatarStorageId,
+    };
+  },
 });
 
 // Update user profile
 export const updateProfile = mutation({
-    args: {
-        firstName: v.optional(v.string()),
-        lastName: v.optional(v.string()),
-    },
-    handler: async (ctx, args) => {
-        const userId = await getUserId(ctx);
-        if (!userId) throw new Error("Not authenticated");
+  args: {
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
-        const updates: Record<string, string> = {};
-        if (args.firstName !== undefined) updates.firstName = args.firstName;
-        if (args.lastName !== undefined) updates.lastName = args.lastName;
+    const updates: Record<string, string> = {};
+    if (args.firstName !== undefined) updates.firstName = args.firstName;
+    if (args.lastName !== undefined) updates.lastName = args.lastName;
 
-        if (Object.keys(updates).length > 0) {
-            await ctx.db.patch(userId, updates);
-        }
+    if (Object.keys(updates).length > 0) {
+      await ctx.db.patch(userId, updates);
+    }
 
-        return userId;
-    },
+    return userId;
+  },
 });
 
 // Generate an upload URL for avatar images
 export const generateAvatarUploadUrl = mutation({
-    args: {},
-    handler: async (ctx) => {
-        const userId = await getUserId(ctx);
-        if (!userId) throw new Error("Not authenticated");
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
-        return await ctx.storage.generateUploadUrl();
-    },
+    return await ctx.storage.generateUploadUrl();
+  },
 });
 
 // Update user avatar from uploaded file
 export const updateAvatar = mutation({
-    args: {
-        storageId: v.id("_storage"),
-    },
-    handler: async (ctx, args) => {
-        const userId = await getUserId(ctx);
-        if (!userId) throw new Error("Not authenticated");
+  args: {
+    storageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
-        const user = await ctx.db.get(userId);
-        if (!user) throw new Error("User not found");
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
 
-        // Verify the new avatar URL is valid
-        const avatarUrl = await ctx.storage.getUrl(args.storageId);
-        if (!avatarUrl) throw new Error("Failed to get avatar URL");
+    // Verify the new avatar URL is valid
+    const avatarUrl = await ctx.storage.getUrl(args.storageId);
+    if (!avatarUrl) throw new Error("Failed to get avatar URL");
 
-        // Delete old avatar if exists
-        if (user.avatarStorageId) {
-            try {
-                await ctx.storage.delete(user.avatarStorageId);
-            } catch {
-                // Ignore errors if file doesn't exist
-            }
-        }
+    // Delete old avatar if exists
+    if (user.avatarStorageId) {
+      try {
+        await ctx.storage.delete(user.avatarStorageId);
+      } catch {
+        // Ignore errors if file doesn't exist
+      }
+    }
 
-        // Update the user's avatar
-        await ctx.db.patch(userId, {
-            avatarUrl,
-            avatarStorageId: args.storageId,
-        });
+    // Update the user's avatar
+    await ctx.db.patch(userId, {
+      avatarUrl,
+      avatarStorageId: args.storageId,
+    });
 
-        return { avatarUrl };
-    },
+    return { avatarUrl };
+  },
 });
 
 // Remove user avatar
 export const removeAvatar = mutation({
-    args: {},
-    handler: async (ctx) => {
-        const userId = await getUserId(ctx);
-        if (!userId) throw new Error("Not authenticated");
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
 
-        const user = await ctx.db.get(userId);
-        if (!user) throw new Error("User not found");
+    const user = await ctx.db.get(userId);
+    if (!user) throw new Error("User not found");
 
-        // Delete avatar file if exists
-        if (user.avatarStorageId) {
-            try {
-                await ctx.storage.delete(user.avatarStorageId);
-            } catch {
-                // Ignore errors if file doesn't exist
-            }
-        }
+    // Delete avatar file if exists
+    if (user.avatarStorageId) {
+      try {
+        await ctx.storage.delete(user.avatarStorageId);
+      } catch {
+        // Ignore errors if file doesn't exist
+      }
+    }
 
-        // Clear avatar references
-        await ctx.db.patch(userId, {
-            avatarUrl: undefined,
-            avatarStorageId: undefined,
-        });
+    // Clear avatar references
+    await ctx.db.patch(userId, {
+      avatarUrl: undefined,
+      avatarStorageId: undefined,
+    });
 
-        return { success: true };
-    },
+    return { success: true };
+  },
 });

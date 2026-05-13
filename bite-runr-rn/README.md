@@ -31,11 +31,13 @@ A React Native mobile app for coordinating group food orders. Create orders, inv
 ### Installation
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. Set up environment variables:
+
    ```bash
    # .env.local
    CONVEX_DEPLOYMENT=<your-convex-deployment>
@@ -79,10 +81,10 @@ npm run phone
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start Expo dev server |
-| `npm run ios` | Run on iOS simulator |
-| `npm run android` | Run on Android emulator |
-| `npm run phone` | Run on physical iPhone |
+| Command            | Description              |
+| ------------------ | ------------------------ |
+| `npm run dev`      | Start Expo dev server    |
+| `npm run ios`      | Run on iOS simulator     |
+| `npm run android`  | Run on Android emulator  |
+| `npm run phone`    | Run on physical iPhone   |
 | `npm run prebuild` | Generate native projects |

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import { useState } from "react";
 import * as Haptics from "expo-haptics";
 import {
   View,
@@ -20,7 +20,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { BrText } from "@/components/br";
 import { AnimatedPressable } from "@/components/common/animated-pressable";
@@ -1227,7 +1227,7 @@ function SearchTab() {
 
 // ─── Root screen ───────────────────────────────────────────────────
 export default function FriendsScreen() {
-  const insets = useSafeAreaInsets();
+  const _insets = useSafeAreaInsets();
   const { tab } = useLocalSearchParams<{ tab?: Tab }>();
   const [activeTab, setActiveTab] = useState<Tab>(tab ?? "friends");
   const [showCreateSquad, setShowCreateSquad] = useState(false);

@@ -119,7 +119,7 @@ export default function PaymentsScreen() {
   const [isSettingUp, setIsSettingUp] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [isOpeningDashboard, setIsOpeningDashboard] = useState(false);
-  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+  const [_isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [isRequestingPayout, setIsRequestingPayout] = useState(false);
   const [isRequestingStandardPayout, setIsRequestingStandardPayout] =
     useState(false);
@@ -141,7 +141,7 @@ export default function PaymentsScreen() {
         easing: Easing.out(Easing.cubic),
       });
     }
-  }, [balanceData?.available]);
+  }, [balanceData?.available, balanceSv, balanceData]);
 
   const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
   const createConnectAccount = useAction(
@@ -446,7 +446,7 @@ export default function PaymentsScreen() {
                 <Text style={styles.setupCardSub}>Here's what to expect:</Text>
 
                 <View style={{ marginTop: 18, gap: 16 }}>
-                  {ONBOARDING_STEPS.map((step, i) => (
+                  {ONBOARDING_STEPS.map((step, _i) => (
                     <View
                       key={step.title}
                       style={{

@@ -1,13 +1,13 @@
-import React, { forwardRef } from "react";
+import { forwardRef } from "react";
 import {
   View,
   TextInput,
-  TextInputProps,
+  type TextInputProps,
   StyleSheet,
   Pressable,
 } from "react-native";
 import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
-import Icon, { IconName } from "@/components/common/icon";
+import Icon, { type IconName } from "@/components/common/icon";
 import { BrText } from "./text";
 
 interface BrInputProps extends Omit<TextInputProps, "placeholderTextColor"> {
@@ -54,7 +54,9 @@ export const BrInput = forwardRef<TextInput, BrInputProps>(function BrInput(
       {hasError ? (
         <View style={styles.errRow}>
           <Icon name="CircleAlert" size={14} color={BR.coral} />
-          <BrText style={{ fontSize: 12, color: BR.coralInk, fontWeight: "500" }}>
+          <BrText
+            style={{ fontSize: 12, color: BR.coralInk, fontWeight: "500" }}
+          >
             {errorMessage}
           </BrText>
         </View>

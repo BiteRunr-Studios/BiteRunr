@@ -1,5 +1,5 @@
-import React from "react";
-import { View, ViewProps, ViewStyle, StyleSheet } from "react-native";
+import type React from "react";
+import { View, type ViewProps, type ViewStyle, StyleSheet } from "react-native";
 import { BR, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
 
 interface BrCardProps extends ViewProps {

@@ -26,7 +26,7 @@ export const list = query({
           lastName: friend.lastName,
           avatarUrl: friend.avatarUrl,
         };
-      })
+      }),
     );
 
     return friends.filter((f) => f !== null);
@@ -61,7 +61,7 @@ export const listPendingRequests = query({
             : null,
           createdAt: r._creationTime,
         };
-      })
+      }),
     );
 
     return requestsWithSender.filter((r) => r.sender !== null);
@@ -83,7 +83,7 @@ export const sendRequest = mutation({
     const existingRequest = await ctx.db
       .query("friendRequests")
       .withIndex("by_senderId_receiverId", (q) =>
-        q.eq("senderId", userId).eq("receiverId", args.receiverId)
+        q.eq("senderId", userId).eq("receiverId", args.receiverId),
       )
       .first();
 
@@ -96,7 +96,7 @@ export const sendRequest = mutation({
     const reverseRequest = await ctx.db
       .query("friendRequests")
       .withIndex("by_senderId_receiverId", (q) =>
-        q.eq("senderId", args.receiverId).eq("receiverId", userId)
+        q.eq("senderId", args.receiverId).eq("receiverId", userId),
       )
       .first();
 
@@ -121,7 +121,7 @@ export const sendRequest = mutation({
     const existingFriendship = await ctx.db
       .query("friends")
       .withIndex("by_userId_friendId", (q) =>
-        q.eq("userId", userId).eq("friendId", args.receiverId)
+        q.eq("userId", userId).eq("friendId", args.receiverId),
       )
       .first();
 
@@ -136,7 +136,9 @@ export const sendRequest = mutation({
 
     // Send push notification to receiver
     const sender = await ctx.db.get(userId);
-    const senderName = sender ? `${sender.firstName} ${sender.lastName}` : "Someone";
+    const senderName = sender
+      ? `${sender.firstName} ${sender.lastName}`
+      : "Someone";
 
     await ctx.scheduler.runAfter(0, internal.pushNotifications.sendToUser, {
       userId: args.receiverId,
@@ -204,24 +206,36 @@ export const searchUsers = query({
     if (searchQuery.length < 2) return [];
 
     // Use search indexes to find matching users (scalable approach)
-    const [firstNameResults, lastNameResults, emailResults] = await Promise.all([
-      ctx.db
-        .query("users")
-        .withSearchIndex("search_name", (q) => q.search("firstName", searchQuery))
-        .take(50),
-      ctx.db
-        .query("users")
-        .withSearchIndex("search_lastName", (q) => q.search("lastName", searchQuery))
-        .take(50),
-      ctx.db
-        .query("users")
-        .withSearchIndex("search_email", (q) => q.search("email", searchQuery))
-        .take(50),
-    ]);
+    const [firstNameResults, lastNameResults, emailResults] = await Promise.all(
+      [
+        ctx.db
+          .query("users")
+          .withSearchIndex("search_name", (q) =>
+            q.search("firstName", searchQuery),
+          )
+          .take(50),
+        ctx.db
+          .query("users")
+          .withSearchIndex("search_lastName", (q) =>
+            q.search("lastName", searchQuery),
+          )
+          .take(50),
+        ctx.db
+          .query("users")
+          .withSearchIndex("search_email", (q) =>
+            q.search("email", searchQuery),
+          )
+          .take(50),
+      ],
+    );
 
     // Merge and deduplicate results
     const userMap = new Map<string, (typeof firstNameResults)[0]>();
-    for (const user of [...firstNameResults, ...lastNameResults, ...emailResults]) {
+    for (const user of [
+      ...firstNameResults,
+      ...lastNameResults,
+      ...emailResults,
+    ]) {
       userMap.set(user._id, user);
     }
     const candidateUsers = Array.from(userMap.values());
@@ -284,14 +298,14 @@ export const removeFriend = mutation({
     const friendship1 = await ctx.db
       .query("friends")
       .withIndex("by_userId_friendId", (q) =>
-        q.eq("userId", userId).eq("friendId", args.friendId)
+        q.eq("userId", userId).eq("friendId", args.friendId),
       )
       .first();
 
     const friendship2 = await ctx.db
       .query("friends")
       .withIndex("by_userId_friendId", (q) =>
-        q.eq("userId", args.friendId).eq("friendId", userId)
+        q.eq("userId", args.friendId).eq("friendId", userId),
       )
       .first();
 
@@ -302,14 +316,14 @@ export const removeFriend = mutation({
     const friendRequest1 = await ctx.db
       .query("friendRequests")
       .withIndex("by_senderId_receiverId", (q) =>
-        q.eq("senderId", userId).eq("receiverId", args.friendId)
+        q.eq("senderId", userId).eq("receiverId", args.friendId),
       )
       .first();
 
     const friendRequest2 = await ctx.db
       .query("friendRequests")
       .withIndex("by_senderId_receiverId", (q) =>
-        q.eq("senderId", args.friendId).eq("receiverId", userId)
+        q.eq("senderId", args.friendId).eq("receiverId", userId),
       )
       .first();
 

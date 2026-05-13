@@ -72,7 +72,23 @@ const convexLogger = {
   logVerbose: console.log,
 };
 
-const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
+function requireEnv(name: string, value: string | undefined) {
+  if (!value) {
+    throw new Error(`${name} is required`);
+  }
+  return value;
+}
+
+const convexUrl = requireEnv(
+  "EXPO_PUBLIC_CONVEX_URL",
+  process.env.EXPO_PUBLIC_CONVEX_URL,
+);
+const stripePublishableKey = requireEnv(
+  "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+);
+
+const convex = new ConvexReactClient(convexUrl, {
   unsavedChangesWarning: false,
   logger: convexLogger,
 });
@@ -265,7 +281,7 @@ export default function RootLayout() {
 
   return (
     <StripeProvider
-      publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
+      publishableKey={stripePublishableKey}
       merchantIdentifier="merchant.com.RunrStudios.BiteRunrRN"
     >
       <ConvexBetterAuthProvider client={convex} authClient={authClient}>

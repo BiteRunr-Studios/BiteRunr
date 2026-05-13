@@ -1,5 +1,5 @@
-import React from "react";
-import { Text, TextProps, TextStyle, StyleSheet } from "react-native";
+import type React from "react";
+import { Text, type TextProps, type TextStyle, StyleSheet } from "react-native";
 import { BR, BR_FONT } from "@/lib/br-theme";
 
 type Variant =

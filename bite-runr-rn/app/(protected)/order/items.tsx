@@ -36,10 +36,11 @@ import Animated, {
   withRepeat,
   withSequence,
   withTiming,
+  withDelay,
 } from "react-native-reanimated";
 import { Flow } from "react-native-animated-spinkit";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { BrText } from "@/components/br";
 import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
@@ -161,11 +162,13 @@ function VoiceRippleOrb({
         [r2s, r2o],
         [r3s, r3o],
       ];
-      const timeouts = pairs.map(([sv, ov], i) =>
-        setTimeout(() => {
-          sv.value = 0.6;
-          ov.value = 0.28;
-          sv.value = withRepeat(
+      pairs.forEach(([sv, ov], i) => {
+        const delay = i * 866;
+        sv.value = 0.6;
+        ov.value = 0.28;
+        sv.value = withDelay(
+          delay,
+          withRepeat(
             withSequence(
               withTiming(1.65, {
                 duration: 2600,
@@ -175,19 +178,21 @@ function VoiceRippleOrb({
             ),
             -1,
             false,
-          );
-          ov.value = withRepeat(
+          ),
+        );
+        ov.value = withDelay(
+          delay,
+          withRepeat(
             withSequence(
               withTiming(0, { duration: 2600 }),
               withTiming(0.28, { duration: 0 }),
             ),
             -1,
             false,
-          );
-        }, i * 866),
-      );
+          ),
+        );
+      });
       return () => {
-        timeouts.forEach(clearTimeout);
         [r1s, r2s, r3s].forEach((v) => {
           cancelAnimation(v);
           v.value = withTiming(0.6, { duration: 300 });
@@ -221,6 +226,9 @@ function VoiceRippleOrb({
       cancelAnimation(coreScale);
       coreScale.value = withTiming(1, { duration: 250 });
     }
+    return () => {
+      cancelAnimation(coreScale);
+    };
   }, [isListening, isProcessingVoice, r1s, r1o, r2s, r2o, r3s, r3o, coreScale]);
 
   const r1Style = useAnimatedStyle(() => ({
@@ -267,6 +275,11 @@ const CARD_H_PADDING = 36; // 18px each side
 function TornEdge({ position }: { position: "top" | "bottom" }) {
   const { width } = useWindowDimensions();
   const count = Math.ceil((width - CARD_H_PADDING) / TOOTH_W) + 2;
+  const teeth = useMemo(
+    () =>
+      Array.from({ length: count }, (_, index) => `${position}-tooth-${index}`),
+    [count, position],
+  );
   return (
     <View
       style={{
@@ -276,9 +289,9 @@ function TornEdge({ position }: { position: "top" | "bottom" }) {
         overflow: "hidden",
       }}
     >
-      {Array.from({ length: count }).map((_, i) => (
+      {teeth.map((toothKey) => (
         <View
-          key={i}
+          key={toothKey}
           style={{
             width: 0,
             height: 0,
@@ -441,7 +454,7 @@ export default function WriteOrder() {
     setCurrentItems(nextItems);
     setLoadedItems(nextItems);
     setItemInput("");
-  }, [selectedLocation?.id, locationEntries]);
+  }, [selectedLocation?.id, locationEntries, selectedLocation]);
 
   const processVoiceTranscript = useCallback(
     async (transcript: string) => {
@@ -1256,20 +1269,23 @@ export default function WriteOrder() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ gap: 10 }}
               >
-                {parsedItems.map((item, i) => (
-                  <Animated.View
-                    key={i}
-                    entering={FadeInUp.duration(280).delay(i * 70)}
-                    style={voiceStyles.parsedItemCard}
-                  >
-                    <View style={voiceStyles.parsedItemBadge}>
-                      <Text style={voiceStyles.parsedItemBadgeText}>
-                        {String(i + 1).padStart(2, "0")}
-                      </Text>
-                    </View>
-                    <Text style={voiceStyles.parsedItemText}>{item}</Text>
-                  </Animated.View>
-                ))}
+                {parsedItems.map((item, i) => {
+                  const parsedItemKey = `${item}-${i}`;
+                  return (
+                    <Animated.View
+                      key={parsedItemKey}
+                      entering={FadeInUp.duration(280).delay(i * 70)}
+                      style={voiceStyles.parsedItemCard}
+                    >
+                      <View style={voiceStyles.parsedItemBadge}>
+                        <Text style={voiceStyles.parsedItemBadgeText}>
+                          {String(i + 1).padStart(2, "0")}
+                        </Text>
+                      </View>
+                      <Text style={voiceStyles.parsedItemText}>{item}</Text>
+                    </Animated.View>
+                  );
+                })}
               </ScrollView>
 
               <View style={voiceStyles.parsedButtons}>

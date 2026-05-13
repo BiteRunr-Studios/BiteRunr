@@ -7,11 +7,11 @@ import Stripe from "stripe";
 
 // Lazy-initialize Stripe (env vars aren't available at module load time in Convex)
 function getStripe() {
-    const key = process.env.STRIPE_SECRET_KEY;
-    if (!key) throw new Error("STRIPE_SECRET_KEY not configured");
-    return new Stripe(key, {
-        apiVersion: "2024-11-20.acacia" as Stripe.LatestApiVersion,
-    });
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error("STRIPE_SECRET_KEY not configured");
+  return new Stripe(key, {
+    apiVersion: "2024-11-20.acacia" as Stripe.LatestApiVersion,
+  });
 }
 
 import { calculatePlatformFee } from "./fees";
@@ -20,74 +20,73 @@ const STRIPE_INSTANT_PAYOUT_PERCENT = 0.01;
 const STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS = 60;
 
 function calculateInstantPayoutFee(amountCents: number): number {
-    if (amountCents <= 0) return 0;
-    return Math.max(
-        Math.ceil(amountCents * STRIPE_INSTANT_PAYOUT_PERCENT),
-        STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS,
-    );
+  if (amountCents <= 0) return 0;
+  return Math.max(
+    Math.ceil(amountCents * STRIPE_INSTANT_PAYOUT_PERCENT),
+    STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS,
+  );
 }
 
 function calculateMaxInstantPayout(amountAvailableCents: number): {
-    amount: number;
-    fee: number;
+  amount: number;
+  fee: number;
 } {
-    if (amountAvailableCents <= STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS) {
-        return { amount: 0, fee: 0 };
-    }
-
-    // Below the threshold where 1% exceeds the minimum fee, the net payout is
-    // simply the available balance minus the fixed minimum fee.
-    const minFeeCandidate =
-        amountAvailableCents - STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS;
-    if (
-        calculateInstantPayoutFee(minFeeCandidate) ===
-        STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS
-    ) {
-        return {
-            amount: minFeeCandidate,
-            fee: STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS,
-        };
-    }
-
-    // Once percentage pricing applies, solve `amount + fee <= available`.
-    let amount = Math.floor((amountAvailableCents * 100) / 101);
-    while (amount > 0) {
-        const fee = calculateInstantPayoutFee(amount);
-        if (amount + fee <= amountAvailableCents) {
-            return { amount, fee };
-        }
-        amount -= 1;
-    }
-
+  if (amountAvailableCents <= STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS) {
     return { amount: 0, fee: 0 };
+  }
+
+  // Below the threshold where 1% exceeds the minimum fee, the net payout is
+  // simply the available balance minus the fixed minimum fee.
+  const minFeeCandidate =
+    amountAvailableCents - STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS;
+  if (
+    calculateInstantPayoutFee(minFeeCandidate) ===
+    STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS
+  ) {
+    return {
+      amount: minFeeCandidate,
+      fee: STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS,
+    };
+  }
+
+  // Once percentage pricing applies, solve `amount + fee <= available`.
+  let amount = Math.floor((amountAvailableCents * 100) / 101);
+  while (amount > 0) {
+    const fee = calculateInstantPayoutFee(amount);
+    if (amount + fee <= amountAvailableCents) {
+      return { amount, fee };
+    }
+    amount -= 1;
+  }
+
+  return { amount: 0, fee: 0 };
 }
 
 async function getPayoutDestinationAvailability(
-    stripe: Stripe,
-    stripeAccountId: string,
+  stripe: Stripe,
+  stripeAccountId: string,
 ): Promise<{
-    hasInstantPayoutCard: boolean;
-    hasBankPayoutAccount: boolean;
+  hasInstantPayoutCard: boolean;
+  hasBankPayoutAccount: boolean;
 }> {
-    const externalAccounts = await stripe.accounts.listExternalAccounts(
-        stripeAccountId,
-        { limit: 10 },
-    );
+  const externalAccounts = await stripe.accounts.listExternalAccounts(
+    stripeAccountId,
+    { limit: 10 },
+  );
 
-    const hasInstantPayoutCard = externalAccounts.data.some(
-        (externalAccount) =>
-            externalAccount.object === "card" &&
-            externalAccount.available_payout_methods?.includes("instant") ===
-                true,
-    );
-    const hasBankPayoutAccount = externalAccounts.data.some(
-        (externalAccount) => externalAccount.object === "bank_account",
-    );
+  const hasInstantPayoutCard = externalAccounts.data.some(
+    (externalAccount) =>
+      externalAccount.object === "card" &&
+      externalAccount.available_payout_methods?.includes("instant") === true,
+  );
+  const hasBankPayoutAccount = externalAccounts.data.some(
+    (externalAccount) => externalAccount.object === "bank_account",
+  );
 
-    return {
-        hasInstantPayoutCard,
-        hasBankPayoutAccount,
-    };
+  return {
+    hasInstantPayoutCard,
+    hasBankPayoutAccount,
+  };
 }
 
 // --- SELLER ONBOARDING ---
@@ -95,542 +94,532 @@ async function getPayoutDestinationAvailability(
 // The runner opens this URL to enter their identity + debit card / bank info.
 
 export const createConnectAccount = action({
-    args: {},
-    handler: async (ctx): Promise<{ url: string; stripeAccountId: string }> => {
-        // Get current user via public query (preserves auth context)
-        const user = await ctx.runQuery(api.users.getCurrentUser, {});
-        if (!user) throw new Error("Not authenticated");
+  args: {},
+  handler: async (ctx): Promise<{ url: string; stripeAccountId: string }> => {
+    // Get current user via public query (preserves auth context)
+    const user = await ctx.runQuery(api.users.getCurrentUser, {});
+    if (!user) throw new Error("Not authenticated");
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const existing: any = await ctx.runQuery(
-            internal.payments.getConnectedAccountInternal,
-            { userId: user._id },
-        );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const existing: any = await ctx.runQuery(
+      internal.payments.getConnectedAccountInternal,
+      { userId: user._id },
+    );
 
-        let stripeAccountId: string;
+    let stripeAccountId: string;
 
-        if (existing?.stripeAccountId) {
-            stripeAccountId = existing.stripeAccountId;
-        } else {
-            const account = await getStripe().accounts.create({
-                type: "express",
-                email: user.email,
-                country: "CA",
-                business_type: "individual",
-                business_profile: {
-                    url: "https://biterunr.com",
-                    mcc: "5734",
-                    product_description: "Food delivery services",
-                },
-                capabilities: {
-                    card_payments: { requested: true },
-                    transfers: { requested: true },
-                },
-                settings: {
-                    payouts: {
-                        debit_negative_balances: true,
-                    },
-                },
-            });
-            stripeAccountId = account.id;
+    if (existing?.stripeAccountId) {
+      stripeAccountId = existing.stripeAccountId;
+    } else {
+      const account = await getStripe().accounts.create({
+        type: "express",
+        email: user.email,
+        country: "CA",
+        business_type: "individual",
+        business_profile: {
+          url: "https://biterunr.com",
+          mcc: "5734",
+          product_description: "Food delivery services",
+        },
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+        settings: {
+          payouts: {
+            debit_negative_balances: true,
+          },
+        },
+      });
+      stripeAccountId = account.id;
 
-            await ctx.runMutation(internal.payments.upsertConnectedAccount, {
-                userId: user._id,
-                stripeAccountId,
-                onboardingComplete: false,
-                payoutsEnabled: false,
-                chargesEnabled: false,
-                email: user.email,
-            });
-        }
+      await ctx.runMutation(internal.payments.upsertConnectedAccount, {
+        userId: user._id,
+        stripeAccountId,
+        onboardingComplete: false,
+        payoutsEnabled: false,
+        chargesEnabled: false,
+        email: user.email,
+      });
+    }
 
-        const siteUrl = process.env.CONVEX_SITE_URL;
-        if (!siteUrl) throw new Error("CONVEX_SITE_URL not configured");
+    const siteUrl = process.env.CONVEX_SITE_URL;
+    if (!siteUrl) throw new Error("CONVEX_SITE_URL not configured");
 
-        const accountLink = await getStripe().accountLinks.create({
-            account: stripeAccountId,
-            refresh_url: `${siteUrl}/stripe-onboarding-refresh`,
-            return_url: `${siteUrl}/stripe-onboarding-complete`,
-            type: "account_onboarding",
-        });
+    const accountLink = await getStripe().accountLinks.create({
+      account: stripeAccountId,
+      refresh_url: `${siteUrl}/stripe-onboarding-refresh`,
+      return_url: `${siteUrl}/stripe-onboarding-complete`,
+      type: "account_onboarding",
+    });
 
-        return { url: accountLink.url, stripeAccountId };
-    },
+    return { url: accountLink.url, stripeAccountId };
+  },
 });
 
 // --- CHECK ONBOARDING STATUS ---
 // Call after runner returns from Stripe onboarding to verify completion.
 
 export const checkOnboardingStatus = action({
-    args: {},
-    handler: async (
-        ctx,
-    ): Promise<{
-        onboarded: boolean;
-        payoutsEnabled: boolean;
-        chargesEnabled: boolean;
-    }> => {
-        const user = await ctx.runQuery(api.users.getCurrentUser, {});
-        if (!user) throw new Error("Not authenticated");
+  args: {},
+  handler: async (
+    ctx,
+  ): Promise<{
+    onboarded: boolean;
+    payoutsEnabled: boolean;
+    chargesEnabled: boolean;
+  }> => {
+    const user = await ctx.runQuery(api.users.getCurrentUser, {});
+    if (!user) throw new Error("Not authenticated");
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const account: any = await ctx.runQuery(
-            internal.payments.getConnectedAccountInternal,
-            { userId: user._id },
-        );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const account: any = await ctx.runQuery(
+      internal.payments.getConnectedAccountInternal,
+      { userId: user._id },
+    );
 
-        if (!account) {
-            return {
-                onboarded: false,
-                payoutsEnabled: false,
-                chargesEnabled: false,
-            };
-        }
+    if (!account) {
+      return {
+        onboarded: false,
+        payoutsEnabled: false,
+        chargesEnabled: false,
+      };
+    }
 
-        const stripeAccount = await getStripe().accounts.retrieve(
-            account.stripeAccountId,
-        );
-        const onboardingComplete: boolean =
-            stripeAccount.details_submitted ?? false;
-        const payoutsEnabled: boolean = stripeAccount.payouts_enabled ?? false;
-        const chargesEnabled: boolean = stripeAccount.charges_enabled ?? false;
+    const stripeAccount = await getStripe().accounts.retrieve(
+      account.stripeAccountId,
+    );
+    const onboardingComplete: boolean =
+      stripeAccount.details_submitted ?? false;
+    const payoutsEnabled: boolean = stripeAccount.payouts_enabled ?? false;
+    const chargesEnabled: boolean = stripeAccount.charges_enabled ?? false;
 
-        await ctx.runMutation(
-            internal.payments.updateConnectedAccountByStripeId,
-            {
-                stripeAccountId: account.stripeAccountId,
-                onboardingComplete,
-                payoutsEnabled,
-                chargesEnabled,
-            },
-        );
+    await ctx.runMutation(internal.payments.updateConnectedAccountByStripeId, {
+      stripeAccountId: account.stripeAccountId,
+      onboardingComplete,
+      payoutsEnabled,
+      chargesEnabled,
+    });
 
-        return {
-            onboarded: onboardingComplete,
-            payoutsEnabled,
-            chargesEnabled,
-        };
-    },
+    return {
+      onboarded: onboardingComplete,
+      payoutsEnabled,
+      chargesEnabled,
+    };
+  },
 });
 
 // --- PAYMENT SHEET PARAMS ---
 // Creates a PaymentIntent + EphemeralKey for the native Payment Sheet.
 
 export const createPaymentSheetParams = action({
-    args: { orderId: v.id("orders") },
-    handler: async (
-        ctx,
-        args,
-    ): Promise<{
-        paymentIntentClientSecret: string;
-        ephemeralKeySecret: string;
-        customerId: string;
-        stripeAccountId: string;
-    }> => {
-        const user = await ctx.runQuery(api.users.getCurrentUser, {});
-        if (!user) throw new Error("Not authenticated");
+  args: { orderId: v.id("orders") },
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
+    paymentIntentClientSecret: string;
+    ephemeralKeySecret: string;
+    customerId: string;
+    stripeAccountId: string;
+  }> => {
+    const user = await ctx.runQuery(api.users.getCurrentUser, {});
+    if (!user) throw new Error("Not authenticated");
 
-        // Expire any previous pending payments so the user can retry
-        await ctx.runMutation(internal.payments.expirePendingPayments, {
-            orderId: args.orderId,
-            buyerId: user._id,
-        });
+    // Expire any previous pending payments so the user can retry
+    await ctx.runMutation(internal.payments.expirePendingPayments, {
+      orderId: args.orderId,
+      buyerId: user._id,
+    });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const data: any = await ctx.runQuery(
-            internal.payments.getSettlementCheckoutData,
-            {
-                orderId: args.orderId,
-                buyerId: user._id,
-            },
-        );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data: any = await ctx.runQuery(
+      internal.payments.getSettlementCheckoutData,
+      {
+        orderId: args.orderId,
+        buyerId: user._id,
+      },
+    );
 
-        if (!data) {
-            throw new Error(
-                "Cannot create payment: you may not be part of this order, " +
-                    "already paid, or the runner hasn't set up card payments",
-            );
-        }
+    if (!data) {
+      throw new Error(
+        "Cannot create payment: you may not be part of this order, " +
+          "already paid, or the runner hasn't set up card payments",
+      );
+    }
 
-        const stripe = getStripe();
-        const amountOwed: number = Number(data.amountOwed);
-        const platformFee = calculatePlatformFee(amountOwed);
-        const amount = amountOwed + platformFee;
+    const stripe = getStripe();
+    const amountOwed: number = Number(data.amountOwed);
+    const platformFee = calculatePlatformFee(amountOwed);
+    const amount = amountOwed + platformFee;
 
-        // Get or create a Stripe Customer for the buyer
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const userDoc: any = await ctx.runQuery(
-            internal.payments.getUserStripeCustomerId,
-            { userId: user._id },
-        );
-        let customerId: string | undefined = userDoc?.stripeCustomerId;
+    // Get or create a Stripe Customer for the buyer
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userDoc: any = await ctx.runQuery(
+      internal.payments.getUserStripeCustomerId,
+      { userId: user._id },
+    );
+    let customerId: string | undefined = userDoc?.stripeCustomerId;
 
-        if (!customerId) {
-            const customer = await stripe.customers.create({
-                email: user.email,
-                metadata: { convexUserId: user._id },
-            });
-            customerId = customer.id;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        metadata: { convexUserId: user._id },
+      });
+      customerId = customer.id;
 
-            await ctx.runMutation(
-                internal.payments.updateUserStripeCustomerId,
-                {
-                    userId: user._id,
-                    stripeCustomerId: customerId,
-                },
-            );
-        }
+      await ctx.runMutation(internal.payments.updateUserStripeCustomerId, {
+        userId: user._id,
+        stripeCustomerId: customerId,
+      });
+    }
 
-        // Create an Ephemeral Key for the customer
-        const ephemeralKey = await stripe.ephemeralKeys.create(
-            { customer: customerId },
-            { apiVersion: "2024-11-20.acacia" as string },
-        );
+    // Create an Ephemeral Key for the customer
+    const ephemeralKey = await stripe.ephemeralKeys.create(
+      { customer: customerId },
+      { apiVersion: "2024-11-20.acacia" as string },
+    );
 
-        // Create a PaymentIntent with Connect transfer
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: amount,
-            currency: "cad",
-            customer: customerId,
-            payment_method_types: ["card", "link"],
-            application_fee_amount: platformFee,
-            transfer_data: {
-                destination: data.stripeAccountId,
-            },
-            metadata: {
-                orderId: args.orderId,
-                buyerId: user._id,
-                orderUserId: data.orderUserId,
-            },
-        });
+    // Create a PaymentIntent with Connect transfer
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount,
+      currency: "cad",
+      customer: customerId,
+      payment_method_types: ["card", "link"],
+      application_fee_amount: platformFee,
+      transfer_data: {
+        destination: data.stripeAccountId,
+      },
+      metadata: {
+        orderId: args.orderId,
+        buyerId: user._id,
+        orderUserId: data.orderUserId,
+      },
+    });
 
-        // Create a payment record
-        await ctx.runMutation(internal.payments.createStripePaymentRecord, {
-            buyerId: user._id,
-            sellerId: data.creatorId,
-            orderId: args.orderId,
-            orderUserId: data.orderUserId,
-            stripePaymentIntentId: paymentIntent.id,
-            amount,
-            platformFee,
-            currency: "cad",
-            description: `Settlement for ${data.orderName}`,
-        });
+    // Create a payment record
+    await ctx.runMutation(internal.payments.createStripePaymentRecord, {
+      buyerId: user._id,
+      sellerId: data.creatorId,
+      orderId: args.orderId,
+      orderUserId: data.orderUserId,
+      stripePaymentIntentId: paymentIntent.id,
+      amount,
+      platformFee,
+      currency: "cad",
+      description: `Settlement for ${data.orderName}`,
+    });
 
-        // Mark settlement as claimed while payment is in progress
-        await ctx.runMutation(internal.payments.markSettlementClaimed, {
-            orderUserId: data.orderUserId,
-        });
+    // Mark settlement as claimed while payment is in progress
+    await ctx.runMutation(internal.payments.markSettlementClaimed, {
+      orderUserId: data.orderUserId,
+    });
 
-        return {
-            paymentIntentClientSecret: paymentIntent.client_secret!,
-            ephemeralKeySecret: ephemeralKey.secret!,
-            customerId,
-            stripeAccountId: data.stripeAccountId,
-        };
-    },
+    if (!paymentIntent.client_secret || !ephemeralKey.secret) {
+      throw new Error("Stripe did not return payment setup secrets");
+    }
+
+    return {
+      paymentIntentClientSecret: paymentIntent.client_secret,
+      ephemeralKeySecret: ephemeralKey.secret,
+      customerId,
+      stripeAccountId: data.stripeAccountId,
+    };
+  },
 });
 
 // --- PAYOUT BALANCE ---
 // Returns the runner's available balance and instant payout eligibility.
 
 export const getPayoutBalance = action({
-    args: {},
-    handler: async (
-        ctx,
-    ): Promise<{
-        available: number;
-        pending: number;
-        instantAvailable: number;
-        instantPayoutAmount: number;
-        instantPayoutFee: number;
-        hasInstantPayoutCard: boolean;
-        hasBankPayoutAccount: boolean;
-        instantPayoutsEnabled: boolean;
-        currency: string;
-    }> => {
-        const user = await ctx.runQuery(api.users.getCurrentUser, {});
-        if (!user) throw new Error("Not authenticated");
+  args: {},
+  handler: async (
+    ctx,
+  ): Promise<{
+    available: number;
+    pending: number;
+    instantAvailable: number;
+    instantPayoutAmount: number;
+    instantPayoutFee: number;
+    hasInstantPayoutCard: boolean;
+    hasBankPayoutAccount: boolean;
+    instantPayoutsEnabled: boolean;
+    currency: string;
+  }> => {
+    const user = await ctx.runQuery(api.users.getCurrentUser, {});
+    if (!user) throw new Error("Not authenticated");
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const account: any = await ctx.runQuery(
-            internal.payments.getConnectedAccountInternal,
-            { userId: user._id },
-        );
-        if (!account) throw new Error("No connected account found");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const account: any = await ctx.runQuery(
+      internal.payments.getConnectedAccountInternal,
+      { userId: user._id },
+    );
+    if (!account) throw new Error("No connected account found");
 
-        const stripe = getStripe();
-        const payoutDestinations = await getPayoutDestinationAvailability(
-            stripe,
-            account.stripeAccountId,
-        );
+    const stripe = getStripe();
+    const payoutDestinations = await getPayoutDestinationAvailability(
+      stripe,
+      account.stripeAccountId,
+    );
 
-        const balance = await stripe.balance.retrieve({
-            stripeAccount: account.stripeAccountId,
-        });
+    const balance = await stripe.balance.retrieve({
+      stripeAccount: account.stripeAccountId,
+    });
 
-        // Find CAD balances (or first available currency)
-        const availableEntry =
-            balance.available.find((b) => b.currency === "cad") ??
-            balance.available[0];
-        const pendingEntry =
-            balance.pending.find((b) => b.currency === "cad") ??
-            balance.pending[0];
-        const instantEntry =
-            balance.instant_available?.find((b) => b.currency === "cad") ??
-            balance.instant_available?.[0];
+    // Find CAD balances (or first available currency)
+    const availableEntry =
+      balance.available.find((b) => b.currency === "cad") ??
+      balance.available[0];
+    const pendingEntry =
+      balance.pending.find((b) => b.currency === "cad") ?? balance.pending[0];
+    const instantEntry =
+      balance.instant_available?.find((b) => b.currency === "cad") ??
+      balance.instant_available?.[0];
 
-        const availableAmount = availableEntry?.amount ?? 0;
-        // Stripe instant payouts are based on `instant_available`, which can
-        // exceed the standard available balance while funds are still queued
-        // for the regular payout schedule.
-        const instantAmount = instantEntry?.amount ?? 0;
-        const {
-            amount: instantPayoutAmount,
-            fee: instantPayoutFee,
-        } = calculateMaxInstantPayout(instantAmount);
-        const hasInstantCapability =
-            Array.isArray(balance.instant_available) &&
-            balance.instant_available.length > 0;
+    const availableAmount = availableEntry?.amount ?? 0;
+    // Stripe instant payouts are based on `instant_available`, which can
+    // exceed the standard available balance while funds are still queued
+    // for the regular payout schedule.
+    const instantAmount = instantEntry?.amount ?? 0;
+    const { amount: instantPayoutAmount, fee: instantPayoutFee } =
+      calculateMaxInstantPayout(instantAmount);
+    const hasInstantCapability =
+      Array.isArray(balance.instant_available) &&
+      balance.instant_available.length > 0;
 
-        return {
-            available: availableAmount,
-            pending: pendingEntry?.amount ?? 0,
-            instantAvailable: instantAmount,
-            instantPayoutAmount,
-            instantPayoutFee,
-            hasInstantPayoutCard: payoutDestinations.hasInstantPayoutCard,
-            hasBankPayoutAccount: payoutDestinations.hasBankPayoutAccount,
-            instantPayoutsEnabled:
-                hasInstantCapability &&
-                payoutDestinations.hasInstantPayoutCard &&
-                instantPayoutAmount > 0,
-            currency:
-                availableEntry?.currency ??
-                instantEntry?.currency ??
-                pendingEntry?.currency ??
-                "cad",
-        };
-    },
+    return {
+      available: availableAmount,
+      pending: pendingEntry?.amount ?? 0,
+      instantAvailable: instantAmount,
+      instantPayoutAmount,
+      instantPayoutFee,
+      hasInstantPayoutCard: payoutDestinations.hasInstantPayoutCard,
+      hasBankPayoutAccount: payoutDestinations.hasBankPayoutAccount,
+      instantPayoutsEnabled:
+        hasInstantCapability &&
+        payoutDestinations.hasInstantPayoutCard &&
+        instantPayoutAmount > 0,
+      currency:
+        availableEntry?.currency ??
+        instantEntry?.currency ??
+        pendingEntry?.currency ??
+        "cad",
+    };
+  },
 });
 
 // --- INSTANT PAYOUT ---
 // Creates an instant payout to the runner's debit card.
 
 export const requestInstantPayout = action({
-    args: {},
-    handler: async (
-        ctx,
-    ): Promise<{
-        success: boolean;
-        amount: number;
-        fee: number;
-        currency: string;
-    }> => {
-        const user = await ctx.runQuery(api.users.getCurrentUser, {});
-        if (!user) throw new Error("Not authenticated");
+  args: {},
+  handler: async (
+    ctx,
+  ): Promise<{
+    success: boolean;
+    amount: number;
+    fee: number;
+    currency: string;
+  }> => {
+    const user = await ctx.runQuery(api.users.getCurrentUser, {});
+    if (!user) throw new Error("Not authenticated");
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const account: any = await ctx.runQuery(
-            internal.payments.getConnectedAccountInternal,
-            { userId: user._id },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const account: any = await ctx.runQuery(
+      internal.payments.getConnectedAccountInternal,
+      { userId: user._id },
+    );
+    if (!account) throw new Error("No connected account found");
+
+    const stripe = getStripe();
+    const payoutDestinations = await getPayoutDestinationAvailability(
+      stripe,
+      account.stripeAccountId,
+    );
+
+    if (!payoutDestinations.hasInstantPayoutCard) {
+      throw new Error(
+        "Instant payouts are not available for your account. Add a debit card in Stripe to use instant payout.",
+      );
+    }
+
+    // Get balance to determine payout amount.
+    // instant_available is the actual amount Stripe will let you instant-pay.
+    const balance = await stripe.balance.retrieve({
+      stripeAccount: account.stripeAccountId,
+    });
+
+    const instantEntry =
+      balance.instant_available?.find((b) => b.currency === "cad") ??
+      balance.instant_available?.[0];
+    const instantAvailableAmount = instantEntry?.amount ?? 0;
+
+    if (!instantEntry || instantAvailableAmount <= 0) {
+      // Check if there are pending funds to give a better message
+      const pendingEntry =
+        balance.pending.find((b) => b.currency === "cad") ?? balance.pending[0];
+      const pendingAmount = pendingEntry?.amount ?? 0;
+
+      if (pendingAmount > 0) {
+        throw new Error(
+          `No funds available for instant payout yet. You have $${(pendingAmount / 100).toFixed(2)} pending — these typically become available in 1-2 business days.`,
         );
-        if (!account) throw new Error("No connected account found");
+      }
+      throw new Error(
+        "No funds available for instant payout. Make sure you have a debit card linked in your Stripe account.",
+      );
+    }
 
-        const stripe = getStripe();
-        const payoutDestinations = await getPayoutDestinationAvailability(
-            stripe,
-            account.stripeAccountId,
+    const currency = instantEntry.currency ?? "cad";
+    const { amount, fee } = calculateMaxInstantPayout(instantAvailableAmount);
+
+    if (amount <= 0) {
+      throw new Error(
+        `Your available balance of $${(instantAvailableAmount / 100).toFixed(2)} is too small to cover the instant payout fee. Funds will be paid out automatically on the regular schedule.`,
+      );
+    }
+
+    try {
+      const payout = await stripe.payouts.create(
+        {
+          amount,
+          currency,
+          method: "instant",
+        },
+        {
+          stripeAccount: account.stripeAccountId,
+        },
+      );
+
+      return {
+        success: true,
+        amount: payout.amount,
+        fee,
+        currency,
+      };
+    } catch (error) {
+      // Provide user-friendly messages for common Stripe errors
+      const msg = error instanceof Error ? error.message : String(error);
+      if (msg.includes("insufficient funds") || msg.includes("balance")) {
+        throw new Error(
+          "Insufficient funds for instant payout. Your balance may have changed — please try again.",
         );
-
-        if (!payoutDestinations.hasInstantPayoutCard) {
-            throw new Error(
-                "Instant payouts are not available for your account. Add a debit card in Stripe to use instant payout.",
-            );
-        }
-
-        // Get balance to determine payout amount.
-        // instant_available is the actual amount Stripe will let you instant-pay.
-        const balance = await stripe.balance.retrieve({
-            stripeAccount: account.stripeAccountId,
-        });
-
-        const instantEntry =
-            balance.instant_available?.find((b) => b.currency === "cad") ??
-            balance.instant_available?.[0];
-        const instantAvailableAmount = instantEntry?.amount ?? 0;
-
-        if (!instantEntry || instantAvailableAmount <= 0) {
-            // Check if there are pending funds to give a better message
-            const pendingEntry =
-                balance.pending.find((b) => b.currency === "cad") ??
-                balance.pending[0];
-            const pendingAmount = pendingEntry?.amount ?? 0;
-
-            if (pendingAmount > 0) {
-                throw new Error(
-                    `No funds available for instant payout yet. You have $${(pendingAmount / 100).toFixed(2)} pending — these typically become available in 1-2 business days.`,
-                );
-            }
-            throw new Error(
-                "No funds available for instant payout. Make sure you have a debit card linked in your Stripe account.",
-            );
-        }
-
-        const currency = instantEntry.currency ?? "cad";
-        const { amount, fee } = calculateMaxInstantPayout(instantAvailableAmount);
-
-        if (amount <= 0) {
-            throw new Error(
-                `Your available balance of $${(instantAvailableAmount / 100).toFixed(2)} is too small to cover the instant payout fee. Funds will be paid out automatically on the regular schedule.`,
-            );
-        }
-
-        try {
-            const payout = await stripe.payouts.create(
-                {
-                    amount,
-                    currency,
-                    method: "instant",
-                },
-                {
-                    stripeAccount: account.stripeAccountId,
-                },
-            );
-
-            return {
-                success: true,
-                amount: payout.amount,
-                fee,
-                currency,
-            };
-        } catch (error) {
-            // Provide user-friendly messages for common Stripe errors
-            const msg = error instanceof Error ? error.message : String(error);
-            if (msg.includes("insufficient funds") || msg.includes("balance")) {
-                throw new Error(
-                    "Insufficient funds for instant payout. Your balance may have changed — please try again.",
-                );
-            }
-            if (
-                msg.includes("instant payouts") ||
-                msg.includes("not supported")
-            ) {
-                throw new Error(
-                    "Instant payouts are not available for your account. You need a debit card (not a bank account) linked as your payout destination in Stripe.",
-                );
-            }
-            throw new Error(`Payout failed: ${msg}`);
-        }
-    },
+      }
+      if (msg.includes("instant payouts") || msg.includes("not supported")) {
+        throw new Error(
+          "Instant payouts are not available for your account. You need a debit card (not a bank account) linked as your payout destination in Stripe.",
+        );
+      }
+      throw new Error(`Payout failed: ${msg}`);
+    }
+  },
 });
 
 // --- STANDARD PAYOUT ---
 // Creates a standard payout to the runner's bank account (1-2 business days).
 
 export const requestStandardPayout = action({
-    args: {},
-    handler: async (
-        ctx,
-    ): Promise<{
-        success: boolean;
-        amount: number;
-        currency: string;
-    }> => {
-        const user = await ctx.runQuery(api.users.getCurrentUser, {});
-        if (!user) throw new Error("Not authenticated");
+  args: {},
+  handler: async (
+    ctx,
+  ): Promise<{
+    success: boolean;
+    amount: number;
+    currency: string;
+  }> => {
+    const user = await ctx.runQuery(api.users.getCurrentUser, {});
+    if (!user) throw new Error("Not authenticated");
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const account: any = await ctx.runQuery(
-            internal.payments.getConnectedAccountInternal,
-            { userId: user._id },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const account: any = await ctx.runQuery(
+      internal.payments.getConnectedAccountInternal,
+      { userId: user._id },
+    );
+    if (!account) throw new Error("No connected account found");
+
+    const stripe = getStripe();
+    const payoutDestinations = await getPayoutDestinationAvailability(
+      stripe,
+      account.stripeAccountId,
+    );
+
+    if (!payoutDestinations.hasBankPayoutAccount) {
+      throw new Error(
+        "Bank transfers are not available for your account. Add a bank account in Stripe to use standard payouts.",
+      );
+    }
+
+    const balance = await stripe.balance.retrieve({
+      stripeAccount: account.stripeAccountId,
+    });
+
+    const availableEntry =
+      balance.available.find((b) => b.currency === "cad") ??
+      balance.available[0];
+    const availableAmount = availableEntry?.amount ?? 0;
+
+    if (availableAmount <= 0) {
+      const pendingEntry =
+        balance.pending.find((b) => b.currency === "cad") ?? balance.pending[0];
+      const pendingAmount = pendingEntry?.amount ?? 0;
+
+      if (pendingAmount > 0) {
+        throw new Error(
+          `No funds available for payout yet. You have $${(pendingAmount / 100).toFixed(2)} pending — these typically become available in 1-2 business days.`,
         );
-        if (!account) throw new Error("No connected account found");
+      }
+      throw new Error("No funds available for payout.");
+    }
 
-        const stripe = getStripe();
-        const payoutDestinations = await getPayoutDestinationAvailability(
-            stripe,
-            account.stripeAccountId,
+    const currency = availableEntry?.currency ?? "cad";
+
+    try {
+      const payout = await stripe.payouts.create(
+        {
+          amount: availableAmount,
+          currency,
+          method: "standard",
+        },
+        {
+          stripeAccount: account.stripeAccountId,
+        },
+      );
+
+      return {
+        success: true,
+        amount: payout.amount,
+        currency,
+      };
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      if (msg.includes("insufficient funds") || msg.includes("balance")) {
+        throw new Error(
+          "Insufficient funds for payout. Your balance may have changed — please try again.",
         );
-
-        if (!payoutDestinations.hasBankPayoutAccount) {
-            throw new Error(
-                "Bank transfers are not available for your account. Add a bank account in Stripe to use standard payouts.",
-            );
-        }
-
-        const balance = await stripe.balance.retrieve({
-            stripeAccount: account.stripeAccountId,
-        });
-
-        const availableEntry =
-            balance.available.find((b) => b.currency === "cad") ??
-            balance.available[0];
-        const availableAmount = availableEntry?.amount ?? 0;
-
-        if (availableAmount <= 0) {
-            const pendingEntry =
-                balance.pending.find((b) => b.currency === "cad") ??
-                balance.pending[0];
-            const pendingAmount = pendingEntry?.amount ?? 0;
-
-            if (pendingAmount > 0) {
-                throw new Error(
-                    `No funds available for payout yet. You have $${(pendingAmount / 100).toFixed(2)} pending — these typically become available in 1-2 business days.`,
-                );
-            }
-            throw new Error("No funds available for payout.");
-        }
-
-        const currency = availableEntry?.currency ?? "cad";
-
-        try {
-            const payout = await stripe.payouts.create(
-                {
-                    amount: availableAmount,
-                    currency,
-                    method: "standard",
-                },
-                {
-                    stripeAccount: account.stripeAccountId,
-                },
-            );
-
-            return {
-                success: true,
-                amount: payout.amount,
-                currency,
-            };
-        } catch (error) {
-            const msg = error instanceof Error ? error.message : String(error);
-            if (msg.includes("insufficient funds") || msg.includes("balance")) {
-                throw new Error(
-                    "Insufficient funds for payout. Your balance may have changed — please try again.",
-                );
-            }
-            throw new Error(`Payout failed: ${msg}`);
-        }
-    },
+      }
+      throw new Error(`Payout failed: ${msg}`);
+    }
+  },
 });
 
 // --- RUNNER DASHBOARD LINK ---
 // Opens Stripe Express Dashboard so runners can view earnings/payouts.
 
 export const createDashboardLink = action({
-    args: {},
-    handler: async (ctx): Promise<{ url: string }> => {
-        const user = await ctx.runQuery(api.users.getCurrentUser, {});
-        if (!user) throw new Error("Not authenticated");
+  args: {},
+  handler: async (ctx): Promise<{ url: string }> => {
+    const user = await ctx.runQuery(api.users.getCurrentUser, {});
+    if (!user) throw new Error("Not authenticated");
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const account: any = await ctx.runQuery(
-            internal.payments.getConnectedAccountInternal,
-            { userId: user._id },
-        );
-        if (!account) throw new Error("No connected account found");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const account: any = await ctx.runQuery(
+      internal.payments.getConnectedAccountInternal,
+      { userId: user._id },
+    );
+    if (!account) throw new Error("No connected account found");
 
-        const loginLink: Stripe.LoginLink =
-            await getStripe().accounts.createLoginLink(account.stripeAccountId);
-        return { url: loginLink.url };
-    },
+    const loginLink: Stripe.LoginLink =
+      await getStripe().accounts.createLoginLink(account.stripeAccountId);
+    return { url: loginLink.url };
+  },
 });

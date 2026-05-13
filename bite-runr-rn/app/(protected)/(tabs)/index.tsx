@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
+import type React from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   ScrollView,
   Text,
@@ -15,12 +16,14 @@ import Animated, {
   withRepeat,
   withSequence,
   withTiming,
-  Easing,
 } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { useQuery, useAction } from "convex/react";
 import { useRouter } from "expo-router";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import { api } from "@/convex/_generated/api";
 import Icon from "@/components/common/icon";
@@ -224,7 +227,7 @@ export default function HomeTab() {
   }, [queriesReturned, hasAnyData]);
 
   const isLoading = !queriesReturned || isInitializing || !isTransitionComplete;
-  const pendingRequestCount = pendingRequests ?? 0;
+  const _pendingRequestCount = pendingRequests ?? 0;
   const firstName = currentUser?.firstName || "there";
   const owedToMe = (settlementSummary?.owedToMe ?? 0) / 100;
   const iOwe = (settlementSummary?.iOwe ?? 0) / 100;
@@ -234,7 +237,10 @@ export default function HomeTab() {
 
   return (
     <ErrorBoundary>
-      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: BR.paper }}>
+      <SafeAreaView
+        edges={["top"]}
+        style={{ flex: 1, backgroundColor: BR.paper }}
+      >
         {/* Top bar */}
         <View style={styles.topBar}>
           <Image
@@ -278,7 +284,7 @@ export default function HomeTab() {
                     rotate={5}
                     leftSlot={<Icon name="Flame" size={14} color={BR.orange} />}
                   >
-                    {pastOrders.length}+ runs
+                    <Text>{pastOrders.length}+ runs</Text>
                   </BrSticker>
                 )}
               </Animated.View>
@@ -394,23 +400,40 @@ export default function HomeTab() {
                       onPress={() => {
                         const first = outstandingDebts?.[0];
                         if (first) {
-                          router.push(`/order/settlement?orderId=${first.orderId}`);
+                          router.push(
+                            `/order/settlement?orderId=${first.orderId}`,
+                          );
                         }
                       }}
                       style={styles.owedCard}
                     >
                       {/* Top row: label + stacked avatars */}
-                      <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "flex-start",
+                          justifyContent: "space-between",
+                        }}
+                      >
                         <View style={styles.statHeaderRow}>
-                          <Icon name="TrendingUp" size={12} color={BR.mintInk} />
-                          <Text style={[styles.statLabel, { color: BR.mintInk }]}>
+                          <Icon
+                            name="TrendingUp"
+                            size={12}
+                            color={BR.mintInk}
+                          />
+                          <Text
+                            style={[styles.statLabel, { color: BR.mintInk }]}
+                          >
                             YOU&apos;RE OWED
                           </Text>
                         </View>
                         {outstandingDebts && outstandingDebts.length > 0 && (
                           <View style={{ flexDirection: "row" }}>
                             {outstandingDebts.slice(0, 3).map((d, i) => (
-                              <View key={d.userId} style={{ marginLeft: i ? -10 : 0 }}>
+                              <View
+                                key={d.userId}
+                                style={{ marginLeft: i ? -10 : 0 }}
+                              >
                                 <BrAvatar
                                   name={`${d.firstName} ${d.lastName}`}
                                   avatarUrl={d.avatarUrl}
@@ -424,20 +447,35 @@ export default function HomeTab() {
                       </View>
 
                       {/* Amount */}
-                      <Text style={[styles.statValue, { color: BR.mintInk, marginTop: 8 }]}>
+                      <Text
+                        style={[
+                          styles.statValue,
+                          { color: BR.mintInk, marginTop: 8 },
+                        ]}
+                      >
                         ${owedToMe.toFixed(2)}
                       </Text>
 
                       {/* Bottom row: name + collect pill */}
                       <View style={styles.owedFooter}>
-                        <Text style={[styles.statSub, { color: BR.mintInk, opacity: 0.75, flex: 1 }]} numberOfLines={1}>
+                        <Text
+                          style={[
+                            styles.statSub,
+                            { color: BR.mintInk, opacity: 0.75, flex: 1 },
+                          ]}
+                          numberOfLines={1}
+                        >
                           {outstandingDebts && outstandingDebts.length === 1
                             ? `${outstandingDebts[0].firstName} owes you`
                             : `${outstandingDebts?.length ?? 0} people owe you`}
                         </Text>
                         <View style={styles.collectPill}>
                           <Text style={styles.collectPillText}>Collect</Text>
-                          <Icon name="ArrowRight" size={10} color={BR.mintInk} />
+                          <Icon
+                            name="ArrowRight"
+                            size={10}
+                            color={BR.mintInk}
+                          />
                         </View>
                       </View>
                     </Pressable>
@@ -693,7 +731,10 @@ export default function HomeTab() {
                                 <Text style={styles.runDate}>
                                   {new Date(order.createdAt).toLocaleDateString(
                                     "en-US",
-                                    { month: "short", day: "numeric" },
+                                    {
+                                      month: "short",
+                                      day: "numeric",
+                                    },
                                   )}
                                 </Text>
                               </View>
@@ -721,7 +762,7 @@ export default function HomeTab() {
                                 />
                               }
                             >
-                              Again
+                              <Text>Again</Text>
                             </BrChip>
                           </BrCard>
                         </Pressable>

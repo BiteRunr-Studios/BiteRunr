@@ -15,7 +15,7 @@ import { router } from "expo-router";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import * as ImagePicker from "expo-image-picker";
-import { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { BrAvatar, BrInput, BrText } from "@/components/br";
 import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
@@ -71,9 +71,13 @@ export default function AccountInfoScreen() {
   };
 
   const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
-      Alert.alert("Permission Required", "Please allow access to your photo library.");
+      Alert.alert(
+        "Permission Required",
+        "Please allow access to your photo library.",
+      );
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -134,7 +138,11 @@ export default function AccountInfoScreen() {
     const options = user?.avatarUrl
       ? [
           { text: "Change photo", onPress: pickImage },
-          { text: "Remove photo", onPress: handleRemoveAvatar, style: "destructive" as const },
+          {
+            text: "Remove photo",
+            onPress: handleRemoveAvatar,
+            style: "destructive" as const,
+          },
           { text: "Cancel", style: "cancel" as const },
         ]
       : [
@@ -144,22 +152,30 @@ export default function AccountInfoScreen() {
     Alert.alert("Profile photo", "What would you like to do?", options);
   };
 
-  const fullName = [firstName, lastName].filter(Boolean).join(" ") || user?.email || "U";
+  const fullName =
+    [firstName, lastName].filter(Boolean).join(" ") || user?.email || "U";
   const isLoading = user === undefined;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: BR.paper }} edges={["top"]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: BR.paper }}
+      edges={["top"]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
           <Icon name="ChevronLeft" size={20} color={BR.ink} />
         </Pressable>
-        <BrText weight="bold" style={{ fontSize: 17 }}>Edit profile</BrText>
+        <BrText weight="bold" style={{ fontSize: 17 }}>
+          Edit profile
+        </BrText>
         <View style={{ width: 38 }} />
       </View>
 
       {isLoading ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
           <ActivityIndicator size="large" color={BR.orange} />
         </View>
       ) : !user ? (
@@ -178,7 +194,10 @@ export default function AccountInfoScreen() {
             showsVerticalScrollIndicator={false}
           >
             {/* Avatar hero */}
-            <Animated.View entering={FadeInUp.duration(300)} style={styles.avatarHero}>
+            <Animated.View
+              entering={FadeInUp.duration(300)}
+              style={styles.avatarHero}
+            >
               <Pressable
                 onPress={showAvatarOptions}
                 disabled={isUploadingAvatar}
@@ -204,8 +223,13 @@ export default function AccountInfoScreen() {
             </Animated.View>
 
             {/* Name fields */}
-            <Animated.View entering={FadeInUp.duration(300).delay(30)} style={{ gap: 10 }}>
-              <BrText variant="eyebrow" style={{ marginBottom: 2 }}>Name</BrText>
+            <Animated.View
+              entering={FadeInUp.duration(300).delay(30)}
+              style={{ gap: 10 }}
+            >
+              <BrText variant="eyebrow" style={{ marginBottom: 2 }}>
+                Name
+              </BrText>
               <BrInput
                 value={firstName}
                 onChangeText={setFirstName}
@@ -226,11 +250,18 @@ export default function AccountInfoScreen() {
             </Animated.View>
 
             {/* Email (locked) */}
-            <Animated.View entering={FadeInUp.duration(300).delay(25)} style={{ marginTop: 20 }}>
-              <BrText variant="eyebrow" style={{ marginBottom: 8 }}>Email</BrText>
+            <Animated.View
+              entering={FadeInUp.duration(300).delay(25)}
+              style={{ marginTop: 20 }}
+            >
+              <BrText variant="eyebrow" style={{ marginBottom: 8 }}>
+                Email
+              </BrText>
               <View style={styles.emailRow}>
                 <Icon name="Mail" size={18} color={BR.ink2} />
-                <Text style={styles.emailText} numberOfLines={1}>{user.email}</Text>
+                <Text style={styles.emailText} numberOfLines={1}>
+                  {user.email}
+                </Text>
                 <View style={styles.lockedChip}>
                   <Icon name="Lock" size={10} color={BR.ink3} />
                   <Text style={styles.lockedText}>Locked</Text>
@@ -254,7 +285,10 @@ export default function AccountInfoScreen() {
             </Animated.View>
 
             {/* Save */}
-            <Animated.View entering={FadeInUp.duration(300).delay(40)} style={{ marginTop: 28 }}>
+            <Animated.View
+              entering={FadeInUp.duration(300).delay(40)}
+              style={{ marginTop: 28 }}
+            >
               <Pressable
                 onPress={handleSave}
                 disabled={!hasChanges}

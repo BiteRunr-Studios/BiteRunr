@@ -8,7 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
+  type TextInput,
   View,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
@@ -19,7 +19,7 @@ import { BrInput, BrText } from "@/components/br";
 import Icon from "@/components/common/icon";
 import {
   createFormHandlers,
-  FormState,
+  type FormState,
   getAuthErrorMessage,
   validateEmail,
 } from "@/lib/auth-helpers";
@@ -44,29 +44,35 @@ export default function EmailSignInScreen() {
     const newForm = { ...form };
 
     if (!email) {
+      const emailField = newForm.email;
+      if (!emailField) return;
       newForm.email = {
-        ...newForm.email!,
+        ...emailField,
         error: "Email is required",
         touched: true,
       };
       hasError = true;
     } else if (!validateEmail(email)) {
+      const emailField = newForm.email;
+      if (!emailField) return;
       newForm.email = {
-        ...newForm.email!,
+        ...emailField,
         error: "Invalid email address",
         touched: true,
       };
       hasError = true;
     }
     if (!password) {
+      const passwordField = newForm.password;
+      if (!passwordField) return;
       newForm.password = {
-        ...newForm.password!,
+        ...passwordField,
         error: "Password is required",
         touched: true,
       };
       hasError = true;
     }
-    if (hasError) {
+    if (hasError || !email || !password) {
       setForm(newForm);
       return;
     }
@@ -74,8 +80,8 @@ export default function EmailSignInScreen() {
     setLoading(true);
     try {
       const response = await authClient.signIn.email({
-        email: email!,
-        password: password!,
+        email,
+        password,
       });
       if (response.error) {
         throw new Error(response.error.message || "Sign in failed");
@@ -86,16 +92,16 @@ export default function EmailSignInScreen() {
       if (errorResult.field === "email") {
         setForm((prev) => ({
           ...prev,
-          email: { ...prev.email!, error: errorResult.message, touched: true },
+          email: prev.email
+            ? { ...prev.email, error: errorResult.message, touched: true }
+            : prev.email,
         }));
       } else if (errorResult.field === "password") {
         setForm((prev) => ({
           ...prev,
-          password: {
-            ...prev.password!,
-            error: errorResult.message,
-            touched: true,
-          },
+          password: prev.password
+            ? { ...prev.password, error: errorResult.message, touched: true }
+            : prev.password,
         }));
       } else {
         Alert.alert("Sign In Error", errorResult.message);
@@ -141,25 +147,25 @@ export default function EmailSignInScreen() {
 
             <View style={{ marginTop: 24, gap: 12 }}>
               <BrInput
-                value={form.email!.value}
+                value={form.email?.value}
                 placeholder="Email"
                 leftIcon="Mail"
                 autoCapitalize="none"
                 keyboardType="email-address"
                 returnKeyType="next"
-                errorMessage={form.email!.error}
+                errorMessage={form.email?.error}
                 onChangeText={(v) => onChange("email", v)}
                 onBlur={() => onBlur("email")}
                 onSubmitEditing={() => passwordRef.current?.focus()}
               />
               <BrInput
                 ref={passwordRef}
-                value={form.password!.value}
+                value={form.password?.value}
                 placeholder="Password"
                 leftIcon="Lock"
                 secureTextEntry
                 returnKeyType="done"
-                errorMessage={form.password!.error}
+                errorMessage={form.password?.error}
                 onChangeText={(v) => onChange("password", v)}
                 onBlur={() => onBlur("password")}
                 onSubmitEditing={handleEmailSignIn}

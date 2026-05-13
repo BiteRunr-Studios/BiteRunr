@@ -1,12 +1,5 @@
 import { useEffect } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-  Dimensions,
-  Linking,
-} from "react-native";
+import { View, Text, Pressable, StyleSheet, Dimensions } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
