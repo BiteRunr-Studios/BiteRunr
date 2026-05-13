@@ -1,428 +1,1096 @@
-import { useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
+import * as Haptics from "expo-haptics";
 import {
-    ActivityIndicator,
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  InputAccessoryView,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, {
+  FadeInDown,
+  FadeInUp,
+  ZoomIn,
+} from "react-native-reanimated";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import { MultiSelectSheet, SelectableItem } from "@/components/multi-select-sheet";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { useFriends, useCreateOrder } from "@/lib/hooks/use-order-api";
 import Icon from "@/components/common/icon";
-import { Input } from "@/components/common/input";
-import { NAV_THEME } from "@/lib/constants";
-import { useColorScheme } from "@/lib/use-color-scheme";
+import { AnimatedPressable } from "@/components/common/animated-pressable";
+import { BrText, BrAvatar } from "@/components/br";
+import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
+
+// ── Types ─────────────────────────────────────────────────────────
 
 interface FieldErrors {
-    name?: string;
-    order_locations?: string;
-    order_users?: string;
+  name?: string;
+  order_locations?: string;
 }
+
+interface Friend {
+  id: string;
+  first_name: string;
+  last_name: string;
+  avatar_url?: string | null;
+}
+
+// ── Utilities ─────────────────────────────────────────────────────
 
 function parseReorderLocationNames(raw?: string) {
-    if (!raw) return [];
-
-    try {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-            return parsed
-                .map((value) => (typeof value === "string" ? value.trim() : ""))
-                .filter(Boolean);
-        }
-    } catch {
-        // Fall back to the legacy comma-separated format.
-    }
-
-    return raw
-        .split(",")
-        .map((value) => value.trim())
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed))
+      return parsed
+        .map((v) => (typeof v === "string" ? v.trim() : ""))
         .filter(Boolean);
+  } catch {}
+  return raw
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
 }
+
+// ── Constants ────────────────────────────────────────────────────
+
+const INPUT_ACCESSORY_ID = "create-order-inputs";
+
+const FRIENDS_VISIBLE_CAP = 6;
+const FRIEND_HAPTIC_MIN_INTERVAL_MS = 80;
+
+let lastFriendHapticAt = 0;
+
+function fireFriendHaptic() {
+  const now = Date.now();
+  if (now - lastFriendHapticAt < FRIEND_HAPTIC_MIN_INTERVAL_MS) return;
+  lastFriendHapticAt = now;
+  void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+}
+
+const FriendSelectRow = memo(function FriendSelectRow({
+  friend,
+  fullName,
+  isSelected,
+  showBorder,
+  onToggle,
+}: {
+  friend: Friend;
+  fullName: string;
+  isSelected: boolean;
+  showBorder: boolean;
+  onToggle: (id: string) => void;
+}) {
+  const handlePress = useCallback(() => {
+    onToggle(friend.id);
+  }, [friend.id, onToggle]);
+
+  return (
+    <AnimatedPressable
+      scale={0.98}
+      onPress={handlePress}
+      style={[
+        styles.friendRow,
+        showBorder && styles.friendRowBorder,
+        isSelected && styles.friendRowSelected,
+      ]}
+    >
+      <BrAvatar
+        name={fullName}
+        avatarUrl={friend.avatar_url}
+        size={38}
+        ring={isSelected ? BR.orange : "transparent"}
+      />
+      <Text style={styles.friendName} numberOfLines={1}>
+        {fullName}
+      </Text>
+      <View
+        style={[styles.checkCircle, isSelected && styles.checkCircleSelected]}
+      >
+        {isSelected && (
+          <Icon name="Check" size={12} color="#fff" strokeWidth={3} />
+        )}
+      </View>
+    </AnimatedPressable>
+  );
+});
+
+// ── Main ─────────────────────────────────────────────────────────
 
 export default function CreateOrder() {
-    const { colorScheme } = useColorScheme();
-    const { reorderName, reorderLocationNames, reorderFriendIds } =
-        useLocalSearchParams<{
-            reorderName?: string;
-            reorderLocationNames?: string;
-            reorderFriendIds?: string;
-        }>();
-    const isReorder = !!reorderName;
-    const [name, setName] = useState(reorderName ?? "");
-    const [comments, setComments] = useState("");
-    const [locationInput, setLocationInput] = useState("");
-    const [selectedLocationNames, setSelectedLocationNames] = useState<string[]>(
-        () => parseReorderLocationNames(reorderLocationNames),
+  const insets = useSafeAreaInsets();
+  const { reorderName, reorderLocationNames, reorderFriendIds } =
+    useLocalSearchParams<{
+      reorderName?: string;
+      reorderLocationNames?: string;
+      reorderFriendIds?: string;
+    }>();
+  const isReorder = !!reorderName;
+
+  // ── Form state
+  const [name, setName] = useState(reorderName ?? "");
+  const [spots, setSpots] = useState<string[]>(() => {
+    const pre = parseReorderLocationNames(reorderLocationNames);
+    return pre.length > 0 ? pre : [""];
+  });
+  const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>(() =>
+    reorderFriendIds ? reorderFriendIds.split(",").filter(Boolean) : [],
+  );
+  const [comments, setComments] = useState("");
+  const [friendQuery, setFriendQuery] = useState("");
+  const [showAllFriends, setShowAllFriends] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
+  // ── Data
+  const { data: rawFriends = [], isLoading: isLoadingFriends } = useFriends();
+  const friends = rawFriends as Friend[];
+  const squads = useQuery(api.squads.list) ?? [];
+  const createOrderMutation = useCreateOrder();
+
+  // ── Spot helpers
+  const setSpotAt = (i: number, v: string) =>
+    setSpots((p) => p.map((s, idx) => (idx === i ? v : s)));
+  const addSpot = () => setSpots((p) => [...p, ""]);
+  const removeSpot = (i: number) =>
+    setSpots((p) => (p.length === 1 ? [""] : p.filter((_, idx) => idx !== i)));
+
+  // ── Friend helpers
+  const selectedFriendIdSet = useMemo(
+    () => new Set(selectedFriendIds),
+    [selectedFriendIds],
+  );
+
+  const toggleFriend = useCallback((id: string) => {
+    fireFriendHaptic();
+    setSelectedFriendIds((p) =>
+      p.includes(id) ? p.filter((x) => x !== id) : [...p, id],
     );
-    const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>(
-        () => (reorderFriendIds ? reorderFriendIds.split(",").filter(Boolean) : []),
-    );
-    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-    const [showFriendsSheet, setShowFriendsSheet] = useState(false);
+  }, []);
 
-    const { data: friends = [], isLoading: isLoadingFriends } = useFriends();
-    const createOrderMutation = useCreateOrder();
+  const toggleSquad = useCallback((memberIds: string[]) => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setSelectedFriendIds((prev) => {
+      const prevSet = new Set(prev);
+      const allSelected =
+        memberIds.length > 0 && memberIds.every((id) => prevSet.has(id));
+      if (allSelected) {
+        return prev.filter((id) => !memberIds.includes(id));
+      }
+      return [...new Set([...prev, ...memberIds])];
+    });
+  }, []);
 
-    const friendItems: SelectableItem[] = useMemo(
-        () =>
-            friends.map((friend) => ({
-                id: friend.id,
-                displayName: `${friend.first_name} ${friend.last_name}`,
-                avatarUrl: friend.avatar_url,
-            })),
-        [friends],
-    );
+  const filteredFriends = useMemo(
+    () =>
+      friendQuery
+        ? friends.filter((f) =>
+            `${f.first_name} ${f.last_name}`
+              .toLowerCase()
+              .includes(friendQuery.toLowerCase()),
+          )
+        : friends,
+    [friends, friendQuery],
+  );
+  const visibleFriends =
+    friendQuery || showAllFriends
+      ? filteredFriends
+      : filteredFriends.slice(0, FRIENDS_VISIBLE_CAP);
 
-    const selectedFriendsText =
-        selectedFriendIds.length === 1
-            ? "1 friend selected"
-            : `${selectedFriendIds.length} friends selected`;
+  // ── Validation
+  const validSpots = spots.filter((s) => s.trim());
+  const isValid = name.trim().length > 0 && validSpots.length > 0;
 
-    const clearFieldError = (field: keyof FieldErrors) => {
-        setFieldErrors((prev) => ({
-            ...prev,
-            [field]: undefined,
-        }));
-    };
+  const clearError = (field: keyof FieldErrors) =>
+    setFieldErrors((p) => ({ ...p, [field]: undefined }));
 
-    const addLocation = () => {
-        const nextName = locationInput.trim();
-        if (!nextName) return;
+  // ── Submit
+  const handleCreate = async () => {
+    const trimmedName = name.trim();
+    const locationNames = spots.map((s) => s.trim()).filter(Boolean);
+    const errors: FieldErrors = {};
+    if (!trimmedName) errors.name = "Name is required";
+    if (locationNames.length === 0)
+      errors.order_locations = "Add at least one stop";
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    try {
+      const orderId = await createOrderMutation.mutateAsync({
+        name: trimmedName,
+        comments: comments.trim() || null,
+        locationNames,
+        friendIds: selectedFriendIds,
+      });
+      router.replace(`/(protected)/order/${orderId}`);
+    } catch (error: any) {
+      Alert.alert("Error", error?.message ?? "Failed to create order");
+    }
+  };
 
-        const dedupeKey = nextName.toLowerCase();
-        if (
-            selectedLocationNames.some(
-                (locationName) => locationName.toLowerCase() === dedupeKey,
-            )
-        ) {
-            setLocationInput("");
-            clearFieldError("order_locations");
-            return;
-        }
+  return (
+    <>
+      <SafeAreaView edges={["top"]} style={{ backgroundColor: BR.paper }} />
 
-        setSelectedLocationNames((prev) => [...prev, nextName]);
-        setLocationInput("");
-        clearFieldError("order_locations");
-    };
+      {/* Header */}
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Icon name="ChevronLeft" size={20} color={BR.ink} />
+        </Pressable>
+        <Text style={styles.headerTitle}>
+          {isReorder ? "Order again" : "New run"}
+        </Text>
+        <View style={styles.quickSticker}>
+          <Icon name="Sparkles" size={11} color="#7A4A20" />
+          <Text style={styles.quickStickerText}>Quick</Text>
+        </View>
+      </View>
 
-    const removeLocation = (locationName: string) => {
-        setSelectedLocationNames((prev) =>
-            prev.filter((value) => value !== locationName),
-        );
-    };
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          style={{ flex: 1, backgroundColor: BR.paper }}
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hero headline */}
+          <Animated.View
+            entering={FadeInUp.duration(300)}
+            style={{ paddingHorizontal: 2 }}
+          >
+            <Text style={styles.headline}>
+              {"Who's "}
+              <Text style={styles.headlineAccent}>hungry?</Text>
+            </Text>
+          </Animated.View>
 
-    const parseApiErrors = (error: any): FieldErrors => {
-        const errors: FieldErrors = {};
+          {/* ── Run name ──────────────────────────────────────────────── */}
+          <Animated.View
+            entering={FadeInUp.duration(300).delay(70)}
+            style={{ marginTop: 22 }}
+          >
+            <BrText variant="eyebrow">Call it something</BrText>
+            <View
+              style={[
+                styles.nameCard,
+                fieldErrors.name && { borderColor: BR.coral },
+              ]}
+            >
+              <TextInput
+                value={name}
+                onChangeText={(t) => {
+                  setName(t);
+                  if (fieldErrors.name) clearError("name");
+                }}
+                placeholder="Friday lunch run"
+                placeholderTextColor={BR.ink3}
+                style={styles.nameInput}
+                returnKeyType="done"
+                onSubmitEditing={() => Keyboard.dismiss()}
+                inputAccessoryViewID={INPUT_ACCESSORY_ID}
+              />
+              {!name && <Text style={styles.requiredHint}>required</Text>}
+            </View>
+            {fieldErrors.name && (
+              <Text style={styles.fieldError}>{fieldErrors.name}</Text>
+            )}
+          </Animated.View>
 
-        if (error?.error?.issues && Array.isArray(error.error.issues)) {
-            error.error.issues.forEach((issue: any) => {
-                if (issue.path && issue.path.length > 0) {
-                    const fieldName = issue.path[0] as keyof FieldErrors;
-                    errors[fieldName] = issue.message;
-                }
-            });
-        }
-
-        return errors;
-    };
-
-    const handleCreateOrder = async () => {
-        setFieldErrors({});
-
-        const trimmedName = name.trim();
-        const normalizedLocationNames = selectedLocationNames
-            .map((locationName) => locationName.trim())
-            .filter(Boolean);
-
-        const errors: FieldErrors = {};
-        if (!trimmedName) {
-            errors.name = "Name is required";
-        }
-        if (normalizedLocationNames.length === 0) {
-            errors.order_locations = "At least one pickup location is required";
-        }
-
-        if (Object.keys(errors).length > 0) {
-            setFieldErrors(errors);
-            return;
-        }
-
-        try {
-            const orderId = await createOrderMutation.mutateAsync({
-                name: trimmedName,
-                comments: comments.trim() || null,
-                locationNames: normalizedLocationNames,
-                friendIds: selectedFriendIds,
-            });
-            router.replace(`/(protected)/order/${orderId}`);
-        } catch (error: any) {
-            const apiErrors = parseApiErrors(error);
-            if (Object.keys(apiErrors).length > 0) {
-                setFieldErrors(apiErrors);
-                return;
-            }
-
-            Alert.alert("Error", error?.message ?? "Failed to create order");
-        }
-    };
-
-    return (
-        <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
-            <View className="flex-row items-center px-4 py-3 border-b border-border">
-                <Pressable
-                    onPress={() => router.back()}
-                    className="p-2 -ml-2 rounded-full active:opacity-70">
-                    <Icon
-                        name="ChevronLeft"
-                        size={24}
-                        color={NAV_THEME[colorScheme].primary}
-                    />
-                </Pressable>
-                <Text className="flex-1 ml-2 text-xl font-bold text-foreground">
-                    {isReorder ? "Reorder" : "Create Order"}
+          {/* ── Stops ─────────────────────────────────────────────────── */}
+          <Animated.View
+            entering={FadeInUp.duration(300).delay(100)}
+            style={{ marginTop: 22 }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}
+            >
+              <BrText variant="eyebrow">Where to?</BrText>
+              {spots.length > 1 && (
+                <Text style={styles.spotsCountHint}>
+                  · {spots.length} stops
                 </Text>
+              )}
             </View>
 
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
-                className="flex-1">
-                <ScrollView
-                    className="flex-1"
-                    contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}>
-                    <View className="items-center p-6 mb-6 border rounded-2xl border-muted bg-card">
-                        <View className="items-center justify-center w-16 h-16 mb-3 rounded-2xl bg-primary/10">
-                            <Icon
-                                name="ShoppingBag"
-                                size={32}
-                                color={NAV_THEME[colorScheme].primary}
-                            />
-                        </View>
-                        <Text className="text-lg font-semibold text-foreground">
-                            {isReorder ? "Order Again" : "New Group Order"}
-                        </Text>
-                        <Text className="mt-1 text-sm text-center text-muted-foreground">
-                            {isReorder
-                                ? "Reuse the group and pickup spots, then update the details."
-                                : "Add pickup locations for this order and invite your group."}
-                        </Text>
+            <View style={{ gap: 8, marginTop: 10 }}>
+              {spots.map((s, i) => {
+                const spotKey = s.trim() || `empty-location-${i}`;
+                return (
+                  <View
+                    key={spotKey}
+                    style={[
+                      styles.spotCard,
+                      fieldErrors.order_locations &&
+                        i === 0 &&
+                        !s.trim() && { borderColor: BR.coral },
+                    ]}
+                  >
+                    <View style={styles.spotBadge}>
+                      {spots.length > 1 ? (
+                        <Text style={styles.spotBadgeText}>{i + 1}</Text>
+                      ) : (
+                        <Icon name="MapPin" size={15} color={BR.orangeDeep} />
+                      )}
                     </View>
+                    <TextInput
+                      value={s}
+                      onChangeText={(v) => {
+                        setSpotAt(i, v);
+                        if (fieldErrors.order_locations)
+                          clearError("order_locations");
+                      }}
+                      placeholder={
+                        i === 0 ? `Costco` : `Stop ${i + 1} — another place`
+                      }
+                      placeholderTextColor={BR.ink3}
+                      style={styles.spotInput}
+                      returnKeyType="done"
+                      onSubmitEditing={() => Keyboard.dismiss()}
+                      inputAccessoryViewID={INPUT_ACCESSORY_ID}
+                    />
+                    {(s.trim().length > 0 || spots.length > 1) && (
+                      <Pressable
+                        onPress={() => removeSpot(i)}
+                        hitSlop={8}
+                        style={styles.spotRemoveBtn}
+                      >
+                        <Icon name="X" size={12} color={BR.ink2} />
+                      </Pressable>
+                    )}
+                    {!s.trim() && spots.length === 1 && (
+                      <Text style={styles.requiredHint}>required</Text>
+                    )}
+                  </View>
+                );
+              })}
 
-                    <View className="gap-4">
-                        <View className="p-4 border rounded-xl border-muted bg-card">
-                            <View className="flex-row items-center gap-2 mb-3">
-                                <View className="items-center justify-center w-8 h-8 rounded-lg bg-blue-500/10">
-                                    <Icon name="Tag" size={16} color="#3b82f6" />
-                                </View>
-                                <Text className="text-sm font-medium text-muted-foreground">
-                                    Order Name
-                                </Text>
-                                <Text className="text-sm text-red-500">*</Text>
-                            </View>
-                            <Input
-                                value={name}
-                                placeholder="e.g., Friday Lunch Run"
-                                errorMessage={fieldErrors.name ?? null}
-                                onChangeText={(text) => {
-                                    setName(text);
-                                    if (fieldErrors.name) clearFieldError("name");
-                                }}
+              {fieldErrors.order_locations && (
+                <Text style={styles.fieldError}>
+                  {fieldErrors.order_locations}
+                </Text>
+              )}
+
+              <Pressable onPress={addSpot} style={styles.addStopBtn}>
+                <Icon name="Plus" size={13} color={BR.ink2} strokeWidth={2.5} />
+                <Text style={styles.addStopText}>Add another stop</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.spotHintRow}>
+              <Icon name="Info" size={11} color={BR.ink3} />
+              <Text style={styles.spotHintText}>
+                Anywhere works — a restaurant, an address, or just "the usual."
+              </Text>
+            </View>
+          </Animated.View>
+
+          {/* ── Divider ────────────────────────────────────────────────── */}
+          <Animated.View
+            entering={FadeInUp.duration(300).delay(130)}
+            style={styles.sectionDivider}
+          >
+            <View style={styles.sectionDividerLine} />
+          </Animated.View>
+
+          {/* ── Friends ────────────────────────────────────────────────── */}
+          <Animated.View
+            entering={FadeInUp.duration(300).delay(150)}
+            style={{ marginTop: 8 }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+              }}
+            >
+              <View
+                style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}
+              >
+                <BrText variant="eyebrow">Who's coming?</BrText>
+                <Text style={styles.spotsCountHint}>
+                  {selectedFriendIds.length === 0
+                    ? "· tap to invite"
+                    : `· ${selectedFriendIds.length} invited`}
+                </Text>
+              </View>
+              {selectedFriendIds.length > 0 && (
+                <Pressable onPress={() => setSelectedFriendIds([])} hitSlop={8}>
+                  <Text style={styles.clearText}>Clear</Text>
+                </Pressable>
+              )}
+            </View>
+
+            {/* Squad shortcuts */}
+            {squads.length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{
+                  gap: 8,
+                  paddingVertical: 2,
+                  marginTop: 12,
+                }}
+              >
+                {squads.map((squad) => {
+                  const memberIds = squad.memberIds as string[];
+                  const allSelected =
+                    memberIds.length > 0 &&
+                    memberIds.every((id) => selectedFriendIdSet.has(id));
+                  return (
+                    <AnimatedPressable
+                      key={squad.id}
+                      scale={0.93}
+                      onPress={() => toggleSquad(memberIds)}
+                      style={[
+                        styles.squadPill,
+                        allSelected && styles.squadPillActive,
+                      ]}
+                    >
+                      {/* Stacked avatars */}
+                      <View style={{ flexDirection: "row" }}>
+                        {squad.members.slice(0, 3).map((m, i) => (
+                          <View
+                            key={m.id}
+                            style={{ marginLeft: i > 0 ? -8 : 0 }}
+                          >
+                            <BrAvatar
+                              name={`${m.firstName} ${m.lastName}`}
+                              avatarUrl={m.avatarUrl}
+                              size={22}
+                              ring={allSelected ? BR.orange : BR.card}
                             />
-                        </View>
+                          </View>
+                        ))}
+                      </View>
+                      <Text
+                        style={[
+                          styles.squadPillName,
+                          allSelected && { color: "#fff" },
+                        ]}
+                      >
+                        {squad.name}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.squadPillCount,
+                          allSelected && { color: "rgba(255,255,255,0.7)" },
+                        ]}
+                      >
+                        · {squad.memberIds.length}
+                      </Text>
+                      {allSelected && (
+                        <Animated.View
+                          entering={ZoomIn.duration(150).springify()}
+                        >
+                          <Icon
+                            name="Check"
+                            size={13}
+                            color="#fff"
+                            strokeWidth={3}
+                          />
+                        </Animated.View>
+                      )}
+                    </AnimatedPressable>
+                  );
+                })}
+              </ScrollView>
+            )}
 
-                        <View className="p-4 border rounded-xl border-muted bg-card">
-                            <View className="flex-row items-center gap-2 mb-3">
-                                <View className="items-center justify-center w-8 h-8 rounded-lg bg-green-500/10">
-                                    <Icon name="MapPin" size={16} color="#22c55e" />
-                                </View>
-                                <Text className="text-sm font-medium text-muted-foreground">
-                                    Pickup Locations
-                                </Text>
-                                <Text className="text-sm text-red-500">*</Text>
-                            </View>
+            {/* Search */}
+            <View style={[styles.searchBar, { marginTop: 12 }]}>
+              <Icon name="Search" size={15} color={BR.ink3} />
+              <TextInput
+                value={friendQuery}
+                onChangeText={setFriendQuery}
+                placeholder={`Search ${friends.length} friends`}
+                placeholderTextColor={BR.ink3}
+                style={styles.searchInput}
+                returnKeyType="search"
+                inputAccessoryViewID={INPUT_ACCESSORY_ID}
+              />
+              {friendQuery.length > 0 && (
+                <Pressable
+                  onPress={() => setFriendQuery("")}
+                  hitSlop={8}
+                  style={styles.searchClearBtn}
+                >
+                  <Icon name="X" size={11} color={BR.ink2} />
+                </Pressable>
+              )}
+            </View>
 
-                            <View className="gap-3">
-                                <View className="flex-row items-center gap-2">
-                                    <View className="flex-1">
-                                        <Input
-                                            value={locationInput}
-                                            placeholder="Add a restaurant or pickup spot"
-                                            errorMessage={fieldErrors.order_locations ?? null}
-                                            onChangeText={(text) => {
-                                                setLocationInput(text);
-                                                if (fieldErrors.order_locations) {
-                                                    clearFieldError("order_locations");
-                                                }
-                                            }}
-                                            returnKeyType="done"
-                                            onSubmitEditing={addLocation}
-                                        />
-                                    </View>
-                                    <TouchableOpacity
-                                        onPress={addLocation}
-                                        className="items-center justify-center h-[55px] px-4 rounded-xl bg-primary">
-                                        <Icon name="Plus" size={18} color="white" />
-                                    </TouchableOpacity>
-                                </View>
+            {/* Friend list */}
+            <View style={[styles.friendList, { marginTop: 10 }]}>
+              {isLoadingFriends ? (
+                <View style={{ padding: 24, alignItems: "center" }}>
+                  <ActivityIndicator size="small" color={BR.orange} />
+                </View>
+              ) : visibleFriends.length === 0 ? (
+                <View style={{ padding: 24, alignItems: "center" }}>
+                  <Text
+                    style={{
+                      fontFamily: BR_FONT.mono,
+                      fontSize: 13,
+                      color: BR.ink3,
+                    }}
+                  >
+                    {friendQuery
+                      ? `No matches for "${friendQuery}"`
+                      : "No friends yet"}
+                  </Text>
+                </View>
+              ) : (
+                visibleFriends.map((f, i) => {
+                  const fullName = `${f.first_name} ${f.last_name}`;
+                  return (
+                    <FriendSelectRow
+                      key={f.id}
+                      friend={f}
+                      fullName={fullName}
+                      isSelected={selectedFriendIdSet.has(f.id)}
+                      showBorder={i < visibleFriends.length - 1}
+                      onToggle={toggleFriend}
+                    />
+                  );
+                })
+              )}
+            </View>
 
-                                <Text className="text-xs text-muted-foreground">
-                                    These locations only exist for this order.
-                                </Text>
+            {/* Show more */}
+            {!friendQuery && filteredFriends.length > FRIENDS_VISIBLE_CAP && (
+              <Pressable
+                onPress={() => setShowAllFriends((v) => !v)}
+                style={styles.showMoreBtn}
+                hitSlop={8}
+              >
+                <Text style={styles.showMoreText}>
+                  {showAllFriends
+                    ? "Show less"
+                    : `Show all ${friends.length} friends`}
+                </Text>
+                <Icon
+                  name={showAllFriends ? "ChevronUp" : "ChevronDown"}
+                  size={12}
+                  color={BR.orangeDeep}
+                />
+              </Pressable>
+            )}
+          </Animated.View>
 
-                                {selectedLocationNames.length > 0 ? (
-                                    <View className="flex-row flex-wrap gap-2">
-                                        {selectedLocationNames.map((locationName) => (
-                                            <View
-                                                key={locationName}
-                                                className="flex-row items-center gap-2 px-3 py-2 rounded-full bg-green-500/10">
-                                                <Icon
-                                                    name="MapPin"
-                                                    size={14}
-                                                    color="#22c55e"
-                                                />
-                                                <Text className="text-sm font-medium text-foreground">
-                                                    {locationName}
-                                                </Text>
-                                                <Pressable
-                                                    onPress={() =>
-                                                        removeLocation(locationName)
-                                                    }>
-                                                    <Icon
-                                                        name="X"
-                                                        size={14}
-                                                        color="#22c55e"
-                                                    />
-                                                </Pressable>
-                                            </View>
-                                        ))}
-                                    </View>
-                                ) : (
-                                    <View className="items-center justify-center py-6 border border-dashed rounded-xl border-muted">
-                                        <Text className="text-sm text-muted-foreground">
-                                            Add at least one pickup location
-                                        </Text>
-                                    </View>
-                                )}
-                            </View>
-                        </View>
+          {/* ── Notes ─────────────────────────────────────────────────── */}
+          <Animated.View
+            entering={FadeInUp.duration(300).delay(180)}
+            style={{ marginTop: 18 }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}
+            >
+              <BrText variant="eyebrow">Note for the squad</BrText>
+              <Text style={styles.spotsCountHint}>· optional</Text>
+            </View>
+            <View style={[styles.notesCard, { marginTop: 10 }]}>
+              <TextInput
+                value={comments}
+                onChangeText={setComments}
+                placeholder="Closing in 30 min · order ASAP 🏃‍♀️"
+                placeholderTextColor={BR.ink3}
+                style={styles.notesInput}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+                inputAccessoryViewID={INPUT_ACCESSORY_ID}
+              />
+            </View>
+          </Animated.View>
 
-                        <View className="p-4 border rounded-xl border-muted bg-card">
-                            <View className="flex-row items-center gap-2 mb-3">
-                                <View className="items-center justify-center w-8 h-8 rounded-lg bg-purple-500/10">
-                                    <Icon name="Users" size={16} color="#a855f7" />
-                                </View>
-                                <Text className="text-sm font-medium text-muted-foreground">
-                                    Invite Friends
-                                </Text>
-                                <Text className="text-xs text-muted-foreground">
-                                    (optional)
-                                </Text>
-                            </View>
-                            <Pressable
-                                onPress={() => {
-                                    setShowFriendsSheet(true);
-                                    if (fieldErrors.order_users) {
-                                        clearFieldError("order_users");
-                                    }
-                                }}
-                                className={`flex-row items-center justify-between px-4 h-[55px] border rounded-xl bg-background ${
-                                    fieldErrors.order_users
-                                        ? "border-red-500"
-                                        : "border-muted"
-                                }`}>
-                                <Text
-                                    className={`text-base ${
-                                        selectedFriendIds.length > 0
-                                            ? "text-foreground"
-                                            : "text-muted-foreground"
-                                    }`}>
-                                    {selectedFriendIds.length > 0
-                                        ? selectedFriendsText
-                                        : "Select friends to invite"}
-                                </Text>
-                                {selectedFriendIds.length > 0 ? (
-                                    <View className="px-2.5 py-1 rounded-full bg-purple-500/10">
-                                        <Text className="text-xs font-semibold text-purple-500">
-                                            {selectedFriendIds.length}
-                                        </Text>
-                                    </View>
-                                ) : (
-                                    <Icon
-                                        name="ChevronRight"
-                                        size={20}
-                                        color={NAV_THEME[colorScheme].border}
-                                    />
-                                )}
-                            </Pressable>
-                        </View>
+          {/* Spacer for footer */}
+          <View style={{ height: 100 }} />
+        </ScrollView>
+      </KeyboardAvoidingView>
 
-                        <View className="p-4 border rounded-xl border-muted bg-card">
-                            <View className="flex-row items-center gap-2 mb-3">
-                                <View className="items-center justify-center w-8 h-8 rounded-lg bg-orange-500/10">
-                                    <Icon name="MessageSquare" size={16} color="#f97316" />
-                                </View>
-                                <Text className="text-sm font-medium text-muted-foreground">
-                                    Notes
-                                </Text>
-                                <Text className="text-xs text-muted-foreground">
-                                    (optional)
-                                </Text>
-                            </View>
-                            <View className="px-4 border rounded-xl border-muted bg-background">
-                                <TextInput
-                                    className="py-3.5 text-base text-foreground"
-                                    placeholder="Add any notes or timing details..."
-                                    placeholderTextColor={NAV_THEME[colorScheme].border}
-                                    value={comments}
-                                    onChangeText={setComments}
-                                    multiline
-                                    numberOfLines={3}
-                                    textAlignVertical="top"
-                                    style={{ minHeight: 80 }}
-                                />
-                            </View>
-                        </View>
-                    </View>
+      {/* Keyboard dismiss toolbar — iOS only */}
+      {Platform.OS === "ios" && (
+        <InputAccessoryView nativeID={INPUT_ACCESSORY_ID}>
+          <View style={styles.keyboardToolbar}>
+            <Pressable
+              onPress={() => Keyboard.dismiss()}
+              hitSlop={12}
+              style={styles.keyboardDoneBtn}
+            >
+              <Text style={styles.keyboardDoneText}>Done</Text>
+            </Pressable>
+          </View>
+        </InputAccessoryView>
+      )}
 
-                    <TouchableOpacity
-                        onPress={handleCreateOrder}
-                        disabled={createOrderMutation.isPending}
-                        className={`flex-row items-center justify-center gap-2 py-4 mt-6 rounded-xl ${
-                            createOrderMutation.isPending
-                                ? "bg-primary/50"
-                                : "bg-primary"
-                        }`}>
-                        {createOrderMutation.isPending ? (
-                            <ActivityIndicator color="#fff" />
-                        ) : (
-                            <>
-                                <Icon name="Plus" size={20} color="white" />
-                                <Text className="text-base font-semibold text-white">
-                                    Create Order
-                                </Text>
-                            </>
-                        )}
-                    </TouchableOpacity>
-                </ScrollView>
-            </KeyboardAvoidingView>
-
-            <MultiSelectSheet
-                visible={showFriendsSheet}
-                onClose={() => setShowFriendsSheet(false)}
-                onConfirm={setSelectedFriendIds}
-                items={friendItems}
-                selectedIds={selectedFriendIds}
-                title="Select Friends"
-                isLoading={isLoadingFriends}
-            />
-        </SafeAreaView>
-    );
+      {/* Sticky footer */}
+      <View
+        style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}
+      >
+        {isValid && (
+          <Animated.View
+            entering={FadeInDown.duration(200)}
+            style={styles.readyBadge}
+          >
+            <Icon name="CircleCheck" size={14} color={BR.mintInk} />
+            <Text style={styles.readyBadgeText}>
+              Ready to roll · {selectedFriendIds.length + 1}{" "}
+              {selectedFriendIds.length === 0 ? "person" : "people"}
+            </Text>
+          </Animated.View>
+        )}
+        <AnimatedPressable
+          scale={isValid ? 0.97 : 1}
+          onPress={handleCreate}
+          disabled={createOrderMutation.isPending}
+          style={[
+            styles.createBtn,
+            !isValid && styles.createBtnDisabled,
+            createOrderMutation.isPending && { opacity: 0.6 },
+          ]}
+        >
+          {createOrderMutation.isPending ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <>
+              <Icon name="Zap" size={16} color="#fff" />
+              <Text style={styles.createBtnText}>
+                {isValid ? "Send the run" : "Pick a spot to continue"}
+              </Text>
+              {isValid && <Icon name="ArrowRight" size={16} color="#fff" />}
+            </>
+          )}
+        </AnimatedPressable>
+      </View>
+    </>
+  );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
+    paddingTop: 8,
+    paddingBottom: 12,
+    backgroundColor: BR.paper,
+  },
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 999,
+    backgroundColor: BR.paper2,
+    borderWidth: 1,
+    borderColor: BR.line,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitle: {
+    fontFamily: BR_FONT.display,
+    fontSize: 17,
+    fontWeight: "700",
+    color: BR.ink,
+  },
+  quickSticker: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: BR.yolkSoft,
+    transform: [{ rotate: "3deg" }],
+  },
+  quickStickerText: {
+    fontFamily: BR_FONT.monoBold,
+    fontSize: 11,
+    color: "#7A4A20",
+  },
+  scroll: {
+    paddingHorizontal: 18,
+    paddingTop: 8,
+    paddingBottom: 24,
+  },
+  // headline
+  headline: {
+    fontFamily: BR_FONT.displayExtraBold,
+    fontSize: 34,
+    lineHeight: 38,
+    color: BR.ink,
+    letterSpacing: -0.5,
+    marginTop: 4,
+  },
+  headlineAccent: {
+    color: BR.orange,
+    fontStyle: "italic",
+    fontFamily: BR_FONT.displayExtraBold,
+  },
+  // keyboard toolbar
+  keyboardToolbar: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: BR.paper2,
+    borderTopWidth: 1,
+    borderTopColor: BR.line,
+  },
+  keyboardDoneBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  keyboardDoneText: {
+    fontFamily: BR_FONT.display,
+    fontSize: 16,
+    fontWeight: "600",
+    color: BR.orange,
+  },
+  // name
+  nameCard: {
+    marginTop: 10,
+    backgroundColor: BR.card,
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: BR.line,
+    flexDirection: "row",
+    alignItems: "center",
+    overflow: "hidden",
+    ...BR_SHADOW.card,
+  },
+  nameInput: {
+    flex: 1,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 16,
+    fontFamily: BR_FONT.displayMedium,
+    fontSize: 20,
+    lineHeight: 26,
+    color: BR.ink,
+    letterSpacing: 0,
+    includeFontPadding: false,
+  },
+  requiredHint: {
+    fontFamily: BR_FONT.mono,
+    fontSize: 11,
+    color: BR.ink3,
+    paddingRight: 16,
+  },
+  quickFillChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: BR.paper2,
+    borderWidth: 1,
+    borderColor: BR.line,
+  },
+  quickFillText: {
+    fontFamily: BR_FONT.display,
+    fontSize: 11,
+    color: BR.ink2,
+  },
+  fieldError: {
+    fontFamily: BR_FONT.mono,
+    fontSize: 11,
+    color: BR.coral,
+    marginTop: 5,
+    marginLeft: 2,
+  },
+  // spots
+  spotsCountHint: {
+    fontFamily: BR_FONT.mono,
+    fontSize: 11,
+    color: BR.ink3,
+  },
+  spotCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 12,
+    paddingLeft: 14,
+    backgroundColor: BR.card,
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: BR.line,
+    ...BR_SHADOW.card,
+  },
+  spotBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: BR.orangeTint,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  spotBadgeText: {
+    fontFamily: BR_FONT.monoBold,
+    fontSize: 12,
+    color: BR.orangeDeep,
+  },
+  spotInput: {
+    flex: 1,
+    fontFamily: BR_FONT.displayMedium,
+    fontSize: 15,
+    color: BR.ink,
+    letterSpacing: 0,
+    paddingVertical: 2,
+    includeFontPadding: false,
+  },
+  spotRemoveBtn: {
+    width: 26,
+    height: 26,
+    borderRadius: 999,
+    backgroundColor: BR.paper2,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  addStopBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: BR_RADIUS.md,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: BR.line2,
+  },
+  addStopText: {
+    fontFamily: BR_FONT.display,
+    fontSize: 13,
+    fontWeight: "600",
+    color: BR.ink2,
+  },
+  spotHintRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 6,
+    marginTop: 10,
+  },
+  spotHintText: {
+    flex: 1,
+    fontFamily: BR_FONT.mono,
+    fontSize: 11,
+    color: BR.ink3,
+    lineHeight: 17,
+  },
+  // divider
+  sectionDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginVertical: 28,
+  },
+  sectionDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: BR.line2,
+  },
+  sectionDividerEmoji: {
+    fontSize: 18,
+  },
+  // squads
+  squadPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    paddingLeft: 6,
+    paddingRight: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: BR.card,
+    borderWidth: 1,
+    borderColor: BR.line,
+  },
+  squadPillActive: {
+    backgroundColor: BR.orange,
+    borderColor: BR.orange,
+  },
+  squadPillName: {
+    fontFamily: BR_FONT.display,
+    fontSize: 13,
+    fontWeight: "600",
+    color: BR.ink,
+  },
+  squadPillCount: {
+    fontFamily: BR_FONT.mono,
+    fontSize: 11,
+    color: BR.ink3,
+  },
+  // friends
+  clearText: {
+    fontFamily: BR_FONT.mono,
+    fontSize: 11,
+    fontWeight: "600",
+    color: BR.ink3,
+  },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 12,
+    backgroundColor: BR.card,
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: BR.line,
+    ...BR_SHADOW.card,
+  },
+  searchInput: {
+    flex: 1,
+    fontFamily: BR_FONT.displayMedium,
+    fontSize: 14,
+    color: BR.ink,
+    letterSpacing: 0,
+    paddingVertical: 0,
+    includeFontPadding: false,
+  },
+  searchClearBtn: {
+    width: 22,
+    height: 22,
+    borderRadius: 999,
+    backgroundColor: BR.paper2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  friendList: {
+    backgroundColor: BR.card,
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: BR.line,
+    overflow: "hidden",
+    ...BR_SHADOW.card,
+  },
+  friendRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  friendRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: BR.line,
+  },
+  friendRowSelected: {
+    backgroundColor: BR.orangeTint,
+  },
+  friendName: {
+    flex: 1,
+    fontFamily: BR_FONT.display,
+    fontSize: 14,
+    fontWeight: "600",
+    color: BR.ink,
+  },
+  checkCircle: {
+    width: 26,
+    height: 26,
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: BR.line2,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  checkCircleSelected: {
+    backgroundColor: BR.orange,
+    borderColor: BR.orange,
+  },
+  showMoreBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 10,
+    marginTop: 6,
+  },
+  showMoreText: {
+    fontFamily: BR_FONT.display,
+    fontSize: 12,
+    fontWeight: "600",
+    color: BR.orangeDeep,
+  },
+  // notes
+  notesCard: {
+    backgroundColor: BR.card,
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: BR.line,
+    padding: 14,
+    ...BR_SHADOW.card,
+  },
+  notesInput: {
+    fontFamily: BR_FONT.displayMedium,
+    fontSize: 14,
+    lineHeight: 20,
+    color: BR.ink,
+    letterSpacing: 0,
+    minHeight: 72,
+    padding: 0,
+    includeFontPadding: false,
+  },
+  // footer
+  footer: {
+    paddingHorizontal: 18,
+    paddingTop: 14,
+    gap: 10,
+    backgroundColor: BR.paper,
+  },
+  readyBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 999,
+    backgroundColor: "rgba(46,190,123,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(46,190,123,0.25)",
+    alignSelf: "stretch",
+  },
+  readyBadgeText: {
+    fontFamily: BR_FONT.mono,
+    fontSize: 12,
+    fontWeight: "600",
+    color: BR.mintInk,
+  },
+  createBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    height: 54,
+    borderRadius: BR_RADIUS.md,
+    backgroundColor: BR.orange,
+    ...BR_SHADOW.primary,
+  },
+  createBtnDisabled: {
+    opacity: 0.55,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  createBtnText: {
+    fontFamily: BR_FONT.display,
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#fff",
+  },
+});

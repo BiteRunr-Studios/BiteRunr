@@ -1,1011 +1,1115 @@
-import React, { useState, useEffect, useCallback } from "react";
+import type React from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
-    ScrollView,
-    Text,
-    View,
-    TouchableOpacity,
-    Pressable,
-    InteractionManager,
+  ScrollView,
+  Text,
+  View,
+  Image,
+  Pressable,
+  InteractionManager,
+  StyleSheet,
 } from "react-native";
 import Animated, {
-    FadeInUp,
-    FadeInLeft,
-    useSharedValue,
-    useAnimatedStyle,
-    withRepeat,
-    withSequence,
-    withTiming,
-    Easing,
+  FadeInUp,
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
 } from "react-native-reanimated";
-import { ErrorBoundary } from "@/components/common/error-boundary";
+import { LinearGradient } from "expo-linear-gradient";
 import { useQuery, useAction } from "convex/react";
+import { useRouter } from "expo-router";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+
 import { api } from "@/convex/_generated/api";
 import Icon from "@/components/common/icon";
-import { NAV_THEME } from "@/lib/constants";
-import { useColorScheme } from "@/lib/use-color-scheme";
-import { useRouter } from "expo-router";
+import { ErrorBoundary } from "@/components/common/error-boundary";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { HeaderBar } from "@/components/layout/header-bar";
-import { AnimatedPressable } from "@/components/common/animated-pressable";
-import { Avatar } from "@/components/common/avatar";
 import { PaymentSetupSplash } from "@/components/payment-setup-splash";
+import { QRScannerModal } from "@/components/qr-scanner-modal";
+import { EnterCodeModal } from "@/components/enter-code-modal";
+import { BrCard, BrChip, BrText, BrAvatar, BrSticker } from "@/components/br";
+import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
 
-function FloatingIcon({ children }: { children: React.ReactNode }) {
-    const translateY = useSharedValue(0);
+const SQUAD_COLOR_MAP: Record<string, string> = {
+  orange: BR.orange,
+  lilac: BR.lilac,
+  mint: BR.mint,
+  coral: BR.coral,
+  yolk: BR.yolk,
+};
 
-    useEffect(() => {
-        translateY.value = withRepeat(
-            withSequence(
-                withTiming(-6, {
-                    duration: 1500,
-                    easing: Easing.inOut(Easing.ease),
-                }),
-                withTiming(0, {
-                    duration: 1500,
-                    easing: Easing.inOut(Easing.ease),
-                }),
-            ),
-            -1,
-            true,
-        );
-    }, []);
-
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [{ translateY: translateY.value }],
-    }));
-
-    return <Animated.View style={animatedStyle}>{children}</Animated.View>;
+function PulseDot({
+  color = "#fff",
+  size = 8,
+}: {
+  color?: string;
+  size?: number;
+}) {
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(1);
+  useEffect(() => {
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.3, { duration: 700 }),
+        withTiming(1, { duration: 700 }),
+      ),
+      -1,
+      false,
+    );
+    opacity.value = withRepeat(
+      withSequence(
+        withTiming(0.6, { duration: 700 }),
+        withTiming(1, { duration: 700 }),
+      ),
+      -1,
+      false,
+    );
+  }, [scale, opacity]);
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
+  return (
+    <Animated.View
+      style={[
+        {
+          width: size,
+          height: size,
+          borderRadius: 999,
+          backgroundColor: color,
+        },
+        animStyle,
+      ]}
+    />
+  );
 }
 
 function getGreeting(): string {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function formatDateLine(): string {
+  return new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function IconButton({
+  name,
+  onPress,
+  badge,
+}: {
+  name: React.ComponentProps<typeof Icon>["name"];
+  onPress?: () => void;
+  badge?: number;
+}) {
+  return (
+    <Pressable onPress={onPress} style={styles.iconBtn}>
+      <Icon name={name} size={18} color={BR.ink} />
+      {badge && badge > 0 ? (
+        <View style={styles.iconBadge}>
+          <Text style={styles.iconBadgeText}>{badge}</Text>
+        </View>
+      ) : null}
+    </Pressable>
+  );
 }
 
 export default function HomeTab() {
-    const activeOrders = useQuery(api.orders.getActiveOrders);
-    const pastOrders = useQuery(api.orders.getPastOrders, { limit: 3 });
-    const settlementSummary = useQuery(api.orders.getSettlementSummary);
-    const outstandingDebts = useQuery(api.orders.getOutstandingDebts);
-    const outstandingPayments = useQuery(api.orders.getOutstandingPayments);
-    const frequentGroups = useQuery(api.orders.getFrequentGroups, {});
-    const friends = useQuery(api.friends.list);
-    const pendingRequests = useQuery(api.friends.pendingRequestCount);
-    const currentUser = useQuery(api.users.getCurrentUser);
-    const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
-    const { colorScheme } = useColorScheme();
-    const router = useRouter();
-    const insets = useSafeAreaInsets();
-    const [isInitializing, setIsInitializing] = useState(true);
-    const [isTransitionComplete, setIsTransitionComplete] = useState(false);
-    const [showPaymentSplash, setShowPaymentSplash] = useState(false);
-    const [balanceAmount, setBalanceAmount] = useState<number | null>(null);
-    const getPayoutBalance = useAction(api.stripeConnect.getPayoutBalance);
+  const activeOrders = useQuery(api.orders.getActiveOrders);
+  const pastOrders = useQuery(api.orders.getPastOrders, { limit: 3 });
+  const settlementSummary = useQuery(api.orders.getSettlementSummary);
+  const outstandingDebts = useQuery(api.orders.getOutstandingDebts);
+  const outstandingPayments = useQuery(api.orders.getOutstandingPayments);
+  const frequentGroups = useQuery(api.orders.getFrequentGroups, {});
+  const squads = useQuery(api.squads.list);
+  const friends = useQuery(api.friends.list);
+  const pendingRequests = useQuery(api.friends.pendingRequestCount);
+  const currentUser = useQuery(api.users.getCurrentUser);
+  const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
+  const hasCreatedOrder = useQuery(api.orders.hasCurrentUserCreatedOrder);
 
-    const hasStripe = connectedAccount?.chargesEnabled === true;
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isTransitionComplete, setIsTransitionComplete] = useState(false);
+  const [showPaymentSplash, setShowPaymentSplash] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+  const [showEnterCode, setShowEnterCode] = useState(false);
+  const [balanceAmount, setBalanceAmount] = useState<number | null>(null);
+  const getPayoutBalance = useAction(api.stripeConnect.getPayoutBalance);
 
-    const fetchBalance = useCallback(async () => {
-        if (!hasStripe) return;
-        try {
-            const result = await getPayoutBalance({});
-            setBalanceAmount(result.available + result.pending);
-        } catch {
-            // Silently fail
-        }
-    }, [hasStripe, getPayoutBalance]);
+  const hasStripe = connectedAccount?.chargesEnabled === true;
 
-    useEffect(() => {
-        fetchBalance();
-    }, [fetchBalance]);
+  const fetchBalance = useCallback(async () => {
+    if (!hasStripe) return;
+    try {
+      const result = await getPayoutBalance({});
+      setBalanceAmount(result.available + result.pending);
+    } catch {
+      // silent
+    }
+  }, [hasStripe, getPayoutBalance]);
 
-    useEffect(() => {
-        const task = InteractionManager.runAfterInteractions(() => {
-            setIsTransitionComplete(true);
-        });
-        return () => task.cancel();
-    }, []);
+  useEffect(() => {
+    fetchBalance();
+  }, [fetchBalance]);
 
-    const handleCreateOrder = () => {
-        if (connectedAccount?.chargesEnabled) {
-            router.push("/order/create");
-        } else {
-            setShowPaymentSplash(true);
-        }
-    };
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      setIsTransitionComplete(true);
+    });
+    return () => task.cancel();
+  }, []);
 
-    const queriesReturned =
-        activeOrders !== undefined &&
-        pastOrders !== undefined &&
-        settlementSummary !== undefined &&
-        outstandingDebts !== undefined &&
-        outstandingPayments !== undefined &&
-        frequentGroups !== undefined &&
-        friends !== undefined &&
-        pendingRequests !== undefined;
+  const handleCreateOrder = () => {
+    if (connectedAccount?.chargesEnabled || hasCreatedOrder) {
+      router.push("/order/create");
+    } else {
+      setShowPaymentSplash(true);
+    }
+  };
 
-    const hasAnyData =
-        (activeOrders?.length ?? 0) > 0 ||
-        (pastOrders?.length ?? 0) > 0 ||
-        (settlementSummary?.owedToMe ?? 0) > 0 ||
-        (settlementSummary?.iOwe ?? 0) > 0 ||
-        (frequentGroups?.squads?.length ?? 0) > 0 ||
-        (friends?.length ?? 0) > 0;
+  const handleScanCode = (code: string) => {
+    setShowScanner(false);
+    router.push(`/join/${encodeURIComponent(code)}`);
+  };
 
-    useEffect(() => {
-        if (!queriesReturned) return;
-        if (hasAnyData) {
-            setIsInitializing(false);
-            return;
-        }
-        const timer = setTimeout(() => setIsInitializing(false), 1500);
-        return () => clearTimeout(timer);
-    }, [queriesReturned, hasAnyData]);
+  const handleEnterCode = () => {
+    setShowScanner(false);
+    setTimeout(() => setShowEnterCode(true), 300);
+  };
 
-    const isLoading = !queriesReturned || isInitializing || !isTransitionComplete;
+  const handleCodeSubmit = (code: string) => {
+    setShowEnterCode(false);
+    router.push(`/join/${encodeURIComponent(code)}`);
+  };
 
-    const hasSettlementData =
-        settlementSummary &&
-        (settlementSummary.owedToMe > 0 || settlementSummary.iOwe > 0);
+  const queriesReturned =
+    activeOrders !== undefined &&
+    pastOrders !== undefined &&
+    settlementSummary !== undefined &&
+    outstandingDebts !== undefined &&
+    outstandingPayments !== undefined &&
+    frequentGroups !== undefined &&
+    friends !== undefined &&
+    pendingRequests !== undefined &&
+    connectedAccount !== undefined &&
+    hasCreatedOrder !== undefined;
 
-    const hasSquads =
-        frequentGroups && frequentGroups.squads.length > 0;
+  const hasAnyData =
+    (activeOrders?.length ?? 0) > 0 ||
+    (pastOrders?.length ?? 0) > 0 ||
+    (settlementSummary?.owedToMe ?? 0) > 0 ||
+    (settlementSummary?.iOwe ?? 0) > 0 ||
+    (squads?.length ?? 0) > 0 ||
+    (frequentGroups?.squads?.length ?? 0) > 0 ||
+    (friends?.length ?? 0) > 0;
 
-    const activeOrderCount = activeOrders?.length ?? 0;
-    const friendCount = friends?.length ?? 0;
-    const pendingRequestCount = pendingRequests ?? 0;
+  useEffect(() => {
+    if (!queriesReturned) return;
+    if (hasAnyData) {
+      setIsInitializing(false);
+      return;
+    }
+    const timer = setTimeout(() => setIsInitializing(false), 1500);
+    return () => clearTimeout(timer);
+  }, [queriesReturned, hasAnyData]);
 
-    return (
-        <ErrorBoundary>
-            <View
-                style={{ paddingTop: insets.top }}
-                className="flex-1 bg-background">
-                <HeaderBar />
-                <ScrollView
-                    className="flex-1"
-                    contentContainerStyle={{
-                        paddingBottom: 50 + insets.bottom,
-                    }}
-                    showsVerticalScrollIndicator={false}>
-                    {isLoading && <HomeSkeleton />}
+  const isLoading = !queriesReturned || isInitializing || !isTransitionComplete;
+  const _pendingRequestCount = pendingRequests ?? 0;
+  const firstName = currentUser?.firstName || "there";
+  const owedToMe = (settlementSummary?.owedToMe ?? 0) / 100;
+  const iOwe = (settlementSummary?.iOwe ?? 0) / 100;
+  const activeOrder = (activeOrders?.[0] ?? null) as
+    | NonNullable<typeof activeOrders>[number]
+    | null;
 
-                    {!isLoading && (
-                        <View className="px-4 pb-8">
-                            {/* New Order Row — matches groups page position */}
-                            <Animated.View
-                                entering={FadeInUp.duration(400)}
-                                className="flex-row items-center justify-between mt-2 mb-4">
-                                {currentUser?.firstName && (
-                                    <View>
-                                        <Text
-                                            className="text-2xl font-bold"
-                                            style={{
-                                                color: "#f97316",
-                                            }}>
-                                            {getGreeting()}
-                                        </Text>
-                                        <Text className="mt-1 text-sm text-muted-foreground">
-                                            {new Date().toLocaleDateString(
-                                                "en-US",
-                                                {
-                                                    weekday: "long",
-                                                    month: "long",
-                                                    day: "numeric",
-                                                },
-                                            )}
-                                        </Text>
-                                    </View>
-                                )}
-                                <Pressable
-                                    onPress={handleCreateOrder}
-                                    className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl bg-primary active:opacity-80">
-                                    <Icon
-                                        name="Plus"
-                                        size={16}
-                                        color="white"
-                                    />
-                                    <Text className="text-sm font-semibold text-white">
-                                        New Order
-                                    </Text>
-                                </Pressable>
-                            </Animated.View>
+  return (
+    <ErrorBoundary>
+      <SafeAreaView
+        edges={["top"]}
+        style={{ flex: 1, backgroundColor: BR.paper }}
+      >
+        {/* Top bar */}
+        <View style={styles.topBar}>
+          <Image
+            source={require("@/assets/images/icon-no-bg.png")}
+            style={{ width: 44, height: 44 }}
+            resizeMode="contain"
+          />
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <IconButton name="ScanLine" onPress={() => setShowScanner(true)} />
+          </View>
+        </View>
 
-                            <View className="gap-6">
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            paddingBottom: 50 + insets.bottom,
+            paddingHorizontal: 18,
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          {isLoading && <HomeSkeleton />}
 
-                            {/* Summary Card */}
-                            <Animated.View
-                                entering={FadeInUp.duration(400)}>
-                                <View className="flex-row rounded-2xl border border-muted bg-card overflow-hidden">
-                                    <AnimatedPressable
-                                        className="flex-1"
-                                        onPress={() =>
-                                            router.push(
-                                                "/groups?filter=active",
-                                            )
-                                        }>
-                                        <View className="items-center py-4 gap-1.5">
-                                            <View className="items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-                                                <Icon
-                                                    name="Zap"
-                                                    size={18}
-                                                    color={
-                                                        NAV_THEME[
-                                                            colorScheme
-                                                        ].primary
-                                                    }
-                                                />
-                                            </View>
-                                            <Text className="text-2xl font-bold text-foreground">
-                                                {activeOrderCount}
-                                            </Text>
-                                            <Text className="text-xs text-muted-foreground">
-                                                Orders Active
-                                            </Text>
-                                        </View>
-                                    </AnimatedPressable>
+          {!isLoading && (
+            <>
+              {/* Greeting */}
+              <Animated.View
+                entering={FadeInUp.duration(300)}
+                style={styles.greetingRow}
+              >
+                <View style={{ flex: 1 }}>
+                  <BrText variant="eyebrow">{formatDateLine()}</BrText>
+                  <BrText variant="h1" style={{ marginTop: 6 }}>
+                    {getGreeting()},{"\n"}
+                    <BrText variant="h1" color={BR.orange}>
+                      {firstName}.
+                    </BrText>
+                  </BrText>
+                </View>
+                {pastOrders && pastOrders.length >= 3 && (
+                  <BrSticker
+                    rotate={5}
+                    leftSlot={<Icon name="Flame" size={14} color={BR.orange} />}
+                  >
+                    <Text>{pastOrders.length}+ runs</Text>
+                  </BrSticker>
+                )}
+              </Animated.View>
 
-                                    <View className="my-3 border-l border-muted" />
+              {/* Hero — active order */}
+              {activeOrder && (
+                <Animated.View
+                  entering={FadeInUp.duration(300).delay(25)}
+                  style={{ marginTop: 22 }}
+                >
+                  <Pressable
+                    onPress={() => router.push(`/order/${activeOrder.id}`)}
+                  >
+                    <LinearGradient
+                      colors={["#FF6A1F", "#FF8A4A", "#FFA866"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.heroCard}
+                    >
+                      <Text style={styles.heroWatermark}>R</Text>
 
-                                    {hasStripe && (
-                                        <>
-                                            <AnimatedPressable
-                                                className="flex-1"
-                                                onPress={() =>
-                                                    router.push(
-                                                        "/account/payments",
-                                                    )
-                                                }>
-                                                <View className="items-center py-4 gap-1.5">
-                                                    <View className="items-center justify-center w-10 h-10 rounded-full bg-green-500/10">
-                                                        <Icon
-                                                            name="Wallet"
-                                                            size={18}
-                                                            color="#22c55e"
-                                                        />
-                                                    </View>
-                                                    {balanceAmount !== null ? (
-                                                        <Animated.Text
-                                                            entering={FadeInUp.duration(300).easing(Easing.out(Easing.ease))}
-                                                            className={`font-bold text-green-600 ${balanceAmount >= 100000 ? "text-base" : balanceAmount >= 10000 ? "text-lg" : "text-2xl"}`}
-                                                            numberOfLines={1}
-                                                            adjustsFontSizeToFit>
-                                                            $
-                                                            {(
-                                                                balanceAmount /
-                                                                100
-                                                            ).toFixed(2)}
-                                                        </Animated.Text>
-                                                    ) : (
-                                                        <Skeleton>
-                                                            <SkeletonBlock width={50} height={24} rounded="rounded-md" />
-                                                        </Skeleton>
-                                                    )}
-                                                    <Text className="text-xs text-muted-foreground">
-                                                        Balance
-                                                    </Text>
-                                                </View>
-                                            </AnimatedPressable>
-
-                                            <View className="my-3 border-l border-muted" />
-                                        </>
-                                    )}
-
-                                    <AnimatedPressable
-                                        className="flex-1"
-                                        onPress={() =>
-                                            router.push("/account/friends")
-                                        }>
-                                        <View className="items-center py-4 gap-1.5">
-                                            <View className="items-center justify-center w-10 h-10 rounded-full bg-yellow-500/10">
-                                                <Icon
-                                                    name="UserPlus"
-                                                    size={18}
-                                                    color="#eab308"
-                                                />
-                                                {pendingRequestCount > 0 && (
-                                                    <View className="absolute -top-1 -right-1 items-center justify-center px-1 min-w-[16px] h-4 rounded-full bg-red-500">
-                                                        <Text className="text-[9px] font-bold text-white">
-                                                            {pendingRequestCount}
-                                                        </Text>
-                                                    </View>
-                                                )}
-                                            </View>
-                                            <Text className="text-2xl font-bold text-foreground">
-                                                {pendingRequestCount}
-                                            </Text>
-                                            <Text className="text-xs text-muted-foreground">
-                                                Requests
-                                            </Text>
-                                        </View>
-                                    </AnimatedPressable>
-
-                                </View>
-                            </Animated.View>
-
-                            {/* Outstanding Debts Section */}
-                            {outstandingDebts && outstandingDebts.length > 0 && (
-                                <Animated.View
-                                    entering={FadeInUp.duration(400).delay(
-                                        50,
-                                    )}>
-                                    <View className="flex-row gap-2 items-center mb-3">
-                                        <Icon
-                                            name="CircleDollarSign"
-                                            size={20}
-                                            color="#f97316"
-                                        />
-                                        <Text className="text-lg font-semibold text-foreground">
-                                            Awaiting Payment
-                                        </Text>
-                                        <View className="px-2 py-0.5 rounded-full bg-orange-500/10">
-                                            <Text className="text-xs font-medium text-orange-500">
-                                                {outstandingDebts.length}
-                                            </Text>
-                                        </View>
-                                    </View>
-
-                                    <View className="gap-2">
-                                        {outstandingDebts.map((debt) => (
-                                            <AnimatedPressable
-                                                key={`${debt.orderId}-${debt.userId}`}
-                                                onPress={() =>
-                                                    router.push(
-                                                        `/order/${debt.orderId}`,
-                                                    )
-                                                }>
-                                                <View className="flex-row items-center p-3 rounded-xl border border-muted bg-card">
-                                                    <Avatar
-                                                        name={`${debt.firstName} ${debt.lastName}`}
-                                                        avatarUrl={
-                                                            debt.avatarUrl
-                                                        }
-                                                        size={40}
-                                                    />
-                                                    <View className="flex-1 ml-3">
-                                                        <Text className="text-sm font-semibold text-foreground">
-                                                            {debt.firstName}{" "}
-                                                            {debt.lastName}
-                                                        </Text>
-                                                        <Text className="text-xs text-muted-foreground" numberOfLines={1}>
-                                                            {debt.orderName}
-                                                        </Text>
-                                                    </View>
-                                                    <Text className="text-base font-bold text-orange-500">
-                                                        $
-                                                        {(
-                                                            debt.amountOwed /
-                                                            100
-                                                        ).toFixed(2)}
-                                                    </Text>
-                                                </View>
-                                            </AnimatedPressable>
-                                        ))}
-                                    </View>
-                                </Animated.View>
-                            )}
-
-                            {outstandingPayments &&
-                                outstandingPayments.length > 0 && (
-                                    <Animated.View
-                                        entering={FadeInUp.duration(400).delay(
-                                            100,
-                                        )}>
-                                        <View className="flex-row gap-2 items-center mb-3">
-                                            <Icon
-                                                name="CreditCard"
-                                                size={20}
-                                                color="#ef4444"
-                                            />
-                                            <Text className="text-lg font-semibold text-foreground">
-                                                Payments Due
-                                            </Text>
-                                            <View className="px-2 py-0.5 rounded-full bg-red-500/10">
-                                                <Text className="text-xs font-medium text-red-500">
-                                                    {
-                                                        outstandingPayments.length
-                                                    }
-                                                </Text>
-                                            </View>
-                                        </View>
-
-                                        <View className="gap-2">
-                                            {outstandingPayments.map(
-                                                (payment) => (
-                                                    <AnimatedPressable
-                                                        key={`${payment.orderId}-${payment.creatorId}`}
-                                                        onPress={() =>
-                                                            router.push(
-                                                                `/order/my-settlement?orderId=${payment.orderId}`,
-                                                            )
-                                                        }>
-                                                        <View className="flex-row items-center p-3 rounded-xl border border-muted bg-card">
-                                                            <Avatar
-                                                                name={`${payment.creatorFirstName} ${payment.creatorLastName}`}
-                                                                avatarUrl={
-                                                                    payment.creatorAvatarUrl
-                                                                }
-                                                                size={40}
-                                                            />
-                                                            <View className="flex-1 ml-3">
-                                                                <Text className="text-sm font-semibold text-foreground">
-                                                                    {
-                                                                        payment.creatorFirstName
-                                                                    }{" "}
-                                                                    {
-                                                                        payment.creatorLastName
-                                                                    }
-                                                                </Text>
-                                                                <Text
-                                                                    className="text-xs text-muted-foreground"
-                                                                    numberOfLines={
-                                                                        1
-                                                                    }>
-                                                                    {
-                                                                        payment.orderName
-                                                                    }
-                                                                </Text>
-                                                            </View>
-                                                            <Text className="text-base font-bold text-red-500">
-                                                                $
-                                                                {(
-                                                                    payment.amountOwed /
-                                                                    100
-                                                                ).toFixed(2)}
-                                                            </Text>
-                                                        </View>
-                                                    </AnimatedPressable>
-                                                ),
-                                            )}
-                                        </View>
-                                    </Animated.View>
-                                )}
-
-                            {/* Your Squads Section */}
-                            {hasAnyData && <Animated.View
-                                entering={FadeInUp.duration(400).delay(
-                                    150,
-                                )}>
-                                <View className="flex-row gap-2 items-center mb-3">
-                                    <Icon
-                                        name="Users"
-                                        size={20}
-                                        color="#3b82f6"
-                                    />
-                                    <Text className="text-lg font-semibold text-foreground">
-                                        Your Squads
-                                    </Text>
-                                </View>
-
-                            {hasSquads ? (
-                                    <ScrollView
-                                        horizontal
-                                        showsHorizontalScrollIndicator={false}
-                                        className="px-4 -mx-4">
-                                        <View className="flex-row gap-3">
-                                            {frequentGroups.squads.map(
-                                                (squad) => (
-                                                    <AnimatedPressable
-                                                        key={squad.id}
-                                                        style={{ width: 200 }}
-                                                        onPress={() =>
-                                                            router.push(
-                                                                `/order/create?reorderFriendIds=${squad.memberIds}`,
-                                                            )
-                                                        }>
-                                                        <View className="p-4 rounded-2xl border border-muted bg-card">
-                                                            {/* Stacked Avatars */}
-                                                            <View className="flex-row items-center mb-3">
-                                                                {squad.members
-                                                                    .slice(
-                                                                        0,
-                                                                        squad
-                                                                            .members
-                                                                            .length >
-                                                                            4
-                                                                            ? 3
-                                                                            : 4,
-                                                                    )
-                                                                    .map(
-                                                                        (
-                                                                            member,
-                                                                            idx,
-                                                                        ) => (
-                                                                            <View
-                                                                                key={
-                                                                                    member.id
-                                                                                }
-                                                                                style={{
-                                                                                    marginLeft:
-                                                                                        idx >
-                                                                                        0
-                                                                                            ? -10
-                                                                                            : 0,
-                                                                                    zIndex:
-                                                                                        squad
-                                                                                            .members
-                                                                                            .length -
-                                                                                        idx,
-                                                                                }}
-                                                                                className="border-2 rounded-full border-card">
-                                                                                <Avatar
-                                                                                    name={`${member.firstName || ""} ${member.lastName || ""}`}
-                                                                                    avatarUrl={
-                                                                                        member.avatarUrl
-                                                                                    }
-                                                                                    size={
-                                                                                        36
-                                                                                    }
-                                                                                />
-                                                                            </View>
-                                                                        ),
-                                                                    )}
-                                                                {squad.members
-                                                                    .length >
-                                                                    4 && (
-                                                                    <View
-                                                                        style={{
-                                                                            marginLeft: -10,
-                                                                            width: 36,
-                                                                            height: 36,
-                                                                            zIndex: 0,
-                                                                        }}
-                                                                        className="flex items-center justify-center border-2 rounded-full border-card bg-primary">
-                                                                        <Text className="text-xs font-semibold text-white">
-                                                                            +
-                                                                            {squad
-                                                                                .members
-                                                                                .length -
-                                                                                3}
-                                                                        </Text>
-                                                                    </View>
-                                                                )}
-                                                            </View>
-
-                                                            {/* Member Names */}
-                                                            <Text
-                                                                className="text-sm font-medium text-foreground"
-                                                                numberOfLines={
-                                                                    1
-                                                                }>
-                                                                {squad.members
-                                                                    .map(
-                                                                        (m) =>
-                                                                            m.firstName,
-                                                                    )
-                                                                    .join(", ")}
-                                                            </Text>
-
-                                                            {/* Order Count */}
-                                                            <Text className="text-xs text-muted-foreground mt-1">
-                                                                {
-                                                                    squad.orderCount
-                                                                }{" "}
-                                                                orders together
-                                                            </Text>
-
-                                                            {/* Location */}
-                                                            {squad.locationNames
-                                                                .length >
-                                                                0 && (
-                                                                <View className="flex-row items-center gap-1 mt-2">
-                                                                    <Icon
-                                                                        name="MapPin"
-                                                                        size={
-                                                                            12
-                                                                        }
-                                                                        color="#ef4444"
-                                                                    />
-                                                                    <Text
-                                                                        className="text-[11px] text-muted-foreground"
-                                                                        numberOfLines={
-                                                                            1
-                                                                        }>
-                                                                        {squad.locationNames.join(
-                                                                            ", ",
-                                                                        )}
-                                                                    </Text>
-                                                                </View>
-                                                            )}
-                                                        </View>
-                                                    </AnimatedPressable>
-                                                ),
-                                            )}
-                                        </View>
-                                    </ScrollView>
-                            ) : (
-                                    <View className="items-center p-6 rounded-2xl border border-dashed border-muted bg-card">
-                                        <View className="items-center justify-center w-12 h-12 mb-3 rounded-full bg-blue-500/10">
-                                            <Icon
-                                                name="Users"
-                                                size={24}
-                                                color="#3b82f6"
-                                            />
-                                        </View>
-                                        <Text className="text-sm font-medium text-foreground text-center">
-                                            No squads yet
-                                        </Text>
-                                        <Text className="mt-1 text-xs text-center text-muted-foreground">
-                                            Order with the same friends to build your squads
-                                        </Text>
-                                    </View>
-                            )}
-                                </Animated.View>}
-
-                            {/* Recent Orders Section */}
-                            {hasAnyData && <Animated.View
-                                    entering={FadeInUp.duration(400).delay(
-                                        200,
-                                    )}>
-                                    <View className="flex-row gap-2 items-center mb-3">
-                                        <Icon
-                                            name="History"
-                                            size={20}
-                                            color="#3b82f6"
-                                        />
-                                        <Text className="text-lg font-semibold text-foreground">
-                                            Recent Orders
-                                        </Text>
-                                    </View>
-
-                            {pastOrders.length > 0 ? (
-                                    <View className="gap-3">
-                                        {pastOrders.map((order) => (
-                                            <AnimatedPressable
-                                                key={order.id}
-                                                onPress={() =>
-                                                    router.push(
-                                                        `/order/completed-order?orderId=${order.id}`,
-                                                    )
-                                                }>
-                                                <View className="p-4 rounded-2xl border border-muted bg-card">
-                                                    <View>
-                                                        <Text className="text-sm text-muted-foreground">
-                                                            {new Date(
-                                                                order.createdAt,
-                                                            ).toLocaleDateString(
-                                                                "en-US",
-                                                                {
-                                                                    weekday:
-                                                                        "short",
-                                                                    month: "short",
-                                                                    day: "numeric",
-                                                                },
-                                                            )}
-                                                        </Text>
-                                                        <Text className="mt-1 text-lg font-semibold text-foreground">
-                                                            {order.name}
-                                                        </Text>
-                                                    </View>
-                                                    <View className="flex-row flex-wrap gap-3 items-center pt-3 mt-3 border-t border-muted">
-                                                        <View className="flex-row items-center gap-1.5">
-                                                            <Icon
-                                                                name="ShoppingBag"
-                                                                size={14}
-                                                                color="#f97316"
-                                                            />
-                                                            <Text className="text-sm text-muted-foreground">
-                                                                {
-                                                                    order.itemsCount
-                                                                }{" "}
-                                                                items
-                                                            </Text>
-                                                        </View>
-                                                        {order.userAmount >
-                                                            0 && (
-                                                            <View className="flex-row items-center gap-1.5">
-                                                                <Icon
-                                                                    name="DollarSign"
-                                                                    size={14}
-                                                                    color="#22c55e"
-                                                                />
-                                                                <Text className="text-sm text-muted-foreground">
-                                                                    $
-                                                                    {(
-                                                                        Number(
-                                                                            order.userAmount,
-                                                                        ) / 100
-                                                                    ).toFixed(
-                                                                        2,
-                                                                    )}
-                                                                </Text>
-                                                            </View>
-                                                        )}
-                                                        <View className="flex-row items-center gap-1.5">
-                                                            <Icon
-                                                                name="Users"
-                                                                size={14}
-                                                                color="#3b82f6"
-                                                            />
-                                                            <Text className="text-sm text-muted-foreground">
-                                                                {
-                                                                    order
-                                                                        .orderUsers
-                                                                        .length
-                                                                }{" "}
-                                                                people
-                                                            </Text>
-                                                        </View>
-                                                        <TouchableOpacity
-                                                            onPress={() => {
-                                                                const locationNamesParam =
-                                                                    encodeURIComponent(
-                                                                        JSON.stringify(
-                                                                            order.orderLocations?.map(
-                                                                                (
-                                                                                    ol,
-                                                                                ) =>
-                                                                                    ol.name,
-                                                                            ) ??
-                                                                                [],
-                                                                        ),
-                                                                    );
-                                                                const friendIds =
-                                                                    order.orderUsers
-                                                                        .filter(
-                                                                            (
-                                                                                ou,
-                                                                            ) =>
-                                                                                ou.userId !==
-                                                                                currentUser?._id,
-                                                                        )
-                                                                        .map(
-                                                                            (
-                                                                                ou,
-                                                                            ) =>
-                                                                                ou.userId,
-                                                                        )
-                                                                        .join(
-                                                                            ",",
-                                                                        );
-                                                                router.push(
-                                                                    `/order/create?reorderName=${encodeURIComponent(order.name)}&reorderLocationNames=${locationNamesParam}&reorderFriendIds=${friendIds}`,
-                                                                );
-                                                            }}
-                                                            className="flex-row items-center gap-1 px-3 py-1.5 ml-auto rounded-full bg-primary/10">
-                                                            <Icon
-                                                                name="RotateCcw"
-                                                                size={12}
-                                                                color={
-                                                                    NAV_THEME[
-                                                                        colorScheme
-                                                                    ].primary
-                                                                }
-                                                            />
-                                                            <Text className="text-xs font-semibold text-primary">
-                                                                Order Again
-                                                            </Text>
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                </View>
-                                            </AnimatedPressable>
-                                        ))}
-                                    </View>
-                            ) : (
-                                    <View className="items-center p-6 rounded-2xl border border-dashed border-muted bg-card">
-                                        <View className="items-center justify-center w-12 h-12 mb-3 rounded-full bg-blue-500/10">
-                                            <Icon
-                                                name="History"
-                                                size={24}
-                                                color="#3b82f6"
-                                            />
-                                        </View>
-                                        <Text className="text-sm font-medium text-foreground text-center">
-                                            No recent orders
-                                        </Text>
-                                        <Text className="mt-1 text-xs text-center text-muted-foreground">
-                                            Complete orders to see your history here
-                                        </Text>
-                                    </View>
-                            )}
-                                </Animated.View>}
-
-                            {/* Empty state when nothing exists */}
-                            {!hasSettlementData &&
-                                !hasSquads &&
-                                activeOrderCount === 0 &&
-                                friendCount === 0 &&
-                                pastOrders.length === 0 && (
-                                    <Animated.View
-                                        entering={FadeInUp.duration(
-                                            600,
-                                        ).springify()}
-                                        className="items-center p-8 mt-10">
-                                        <FloatingIcon>
-                                            <View className="justify-center items-center mb-6 w-24 h-24 rounded-2xl bg-primary/10">
-                                                <Icon
-                                                    name="Utensils"
-                                                    size={44}
-                                                    color={
-                                                        NAV_THEME[colorScheme]
-                                                            .primary
-                                                    }
-                                                />
-                                            </View>
-                                        </FloatingIcon>
-                                        <Text className="text-xl font-semibold text-foreground">
-                                            Welcome to BiteRunr
-                                        </Text>
-                                        <Text className="mt-2 text-base text-center text-muted-foreground">
-                                            Start your first group order to see
-                                            your dashboard here
-                                        </Text>
-                                        <TouchableOpacity
-                                            onPress={handleCreateOrder}
-                                            className="flex-row gap-2 items-center px-6 py-3 mt-6 rounded-full bg-primary">
-                                            <Icon
-                                                name="Plus"
-                                                size={20}
-                                                color="white"
-                                            />
-                                            <Text className="text-base font-semibold text-white">
-                                                Create Your First Order
-                                            </Text>
-                                        </TouchableOpacity>
-                                    </Animated.View>
-                                )}
-                            </View>
+                      <View style={styles.heroTopRow}>
+                        <View style={styles.livePill}>
+                          <PulseDot color="#fff" size={6} />
+                          <Text style={styles.livePillText}>LIVE ORDER</Text>
                         </View>
-                    )}
-                </ScrollView>
-            </View>
+                        <Text style={styles.heroMonoText}>
+                          {activeOrder.orderUsers?.length ?? 0} in
+                        </Text>
+                      </View>
 
-            <PaymentSetupSplash
-                visible={showPaymentSplash}
-                onSetUp={() => {
-                    setShowPaymentSplash(false);
-                    router.push("/account/payments");
-                }}
-                onSkip={() => {
-                    setShowPaymentSplash(false);
-                    router.push("/order/create");
-                }}
-            />
-        </ErrorBoundary>
-    );
+                      <BrText
+                        variant="h2"
+                        color="#fff"
+                        style={{ marginTop: 14 }}
+                      >
+                        {activeOrder.name}
+                      </BrText>
+
+                      <View style={styles.heroAvatarRow}>
+                        <View style={{ flexDirection: "row" }}>
+                          {(activeOrder.orderUsers ?? [])
+                            .slice(0, 4)
+                            .map((u, i) => (
+                              <View
+                                key={u.id}
+                                style={{
+                                  marginLeft: i ? -10 : 0,
+                                }}
+                              >
+                                <BrAvatar
+                                  name={`${u.firstName ?? ""} ${u.lastName ?? ""}`}
+                                  avatarUrl={u.avatarUrl ?? null}
+                                  size={32}
+                                  ring="#fff"
+                                />
+                              </View>
+                            ))}
+                        </View>
+                        <View style={styles.heroOpenBtn}>
+                          <Text style={styles.heroOpenBtnText}>Open run</Text>
+                          <Icon
+                            name="ArrowRight"
+                            size={14}
+                            color={BR.orangeDeep}
+                          />
+                        </View>
+                      </View>
+                    </LinearGradient>
+                  </Pressable>
+                </Animated.View>
+              )}
+
+              {/* New run CTA */}
+              <Animated.View
+                entering={FadeInUp.duration(300).delay(40)}
+                style={{ marginTop: activeOrder ? 12 : 22 }}
+              >
+                <Pressable onPress={handleCreateOrder} style={styles.newRunCta}>
+                  <View style={styles.newRunPlus}>
+                    <Icon
+                      name="Plus"
+                      size={18}
+                      color="#fff"
+                      strokeWidth={2.5}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.newRunTitle}>Start a new run</Text>
+                    <Text style={styles.newRunSub}>
+                      Invite squad · pick a spot · go
+                    </Text>
+                  </View>
+                  <Icon
+                    name="ArrowRight"
+                    size={18}
+                    color="#fff"
+                    style={{ opacity: 0.7 }}
+                  />
+                </Pressable>
+              </Animated.View>
+
+              {/* Stats row */}
+              {(owedToMe > 0 ||
+                iOwe > 0 ||
+                (hasStripe && balanceAmount !== null && owedToMe === 0)) && (
+                <Animated.View
+                  entering={FadeInUp.duration(300).delay(30)}
+                  style={styles.statsRow}
+                >
+                  {owedToMe > 0 && (
+                    <Pressable
+                      onPress={() => {
+                        const first = outstandingDebts?.[0];
+                        if (first) {
+                          router.push(
+                            `/order/settlement?orderId=${first.orderId}`,
+                          );
+                        }
+                      }}
+                      style={styles.owedCard}
+                    >
+                      {/* Top row: label + stacked avatars */}
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "flex-start",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <View style={styles.statHeaderRow}>
+                          <Icon
+                            name="TrendingUp"
+                            size={12}
+                            color={BR.mintInk}
+                          />
+                          <Text
+                            style={[styles.statLabel, { color: BR.mintInk }]}
+                          >
+                            YOU&apos;RE OWED
+                          </Text>
+                        </View>
+                        {outstandingDebts && outstandingDebts.length > 0 && (
+                          <View style={{ flexDirection: "row" }}>
+                            {outstandingDebts.slice(0, 3).map((d, i) => (
+                              <View
+                                key={d.userId}
+                                style={{ marginLeft: i ? -10 : 0 }}
+                              >
+                                <BrAvatar
+                                  name={`${d.firstName} ${d.lastName}`}
+                                  avatarUrl={d.avatarUrl}
+                                  size={26}
+                                  ring={BR.mintSoft}
+                                />
+                              </View>
+                            ))}
+                          </View>
+                        )}
+                      </View>
+
+                      {/* Amount */}
+                      <Text
+                        style={[
+                          styles.statValue,
+                          { color: BR.mintInk, marginTop: 8 },
+                        ]}
+                      >
+                        ${owedToMe.toFixed(2)}
+                      </Text>
+
+                      {/* Bottom row: name + collect pill */}
+                      <View style={styles.owedFooter}>
+                        <Text
+                          style={[
+                            styles.statSub,
+                            { color: BR.mintInk, opacity: 0.75, flex: 1 },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {outstandingDebts && outstandingDebts.length === 1
+                            ? `${outstandingDebts[0].firstName} owes you`
+                            : `${outstandingDebts?.length ?? 0} people owe you`}
+                        </Text>
+                        <View style={styles.collectPill}>
+                          <Text style={styles.collectPillText}>Collect</Text>
+                          <Icon
+                            name="ArrowRight"
+                            size={10}
+                            color={BR.mintInk}
+                          />
+                        </View>
+                      </View>
+                    </Pressable>
+                  )}
+                  {iOwe > 0 && (
+                    <Pressable
+                      onPress={() => {
+                        const first = outstandingPayments?.[0];
+                        if (first) {
+                          router.push(
+                            `/order/my-settlement?orderId=${first.orderId}`,
+                          );
+                        }
+                      }}
+                      style={[
+                        styles.statCard,
+                        {
+                          backgroundColor: BR.coralSoft,
+                          borderColor: "rgba(255,77,109,0.2)",
+                          flex: 1,
+                        },
+                      ]}
+                    >
+                      <View style={styles.statHeaderRow}>
+                        <Icon name="Hand" size={14} color={BR.coralInk} />
+                        <Text
+                          style={[styles.statLabel, { color: BR.coralInk }]}
+                        >
+                          YOU OWE
+                        </Text>
+                      </View>
+                      <Text style={[styles.statValue, { color: BR.coralInk }]}>
+                        ${iOwe.toFixed(2)}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.statSub,
+                          { color: BR.coralInk, opacity: 0.7 },
+                        ]}
+                      >
+                        Settle now
+                      </Text>
+                    </Pressable>
+                  )}
+                  {hasStripe && balanceAmount !== null && owedToMe === 0 && (
+                    <Pressable
+                      onPress={() => router.push("/account/payments")}
+                      style={[
+                        styles.statCard,
+                        {
+                          backgroundColor: BR.lilacSoft,
+                          borderColor: "rgba(110,91,255,0.2)",
+                          flex: 1,
+                        },
+                      ]}
+                    >
+                      <View style={styles.statHeaderRow}>
+                        <Icon name="Wallet" size={14} color={BR.lilacInk} />
+                        <Text
+                          style={[styles.statLabel, { color: BR.lilacInk }]}
+                        >
+                          BALANCE
+                        </Text>
+                      </View>
+                      <Text style={[styles.statValue, { color: BR.lilacInk }]}>
+                        ${(balanceAmount / 100).toFixed(2)}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.statSub,
+                          { color: BR.lilacInk, opacity: 0.7 },
+                        ]}
+                      >
+                        Stripe payout
+                      </Text>
+                    </Pressable>
+                  )}
+                </Animated.View>
+              )}
+
+              {/* Squads */}
+              {squads && squads.length > 0 && (
+                <Animated.View
+                  entering={FadeInUp.duration(300).delay(40)}
+                  style={{ marginTop: 22 }}
+                >
+                  <View style={styles.sectionHeader}>
+                    <BrText variant="h3">Your squads</BrText>
+                    <Pressable
+                      onPress={() => router.push("/account/friends")}
+                      style={styles.smallChip}
+                    >
+                      <Text style={styles.smallChipText}>Manage</Text>
+                    </Pressable>
+                  </View>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ gap: 10, paddingRight: 18 }}
+                    style={{ marginHorizontal: -18, paddingHorizontal: 18 }}
+                  >
+                    {squads.map((squad) => {
+                      const tileColor =
+                        SQUAD_COLOR_MAP[squad.color] ?? BR.orange;
+                      const memberIds = (squad.memberIds as string[]).join(",");
+                      return (
+                        <Pressable
+                          key={squad.id}
+                          onPress={() =>
+                            router.push(
+                              `/order/create?reorderFriendIds=${memberIds}`,
+                            )
+                          }
+                        >
+                          <BrCard
+                            variant="outlined"
+                            background={BR.card}
+                            padding={14}
+                            style={{ width: 200 }}
+                          >
+                            {/* Icon tile */}
+                            <View
+                              style={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: 14,
+                                backgroundColor: tileColor,
+                                alignItems: "center",
+                                justifyContent: "center",
+                                marginBottom: 12,
+                              }}
+                            >
+                              <Icon
+                                name={
+                                  squad.icon as React.ComponentProps<
+                                    typeof Icon
+                                  >["name"]
+                                }
+                                size={20}
+                                color="#fff"
+                              />
+                            </View>
+
+                            {/* Name */}
+                            <BrText
+                              weight="bold"
+                              style={{ fontSize: 15 }}
+                              numberOfLines={1}
+                            >
+                              {squad.name}
+                            </BrText>
+
+                            {/* Members row */}
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: 8,
+                                marginTop: 10,
+                              }}
+                            >
+                              <View style={{ flexDirection: "row" }}>
+                                {squad.members.slice(0, 4).map((m, idx) => (
+                                  <View
+                                    key={m.id}
+                                    style={{ marginLeft: idx ? -8 : 0 }}
+                                  >
+                                    <BrAvatar
+                                      name={`${m.firstName ?? ""} ${m.lastName ?? ""}`}
+                                      avatarUrl={m.avatarUrl}
+                                      size={24}
+                                      ring={BR.card}
+                                    />
+                                  </View>
+                                ))}
+                              </View>
+                              <Text
+                                style={{
+                                  fontSize: 12,
+                                  color: BR.ink3,
+                                  fontFamily: BR_FONT.mono,
+                                }}
+                              >
+                                {squad.members.length}{" "}
+                                {squad.members.length === 1
+                                  ? "person"
+                                  : "people"}
+                              </Text>
+                            </View>
+                          </BrCard>
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+                </Animated.View>
+              )}
+
+              {/* Recent runs */}
+              {pastOrders && pastOrders.length > 0 && (
+                <Animated.View
+                  entering={FadeInUp.duration(300).delay(25)}
+                  style={{ marginTop: 22 }}
+                >
+                  <View style={styles.sectionHeader}>
+                    <BrText variant="h3">Recent runs</BrText>
+                  </View>
+                  <View style={{ gap: 10 }}>
+                    {pastOrders.map((order) => {
+                      const colorPalette = [
+                        BR.orange,
+                        BR.lilac,
+                        BR.mint,
+                        BR.coral,
+                      ];
+                      const color =
+                        colorPalette[
+                          (order.name?.charCodeAt(0) || 0) % colorPalette.length
+                        ];
+                      return (
+                        <Pressable
+                          key={order.id}
+                          onPress={() =>
+                            router.push(
+                              `/order/completed-order?orderId=${order.id}`,
+                            )
+                          }
+                        >
+                          <BrCard padding={14} style={styles.runRow}>
+                            <View
+                              style={[
+                                styles.runIcon,
+                                { backgroundColor: color },
+                              ]}
+                            >
+                              <Icon name="ShoppingBag" size={20} color="#fff" />
+                            </View>
+                            <View style={{ flex: 1, minWidth: 0 }}>
+                              <View
+                                style={{
+                                  flexDirection: "row",
+                                  alignItems: "center",
+                                  gap: 6,
+                                }}
+                              >
+                                <BrText
+                                  weight="bold"
+                                  style={{ fontSize: 14 }}
+                                  numberOfLines={1}
+                                >
+                                  {order.name}
+                                </BrText>
+                                <Text style={styles.runDot}>·</Text>
+                                <Text style={styles.runDate}>
+                                  {new Date(order.createdAt).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      month: "short",
+                                      day: "numeric",
+                                    },
+                                  )}
+                                </Text>
+                              </View>
+                              <View style={styles.runMetaRow}>
+                                <Text style={styles.runMeta}>
+                                  {order.itemsCount} items
+                                </Text>
+                                <Text style={styles.runMeta}>·</Text>
+                                <Text style={styles.runMeta}>
+                                  ${(Number(order.userAmount) / 100).toFixed(2)}
+                                </Text>
+                                <Text style={styles.runMeta}>·</Text>
+                                <Text style={styles.runMeta}>
+                                  {order.orderUsers.length} ppl
+                                </Text>
+                              </View>
+                            </View>
+                            <BrChip
+                              color="orange"
+                              leftSlot={
+                                <Icon
+                                  name="RotateCcw"
+                                  size={11}
+                                  color={BR.orangeDeep}
+                                />
+                              }
+                            >
+                              <Text>Again</Text>
+                            </BrChip>
+                          </BrCard>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </Animated.View>
+              )}
+
+              {/* Empty state */}
+              {!hasAnyData && (
+                <Animated.View
+                  entering={FadeInUp.duration(300).springify()}
+                  style={styles.empty}
+                >
+                  <View style={styles.emptyIcon}>
+                    <Icon name="Utensils" size={44} color={BR.orange} />
+                  </View>
+                  <BrText variant="h3" style={{ marginTop: 18 }}>
+                    Welcome to BiteRunr
+                  </BrText>
+                  <BrText
+                    style={{
+                      marginTop: 6,
+                      textAlign: "center",
+                      color: BR.ink3,
+                      fontSize: 14,
+                    }}
+                  >
+                    Start your first group run to see your dashboard here.
+                  </BrText>
+                </Animated.View>
+              )}
+            </>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+
+      <PaymentSetupSplash
+        visible={showPaymentSplash}
+        onSetUp={() => {
+          setShowPaymentSplash(false);
+          router.push("/account/payments");
+        }}
+        onSkip={() => {
+          setShowPaymentSplash(false);
+          router.push("/order/create");
+        }}
+      />
+
+      <QRScannerModal
+        visible={showScanner}
+        onScan={handleScanCode}
+        onClose={() => setShowScanner(false)}
+        onEnterCode={handleEnterCode}
+      />
+
+      <EnterCodeModal
+        visible={showEnterCode}
+        onSubmit={handleCodeSubmit}
+        onClose={() => setShowEnterCode(false)}
+      />
+    </ErrorBoundary>
+  );
 }
 
 function HomeSkeleton() {
-    return (
-        <Skeleton>
-            <View className="gap-6 px-4 pb-8 mt-4">
-                {/* Greeting Skeleton */}
-                <View className="flex-row justify-between items-center">
-                    <View>
-                        <SkeletonBlock width={160} height={28} className="mb-2" />
-                        <SkeletonBlock width={180} height={16} />
-                    </View>
-                    <SkeletonBlock
-                        width={110}
-                        height={36}
-                        rounded="rounded-full"
-                    />
-                </View>
-
-                {/* Summary Card Skeleton */}
-                <View className="flex-row rounded-2xl border border-muted bg-card overflow-hidden">
-                    {[1, 2, 3].map((i) => (
-                        <React.Fragment key={i}>
-                            {i > 1 && (
-                                <View className="my-3 border-l border-muted" />
-                            )}
-                            <View className="flex-1 items-center py-4 gap-1.5">
-                                <SkeletonBlock
-                                    width={40}
-                                    height={40}
-                                    rounded="rounded-full"
-                                />
-                                <SkeletonBlock
-                                    width={30}
-                                    height={28}
-                                />
-                                <SkeletonBlock width={45} height={14} />
-                            </View>
-                        </React.Fragment>
-                    ))}
-                </View>
-
-                {/* Settlement Skeleton */}
-                <View>
-                    <View className="flex-row gap-2 items-center mb-3">
-                        <SkeletonBlock width={20} height={20} />
-                        <SkeletonBlock width={100} height={22} />
-                    </View>
-                    <View className="p-4 rounded-2xl border border-muted bg-card">
-                        <View className="flex-row gap-3">
-                            <View className="flex-1 p-3 rounded-xl">
-                                <SkeletonBlock
-                                    width={70}
-                                    height={14}
-                                    className="mb-2"
-                                />
-                                <SkeletonBlock width={90} height={24} />
-                            </View>
-                            <View className="flex-1 p-3 rounded-xl">
-                                <SkeletonBlock
-                                    width={55}
-                                    height={14}
-                                    className="mb-2"
-                                />
-                                <SkeletonBlock width={70} height={24} />
-                            </View>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Squads Skeleton */}
-                <View>
-                    <View className="flex-row gap-2 items-center mb-3">
-                        <SkeletonBlock width={20} height={20} />
-                        <SkeletonBlock width={100} height={22} />
-                    </View>
-                    <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        scrollEnabled={false}
-                        className="px-4 -mx-4">
-                        <View className="flex-row gap-3">
-                            {[1, 2].map((i) => (
-                                <View
-                                    key={i}
-                                    style={{ width: 200 }}
-                                    className="p-4 rounded-2xl border border-muted bg-card">
-                                    <View className="flex-row mb-3">
-                                        {[1, 2, 3].map((j) => (
-                                            <SkeletonBlock
-                                                key={j}
-                                                width={36}
-                                                height={36}
-                                                rounded="rounded-full"
-                                                style={{
-                                                    marginLeft:
-                                                        j > 1 ? -10 : 0,
-                                                }}
-                                            />
-                                        ))}
-                                    </View>
-                                    <SkeletonBlock
-                                        width={140}
-                                        height={16}
-                                        className="mb-1"
-                                    />
-                                    <SkeletonBlock width={100} height={12} />
-                                </View>
-                            ))}
-                        </View>
-                    </ScrollView>
-                </View>
-
-                {/* Recent Orders Skeleton */}
-                <View>
-                    <View className="flex-row gap-2 items-center mb-3">
-                        <SkeletonBlock width={20} height={20} />
-                        <SkeletonBlock width={120} height={22} />
-                    </View>
-                    <View className="gap-3">
-                        {[1, 2].map((i) => (
-                            <View
-                                key={i}
-                                className="p-4 rounded-2xl border border-muted bg-card">
-                                <View>
-                                    <SkeletonBlock
-                                        width={100}
-                                        height={16}
-                                        className="mb-2"
-                                    />
-                                    <SkeletonBlock width={180} height={22} />
-                                </View>
-                                <View className="flex-row gap-3 items-center pt-3 mt-3 border-t border-muted">
-                                    <SkeletonBlock width={60} height={16} />
-                                    <SkeletonBlock width={50} height={16} />
-                                    <SkeletonBlock width={70} height={16} />
-                                </View>
-                            </View>
-                        ))}
-                    </View>
-                </View>
-            </View>
-        </Skeleton>
-    );
+  return (
+    <Skeleton>
+      <View style={{ paddingTop: 16, gap: 22 }}>
+        <View style={{ gap: 8 }}>
+          <SkeletonBlock width={140} height={14} />
+          <SkeletonBlock width={220} height={32} />
+        </View>
+        <SkeletonBlock width="100%" height={140} rounded="rounded-3xl" />
+        <SkeletonBlock width="100%" height={66} rounded="rounded-2xl" />
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          <SkeletonBlock width="50%" height={92} rounded="rounded-3xl" />
+          <SkeletonBlock width="46%" height={92} rounded="rounded-3xl" />
+        </View>
+        <View style={{ gap: 10 }}>
+          <SkeletonBlock width={140} height={20} />
+          <SkeletonBlock width="100%" height={120} rounded="rounded-3xl" />
+        </View>
+      </View>
+    </Skeleton>
+  );
 }
+
+const styles = StyleSheet.create({
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  iconBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 999,
+    backgroundColor: BR.paper2,
+    borderWidth: 1,
+    borderColor: BR.line,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconBadge: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    backgroundColor: BR.coral,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1.5,
+    borderColor: BR.paper,
+  },
+  iconBadgeText: {
+    fontSize: 9,
+    fontWeight: "800",
+    color: "#fff",
+  },
+  greetingRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  heroCard: {
+    borderRadius: BR_RADIUS.lg,
+    padding: 18,
+    overflow: "hidden",
+    ...BR_SHADOW.primary,
+  },
+  heroWatermark: {
+    position: "absolute",
+    right: -14,
+    bottom: -22,
+    fontFamily: BR_FONT.displayExtraBold,
+    fontStyle: "italic",
+    fontSize: 200,
+    lineHeight: 200,
+    color: "rgba(255,255,255,0.12)",
+    letterSpacing: -16,
+  },
+  heroTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  livePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.22)",
+  },
+  livePillText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+  },
+  heroMonoText: {
+    marginLeft: "auto",
+    fontFamily: BR_FONT.mono,
+    fontSize: 12,
+    color: "rgba(255,255,255,0.85)",
+  },
+  heroAvatarRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    marginTop: 18,
+  },
+  heroOpenBtn: {
+    marginLeft: "auto",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+  },
+  heroOpenBtnText: {
+    color: BR.orangeDeep,
+    fontWeight: "700",
+    fontSize: 13,
+  },
+  newRunCta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: BR.ink,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    borderRadius: BR_RADIUS.lg,
+  },
+  newRunPlus: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    backgroundColor: BR.orange,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  newRunTitle: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 15,
+  },
+  newRunSub: {
+    color: "rgba(255,255,255,0.65)",
+    fontSize: 12,
+    marginTop: 2,
+  },
+  statsRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 14,
+  },
+  statCard: {
+    padding: 14,
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+  },
+  statHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  statLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.6,
+  },
+  statValue: {
+    fontFamily: BR_FONT.display,
+    fontWeight: "700",
+    fontSize: 30,
+    marginTop: 8,
+    letterSpacing: -1,
+  },
+  statSub: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  owedCard: {
+    padding: 14,
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+    backgroundColor: BR.mintSoft,
+    borderColor: "rgba(46,190,123,0.2)",
+    flex: 1.4,
+  },
+  owedFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 8,
+  },
+  collectPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "rgba(46,190,123,0.18)",
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  collectPillText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: BR.mintInk,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+    marginBottom: 10,
+  },
+  smallChip: {
+    backgroundColor: BR.paper2,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  smallChipText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: BR.ink2,
+  },
+  squadMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 6,
+  },
+  runRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  runIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  runDot: {
+    fontSize: 11,
+    color: BR.ink3,
+  },
+  runDate: {
+    fontSize: 11,
+    color: BR.ink3,
+  },
+  runMetaRow: {
+    flexDirection: "row",
+    gap: 6,
+    marginTop: 4,
+  },
+  runMeta: {
+    fontSize: 12,
+    color: BR.ink3,
+    fontFamily: BR_FONT.mono,
+  },
+  empty: {
+    alignItems: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  emptyIcon: {
+    width: 96,
+    height: 96,
+    borderRadius: 24,
+    backgroundColor: BR.orangeSoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});

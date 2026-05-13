@@ -14,6 +14,20 @@ import {
 } from "@react-navigation/native";
 import Toast, { type BaseToastProps } from "react-native-toast-message";
 import * as SplashScreen from "expo-splash-screen";
+import {
+  useFonts as useBricolage,
+  BricolageGrotesque_400Regular,
+  BricolageGrotesque_500Medium,
+  BricolageGrotesque_600SemiBold,
+  BricolageGrotesque_700Bold,
+  BricolageGrotesque_800ExtraBold,
+} from "@expo-google-fonts/bricolage-grotesque";
+import {
+  JetBrainsMono_400Regular,
+  JetBrainsMono_500Medium,
+  JetBrainsMono_600SemiBold,
+  JetBrainsMono_700Bold,
+} from "@expo-google-fonts/jetbrains-mono";
 import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { ConvexReactClient } from "convex/react";
@@ -58,7 +72,23 @@ const convexLogger = {
   logVerbose: console.log,
 };
 
-const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
+function requireEnv(name: string, value: string | undefined) {
+  if (!value) {
+    throw new Error(`${name} is required`);
+  }
+  return value;
+}
+
+const convexUrl = requireEnv(
+  "EXPO_PUBLIC_CONVEX_URL",
+  process.env.EXPO_PUBLIC_CONVEX_URL,
+);
+const stripePublishableKey = requireEnv(
+  "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+);
+
+const convex = new ConvexReactClient(convexUrl, {
   unsavedChangesWarning: false,
   logger: convexLogger,
 });
@@ -162,7 +192,7 @@ function useToastConfig() {
   );
 }
 
-function RootAppShell() {
+function RootAppShell({ fontsLoaded }: { fontsLoaded: boolean }) {
   const toastConfig = useToastConfig();
   const { isReady, isLoading } = useAuth();
   const [showSplash, setShowSplash] = React.useState(true);
@@ -181,11 +211,11 @@ function RootAppShell() {
     setShowSplash(false);
   }, []);
 
-  const appReadyForReveal = isReady && !isLoading;
+  const appReadyForReveal = isReady && !isLoading && fontsLoaded;
 
   return (
     <>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Stack screenOptions={{ headerShown: false, freezeOnBlur: true }}>
           <Stack.Screen
@@ -206,7 +236,7 @@ function RootAppShell() {
             name="join/[code]"
             options={{
               headerShown: false,
-              presentation: "modal",
+              presentation: "fullScreenModal",
             }}
           />
         </Stack>
@@ -225,6 +255,17 @@ function RootAppShell() {
 
 export default function RootLayout() {
   const { colorScheme } = useColorScheme();
+  const [fontsLoaded] = useBricolage({
+    BricolageGrotesque_400Regular,
+    BricolageGrotesque_500Medium,
+    BricolageGrotesque_600SemiBold,
+    BricolageGrotesque_700Bold,
+    BricolageGrotesque_800ExtraBold,
+    JetBrainsMono_400Regular,
+    JetBrainsMono_500Medium,
+    JetBrainsMono_600SemiBold,
+    JetBrainsMono_700Bold,
+  });
 
   React.useEffect(() => {
     if (Platform.OS === "web" && typeof document !== "undefined") {
@@ -240,7 +281,7 @@ export default function RootLayout() {
 
   return (
     <StripeProvider
-      publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!}
+      publishableKey={stripePublishableKey}
       merchantIdentifier="merchant.com.RunrStudios.BiteRunrRN"
     >
       <ConvexBetterAuthProvider client={convex} authClient={authClient}>
@@ -249,7 +290,7 @@ export default function RootLayout() {
             value={colorScheme === "dark" ? DARK_THEME : LIGHT_THEME}
           >
             <SafeAreaProvider>
-              <RootAppShell />
+              <RootAppShell fontsLoaded={fontsLoaded} />
             </SafeAreaProvider>
           </ThemeProvider>
         </AuthProvider>

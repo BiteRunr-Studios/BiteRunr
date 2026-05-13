@@ -14,7 +14,7 @@ export const getForOrder = query({
     return await ctx.db
       .query("orderUsers")
       .withIndex("by_userId_orderId", (q) =>
-        q.eq("userId", userId).eq("orderId", args.orderId)
+        q.eq("userId", userId).eq("orderId", args.orderId),
       )
       .first();
   },
@@ -33,7 +33,7 @@ export const setStatus = mutation({
     const orderUser = await ctx.db
       .query("orderUsers")
       .withIndex("by_userId_orderId", (q) =>
-        q.eq("userId", userId).eq("orderId", args.orderId)
+        q.eq("userId", userId).eq("orderId", args.orderId),
       )
       .first();
 
@@ -56,7 +56,7 @@ export const setStatus = mutation({
 
       // Check if all users are done
       const allDone = allOrderUsers.every((ou) =>
-        ou._id === orderUser._id ? true : ou.status === "done"
+        ou._id === orderUser._id ? true : ou.status === "done",
       );
 
       // If all done and current user is not the creator, notify the creator
@@ -94,7 +94,7 @@ export const leaveOrder = mutation({
     const orderUser = await ctx.db
       .query("orderUsers")
       .withIndex("by_userId_orderId", (q) =>
-        q.eq("userId", userId).eq("orderId", args.orderId)
+        q.eq("userId", userId).eq("orderId", args.orderId),
       )
       .first();
     if (!orderUser) throw new Error("Not a participant in this order");
@@ -128,7 +128,8 @@ export const removeFromOrder = mutation({
     if (order.status !== "active" && order.status !== "created") {
       throw new Error("Order is no longer active");
     }
-    if (order.paused) throw new Error("Cannot remove members after the run has started");
+    if (order.paused)
+      throw new Error("Cannot remove members after the run has started");
     if (order.creatorId !== userId) {
       throw new Error("Only the creator can remove participants");
     }
@@ -139,15 +140,18 @@ export const removeFromOrder = mutation({
     const targetOrderUser = await ctx.db
       .query("orderUsers")
       .withIndex("by_userId_orderId", (q) =>
-        q.eq("userId", args.targetUserId).eq("orderId", args.orderId)
+        q.eq("userId", args.targetUserId).eq("orderId", args.orderId),
       )
       .first();
-    if (!targetOrderUser) throw new Error("User is not a participant in this order");
+    if (!targetOrderUser)
+      throw new Error("User is not a participant in this order");
 
     // Delete all target user's order items
     const userItems = await ctx.db
       .query("orderItems")
-      .withIndex("by_orderUserId", (q) => q.eq("orderUserId", targetOrderUser._id))
+      .withIndex("by_orderUserId", (q) =>
+        q.eq("orderUserId", targetOrderUser._id),
+      )
       .collect();
     for (const item of userItems) {
       await ctx.db.delete(item._id);

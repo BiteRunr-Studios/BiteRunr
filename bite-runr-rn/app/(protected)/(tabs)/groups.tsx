@@ -1,464 +1,936 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
-    Pressable,
-    ScrollView,
-    Text,
-    View,
-    TouchableOpacity,
-    InteractionManager,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
+  InteractionManager,
+  StyleSheet,
 } from "react-native";
 import Animated, {
-    FadeInUp,
-    SlideInDown,
-    SlideOutDown,
-    FadeIn,
-    FadeOut,
-    Easing,
+  FadeInUp,
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+  cancelAnimation,
 } from "react-native-reanimated";
+import { LinearGradient } from "expo-linear-gradient";
+import { AnimatedPressable } from "@/components/common/animated-pressable";
 import { ErrorBoundary } from "@/components/common/error-boundary";
-import { OrderCard, OrderCardSkeleton } from "@/components/order-card";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import Icon, { type IconName } from "@/components/common/icon";
-import { NAV_THEME } from "@/lib/constants";
-import { useColorScheme } from "@/lib/use-color-scheme";
-import { Skeleton } from "@/components/common/skeleton";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { HeaderBar } from "@/components/layout/header-bar";
+import Icon from "@/components/common/icon";
+import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { PaymentSetupSplash } from "@/components/payment-setup-splash";
-import { AnimatedPressable } from "@/components/common/animated-pressable";
+import { QRScannerModal } from "@/components/qr-scanner-modal";
+import { EnterCodeModal } from "@/components/enter-code-modal";
+import { BrAvatar, BrText } from "@/components/br";
+import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
 
 type FilterType = "all" | "active" | "completed" | "needs_payment";
 type TimeSection = "Today" | "This Week" | "Earlier";
 
-const FILTERS: { key: FilterType; label: string; icon: IconName }[] = [
-    { key: "all", label: "All", icon: "LayoutGrid" },
-    { key: "active", label: "Active", icon: "Zap" },
-    { key: "completed", label: "Completed", icon: "CircleCheck" },
-    { key: "needs_payment", label: "Needs Payment", icon: "DollarSign" },
+const FILTERS: { key: FilterType; label: string }[] = [
+  { key: "all", label: "History" },
+  { key: "active", label: "Live" },
+  { key: "completed", label: "Settled" },
+  { key: "needs_payment", label: "Needs Payment" },
 ];
 
-function groupByTime<T extends { order: { createdAt: number } }>(
-    items: T[],
-): { title: TimeSection; data: T[] }[] {
-    const now = new Date();
-    const startOfToday = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-    ).getTime();
-    const startOfWeek = startOfToday - now.getDay() * 86400000;
-
-    const groups: Record<TimeSection, T[]> = {
-        Today: [],
-        "This Week": [],
-        Earlier: [],
-    };
-
-    for (const item of items) {
-        if (item.order.createdAt >= startOfToday) groups.Today.push(item);
-        else if (item.order.createdAt >= startOfWeek)
-            groups["This Week"].push(item);
-        else groups.Earlier.push(item);
-    }
-
-    return (["Today", "This Week", "Earlier"] as TimeSection[])
-        .filter((title) => groups[title].length > 0)
-        .map((title) => ({ title, data: groups[title] }));
-}
-
-const SECTION_ICONS: Record<TimeSection, IconName> = {
-    Today: "CalendarDays",
-    "This Week": "Calendar",
-    Earlier: "CalendarClock",
+const END_OF_LABELS: Record<FilterType, string> = {
+  all: "history",
+  active: "live",
+  completed: "settled",
+  needs_payment: "needs payment",
 };
 
-export default function GroupsTab() {
-    const { filter } = useLocalSearchParams<{ filter?: string }>();
-    const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+function groupByTime<T extends { order: { createdAt: number } }>(
+  items: T[],
+): { title: TimeSection; data: T[] }[] {
+  const now = new Date();
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  ).getTime();
+  const startOfWeek = startOfToday - now.getDay() * 86400000;
 
-    useEffect(() => {
-        if (
-            filter === "active" ||
-            filter === "completed" ||
-            filter === "needs_payment"
-        ) {
-            setActiveFilter(filter);
-        } else {
-            setActiveFilter("all");
-        }
-    }, [filter]);
-    const [showPaymentSplash, setShowPaymentSplash] = useState(false);
-    const [showFilterMenu, setShowFilterMenu] = useState(false);
-    const [isTransitionComplete, setIsTransitionComplete] = useState(false);
-    const { colorScheme } = useColorScheme();
-    const insets = useSafeAreaInsets();
-    const listBottomPadding = 84 + insets.bottom;
+  const groups: Record<TimeSection, T[]> = {
+    Today: [],
+    "This Week": [],
+    Earlier: [],
+  };
+  for (const item of items) {
+    if (item.order.createdAt >= startOfToday) groups.Today.push(item);
+    else if (item.order.createdAt >= startOfWeek)
+      groups["This Week"].push(item);
+    else groups.Earlier.push(item);
+  }
 
-    useEffect(() => {
-        const task = InteractionManager.runAfterInteractions(() => {
-            setIsTransitionComplete(true);
-        });
-        return () => task.cancel();
-    }, []);
-
-    // Get current user
-    const currentUser = useQuery(api.users.getCurrentUser);
-
-    // Check if user has Stripe payments set up
-    const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
-
-    const handleCreateOrder = useCallback(() => {
-        if (connectedAccount?.chargesEnabled) {
-            router.push("/order/create");
-        } else {
-            setShowPaymentSplash(true);
-        }
-    }, [connectedAccount]);
-    const userId = currentUser?._id;
-
-    // Get orders with user details for avatars
-    const data = useQuery(api.orders.getWithDetails);
-    const isPending = data === undefined || currentUser === undefined || !isTransitionComplete;
-
-    const filteredOrders = data?.filter((item) => {
-        if (!userId) return false;
-        const myOrderUser = item.orderUsers.find((ou) => ou.userId === userId);
-        if (!myOrderUser) return false;
-
-        // Filter by status chip
-        if (activeFilter !== "all") {
-            if (activeFilter === "active") {
-                if (item.order.status !== "active") return false;
-            } else if (activeFilter === "completed") {
-                if (item.order.status !== "completed") return false;
-            } else if (activeFilter === "needs_payment") {
-                // Only show orders where the current user still owes money.
-                if (item.order.status !== "active" || !item.order.paused)
-                    return false;
-                if (item.order.creatorId === userId) return false;
-                if (Number(myOrderUser.amountOwed) <= 0) return false;
-                if (
-                    myOrderUser.settlementStatus !== "unpaid" &&
-                    myOrderUser.settlementStatus !== "claimed"
-                ) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    });
-
-    function renderOrderCard(item: NonNullable<typeof filteredOrders>[number]) {
-        const orderUsers = item.orderUsers.map((ou) => ({
-            id: ou.id,
-            firstName: ou.user?.firstName,
-            lastName: ou.user?.lastName,
-            avatarUrl: ou.user?.avatarUrl,
-        }));
-
-        const locationNames = item.orderLocations
-            ?.map((ol) => ol.name)
-            .filter(Boolean);
-
-        if (item.order.status === "active") {
-            return (
-                <Link
-                    href={`/order/${item.order.id}`}
-                    key={item.order.id}
-                    asChild>
-                    <AnimatedPressable>
-                        <OrderCard
-                            id={item.order.id}
-                            name={item.order.name}
-                            status={item.order.status}
-                            paused={item.order.paused}
-                            createdAt={item.order.createdAt}
-                            orderUsers={orderUsers}
-                            itemCount={item.itemsCount}
-                            locationNames={locationNames}
-                        />
-                    </AnimatedPressable>
-                </Link>
-            );
-        }
-
-        const card = (
-            <OrderCard
-                key={item.order.id}
-                id={item.order.id}
-                name={item.order.name}
-                status={item.order.status}
-                paused={item.order.paused}
-                createdAt={item.order.createdAt}
-                orderUsers={orderUsers}
-                itemCount={item.itemsCount}
-                locationNames={locationNames}
-                onReorder={() => {
-                    const locationNamesParam = encodeURIComponent(
-                        JSON.stringify(
-                            item.orderLocations?.map((ol) => ol.name) ?? [],
-                        ),
-                    );
-                    const friendIds = item.orderUsers
-                        .filter((ou) => ou.userId !== userId)
-                        .map((ou) => ou.userId)
-                        .join(",");
-                    router.push(
-                        `/order/create?reorderName=${encodeURIComponent(item.order.name)}&reorderLocationNames=${locationNamesParam}&reorderFriendIds=${friendIds}`,
-                    );
-                }}
-            />
-        );
-
-        if (item.order.status === "completed") {
-            return (
-                <Link
-                    href={`/order/completed-order?orderId=${item.order.id}`}
-                    key={item.order.id}
-                    asChild>
-                    <AnimatedPressable>{card}</AnimatedPressable>
-                </Link>
-            );
-        }
-
-        return card;
-    }
-
-    return (
-        <ErrorBoundary>
-            <View
-                style={{ paddingTop: insets.top }}
-                className="flex-1 bg-background">
-                <HeaderBar />
-                <ScrollView
-                    className="flex-1"
-                    contentContainerStyle={{
-                        paddingBottom: listBottomPadding,
-                    }}
-                    showsVerticalScrollIndicator={false}>
-                    <View className="px-4">
-                        {/* Filter + New Order Row */}
-                        <Animated.View
-                            entering={FadeInUp.duration(400)}
-                            className="flex-row gap-3 justify-between items-center mt-4 mb-4">
-                            {/* Filter Dropdown Button */}
-                            <Pressable
-                                onPress={() => setShowFilterMenu(true)}
-                                className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl bg-muted active:opacity-80">
-                                <Icon
-                                    name={
-                                        FILTERS.find(
-                                            (f) => f.key === activeFilter,
-                                        )?.icon ?? "LayoutGrid"
-                                    }
-                                    size={16}
-                                    color={NAV_THEME[colorScheme].text}
-                                />
-                                <Text className="text-sm font-medium text-foreground">
-                                    {FILTERS.find((f) => f.key === activeFilter)
-                                        ?.label ?? "All"}
-                                </Text>
-                                <Icon
-                                    name="ChevronDown"
-                                    size={14}
-                                    color={NAV_THEME[colorScheme].text}
-                                />
-                            </Pressable>
-
-                            {/* New Order Button */}
-                            <Pressable
-                                onPress={handleCreateOrder}
-                                className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl bg-primary active:opacity-80">
-                                <Icon name="Plus" size={16} color="white" />
-                                <Text className="text-sm font-semibold text-white">
-                                    New Order
-                                </Text>
-                            </Pressable>
-                        </Animated.View>
-
-                        {/* Content */}
-                        {isPending && (
-                            <Skeleton>
-                                <View className="gap-3">
-                                    {[1, 2, 3, 4].map((i) => (
-                                        <OrderCardSkeleton key={i} />
-                                    ))}
-                                </View>
-                            </Skeleton>
-                        )}
-
-                        {!isPending && filteredOrders && (
-                            <Animated.View
-                                entering={FadeInUp.duration(400).delay(100)}>
-                                {filteredOrders.length === 0 ? (
-                                    <View className="items-center p-8 mt-4 rounded-2xl border border-dashed border-muted bg-card">
-                                        <View className="justify-center items-center mb-4 w-16 h-16 rounded-2xl bg-yellow-500/10">
-                                            <Icon
-                                                name="Crown"
-                                                size={32}
-                                                color="#eab308"
-                                            />
-                                        </View>
-                                        <Text className="text-base font-medium text-foreground">
-                                            No orders yet
-                                        </Text>
-                                        <Text className="mt-1 text-sm text-center text-muted-foreground">
-                                            Start a new order to get your group
-                                            together
-                                        </Text>
-                                        <TouchableOpacity
-                                            onPress={handleCreateOrder}
-                                            className="flex-row items-center gap-2 px-5 py-2.5 mt-4 rounded-xl bg-primary">
-                                            <Icon
-                                                name="Plus"
-                                                size={18}
-                                                color="white"
-                                            />
-                                            <Text className="font-semibold text-white">
-                                                New Order
-                                            </Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                ) : (
-                                    <View className="gap-6">
-                                        {groupByTime(filteredOrders).map(
-                                            (section) => (
-                                                <View
-                                                    key={section.title}
-                                                    className="gap-3">
-                                                    {/* Section Header */}
-                                                    <View className="flex-row gap-2 items-center">
-                                                        <Icon
-                                                            name={
-                                                                SECTION_ICONS[
-                                                                    section
-                                                                        .title
-                                                                ]
-                                                            }
-                                                            size={16}
-                                                            color={
-                                                                NAV_THEME[
-                                                                    colorScheme
-                                                                ].text
-                                                            }
-                                                        />
-                                                        <Text className="text-sm font-semibold text-muted-foreground">
-                                                            {section.title}
-                                                        </Text>
-                                                        <View className="px-2 py-0.5 rounded-full bg-muted">
-                                                            <Text className="text-xs text-muted-foreground">
-                                                                {
-                                                                    section.data
-                                                                        .length
-                                                                }
-                                                            </Text>
-                                                        </View>
-                                                    </View>
-                                                    {/* Cards */}
-                                                    {section.data.map(
-                                                        renderOrderCard,
-                                                    )}
-                                                </View>
-                                            ),
-                                        )}
-                                    </View>
-                                )}
-                            </Animated.View>
-                        )}
-                    </View>
-                </ScrollView>
-            </View>
-
-            <PaymentSetupSplash
-                visible={showPaymentSplash}
-                onSetUp={() => {
-                    setShowPaymentSplash(false);
-                    router.push("/account/payments");
-                }}
-                onSkip={() => {
-                    setShowPaymentSplash(false);
-                    router.push("/order/create");
-                }}
-            />
-
-            {/* Filter Menu */}
-            {showFilterMenu && (
-                <View className="absolute inset-0" style={{ zIndex: 100 }}>
-                    <Animated.View
-                        entering={FadeIn.duration(200)}
-                        exiting={FadeOut.duration(200)}
-                        className="absolute inset-0">
-                        <Pressable
-                            onPress={() => setShowFilterMenu(false)}
-                            className="flex-1 bg-black/40"
-                        />
-                    </Animated.View>
-                    <View className="flex-1 justify-end">
-                        <Animated.View
-                            entering={SlideInDown.duration(300).easing(
-                                Easing.out(Easing.ease),
-                            )}
-                            exiting={SlideOutDown.duration(200).easing(
-                                Easing.in(Easing.ease),
-                            )}
-                            style={{ marginBottom: insets.bottom + 60 }}
-                            className="overflow-hidden mx-4 rounded-2xl border bg-card border-muted">
-                            <View className="p-4 border-b border-muted">
-                                <Text className="text-base font-semibold text-foreground">
-                                    Filter Orders
-                                </Text>
-                            </View>
-                            {FILTERS.map((f) => {
-                                const isActive = activeFilter === f.key;
-                                return (
-                                    <Pressable
-                                        key={f.key}
-                                        onPress={() => {
-                                            setActiveFilter(f.key);
-                                            setShowFilterMenu(false);
-                                        }}
-                                        className={`flex-row items-center gap-3 px-4 py-3.5 ${
-                                            isActive ? "bg-primary/10" : ""
-                                        } active:opacity-70`}>
-                                        <Icon
-                                            name={f.icon}
-                                            size={18}
-                                            color={
-                                                isActive
-                                                    ? NAV_THEME[colorScheme]
-                                                          .primary
-                                                    : NAV_THEME[colorScheme]
-                                                          .text
-                                            }
-                                        />
-                                        <Text
-                                            className={`flex-1 text-base ${
-                                                isActive
-                                                    ? "font-semibold text-primary"
-                                                    : "text-foreground"
-                                            }`}>
-                                            {f.label}
-                                        </Text>
-                                        {isActive && (
-                                            <Icon
-                                                name="Check"
-                                                size={18}
-                                                color={
-                                                    NAV_THEME[colorScheme]
-                                                        .primary
-                                                }
-                                            />
-                                        )}
-                                    </Pressable>
-                                );
-                            })}
-                        </Animated.View>
-                    </View>
-                </View>
-            )}
-        </ErrorBoundary>
-    );
+  return (["Today", "This Week", "Earlier"] as TimeSection[])
+    .filter((t) => groups[t].length > 0)
+    .map((t) => ({ title: t, data: groups[t] }));
 }
+
+const SECTION_ICONS: Record<
+  TimeSection,
+  React.ComponentProps<typeof Icon>["name"]
+> = {
+  Today: "Flame",
+  "This Week": "Calendar",
+  Earlier: "Archive",
+};
+
+type OrderItem = NonNullable<
+  ReturnType<typeof useQuery<typeof api.orders.getWithDetails>>
+>[number];
+
+function PulseDot({ active, color }: { active: boolean; color: string }) {
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(1);
+
+  useEffect(() => {
+    if (active) {
+      scale.value = withRepeat(
+        withSequence(
+          withTiming(1.5, { duration: 700 }),
+          withTiming(1, { duration: 700 }),
+        ),
+        -1,
+        false,
+      );
+      opacity.value = withRepeat(
+        withSequence(
+          withTiming(0.5, { duration: 700 }),
+          withTiming(1, { duration: 700 }),
+        ),
+        -1,
+        false,
+      );
+    } else {
+      cancelAnimation(scale);
+      cancelAnimation(opacity);
+      scale.value = 1;
+      opacity.value = 1;
+    }
+  }, [active, scale, opacity]);
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }));
+
+  return (
+    <View style={{ width: 6, height: 6 }}>
+      <View
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: 999,
+          backgroundColor: color,
+          position: "absolute",
+        }}
+      />
+      <Animated.View
+        style={[
+          {
+            width: 6,
+            height: 6,
+            borderRadius: 999,
+            backgroundColor: color,
+            position: "absolute",
+          },
+          animStyle,
+        ]}
+      />
+    </View>
+  );
+}
+
+function RunCard({
+  item,
+  onReorder,
+}: {
+  item: OrderItem;
+  onReorder: () => void;
+}) {
+  const { order, orderUsers, orderLocations, itemsCount } = item;
+  const isActive = order.status === "active";
+  const isCompleted = order.status === "completed";
+  const isLive = isActive && order.paused; // runner has it
+  const isOrdering = isActive && !order.paused; // collecting orders
+
+  // tone
+  let bg: string;
+  let fg: string;
+  let dotColor: string;
+  let statusLabel: string;
+  let cardBorder: string;
+
+  if (isLive) {
+    bg = BR.orangeSoft;
+    fg = BR.orangeDeep;
+    dotColor = BR.orange;
+    statusLabel = "Live";
+    cardBorder = "rgba(255,106,31,0.25)";
+  } else if (isOrdering) {
+    bg = BR.yolkSoft;
+    fg = "#7A4A20";
+    dotColor = BR.yolk;
+    statusLabel = "Ordering";
+    cardBorder = "rgba(255,197,66,0.3)";
+  } else if (isCompleted) {
+    bg = BR.mintSoft;
+    fg = BR.mintInk;
+    dotColor = BR.mint;
+    statusLabel = "Settled";
+    cardBorder = BR.line;
+  } else {
+    bg = BR.paper2;
+    fg = BR.ink2;
+    dotColor = BR.ink3;
+    statusLabel = "Cancelled";
+    cardBorder = BR.line;
+  }
+
+  const gradientColors: readonly [string, string] = [BR.orangeTint, "#ffffff"];
+
+  const pulsing = isLive || isOrdering;
+  const locationName = orderLocations?.[0]?.name;
+
+  const createdDate = new Date(order.createdAt);
+  const dateLabel = createdDate.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+
+  const users = orderUsers.map((ou) => ({
+    id: ou.id,
+    name: `${ou.user?.firstName ?? ""} ${ou.user?.lastName ?? ""}`,
+    avatarUrl: ou.user?.avatarUrl ?? null,
+  }));
+
+  const cardContent = (
+    <>
+      {/* Top section */}
+      <View style={styles.runCardTop}>
+        {/* Icon tile */}
+        <View style={[styles.iconTile, { backgroundColor: bg }]}>
+          <Icon name="ShoppingBag" size={20} color={fg} />
+        </View>
+
+        {/* Title block */}
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <View style={styles.runDateRow}>
+            <Icon name="Calendar" size={11} color={BR.ink3} />
+            <Text style={styles.runDateText}>{dateLabel}</Text>
+          </View>
+          <BrText
+            weight="bold"
+            style={{ fontSize: 17, marginTop: 2 }}
+            numberOfLines={1}
+          >
+            {order.name}
+          </BrText>
+          {locationName ? (
+            <View style={styles.locationRow}>
+              <Icon name="MapPin" size={11} color={BR.orange} />
+              <Text style={styles.locationText} numberOfLines={1}>
+                {locationName}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+
+        {/* Status pill */}
+        <View style={[styles.statusPill, { backgroundColor: bg }]}>
+          <PulseDot active={pulsing} color={dotColor} />
+          <Text style={[styles.statusPillText, { color: fg }]}>
+            {statusLabel}
+          </Text>
+        </View>
+      </View>
+
+      {/* Footer */}
+      <View
+        style={[
+          styles.runCardFooter,
+          {
+            backgroundColor: pulsing
+              ? "rgba(255,255,255,0.6)"
+              : "rgba(252,239,224,0.4)",
+          },
+        ]}
+      >
+        {/* Avatars */}
+        <View style={{ flexDirection: "row" }}>
+          {users.slice(0, 4).map((u, i) => (
+            <View key={u.id} style={{ marginLeft: i ? -8 : 0 }}>
+              <BrAvatar
+                name={u.name}
+                avatarUrl={u.avatarUrl}
+                size={26}
+                ring={pulsing ? BR.orangeTint : "#fff"}
+              />
+            </View>
+          ))}
+        </View>
+
+        <Text style={styles.footerPeople}>
+          {users.length} {users.length === 1 ? "person" : "people"}
+        </Text>
+        <Text style={styles.footerMeta}>
+          · {itemsCount ?? 0} {itemsCount === 1 ? "item" : "items"}
+        </Text>
+
+        <View style={{ flex: 1 }} />
+
+        {isCompleted ? (
+          <TouchableOpacity onPress={onReorder} style={styles.againChip}>
+            <Icon name="RotateCcw" size={11} color={BR.orangeDeep} />
+            <Text style={styles.againChipText}>Again</Text>
+          </TouchableOpacity>
+        ) : (
+          <Icon name="ArrowRight" size={16} color={BR.orange} />
+        )}
+      </View>
+    </>
+  );
+
+  return (
+    <LinearGradient
+      colors={gradientColors}
+      locations={[0, 0.65]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={[styles.runCard, { borderColor: cardBorder }]}
+    >
+      {cardContent}
+    </LinearGradient>
+  );
+}
+
+export default function GroupsTab() {
+  const { filter } = useLocalSearchParams<{ filter?: string }>();
+  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+
+  useEffect(() => {
+    if (
+      filter === "active" ||
+      filter === "completed" ||
+      filter === "needs_payment"
+    ) {
+      setActiveFilter(filter);
+    } else {
+      setActiveFilter("all");
+    }
+  }, [filter]);
+
+  const [showPaymentSplash, setShowPaymentSplash] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+  const [showEnterCode, setShowEnterCode] = useState(false);
+  const [isTransitionComplete, setIsTransitionComplete] = useState(false);
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() =>
+      setIsTransitionComplete(true),
+    );
+    return () => task.cancel();
+  }, []);
+
+  const currentUser = useQuery(api.users.getCurrentUser);
+  const connectedAccount = useQuery(api.payments.getMyConnectedAccount);
+  const hasCreatedOrder = useQuery(api.orders.hasCurrentUserCreatedOrder);
+  const data = useQuery(api.orders.getWithDetails);
+  const isPending =
+    data === undefined ||
+    currentUser === undefined ||
+    connectedAccount === undefined ||
+    hasCreatedOrder === undefined ||
+    !isTransitionComplete;
+  const userId = currentUser?._id;
+
+  const handleCreateOrder = useCallback(() => {
+    if (connectedAccount?.chargesEnabled || hasCreatedOrder) {
+      router.push("/order/create");
+    } else {
+      setShowPaymentSplash(true);
+    }
+  }, [connectedAccount, hasCreatedOrder]);
+
+  const handleScanCode = (code: string) => {
+    setShowScanner(false);
+    router.push(`/join/${encodeURIComponent(code)}`);
+  };
+  const handleEnterCode = () => {
+    setShowScanner(false);
+    setTimeout(() => setShowEnterCode(true), 300);
+  };
+
+  const filteredOrders = data?.filter((item) => {
+    if (!userId) return false;
+    const myOrderUser = item.orderUsers.find((ou) => ou.userId === userId);
+    if (!myOrderUser) return false;
+    if (activeFilter === "active") return item.order.status === "active";
+    if (activeFilter === "completed") return item.order.status === "completed";
+    if (activeFilter === "needs_payment") {
+      if (item.order.status !== "active" || !item.order.paused) return false;
+      if (item.order.creatorId === userId) return false;
+      if (Number(myOrderUser.amountOwed) <= 0) return false;
+      return (
+        myOrderUser.settlementStatus === "unpaid" ||
+        myOrderUser.settlementStatus === "claimed"
+      );
+    }
+    return true;
+  });
+
+  const grouped = filteredOrders ? groupByTime(filteredOrders) : [];
+
+  // Filter counts
+  const allCount = data?.length ?? 0;
+  const liveCount =
+    data?.filter((i) => i.order.status === "active").length ?? 0;
+  const doneCount =
+    data?.filter((i) => i.order.status === "completed").length ?? 0;
+  const needsPaymentCount =
+    data?.filter((item) => {
+      if (!userId) return false;
+      const myOrderUser = item.orderUsers.find((ou) => ou.userId === userId);
+      if (!myOrderUser) return false;
+      if (item.order.status !== "active" || !item.order.paused) return false;
+      if (item.order.creatorId === userId) return false;
+      if (Number(myOrderUser.amountOwed) <= 0) return false;
+      return (
+        myOrderUser.settlementStatus === "unpaid" ||
+        myOrderUser.settlementStatus === "claimed"
+      );
+    }).length ?? 0;
+  const countFor = (key: FilterType) => {
+    if (key === "all") return allCount;
+    if (key === "active") return liveCount;
+    if (key === "completed") return doneCount;
+    if (key === "needs_payment") return needsPaymentCount;
+    return 0;
+  };
+
+  return (
+    <ErrorBoundary>
+      <SafeAreaView
+        edges={["top"]}
+        style={{ flex: 1, backgroundColor: BR.paper }}
+      >
+        {/* Top bar */}
+        <View style={styles.topBar}>
+          <Image
+            source={require("@/assets/images/icon-no-bg.png")}
+            style={{ width: 44, height: 44 }}
+            resizeMode="contain"
+          />
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <Pressable
+              onPress={() => setShowScanner(true)}
+              style={styles.iconBtn}
+            >
+              <Icon name="ScanLine" size={18} color={BR.ink} />
+            </Pressable>
+          </View>
+        </View>
+
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 50 + insets.bottom }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={{ paddingHorizontal: 18 }}>
+            {/* Title */}
+            <Animated.View
+              entering={FadeInUp.duration(300)}
+              style={styles.titleRow}
+            >
+              <View style={styles.titleText}>
+                <BrText variant="eyebrow">
+                  {allCount} {allCount === 1 ? "run" : "runs"} total
+                </BrText>
+                <BrText variant="h1" style={{ marginTop: 4 }}>
+                  Your{" "}
+                  <BrText variant="h1" color={BR.orange}>
+                    runs.
+                  </BrText>
+                </BrText>
+              </View>
+              <AnimatedPressable
+                scale={0.93}
+                onPress={handleCreateOrder}
+                style={styles.newRunChip}
+              >
+                <Icon name="Plus" size={14} color="#fff" strokeWidth={3} />
+                <Text style={styles.newRunChipText}>New run</Text>
+              </AnimatedPressable>
+            </Animated.View>
+
+            {/* Filter row */}
+            <Animated.View entering={FadeInUp.duration(300).delay(25)}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.filterRow}
+                style={{ marginHorizontal: -18 }}
+              >
+                {FILTERS.map((f) => {
+                  const active = activeFilter === f.key;
+                  const count = countFor(f.key);
+                  if (f.key === "needs_payment" && count === 0) return null;
+                  return (
+                    <AnimatedPressable
+                      key={f.key}
+                      scale={0.93}
+                      onPress={() => setActiveFilter(f.key)}
+                      style={[
+                        styles.filterChip,
+                        {
+                          backgroundColor: active ? BR.ink : BR.card,
+                          borderColor: active ? BR.ink : BR.line,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.filterChipText,
+                          { color: active ? "#fff" : BR.ink2 },
+                        ]}
+                      >
+                        {f.label}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.filterCount,
+                          {
+                            backgroundColor: active
+                              ? "rgba(255,255,255,0.18)"
+                              : BR.paper2,
+                            color: active ? "#fff" : BR.ink3,
+                          },
+                        ]}
+                      >
+                        {count}
+                      </Text>
+                    </AnimatedPressable>
+                  );
+                })}
+              </ScrollView>
+            </Animated.View>
+
+            {/* Skeleton */}
+            {isPending && (
+              <Skeleton>
+                <View style={{ gap: 22, marginTop: 22 }}>
+                  {[1, 2].map((g) => (
+                    <View key={g} style={{ gap: 10 }}>
+                      <SkeletonBlock width={100} height={14} />
+                      {[1, 2].map((c) => (
+                        <View
+                          key={c}
+                          style={{
+                            borderRadius: BR_RADIUS.lg,
+                            overflow: "hidden",
+                          }}
+                        >
+                          <SkeletonBlock
+                            width="100%"
+                            height={120}
+                            rounded="rounded-3xl"
+                          />
+                        </View>
+                      ))}
+                    </View>
+                  ))}
+                </View>
+              </Skeleton>
+            )}
+
+            {/* Content */}
+            {!isPending && (
+              <Animated.View entering={FadeInUp.duration(300).delay(25)}>
+                {grouped.length === 0 ? (
+                  <View style={styles.emptyState}>
+                    <Text style={{ fontSize: 36 }}>🍽️</Text>
+                    <BrText variant="h3" style={{ marginTop: 12 }}>
+                      No runs here
+                    </BrText>
+                    <BrText
+                      style={{
+                        fontSize: 13,
+                        color: BR.ink3,
+                        marginTop: 4,
+                        textAlign: "center",
+                      }}
+                    >
+                      Try a different filter — or start something new.
+                    </BrText>
+                    <Pressable
+                      onPress={handleCreateOrder}
+                      style={styles.emptyBtn}
+                    >
+                      <Icon name="Plus" size={16} color="#fff" />
+                      <Text
+                        style={{
+                          color: "#fff",
+                          fontWeight: "700",
+                          fontSize: 14,
+                        }}
+                      >
+                        New run
+                      </Text>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <View style={{ gap: 22, marginTop: 22 }}>
+                    {grouped.map((section, gi) => (
+                      <Animated.View
+                        key={section.title}
+                        entering={FadeInUp.duration(300).delay(50 + gi * 20)}
+                      >
+                        {/* Section header */}
+                        <View style={styles.sectionHeader}>
+                          <Icon
+                            name={SECTION_ICONS[section.title]}
+                            size={12}
+                            color={BR.ink3}
+                          />
+                          <BrText variant="eyebrow">{section.title}</BrText>
+                          <Text style={styles.sectionCount}>
+                            · {section.data.length}
+                          </Text>
+                          <View style={styles.sectionLine} />
+                        </View>
+
+                        {/* Cards */}
+                        <View style={{ gap: 10, marginTop: 10 }}>
+                          {section.data.map((item) => {
+                            const card = (
+                              <RunCard
+                                key={item.order.id}
+                                item={item}
+                                onReorder={() => {
+                                  const locationNamesParam = encodeURIComponent(
+                                    JSON.stringify(
+                                      item.orderLocations?.map(
+                                        (ol) => ol.name,
+                                      ) ?? [],
+                                    ),
+                                  );
+                                  const friendIds = item.orderUsers
+                                    .filter((ou) => ou.userId !== userId)
+                                    .map((ou) => ou.userId)
+                                    .join(",");
+                                  router.push(
+                                    `/order/create?reorderName=${encodeURIComponent(item.order.name)}&reorderLocationNames=${locationNamesParam}&reorderFriendIds=${friendIds}`,
+                                  );
+                                }}
+                              />
+                            );
+
+                            if (item.order.status === "active") {
+                              return (
+                                <Link
+                                  href={`/order/${item.order.id}`}
+                                  key={item.order.id}
+                                  asChild
+                                >
+                                  <AnimatedPressable scale={0.98}>
+                                    {card}
+                                  </AnimatedPressable>
+                                </Link>
+                              );
+                            }
+                            if (item.order.status === "completed") {
+                              return (
+                                <Link
+                                  href={`/order/completed-order?orderId=${item.order.id}`}
+                                  key={item.order.id}
+                                  asChild
+                                >
+                                  <AnimatedPressable scale={0.98}>
+                                    {card}
+                                  </AnimatedPressable>
+                                </Link>
+                              );
+                            }
+                            return <View key={item.order.id}>{card}</View>;
+                          })}
+                        </View>
+                      </Animated.View>
+                    ))}
+
+                    {/* End of list */}
+                    <Text style={styles.endOfList}>
+                      · end of {END_OF_LABELS[activeFilter]} ·
+                    </Text>
+                  </View>
+                )}
+              </Animated.View>
+            )}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+
+      <PaymentSetupSplash
+        visible={showPaymentSplash}
+        onSetUp={() => {
+          setShowPaymentSplash(false);
+          router.push("/account/payments");
+        }}
+        onSkip={() => {
+          setShowPaymentSplash(false);
+          router.push("/order/create");
+        }}
+      />
+      <QRScannerModal
+        visible={showScanner}
+        onScan={handleScanCode}
+        onClose={() => setShowScanner(false)}
+        onEnterCode={handleEnterCode}
+      />
+      <EnterCodeModal
+        visible={showEnterCode}
+        onSubmit={(code) => {
+          setShowEnterCode(false);
+          router.push(`/join/${encodeURIComponent(code)}`);
+        }}
+        onClose={() => setShowEnterCode(false)}
+      />
+    </ErrorBoundary>
+  );
+}
+
+const styles = StyleSheet.create({
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  iconBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 999,
+    backgroundColor: BR.paper2,
+    borderWidth: 1,
+    borderColor: BR.line,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  titleText: {
+    flex: 1,
+    minWidth: 0,
+  },
+  filterRow: {
+    flexDirection: "row",
+    gap: 6,
+    paddingHorizontal: 18,
+    paddingTop: 10,
+    paddingBottom: 16,
+  },
+  filterChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  filterChipText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  filterCount: {
+    fontSize: 10,
+    fontWeight: "600",
+    fontFamily: BR_FONT.mono,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 999,
+    overflow: "hidden",
+  },
+  newRunChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: BR.orange,
+    flexShrink: 0,
+    shadowColor: BR.orange,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  newRunChipText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  sectionCount: {
+    fontFamily: BR_FONT.mono,
+    fontSize: 10,
+    color: BR.ink3,
+  },
+  sectionLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: BR.line,
+  },
+  runCard: {
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+    overflow: "hidden",
+  },
+  runCardTop: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    padding: 14,
+    paddingBottom: 12,
+  },
+  iconTile: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 0,
+    elevation: 0,
+  },
+  runDateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  runDateText: {
+    fontFamily: BR_FONT.mono,
+    fontSize: 11,
+    color: BR.ink3,
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 2,
+  },
+  locationText: {
+    fontSize: 12,
+    color: BR.ink2,
+  },
+  statusPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    flexShrink: 0,
+  },
+  statusPillText: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  runCardFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: BR.line,
+    borderStyle: "dashed",
+  },
+  footerPeople: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: BR.ink2,
+  },
+  footerMeta: {
+    fontSize: 11,
+    color: BR.ink3,
+    fontFamily: BR_FONT.mono,
+  },
+  againChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: BR.orangeSoft,
+  },
+  againChipText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: BR.orangeDeep,
+  },
+  emptyState: {
+    alignItems: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+    marginTop: 24,
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: BR.line2,
+    backgroundColor: BR.card,
+  },
+  emptyBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 999,
+    backgroundColor: BR.orange,
+    marginTop: 16,
+  },
+  endOfList: {
+    textAlign: "center",
+    fontSize: 11,
+    color: BR.ink3,
+    fontFamily: BR_FONT.mono,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    marginTop: 4,
+    marginBottom: 8,
+  },
+});
