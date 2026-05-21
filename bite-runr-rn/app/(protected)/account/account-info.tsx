@@ -19,10 +19,12 @@ import type { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { BrAvatar, BrInput, BrText } from "@/components/br";
 import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { authClient } from "@/lib/auth-client";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
 export default function AccountInfoScreen() {
   const user = useQuery(api.users.getCurrentUser);
+  const deleteEligibility = useQuery(api.accountDeletion.canDeleteAccount);
   const updateProfile = useMutation(api.users.updateProfile);
   const generateUploadUrl = useMutation(api.users.generateAvatarUploadUrl);
   const updateAvatar = useMutation(api.users.updateAvatar);
@@ -33,6 +35,7 @@ export default function AccountInfoScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -132,6 +135,76 @@ export default function AccountInfoScreen() {
         },
       },
     ]);
+  };
+
+  const performDeleteAccount = async () => {
+    if (deleteEligibility && !deleteEligibility.allowed) {
+      Alert.alert(
+        "Cannot delete account",
+        deleteEligibility.reason ?? "Your account cannot be deleted right now.",
+      );
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const result = await authClient.deleteUser();
+      if (result.error) {
+        const message = result.error.message ?? "Failed to delete account";
+        if (
+          message.toLowerCase().includes("session") ||
+          message.toLowerCase().includes("expired")
+        ) {
+          Alert.alert(
+            "Sign in required",
+            "For security, sign out and sign back in, then try deleting your account again.",
+          );
+        } else {
+          Alert.alert("Error", message);
+        }
+        return;
+      }
+      router.replace("/(auth)/sign-in");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to delete account";
+      if (
+        message.toLowerCase().includes("session") ||
+        message.toLowerCase().includes("expired")
+      ) {
+        Alert.alert(
+          "Sign in required",
+          "For security, sign out and sign back in, then try deleting your account again.",
+        );
+      } else {
+        Alert.alert("Error", message);
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    if (deleteEligibility && !deleteEligibility.allowed) {
+      Alert.alert(
+        "Cannot delete account",
+        deleteEligibility.reason ?? "Your account cannot be deleted right now.",
+      );
+      return;
+    }
+
+    Alert.alert(
+      "Delete account",
+      "This permanently deletes your account and profile data. Orders you shared with others may keep history without your name. This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete account",
+          style: "destructive",
+          onPress: performDeleteAccount,
+        },
+      ],
+    );
   };
 
   const showAvatarOptions = () => {
@@ -309,6 +382,45 @@ export default function AccountInfoScreen() {
                 </Text>
               </Pressable>
             </Animated.View>
+
+            {/* Danger zone */}
+            <Animated.View
+              entering={FadeInUp.duration(300).delay(80)}
+              style={styles.dangerZone}
+            >
+              <BrText
+                variant="eyebrow"
+                style={{ color: BR.coralInk, marginBottom: 14 }}
+              >
+                Danger zone
+              </BrText>
+              <Pressable
+                onPress={handleDeleteAccount}
+                disabled={isDeleting}
+                style={[styles.deleteBtn, isDeleting && { opacity: 0.5 }]}
+                accessibilityRole="button"
+                accessibilityLabel="Delete account"
+                className="rounded-2xl"
+              >
+                <View style={styles.deleteBtnInner}>
+                  {isDeleting ? (
+                    <ActivityIndicator size="small" color={BR.coralInk} />
+                  ) : (
+                    <Icon name="Trash2" size={18} color={BR.coralInk} />
+                  )}
+                  <Text style={styles.deleteBtnText}>Delete account</Text>
+                </View>
+              </Pressable>
+              <Text style={styles.dangerCopy}>
+                This permanently removes your profile, runs, and squad history.
+                It can't be undone.
+              </Text>
+              {deleteEligibility && !deleteEligibility.allowed ? (
+                <Text style={styles.dangerBlocked}>
+                  {deleteEligibility.reason}
+                </Text>
+              ) : null}
+            </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
       )}
@@ -413,5 +525,41 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  dangerZone: {
+    marginTop: 36,
+  },
+  dangerCopy: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: BR.ink3,
+    textAlign: "center",
+    marginTop: 14,
+    paddingHorizontal: 12,
+  },
+  dangerBlocked: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: BR.coralInk,
+    fontFamily: BR_FONT.mono,
+    textAlign: "center",
+    marginTop: 10,
+  },
+  deleteBtn: {
+    height: 56,
+    backgroundColor: BR.coralSoft,
+    overflow: "hidden",
+  },
+  deleteBtnInner: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  deleteBtnText: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: BR.coralInk,
+    marginLeft: 10,
   },
 });

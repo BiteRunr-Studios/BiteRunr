@@ -311,9 +311,6 @@ export default function HomeTab() {
                           <PulseDot color="#fff" size={6} />
                           <Text style={styles.livePillText}>LIVE ORDER</Text>
                         </View>
-                        <Text style={styles.heroMonoText}>
-                          {activeOrder.orderUsers?.length ?? 0} in
-                        </Text>
                       </View>
 
                       <BrText

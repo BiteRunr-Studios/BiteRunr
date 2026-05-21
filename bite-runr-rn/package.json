@@ -8,6 +8,7 @@
     "android": "npm run sync-styles && expo run:android",
     "ios": "npm run sync-styles && expo run:ios",
     "phone": "npm run sync-styles && expo run:ios --device \"${IPHONE:-}\"",
+    "sim": "npm run sync-styles && expo run:ios --device \"iPhone 17 Pro\"",
     "prebuild": "npm run sync-styles && expo prebuild",
     "web": "npm run sync-styles && expo start --web",
     "convex:br": "convex dev --configure existing --team biterunr --project biterunr-d182d --dev-deployment cloud",
