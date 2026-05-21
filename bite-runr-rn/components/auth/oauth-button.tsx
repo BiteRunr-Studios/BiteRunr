@@ -3,7 +3,14 @@ import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { Pressable, Text, Animated, Alert, Platform } from "react-native";
 import { Flow } from "react-native-animated-spinkit";
 import { Ionicons } from "@expo/vector-icons";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
+import {
+  appleCredentialNames,
+  stashPendingAppleName,
+} from "@/lib/apple-auth-helpers";
+import { useAuth } from "@/lib/convex-auth-context";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { BR } from "@/lib/br-theme";
 
@@ -28,6 +35,8 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
   onError,
 }) => {
   const [loading, setLoading] = useState(false);
+  const syncUser = useMutation(api.users.syncUser);
+  const { refreshSession } = useAuth();
 
   const defaultLabel = useMemo(() => {
     switch (provider) {
@@ -79,12 +88,44 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
           throw new Error("Apple sign-in did not return an identity token.");
         }
 
+        const appleName = appleCredentialNames(credential.fullName);
+        if (appleName) {
+          await stashPendingAppleName(appleName);
+        }
+
         await authClient.signIn.social({
           provider,
           idToken: {
             token: credential.identityToken,
+            // Forwarded by better-auth >= 1.5.5; harmless on 1.4.9.
+            ...(appleName && {
+              user: {
+                name: {
+                  firstName: appleName.firstName ?? "",
+                  lastName: appleName.lastName ?? "",
+                },
+                email: credential.email ?? "",
+              },
+            }),
           },
         });
+
+        if (appleName) {
+          await refreshSession();
+          for (let attempt = 0; attempt < 5; attempt++) {
+            try {
+              await syncUser({
+                firstName: appleName.firstName,
+                lastName: appleName.lastName,
+              });
+              break;
+            } catch (syncError) {
+              if (attempt === 4) throw syncError;
+              await new Promise((resolve) => setTimeout(resolve, 300));
+              await refreshSession();
+            }
+          }
+        }
         return;
       }
 
@@ -116,7 +157,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [isDisabled, provider, onError]);
+  }, [isDisabled, provider, onError, refreshSession, syncUser]);
 
   return (
     <Pressable

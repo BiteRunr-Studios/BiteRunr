@@ -298,28 +298,35 @@ export default function AccountInfoScreen() {
             {/* Name fields */}
             <Animated.View
               entering={FadeInUp.duration(300).delay(30)}
-              style={{ gap: 10 }}
+              style={{ gap: 16 }}
             >
-              <BrText variant="eyebrow" style={{ marginBottom: 2 }}>
-                Name
-              </BrText>
-              <BrInput
-                value={firstName}
-                onChangeText={setFirstName}
-                placeholder="First name"
-                leftIcon="User"
-                autoCapitalize="words"
-                returnKeyType="next"
-              />
-              <BrInput
-                value={lastName}
-                onChangeText={setLastName}
-                placeholder="Last name"
-                leftIcon="User"
-                autoCapitalize="words"
-                returnKeyType="done"
-                onSubmitEditing={handleSave}
-              />
+              <View>
+                <BrText variant="eyebrow" style={{ marginBottom: 8 }}>
+                  First name
+                </BrText>
+                <BrInput
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  placeholder="First name"
+                  leftIcon="User"
+                  autoCapitalize="words"
+                  returnKeyType="next"
+                />
+              </View>
+              <View>
+                <BrText variant="eyebrow" style={{ marginBottom: 8 }}>
+                  Last name
+                </BrText>
+                <BrInput
+                  value={lastName}
+                  onChangeText={setLastName}
+                  placeholder="Last name"
+                  leftIcon="User"
+                  autoCapitalize="words"
+                  returnKeyType="done"
+                  onSubmitEditing={handleSave}
+                />
+              </View>
             </Animated.View>
 
             {/* Email (locked) */}

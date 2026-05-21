@@ -7,8 +7,24 @@ import { getUserId, ensureUser } from "./authHelper";
  * Call this after OAuth login to ensure the user exists in the app's database.
  * Returns the user's data if successful, null if not authenticated.
  */
+function shouldApplyOAuthName(
+  firstName: string,
+  lastName: string,
+  email: string,
+) {
+  if (firstName === "User" && !lastName.trim()) return true;
+  if (firstName.includes("@") || lastName.includes("@")) return true;
+  if (firstName === email) return true;
+  const localPart = email.split("@")[0]?.toLowerCase();
+  if (localPart && firstName.toLowerCase() === localPart) return true;
+  return false;
+}
+
 export const syncUser = mutation({
-  args: {},
+  args: {
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+  },
   returns: v.union(
     v.object({
       _id: v.id("users"),
@@ -21,12 +37,27 @@ export const syncUser = mutation({
     }),
     v.null(),
   ),
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
     const userId = await ensureUser(ctx);
     if (!userId) return null;
 
-    const user = await ctx.db.get(userId);
+    let user = await ctx.db.get(userId);
     if (!user) return null;
+
+    const oauthFirstName = args.firstName?.trim();
+    const oauthLastName = args.lastName?.trim() ?? "";
+    if (
+      (oauthFirstName || oauthLastName) &&
+      shouldApplyOAuthName(user.firstName, user.lastName, user.email)
+    ) {
+      const updates: { firstName?: string; lastName?: string } = {};
+      if (oauthFirstName) updates.firstName = oauthFirstName;
+      if (oauthLastName || oauthFirstName) updates.lastName = oauthLastName;
+      if (Object.keys(updates).length > 0) {
+        await ctx.db.patch(userId, updates);
+        user = (await ctx.db.get(userId)) ?? user;
+      }
+    }
 
     return {
       _id: user._id,
