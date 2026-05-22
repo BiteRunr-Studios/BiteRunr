@@ -111,9 +111,7 @@
       "imports": [
         {
           "source": "@tanstack/eslint-config",
-          "specifiers": [
-            "tanstackConfig"
-          ]
+          "specifiers": ["tanstackConfig"]
         }
       ],
       "exports": [],
@@ -185,20 +183,14 @@
       "imports": [
         {
           "source": "@tanstack/react-router",
-          "specifiers": [
-            "createRouter"
-          ]
+          "specifiers": ["createRouter"]
         },
         {
           "source": "./routeTree.gen",
-          "specifiers": [
-            "routeTree"
-          ]
+          "specifiers": ["routeTree"]
         }
       ],
-      "exports": [
-        "getRouter"
-      ],
+      "exports": ["getRouter"],
       "totalLines": 16,
       "hasStructuralAnalysis": true
     },
@@ -214,9 +206,7 @@
         },
         {
           "name": "RootDocument",
-          "params": [
-            "{ children }"
-          ],
+          "params": ["{ children }"],
           "exported": false,
           "lineCount": 26
         }
@@ -225,35 +215,22 @@
       "imports": [
         {
           "source": "@tanstack/react-router",
-          "specifiers": [
-            "HeadContent",
-            "Outlet",
-            "Scripts",
-            "createRootRoute"
-          ]
+          "specifiers": ["HeadContent", "Outlet", "Scripts", "createRootRoute"]
         },
         {
           "source": "@tanstack/react-router-devtools",
-          "specifiers": [
-            "TanStackRouterDevtoolsPanel"
-          ]
+          "specifiers": ["TanStackRouterDevtoolsPanel"]
         },
         {
           "source": "@tanstack/react-devtools",
-          "specifiers": [
-            "TanStackDevtools"
-          ]
+          "specifiers": ["TanStackDevtools"]
         },
         {
           "source": "../styles.css?url",
-          "specifiers": [
-            "appCss"
-          ]
+          "specifiers": ["appCss"]
         }
       ],
-      "exports": [
-        "Route"
-      ],
+      "exports": ["Route"],
       "totalLines": 63,
       "hasStructuralAnalysis": true
     },
@@ -272,23 +249,14 @@
       "imports": [
         {
           "source": "@tanstack/react-router",
-          "specifiers": [
-            "Link",
-            "createFileRoute"
-          ]
+          "specifiers": ["Link", "createFileRoute"]
         },
         {
           "source": "lucide-react",
-          "specifiers": [
-            "ArrowRight",
-            "FileText",
-            "ShieldCheck"
-          ]
+          "specifiers": ["ArrowRight", "FileText", "ShieldCheck"]
         }
       ],
-      "exports": [
-        "Route"
-      ],
+      "exports": ["Route"],
       "totalLines": 61,
       "hasStructuralAnalysis": true
     },
@@ -307,14 +275,10 @@
       "imports": [
         {
           "source": "@tanstack/react-router",
-          "specifiers": [
-            "createFileRoute"
-          ]
+          "specifiers": ["createFileRoute"]
         }
       ],
-      "exports": [
-        "Route"
-      ],
+      "exports": ["Route"],
       "totalLines": 228,
       "hasStructuralAnalysis": true
     },
@@ -326,38 +290,26 @@
       "imports": [
         {
           "source": "./routes/__root",
-          "specifiers": [
-            "rootRouteImport"
-          ]
+          "specifiers": ["rootRouteImport"]
         },
         {
           "source": "./routes/privacy",
-          "specifiers": [
-            "PrivacyRouteImport"
-          ]
+          "specifiers": ["PrivacyRouteImport"]
         },
         {
           "source": "./routes/index",
-          "specifiers": [
-            "IndexRouteImport"
-          ]
+          "specifiers": ["IndexRouteImport"]
         },
         {
           "source": "./router.tsx",
-          "specifiers": [
-            "getRouter"
-          ]
+          "specifiers": ["getRouter"]
         },
         {
           "source": "@tanstack/react-start",
-          "specifiers": [
-            "createStart"
-          ]
+          "specifiers": ["createStart"]
         }
       ],
-      "exports": [
-        "routeTree"
-      ],
+      "exports": ["routeTree"],
       "totalLines": 87,
       "hasStructuralAnalysis": true
     },
@@ -389,45 +341,31 @@
       "imports": [
         {
           "source": "vite",
-          "specifiers": [
-            "defineConfig"
-          ]
+          "specifiers": ["defineConfig"]
         },
         {
           "source": "@tanstack/devtools-vite",
-          "specifiers": [
-            "devtools"
-          ]
+          "specifiers": ["devtools"]
         },
         {
           "source": "@tanstack/react-start/plugin/vite",
-          "specifiers": [
-            "tanstackStart"
-          ]
+          "specifiers": ["tanstackStart"]
         },
         {
           "source": "@vitejs/plugin-react",
-          "specifiers": [
-            "viteReact"
-          ]
+          "specifiers": ["viteReact"]
         },
         {
           "source": "vite-tsconfig-paths",
-          "specifiers": [
-            "viteTsConfigPaths"
-          ]
+          "specifiers": ["viteTsConfigPaths"]
         },
         {
           "source": "@tailwindcss/vite",
-          "specifiers": [
-            "tailwindcss"
-          ]
+          "specifiers": ["tailwindcss"]
         },
         {
           "source": "nitro/vite",
-          "specifiers": [
-            "nitro"
-          ]
+          "specifiers": ["nitro"]
         }
       ],
       "exports": [],
@@ -452,21 +390,15 @@
       "imports": [
         {
           "source": "node:path",
-          "specifiers": [
-            "path"
-          ]
+          "specifiers": ["path"]
         },
         {
           "source": "dotenv",
-          "specifiers": [
-            "loadDotenv"
-          ]
+          "specifiers": ["loadDotenv"]
         },
         {
           "source": "expo/config",
-          "specifiers": [
-            "ExpoConfig"
-          ]
+          "specifiers": ["ExpoConfig"]
         }
       ],
       "exports": [],
@@ -479,10 +411,7 @@
       "functions": [
         {
           "name": "requireEnv",
-          "params": [
-            "name",
-            "value"
-          ],
+          "params": ["name", "value"],
           "exported": false,
           "lineCount": 6
         },
@@ -494,9 +423,7 @@
         },
         {
           "name": "RootAppShell",
-          "params": [
-            "{ fontsLoaded }"
-          ],
+          "params": ["{ fontsLoaded }"],
           "exported": false,
           "lineCount": 60
         },
@@ -511,69 +438,43 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "Platform",
-            "View",
-            "Text"
-          ]
+          "specifiers": ["Platform", "View", "Text"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "Stack"
-          ]
+          "specifiers": ["Stack"]
         },
         {
           "source": "expo-status-bar",
-          "specifiers": [
-            "StatusBar"
-          ]
+          "specifiers": ["StatusBar"]
         },
         {
           "source": "react-native-gesture-handler",
-          "specifiers": [
-            "GestureHandlerRootView"
-          ]
+          "specifiers": ["GestureHandlerRootView"]
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaProvider"
-          ]
+          "specifiers": ["SafeAreaProvider"]
         },
         {
           "source": "@stripe/stripe-react-native",
-          "specifiers": [
-            "StripeProvider"
-          ]
+          "specifiers": ["StripeProvider"]
         },
         {
           "source": "@react-navigation/native",
-          "specifiers": [
-            "ThemeProvider",
-            "DarkTheme",
-            "DefaultTheme",
-            "Theme"
-          ]
+          "specifiers": ["ThemeProvider", "DarkTheme", "DefaultTheme", "Theme"]
         },
         {
           "source": "react-native-toast-message",
-          "specifiers": [
-            "Toast",
-            "BaseToastProps"
-          ]
+          "specifiers": ["Toast", "BaseToastProps"]
         },
         {
           "source": "expo-splash-screen",
-          "specifiers": [
-            "* as SplashScreen"
-          ]
+          "specifiers": ["* as SplashScreen"]
         },
         {
           "source": "@expo-google-fonts/bricolage-grotesque",
@@ -597,61 +498,42 @@
         },
         {
           "source": "@/lib/constants",
-          "specifiers": [
-            "NAV_THEME"
-          ]
+          "specifiers": ["NAV_THEME"]
         },
         {
           "source": "@/lib/use-color-scheme",
-          "specifiers": [
-            "useColorScheme"
-          ]
+          "specifiers": ["useColorScheme"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "ConvexReactClient"
-          ]
+          "specifiers": ["ConvexReactClient"]
         },
         {
           "source": "@convex-dev/better-auth/react",
-          "specifiers": [
-            "ConvexBetterAuthProvider"
-          ]
+          "specifiers": ["ConvexBetterAuthProvider"]
         },
         {
           "source": "@/lib/convex-auth-context",
-          "specifiers": [
-            "AuthProvider",
-            "useAuth"
-          ]
+          "specifiers": ["AuthProvider", "useAuth"]
         },
         {
           "source": "@/lib/auth-client",
-          "specifiers": [
-            "authClient"
-          ]
+          "specifiers": ["authClient"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/animated-splash-screen",
-          "specifiers": [
-            "AnimatedSplashScreen"
-          ]
+          "specifiers": ["AnimatedSplashScreen"]
         },
         {
           "source": "../global.css",
           "specifiers": []
         }
       ],
-      "exports": [
-        "RootLayout"
-      ],
+      "exports": ["RootLayout"],
       "totalLines": 301,
       "hasStructuralAnalysis": true
     },
@@ -670,21 +552,14 @@
       "imports": [
         {
           "source": "expo-router",
-          "specifiers": [
-            "Redirect",
-            "Stack"
-          ]
+          "specifiers": ["Redirect", "Stack"]
         },
         {
           "source": "@/lib/convex-auth-context",
-          "specifiers": [
-            "useAuth"
-          ]
+          "specifiers": ["useAuth"]
         }
       ],
-      "exports": [
-        "AuthLayout"
-      ],
+      "exports": ["AuthLayout"],
       "totalLines": 49,
       "hasStructuralAnalysis": true
     },
@@ -703,11 +578,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useCallback",
-            "useRef",
-            "useState"
-          ]
+          "specifiers": ["useCallback", "useRef", "useState"]
         },
         {
           "source": "react-native",
@@ -726,34 +597,23 @@
         },
         {
           "source": "expo-status-bar",
-          "specifiers": [
-            "StatusBar"
-          ]
+          "specifiers": ["StatusBar"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router"
-          ]
+          "specifiers": ["router"]
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView"
-          ]
+          "specifiers": ["SafeAreaView"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrInput",
-            "BrText"
-          ]
+          "specifiers": ["BrInput", "BrText"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/lib/auth-helpers",
@@ -766,26 +626,18 @@
         },
         {
           "source": "@/lib/auth-client",
-          "specifiers": [
-            "authClient"
-          ]
+          "specifiers": ["authClient"]
         },
         {
           "source": "@/lib/convex-auth-context",
-          "specifiers": [
-            "useAuth"
-          ]
+          "specifiers": ["useAuth"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR"
-          ]
+          "specifiers": ["BR"]
         }
       ],
-      "exports": [
-        "EmailSignInScreen"
-      ],
+      "exports": ["EmailSignInScreen"],
       "totalLines": 232,
       "hasStructuralAnalysis": true
     },
@@ -795,17 +647,13 @@
       "functions": [
         {
           "name": "FloatCard",
-          "params": [
-            "{\n  delay = 0,\n  rotate,\n  children,\n  style,\n}"
-          ],
+          "params": ["{\n  delay = 0,\n  rotate,\n  children,\n  style,\n}"],
           "exported": false,
           "lineCount": 34
         },
         {
           "name": "Twinkle",
-          "params": [
-            "{\n  left,\n  top,\n  size,\n  delay = 0,\n}"
-          ],
+          "params": ["{\n  left,\n  top,\n  size,\n  delay = 0,\n}"],
           "exported": false,
           "lineCount": 47
         },
@@ -826,9 +674,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useEffect"
-          ]
+          "specifiers": ["useEffect"]
         },
         {
           "source": "react-native",
@@ -842,15 +688,11 @@
         },
         {
           "source": "expo-status-bar",
-          "specifiers": [
-            "StatusBar"
-          ]
+          "specifiers": ["StatusBar"]
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView"
-          ]
+          "specifiers": ["SafeAreaView"]
         },
         {
           "source": "react-native-reanimated",
@@ -867,46 +709,30 @@
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router"
-          ]
+          "specifiers": ["router"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText",
-            "BrSticker"
-          ]
+          "specifiers": ["BrText", "BrSticker"]
         },
         {
           "source": "@/components/auth/oauth-button",
-          "specifiers": [
-            "OAuthButton"
-          ]
+          "specifiers": ["OAuthButton"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT"
-          ]
+          "specifiers": ["BR", "BR_FONT"]
         },
         {
           "source": "expo-linking",
-          "specifiers": [
-            "openURL"
-          ]
+          "specifiers": ["openURL"]
         }
       ],
-      "exports": [
-        "SignInScreen"
-      ],
+      "exports": ["SignInScreen"],
       "totalLines": 440,
       "hasStructuralAnalysis": true
     },
@@ -925,11 +751,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useState",
-            "useCallback",
-            "useRef"
-          ]
+          "specifiers": ["useState", "useCallback", "useRef"]
         },
         {
           "source": "react-native",
@@ -948,22 +770,15 @@
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView"
-          ]
+          "specifiers": ["SafeAreaView"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router"
-          ]
+          "specifiers": ["router"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrInput",
-            "BrText"
-          ]
+          "specifiers": ["BrInput", "BrText"]
         },
         {
           "source": "@/lib/auth-helpers",
@@ -976,32 +791,22 @@
         },
         {
           "source": "@/lib/convex-auth-context",
-          "specifiers": [
-            "useAuth"
-          ]
+          "specifiers": ["useAuth"]
         },
         {
           "source": "@/lib/auth-client",
-          "specifiers": [
-            "authClient"
-          ]
+          "specifiers": ["authClient"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR"
-          ]
+          "specifiers": ["BR"]
         }
       ],
-      "exports": [
-        "SignUpScreen"
-      ],
+      "exports": ["SignUpScreen"],
       "totalLines": 336,
       "hasStructuralAnalysis": true
     },
@@ -1020,43 +825,27 @@
       "imports": [
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/lib/convex-auth-context",
-          "specifiers": [
-            "useAuth"
-          ]
+          "specifiers": ["useAuth"]
         },
         {
           "source": "@/lib/auth-client",
-          "specifiers": [
-            "authClient"
-          ]
+          "specifiers": ["authClient"]
         },
         {
           "source": "@/lib/auth-helpers",
-          "specifiers": [
-            "getAuthErrorMessage"
-          ]
+          "specifiers": ["getAuthErrorMessage"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router",
-            "useLocalSearchParams"
-          ]
+          "specifiers": ["router", "useLocalSearchParams"]
         },
         {
           "source": "react",
-          "specifiers": [
-            "useState",
-            "useCallback",
-            "useRef",
-            "useEffect"
-          ]
+          "specifiers": ["useState", "useCallback", "useRef", "useEffect"]
         },
         {
           "source": "react-native",
@@ -1076,29 +865,18 @@
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView"
-          ]
+          "specifiers": ["SafeAreaView"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS",
-            "BR_SHADOW"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         }
       ],
-      "exports": [
-        "VerifyOtpScreen"
-      ],
+      "exports": ["VerifyOtpScreen"],
       "totalLines": 363,
       "hasStructuralAnalysis": true
     },
@@ -1117,59 +895,38 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useEffect",
-            "useRef"
-          ]
+          "specifiers": ["useEffect", "useRef"]
         },
         {
           "source": "@/lib/convex-auth-context",
-          "specifiers": [
-            "useAuth"
-          ]
+          "specifiers": ["useAuth"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "Redirect",
-            "Stack"
-          ]
+          "specifiers": ["Redirect", "Stack"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "View"
-          ]
+          "specifiers": ["View"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useMutation"
-          ]
+          "specifiers": ["useMutation"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/lib/hooks/use-push-notifications",
-          "specifiers": [
-            "usePushNotifications"
-          ]
+          "specifiers": ["usePushNotifications"]
         },
         {
           "source": "@/components/notifications/notification-permission-modal",
-          "specifiers": [
-            "NotificationPermissionModal"
-          ]
+          "specifiers": ["NotificationPermissionModal"]
         }
       ],
-      "exports": [
-        "unstable_settings",
-        "ProtectedLayout"
-      ],
+      "exports": ["unstable_settings", "ProtectedLayout"],
       "totalLines": 82,
       "hasStructuralAnalysis": true
     },
@@ -1188,23 +945,14 @@
       "imports": [
         {
           "source": "expo-router/unstable-native-tabs",
-          "specifiers": [
-            "NativeTabs",
-            "Label",
-            "Icon",
-            "VectorIcon"
-          ]
+          "specifiers": ["NativeTabs", "Label", "Icon", "VectorIcon"]
         },
         {
           "source": "@expo/vector-icons/Ionicons",
-          "specifiers": [
-            "Ionicons"
-          ]
+          "specifiers": ["Ionicons"]
         }
       ],
-      "exports": [
-        "TabLayout"
-      ],
+      "exports": ["TabLayout"],
       "totalLines": 42,
       "hasStructuralAnalysis": true
     },
@@ -1214,9 +962,7 @@
       "functions": [
         {
           "name": "runnerLevel",
-          "params": [
-            "runs"
-          ],
+          "params": ["runs"],
           "exported": false,
           "lineCount": 7
         },
@@ -1228,9 +974,7 @@
         },
         {
           "name": "StatCard",
-          "params": [
-            "{ label, value }"
-          ],
+          "params": ["{ label, value }"],
           "exported": false,
           "lineCount": 8
         },
@@ -1245,9 +989,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useContext"
-          ]
+          "specifiers": ["useContext"]
         },
         {
           "source": "react-native",
@@ -1263,87 +1005,54 @@
         },
         {
           "source": "@/components/common/error-boundary",
-          "specifiers": [
-            "ErrorBoundary"
-          ]
+          "specifiers": ["ErrorBoundary"]
         },
         {
           "source": "@/lib/convex-auth-context",
-          "specifiers": [
-            "AuthContext"
-          ]
+          "specifiers": ["AuthContext"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useQuery"
-          ]
+          "specifiers": ["useQuery"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router"
-          ]
+          "specifiers": ["router"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/common/skeleton",
-          "specifiers": [
-            "Skeleton",
-            "SkeletonBlock"
-          ]
+          "specifiers": ["Skeleton", "SkeletonBlock"]
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView",
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrAvatar",
-            "BrSticker",
-            "BrText"
-          ]
+          "specifiers": ["BrAvatar", "BrSticker", "BrText"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
         },
         {
           "source": "react-native-reanimated",
-          "specifiers": [
-            "Animated",
-            "FadeInUp"
-          ]
+          "specifiers": ["Animated", "FadeInUp"]
         },
         {
           "source": "lucide-react-native",
-          "specifiers": [
-            "icons"
-          ]
+          "specifiers": ["icons"]
         }
       ],
-      "exports": [
-        "AccountTab"
-      ],
+      "exports": ["AccountTab"],
       "totalLines": 506,
       "hasStructuralAnalysis": true
     },
@@ -1353,26 +1062,20 @@
       "functions": [
         {
           "name": "groupByTime",
-          "params": [
-            "items"
-          ],
+          "params": ["items"],
           "returnType": "{ title: TimeSection; data: T[] }[]",
           "exported": false,
           "lineCount": 27
         },
         {
           "name": "PulseDot",
-          "params": [
-            "{ active, color }"
-          ],
+          "params": ["{ active, color }"],
           "exported": false,
           "lineCount": 61
         },
         {
           "name": "RunCard",
-          "params": [
-            "{\n  item,\n  onReorder,\n}"
-          ],
+          "params": ["{\n  item,\n  onReorder,\n}"],
           "exported": false,
           "lineCount": 163
         },
@@ -1387,11 +1090,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useState",
-            "useCallback",
-            "useEffect"
-          ]
+          "specifiers": ["useState", "useCallback", "useEffect"]
         },
         {
           "source": "react-native",
@@ -1421,99 +1120,62 @@
         },
         {
           "source": "expo-linear-gradient",
-          "specifiers": [
-            "LinearGradient"
-          ]
+          "specifiers": ["LinearGradient"]
         },
         {
           "source": "@/components/common/animated-pressable",
-          "specifiers": [
-            "AnimatedPressable"
-          ]
+          "specifiers": ["AnimatedPressable"]
         },
         {
           "source": "@/components/common/error-boundary",
-          "specifiers": [
-            "ErrorBoundary"
-          ]
+          "specifiers": ["ErrorBoundary"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "Link",
-            "router",
-            "useLocalSearchParams"
-          ]
+          "specifiers": ["Link", "router", "useLocalSearchParams"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useQuery"
-          ]
+          "specifiers": ["useQuery"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/common/skeleton",
-          "specifiers": [
-            "Skeleton",
-            "SkeletonBlock"
-          ]
+          "specifiers": ["Skeleton", "SkeletonBlock"]
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView",
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
         },
         {
           "source": "@/components/payment-setup-splash",
-          "specifiers": [
-            "PaymentSetupSplash"
-          ]
+          "specifiers": ["PaymentSetupSplash"]
         },
         {
           "source": "@/components/qr-scanner-modal",
-          "specifiers": [
-            "QRScannerModal"
-          ]
+          "specifiers": ["QRScannerModal"]
         },
         {
           "source": "@/components/enter-code-modal",
-          "specifiers": [
-            "EnterCodeModal"
-          ]
+          "specifiers": ["EnterCodeModal"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrAvatar",
-            "BrText"
-          ]
+          "specifiers": ["BrAvatar", "BrText"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
         }
       ],
-      "exports": [
-        "GroupsTab"
-      ],
+      "exports": ["GroupsTab"],
       "totalLines": 937,
       "hasStructuralAnalysis": true
     },
@@ -1523,9 +1185,7 @@
       "functions": [
         {
           "name": "PulseDot",
-          "params": [
-            "{\n  color = \"#fff\",\n  size = 8,\n}"
-          ],
+          "params": ["{\n  color = \"#fff\",\n  size = 8,\n}"],
           "exported": false,
           "lineCount": 45
         },
@@ -1545,9 +1205,7 @@
         },
         {
           "name": "IconButton",
-          "params": [
-            "{\n  name,\n  onPress,\n  badge,\n}"
-          ],
+          "params": ["{\n  name,\n  onPress,\n  badge,\n}"],
           "exported": false,
           "lineCount": 20
         },
@@ -1568,17 +1226,11 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react",
-          "specifiers": [
-            "useState",
-            "useEffect",
-            "useCallback"
-          ]
+          "specifiers": ["useState", "useEffect", "useCallback"]
         },
         {
           "source": "react-native",
@@ -1606,96 +1258,58 @@
         },
         {
           "source": "expo-linear-gradient",
-          "specifiers": [
-            "LinearGradient"
-          ]
+          "specifiers": ["LinearGradient"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useQuery",
-            "useAction"
-          ]
+          "specifiers": ["useQuery", "useAction"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "useRouter"
-          ]
+          "specifiers": ["useRouter"]
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView",
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/common/error-boundary",
-          "specifiers": [
-            "ErrorBoundary"
-          ]
+          "specifiers": ["ErrorBoundary"]
         },
         {
           "source": "@/components/common/skeleton",
-          "specifiers": [
-            "Skeleton",
-            "SkeletonBlock"
-          ]
+          "specifiers": ["Skeleton", "SkeletonBlock"]
         },
         {
           "source": "@/components/payment-setup-splash",
-          "specifiers": [
-            "PaymentSetupSplash"
-          ]
+          "specifiers": ["PaymentSetupSplash"]
         },
         {
           "source": "@/components/qr-scanner-modal",
-          "specifiers": [
-            "QRScannerModal"
-          ]
+          "specifiers": ["QRScannerModal"]
         },
         {
           "source": "@/components/enter-code-modal",
-          "specifiers": [
-            "EnterCodeModal"
-          ]
+          "specifiers": ["EnterCodeModal"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrCard",
-            "BrChip",
-            "BrText",
-            "BrAvatar",
-            "BrSticker"
-          ]
+          "specifiers": ["BrCard", "BrChip", "BrText", "BrAvatar", "BrSticker"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS",
-            "BR_SHADOW"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
         }
       ],
-      "exports": [
-        "HomeTab"
-      ],
+      "exports": ["HomeTab"],
       "totalLines": 1116,
       "hasStructuralAnalysis": true
     },
@@ -1714,14 +1328,10 @@
       "imports": [
         {
           "source": "expo-router",
-          "specifiers": [
-            "Stack"
-          ]
+          "specifiers": ["Stack"]
         }
       ],
-      "exports": [
-        "AccountLayout"
-      ],
+      "exports": ["AccountLayout"],
       "totalLines": 13,
       "hasStructuralAnalysis": true
     },
@@ -1748,9 +1358,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react-native",
@@ -1765,54 +1373,34 @@
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView"
-          ]
+          "specifiers": ["SafeAreaView"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router"
-          ]
+          "specifiers": ["router"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon",
-            "IconName"
-          ]
+          "specifiers": ["Icon", "IconName"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         },
         {
           "source": "react-native-reanimated",
-          "specifiers": [
-            "Animated",
-            "FadeInUp"
-          ]
+          "specifiers": ["Animated", "FadeInUp"]
         },
         {
           "source": "expo-constants",
-          "specifiers": [
-            "Constants"
-          ]
+          "specifiers": ["Constants"]
         }
       ],
-      "exports": [
-        "AboutScreen"
-      ],
+      "exports": ["AboutScreen"],
       "totalLines": 295,
       "hasStructuralAnalysis": true
     },
@@ -1831,10 +1419,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useState",
-            "useEffect"
-          ]
+          "specifiers": ["useState", "useEffect"]
         },
         {
           "source": "react-native",
@@ -1852,74 +1437,46 @@
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView"
-          ]
+          "specifiers": ["SafeAreaView"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router"
-          ]
+          "specifiers": ["router"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useQuery",
-            "useMutation"
-          ]
+          "specifiers": ["useQuery", "useMutation"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "expo-image-picker",
-          "specifiers": [
-            "* as ImagePicker"
-          ]
+          "specifiers": ["* as ImagePicker"]
         },
         {
           "source": "@/convex/_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrAvatar",
-            "BrInput",
-            "BrText"
-          ]
+          "specifiers": ["BrAvatar", "BrInput", "BrText"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
         },
         {
           "source": "react-native-reanimated",
-          "specifiers": [
-            "Animated",
-            "FadeInUp"
-          ]
+          "specifiers": ["Animated", "FadeInUp"]
         }
       ],
-      "exports": [
-        "AccountInfoScreen"
-      ],
+      "exports": ["AccountInfoScreen"],
       "totalLines": 418,
       "hasStructuralAnalysis": true
     },
@@ -1929,25 +1486,19 @@
       "functions": [
         {
           "name": "TabPill",
-          "params": [
-            "{\n  label,\n  active,\n  badge,\n  onPress,\n}"
-          ],
+          "params": ["{\n  label,\n  active,\n  badge,\n  onPress,\n}"],
           "exported": false,
           "lineCount": 58
         },
         {
           "name": "CreateSquadSheet",
-          "params": [
-            "{\n  visible,\n  onClose,\n  friends,\n}"
-          ],
+          "params": ["{\n  visible,\n  onClose,\n  friends,\n}"],
           "exported": false,
           "lineCount": 340
         },
         {
           "name": "FriendsTab",
-          "params": [
-            "{ pendingCount }"
-          ],
+          "params": ["{ pendingCount }"],
           "exported": false,
           "lineCount": 295
         },
@@ -1974,15 +1525,11 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useState"
-          ]
+          "specifiers": ["useState"]
         },
         {
           "source": "expo-haptics",
-          "specifiers": [
-            "* as Haptics"
-          ]
+          "specifiers": ["* as Haptics"]
         },
         {
           "source": "react-native",
@@ -2002,93 +1549,58 @@
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView",
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router",
-            "useLocalSearchParams"
-          ]
+          "specifiers": ["router", "useLocalSearchParams"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useQuery",
-            "useMutation"
-          ]
+          "specifiers": ["useQuery", "useMutation"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/convex/_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         },
         {
           "source": "@/components/common/animated-pressable",
-          "specifiers": [
-            "AnimatedPressable"
-          ]
+          "specifiers": ["AnimatedPressable"]
         },
         {
           "source": "@/components/common/avatar",
-          "specifiers": [
-            "Avatar"
-          ]
+          "specifiers": ["Avatar"]
         },
         {
           "source": "@/components/common/skeleton",
-          "specifiers": [
-            "Skeleton",
-            "SkeletonBlock"
-          ]
+          "specifiers": ["Skeleton", "SkeletonBlock"]
         },
         {
           "source": "@/lib/fonts",
-          "specifiers": [
-            "FONTS",
-            "COLORS"
-          ]
+          "specifiers": ["FONTS", "COLORS"]
         },
         {
           "source": "react-native-reanimated",
-          "specifiers": [
-            "Animated",
-            "FadeInUp",
-            "FadeIn"
-          ]
+          "specifiers": ["Animated", "FadeInUp", "FadeIn"]
         },
         {
           "source": "lucide-react-native",
-          "specifiers": [
-            "icons"
-          ]
+          "specifiers": ["icons"]
         }
       ],
-      "exports": [
-        "FriendsScreen"
-      ],
+      "exports": ["FriendsScreen"],
       "totalLines": 1329,
       "hasStructuralAnalysis": true
     },
@@ -2098,18 +1610,14 @@
       "functions": [
         {
           "name": "sanitizeCurrencyAmount",
-          "params": [
-            "value"
-          ],
+          "params": ["value"],
           "returnType": "number",
           "exported": false,
           "lineCount": 4
         },
         {
           "name": "formatCurrency",
-          "params": [
-            "amount"
-          ],
+          "params": ["amount"],
           "returnType": "string",
           "exported": false,
           "lineCount": 3
@@ -2149,54 +1657,35 @@
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView"
-          ]
+          "specifiers": ["SafeAreaView"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router"
-          ]
+          "specifiers": ["router"]
         },
         {
           "source": "expo-web-browser",
-          "specifiers": [
-            "* as WebBrowser"
-          ]
+          "specifiers": ["* as WebBrowser"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useQuery",
-            "useAction"
-          ]
+          "specifiers": ["useQuery", "useAction"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         },
         {
           "source": "react-native-reanimated",
@@ -2211,14 +1700,10 @@
         },
         {
           "source": "expo-linking",
-          "specifiers": [
-            "openURL"
-          ]
+          "specifiers": ["openURL"]
         }
       ],
-      "exports": [
-        "PaymentsScreen"
-      ],
+      "exports": ["PaymentsScreen"],
       "totalLines": 1270,
       "hasStructuralAnalysis": true
     },
@@ -2228,9 +1713,7 @@
       "functions": [
         {
           "name": "FAQItem",
-          "params": [
-            "{ question, answer }"
-          ],
+          "params": ["{ question, answer }"],
           "exported": false,
           "lineCount": 18
         },
@@ -2245,9 +1728,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useState"
-          ]
+          "specifiers": ["useState"]
         },
         {
           "source": "react-native",
@@ -2263,47 +1744,30 @@
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView"
-          ]
+          "specifiers": ["SafeAreaView"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router"
-          ]
+          "specifiers": ["router"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         },
         {
           "source": "react-native-reanimated",
-          "specifiers": [
-            "Animated",
-            "FadeInUp"
-          ]
+          "specifiers": ["Animated", "FadeInUp"]
         }
       ],
-      "exports": [
-        "SupportScreen"
-      ],
+      "exports": ["SupportScreen"],
       "totalLines": 314,
       "hasStructuralAnalysis": true
     },
@@ -2322,14 +1786,10 @@
       "imports": [
         {
           "source": "expo-router",
-          "specifiers": [
-            "Stack"
-          ]
+          "specifiers": ["Stack"]
         }
       ],
-      "exports": [
-        "OrderLayout"
-      ],
+      "exports": ["OrderLayout"],
       "totalLines": 14,
       "hasStructuralAnalysis": true
     },
@@ -2339,9 +1799,7 @@
       "functions": [
         {
           "name": "UserItemsList",
-          "params": [
-            "{ orderUserId }"
-          ],
+          "params": ["{ orderUserId }"],
           "exported": false,
           "lineCount": 53
         },
@@ -2377,39 +1835,23 @@
         },
         {
           "source": "react-native-animated-spinkit",
-          "specifiers": [
-            "Flow"
-          ]
+          "specifiers": ["Flow"]
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView",
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router",
-            "useLocalSearchParams"
-          ]
+          "specifiers": ["router", "useLocalSearchParams"]
         },
         {
           "source": "react",
-          "specifiers": [
-            "useCallback",
-            "useEffect",
-            "useRef",
-            "useState"
-          ]
+          "specifiers": ["useCallback", "useEffect", "useRef", "useState"]
         },
         {
           "source": "react-native-actions-sheet",
-          "specifiers": [
-            "ActionSheet",
-            "ActionSheetRef"
-          ]
+          "specifiers": ["ActionSheet", "ActionSheetRef"]
         },
         {
           "source": "react-native-reanimated",
@@ -2430,75 +1872,46 @@
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useAction",
-            "useQuery",
-            "useMutation"
-          ]
+          "specifiers": ["useAction", "useQuery", "useMutation"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/convex/_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "@/components/qr-code-modal",
-          "specifiers": [
-            "QRCodeModal"
-          ]
+          "specifiers": ["QRCodeModal"]
         },
         {
           "source": "react-native-gesture-handler/ReanimatedSwipeable",
-          "specifiers": [
-            "Swipeable"
-          ]
+          "specifiers": ["Swipeable"]
         },
         {
           "source": "@/components/common/skeleton",
-          "specifiers": [
-            "Skeleton",
-            "SkeletonBlock"
-          ]
+          "specifiers": ["Skeleton", "SkeletonBlock"]
         },
         {
           "source": "@/hooks/useAiOrderSummary",
-          "specifiers": [
-            "primeAiOrderSummaryRequest"
-          ]
+          "specifiers": ["primeAiOrderSummaryRequest"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrAvatar",
-            "BrButton",
-            "BrText"
-          ]
+          "specifiers": ["BrAvatar", "BrButton", "BrText"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
         }
       ],
-      "exports": [
-        "SpecificOrder"
-      ],
+      "exports": ["SpecificOrder"],
       "totalLines": 1421,
       "hasStructuralAnalysis": true
     },
@@ -2508,9 +1921,7 @@
       "functions": [
         {
           "name": "TornEdge",
-          "params": [
-            "{ position }"
-          ],
+          "params": ["{ position }"],
           "exported": false,
           "lineCount": 36
         },
@@ -2531,10 +1942,7 @@
       "imports": [
         {
           "source": "expo-router",
-          "specifiers": [
-            "useLocalSearchParams",
-            "router"
-          ]
+          "specifiers": ["useLocalSearchParams", "router"]
         },
         {
           "source": "react-native",
@@ -2549,76 +1957,46 @@
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView",
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useQuery"
-          ]
+          "specifiers": ["useQuery"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/convex/_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/common/skeleton",
-          "specifiers": [
-            "Skeleton",
-            "SkeletonBlock"
-          ]
+          "specifiers": ["Skeleton", "SkeletonBlock"]
         },
         {
           "source": "react-native-reanimated",
-          "specifiers": [
-            "Animated",
-            "FadeInUp"
-          ]
+          "specifiers": ["Animated", "FadeInUp"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrAvatar",
-            "BrText"
-          ]
+          "specifiers": ["BrAvatar", "BrText"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
         },
         {
           "source": "react",
-          "specifiers": [
-            "useCallback",
-            "useMemo",
-            "useState"
-          ]
+          "specifiers": ["useCallback", "useMemo", "useState"]
         }
       ],
-      "exports": [
-        "CompletedOrder"
-      ],
+      "exports": ["CompletedOrder"],
       "totalLines": 697,
       "hasStructuralAnalysis": true
     },
@@ -2628,9 +2006,7 @@
       "functions": [
         {
           "name": "parseReorderLocationNames",
-          "params": [
-            "raw"
-          ],
+          "params": ["raw"],
           "exported": false,
           "lineCount": 14
         },
@@ -2651,18 +2027,11 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "memo",
-            "useCallback",
-            "useMemo",
-            "useState"
-          ]
+          "specifiers": ["memo", "useCallback", "useMemo", "useState"]
         },
         {
           "source": "expo-haptics",
-          "specifiers": [
-            "* as Haptics"
-          ]
+          "specifiers": ["* as Haptics"]
         },
         {
           "source": "react-native",
@@ -2683,78 +2052,46 @@
         },
         {
           "source": "react-native-reanimated",
-          "specifiers": [
-            "Animated",
-            "FadeInDown",
-            "FadeInUp",
-            "ZoomIn"
-          ]
+          "specifiers": ["Animated", "FadeInDown", "FadeInUp", "ZoomIn"]
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView",
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router",
-            "useLocalSearchParams"
-          ]
+          "specifiers": ["router", "useLocalSearchParams"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useQuery"
-          ]
+          "specifiers": ["useQuery"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/lib/hooks/use-order-api",
-          "specifiers": [
-            "useFriends",
-            "useCreateOrder"
-          ]
+          "specifiers": ["useFriends", "useCreateOrder"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/common/animated-pressable",
-          "specifiers": [
-            "AnimatedPressable"
-          ]
+          "specifiers": ["AnimatedPressable"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText",
-            "BrAvatar"
-          ]
+          "specifiers": ["BrText", "BrAvatar"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS",
-            "BR_SHADOW"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
         }
       ],
-      "exports": [
-        "CreateOrder"
-      ],
+      "exports": ["CreateOrder"],
       "totalLines": 1097,
       "hasStructuralAnalysis": true
     },
@@ -2764,67 +2101,49 @@
       "functions": [
         {
           "name": "normalizeOrderItems",
-          "params": [
-            "items"
-          ],
+          "params": ["items"],
           "exported": false,
           "lineCount": 3
         },
         {
           "name": "areOrderItemsEqual",
-          "params": [
-            "left",
-            "right"
-          ],
+          "params": ["left", "right"],
           "exported": false,
           "lineCount": 4
         },
         {
           "name": "normalizeVoiceTranscript",
-          "params": [
-            "text"
-          ],
+          "params": ["text"],
           "exported": false,
           "lineCount": 3
         },
         {
           "name": "mergeVoiceTranscriptSegments",
-          "params": [
-            "committed",
-            "incoming"
-          ],
+          "params": ["committed", "incoming"],
           "exported": false,
           "lineCount": 14
         },
         {
           "name": "extractSpeechTranscript",
-          "params": [
-            "event"
-          ],
+          "params": ["event"],
           "exported": false,
           "lineCount": 27
         },
         {
           "name": "getSpeechErrorMessage",
-          "params": [
-            "error"
-          ],
+          "params": ["error"],
           "exported": false,
           "lineCount": 23
         },
         {
           "name": "VoiceRippleOrb",
-          "params": [
-            "{\n  isListening,\n  isProcessingVoice,\n}"
-          ],
+          "params": ["{\n  isListening,\n  isProcessingVoice,\n}"],
           "exported": false,
           "lineCount": 136
         },
         {
           "name": "TornEdge",
-          "params": [
-            "{ position }"
-          ],
+          "params": ["{ position }"],
           "exported": false,
           "lineCount": 36
         },
@@ -2839,10 +2158,7 @@
       "imports": [
         {
           "source": "expo-router",
-          "specifiers": [
-            "router",
-            "useLocalSearchParams"
-          ]
+          "specifiers": ["router", "useLocalSearchParams"]
         },
         {
           "source": "react",
@@ -2882,30 +2198,19 @@
         },
         {
           "source": "react-native-toast-message",
-          "specifiers": [
-            "Toast"
-          ]
+          "specifiers": ["Toast"]
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView",
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
         },
         {
           "source": "@react-navigation/native",
-          "specifiers": [
-            "useNavigation"
-          ]
+          "specifiers": ["useNavigation"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useAction",
-            "useMutation",
-            "useQuery"
-          ]
+          "specifiers": ["useAction", "useMutation", "useQuery"]
         },
         {
           "source": "react-native-reanimated",
@@ -2924,46 +2229,30 @@
         },
         {
           "source": "react-native-animated-spinkit",
-          "specifiers": [
-            "Flow"
-          ]
+          "specifiers": ["Flow"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/convex/_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
         }
       ],
-      "exports": [
-        "WriteOrder"
-      ],
+      "exports": ["WriteOrder"],
       "totalLines": 1865,
       "hasStructuralAnalysis": true
     },
@@ -2973,36 +2262,27 @@
       "functions": [
         {
           "name": "formatCents",
-          "params": [
-            "cents"
-          ],
+          "params": ["cents"],
           "returnType": "string",
           "exported": false,
           "lineCount": 4
         },
         {
           "name": "getCurrentStep",
-          "params": [
-            "settlementStatus",
-            "stripePayment"
-          ],
+          "params": ["settlementStatus", "stripePayment"],
           "returnType": "0 | 1 | 2",
           "exported": false,
           "lineCount": 12
         },
         {
           "name": "TornEdge",
-          "params": [
-            "{ position }"
-          ],
+          "params": ["{ position }"],
           "exported": false,
           "lineCount": 35
         },
         {
           "name": "StatusStepper",
-          "params": [
-            "{ currentStep }"
-          ],
+          "params": ["{ currentStep }"],
           "exported": false,
           "lineCount": 37
         },
@@ -3017,16 +2297,11 @@
       "imports": [
         {
           "source": "expo-router",
-          "specifiers": [
-            "router",
-            "useLocalSearchParams"
-          ]
+          "specifiers": ["router", "useLocalSearchParams"]
         },
         {
           "source": "react",
-          "specifiers": [
-            "useState"
-          ]
+          "specifiers": ["useState"]
         },
         {
           "source": "react-native",
@@ -3044,71 +2319,42 @@
         },
         {
           "source": "react-native-reanimated",
-          "specifiers": [
-            "Animated",
-            "FadeInUp"
-          ]
+          "specifiers": ["Animated", "FadeInUp"]
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView",
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
         },
         {
           "source": "@stripe/stripe-react-native",
-          "specifiers": [
-            "useStripe"
-          ]
+          "specifiers": ["useStripe"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useQuery",
-            "useMutation",
-            "useAction"
-          ]
+          "specifiers": ["useQuery", "useMutation", "useAction"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/convex/_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText",
-            "BrChip",
-            "BrAvatar"
-          ]
+          "specifiers": ["BrText", "BrChip", "BrAvatar"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS",
-            "BR_SHADOW"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
         }
       ],
-      "exports": [
-        "MySettlement"
-      ],
+      "exports": ["MySettlement"],
       "totalLines": 685,
       "hasStructuralAnalysis": true
     },
@@ -3118,35 +2364,27 @@
       "functions": [
         {
           "name": "formatCents",
-          "params": [
-            "cents"
-          ],
+          "params": ["cents"],
           "returnType": "string",
           "exported": false,
           "lineCount": 4
         },
         {
           "name": "getMemberVisualStatus",
-          "params": [
-            "m"
-          ],
+          "params": ["m"],
           "returnType": "\"paid\" | \"sent\" | \"outstanding\"",
           "exported": false,
           "lineCount": 9
         },
         {
           "name": "TornEdge",
-          "params": [
-            "{ position }"
-          ],
+          "params": ["{ position }"],
           "exported": false,
           "lineCount": 35
         },
         {
           "name": "MemberRow",
-          "params": [
-            "{\n  m,\n  idx,\n  onMarkCash,\n}"
-          ],
+          "params": ["{\n  m,\n  idx,\n  onMarkCash,\n}"],
           "exported": false,
           "lineCount": 89
         },
@@ -3161,16 +2399,11 @@
       "imports": [
         {
           "source": "expo-router",
-          "specifiers": [
-            "router",
-            "useLocalSearchParams"
-          ]
+          "specifiers": ["router", "useLocalSearchParams"]
         },
         {
           "source": "react",
-          "specifiers": [
-            "useState"
-          ]
+          "specifiers": ["useState"]
         },
         {
           "source": "react-native",
@@ -3188,64 +2421,38 @@
         },
         {
           "source": "react-native-reanimated",
-          "specifiers": [
-            "Animated",
-            "FadeInUp"
-          ]
+          "specifiers": ["Animated", "FadeInUp"]
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView",
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useQuery",
-            "useMutation"
-          ]
+          "specifiers": ["useQuery", "useMutation"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/convex/_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText",
-            "BrChip",
-            "BrAvatar"
-          ]
+          "specifiers": ["BrText", "BrChip", "BrAvatar"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS",
-            "BR_SHADOW"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
         }
       ],
-      "exports": [
-        "Settlement"
-      ],
+      "exports": ["Settlement"],
       "totalLines": 786,
       "hasStructuralAnalysis": true
     },
@@ -3255,9 +2462,7 @@
       "functions": [
         {
           "name": "SummaryShell",
-          "params": [
-            "{\n  title,\n  children,\n}"
-          ],
+          "params": ["{\n  title,\n  children,\n}"],
           "exported": false,
           "lineCount": 25
         },
@@ -3275,9 +2480,7 @@
         },
         {
           "name": "CornerBracket",
-          "params": [
-            "{\n  corner,\n  color,\n}"
-          ],
+          "params": ["{\n  corner,\n  color,\n}"],
           "exported": false,
           "lineCount": 47
         },
@@ -3300,10 +2503,7 @@
       "imports": [
         {
           "source": "expo-router",
-          "specifiers": [
-            "router",
-            "useLocalSearchParams"
-          ]
+          "specifiers": ["router", "useLocalSearchParams"]
         },
         {
           "source": "react",
@@ -3331,105 +2531,67 @@
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView",
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
         },
         {
           "source": "react-native-actions-sheet",
-          "specifiers": [
-            "ActionSheet",
-            "ActionSheetRef"
-          ]
+          "specifiers": ["ActionSheet", "ActionSheetRef"]
         },
         {
           "source": "expo-haptics",
-          "specifiers": [
-            "* as Haptics"
-          ]
+          "specifiers": ["* as Haptics"]
         },
         {
           "source": "react-native-toast-message",
-          "specifiers": [
-            "Toast"
-          ]
+          "specifiers": ["Toast"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useQuery"
-          ]
+          "specifiers": ["useQuery"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/convex/_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         },
         {
           "source": "@/components/common/skeleton",
-          "specifiers": [
-            "Skeleton",
-            "SkeletonBlock"
-          ]
+          "specifiers": ["Skeleton", "SkeletonBlock"]
         },
         {
           "source": "@/hooks/useReceiptScanning",
-          "specifiers": [
-            "useReceiptScanning"
-          ]
+          "specifiers": ["useReceiptScanning"]
         },
         {
           "source": "@/hooks/useManualPriceEntry",
-          "specifiers": [
-            "useManualPriceEntry"
-          ]
+          "specifiers": ["useManualPriceEntry"]
         },
         {
           "source": "@/hooks/useAiOrderSummary",
-          "specifiers": [
-            "RawOrderSummaryData",
-            "useAiOrderSummary"
-          ]
+          "specifiers": ["RawOrderSummaryData", "useAiOrderSummary"]
         },
         {
           "source": "@/components/receipt-confirmation-sheet",
-          "specifiers": [
-            "ReceiptConfirmationSheet"
-          ]
+          "specifiers": ["ReceiptConfirmationSheet"]
         },
         {
           "source": "@/components/manual-price-entry-sheet",
-          "specifiers": [
-            "ManualPriceEntrySheet"
-          ]
+          "specifiers": ["ManualPriceEntrySheet"]
         },
         {
           "source": "react-native-reanimated",
@@ -3451,9 +2613,7 @@
           ]
         }
       ],
-      "exports": [
-        "OrderSummary"
-      ],
+      "exports": ["OrderSummary"],
       "totalLines": 1431,
       "hasStructuralAnalysis": true
     },
@@ -3472,28 +2632,18 @@
       "imports": [
         {
           "source": "react-native",
-          "specifiers": [
-            "Text",
-            "View"
-          ]
+          "specifiers": ["Text", "View"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "Link",
-            "Stack"
-          ]
+          "specifiers": ["Link", "Stack"]
         },
         {
           "source": "@/components/common/container",
-          "specifiers": [
-            "Container"
-          ]
+          "specifiers": ["Container"]
         }
       ],
-      "exports": [
-        "NotFoundScreen"
-      ],
+      "exports": ["NotFoundScreen"],
       "totalLines": 30,
       "hasStructuralAnalysis": true
     },
@@ -3512,9 +2662,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useState"
-          ]
+          "specifiers": ["useState"]
         },
         {
           "source": "react-native",
@@ -3529,70 +2677,42 @@
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView"
-          ]
+          "specifiers": ["SafeAreaView"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router",
-            "useLocalSearchParams"
-          ]
+          "specifiers": ["router", "useLocalSearchParams"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useQuery",
-            "useMutation"
-          ]
+          "specifiers": ["useQuery", "useMutation"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/lib/convex-auth-context",
-          "specifiers": [
-            "useAuth"
-          ]
+          "specifiers": ["useAuth"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrAvatar",
-            "BrCard",
-            "BrChip",
-            "BrText"
-          ]
+          "specifiers": ["BrAvatar", "BrCard", "BrChip", "BrText"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS",
-            "BR_SHADOW"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
         },
         {
           "source": "@/lib/fonts",
-          "specifiers": [
-            "COLORS"
-          ]
+          "specifiers": ["COLORS"]
         }
       ],
-      "exports": [
-        "JoinOrderPage"
-      ],
+      "exports": ["JoinOrderPage"],
       "totalLines": 459,
       "hasStructuralAnalysis": true
     },
@@ -3632,17 +2752,13 @@
       "functions": [
         {
           "name": "useSplashAnimations",
-          "params": [
-            "onHidden"
-          ],
+          "params": ["onHidden"],
           "exported": false,
           "lineCount": 84
         },
         {
           "name": "AnimatedSplashScreen",
-          "params": [
-            "{\n  ready,\n  onHidden,\n  onFirstFrame,\n}"
-          ],
+          "params": ["{\n  ready,\n  onHidden,\n  onFirstFrame,\n}"],
           "exported": true,
           "lineCount": 156
         }
@@ -3651,9 +2767,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react-native",
@@ -3678,14 +2792,10 @@
         },
         {
           "source": "@/lib/use-color-scheme",
-          "specifiers": [
-            "useColorScheme"
-          ]
+          "specifiers": ["useColorScheme"]
         }
       ],
-      "exports": [
-        "AnimatedSplashScreen"
-      ],
+      "exports": ["AnimatedSplashScreen"],
       "totalLines": 288,
       "hasStructuralAnalysis": true
     },
@@ -3706,9 +2816,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react",
@@ -3722,48 +2830,30 @@
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "Pressable",
-            "Text",
-            "Animated",
-            "Alert",
-            "Platform"
-          ]
+          "specifiers": ["Pressable", "Text", "Animated", "Alert", "Platform"]
         },
         {
           "source": "react-native-animated-spinkit",
-          "specifiers": [
-            "Flow"
-          ]
+          "specifiers": ["Flow"]
         },
         {
           "source": "@expo/vector-icons",
-          "specifiers": [
-            "Ionicons"
-          ]
+          "specifiers": ["Ionicons"]
         },
         {
           "source": "@/lib/auth-client",
-          "specifiers": [
-            "authClient"
-          ]
+          "specifiers": ["authClient"]
         },
         {
           "source": "expo-apple-authentication",
-          "specifiers": [
-            "* as AppleAuthentication"
-          ]
+          "specifiers": ["* as AppleAuthentication"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR"
-          ]
+          "specifiers": ["BR"]
         }
       ],
-      "exports": [
-        "OAuthButton"
-      ],
+      "exports": ["OAuthButton"],
       "totalLines": 150,
       "hasStructuralAnalysis": true
     },
@@ -3775,33 +2865,22 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "View",
-            "Text"
-          ]
+          "specifiers": ["View", "Text"]
         },
         {
           "source": "expo-image",
-          "specifiers": [
-            "Image"
-          ]
+          "specifiers": ["Image"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "avatarColors"
-          ]
+          "specifiers": ["avatarColors"]
         }
       ],
-      "exports": [
-        "BrAvatar"
-      ],
+      "exports": ["BrAvatar"],
       "totalLines": 81,
       "hasStructuralAnalysis": true
     },
@@ -3822,9 +2901,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react-native",
@@ -3839,22 +2916,14 @@
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_RADIUS",
-            "BR_SHADOW"
-          ]
+          "specifiers": ["BR", "BR_RADIUS", "BR_SHADOW"]
         },
         {
           "source": "./text",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         }
       ],
-      "exports": [
-        "BrButton"
-      ],
+      "exports": ["BrButton"],
       "totalLines": 107,
       "hasStructuralAnalysis": true
     },
@@ -3875,31 +2944,18 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "View",
-            "ViewProps",
-            "ViewStyle",
-            "StyleSheet"
-          ]
+          "specifiers": ["View", "ViewProps", "ViewStyle", "StyleSheet"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_RADIUS",
-            "BR_SHADOW"
-          ]
+          "specifiers": ["BR", "BR_RADIUS", "BR_SHADOW"]
         }
       ],
-      "exports": [
-        "BrCard"
-      ],
+      "exports": ["BrCard"],
       "totalLines": 55,
       "hasStructuralAnalysis": true
     },
@@ -3920,34 +2976,22 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "View",
-            "ViewProps",
-            "StyleSheet"
-          ]
+          "specifiers": ["View", "ViewProps", "StyleSheet"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR"
-          ]
+          "specifiers": ["BR"]
         },
         {
           "source": "./text",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         }
       ],
-      "exports": [
-        "BrChip"
-      ],
+      "exports": ["BrChip"],
       "totalLines": 68,
       "hasStructuralAnalysis": true
     },
@@ -3977,9 +3021,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "forwardRef"
-          ]
+          "specifiers": ["forwardRef"]
         },
         {
           "source": "react-native",
@@ -3993,29 +3035,18 @@
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon",
-            "IconName"
-          ]
+          "specifiers": ["Icon", "IconName"]
         },
         {
           "source": "./text",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         }
       ],
-      "exports": [
-        "BrInput"
-      ],
+      "exports": ["BrInput"],
       "totalLines": 97,
       "hasStructuralAnalysis": true
     },
@@ -4036,33 +3067,22 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "View",
-            "ViewStyle"
-          ]
+          "specifiers": ["View", "ViewStyle"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR"
-          ]
+          "specifiers": ["BR"]
         },
         {
           "source": "./text",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         }
       ],
-      "exports": [
-        "BrSticker"
-      ],
+      "exports": ["BrSticker"],
       "totalLines": 52,
       "hasStructuralAnalysis": true
     },
@@ -4083,30 +3103,18 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "Text",
-            "TextProps",
-            "TextStyle",
-            "StyleSheet"
-          ]
+          "specifiers": ["Text", "TextProps", "TextStyle", "StyleSheet"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT"
-          ]
+          "specifiers": ["BR", "BR_FONT"]
         }
       ],
-      "exports": [
-        "BrText"
-      ],
+      "exports": ["BrText"],
       "totalLines": 104,
       "hasStructuralAnalysis": true
     },
@@ -4118,16 +3126,11 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React",
-            "useCallback"
-          ]
+          "specifiers": ["React", "useCallback"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "Pressable"
-          ]
+          "specifiers": ["Pressable"]
         },
         {
           "source": "react-native-reanimated",
@@ -4141,9 +3144,7 @@
           ]
         }
       ],
-      "exports": [
-        "AnimatedPressable"
-      ],
+      "exports": ["AnimatedPressable"],
       "totalLines": 74,
       "hasStructuralAnalysis": true
     },
@@ -4155,27 +3156,18 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "View",
-            "Text"
-          ]
+          "specifiers": ["View", "Text"]
         },
         {
           "source": "expo-image",
-          "specifiers": [
-            "Image"
-          ]
+          "specifiers": ["Image"]
         }
       ],
-      "exports": [
-        "Avatar"
-      ],
+      "exports": ["Avatar"],
       "totalLines": 54,
       "hasStructuralAnalysis": true
     },
@@ -4196,42 +3188,26 @@
       "imports": [
         {
           "source": "@/lib/constants",
-          "specifiers": [
-            "NAV_THEME"
-          ]
+          "specifiers": ["NAV_THEME"]
         },
         {
           "source": "react",
-          "specifiers": [
-            "useEffect",
-            "useRef"
-          ]
+          "specifiers": ["useEffect", "useRef"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon",
-            "IconName"
-          ]
+          "specifiers": ["Icon", "IconName"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "Animated",
-            "Pressable",
-            "Text"
-          ]
+          "specifiers": ["Animated", "Pressable", "Text"]
         },
         {
           "source": "react-native-animated-spinkit",
-          "specifiers": [
-            "Flow"
-          ]
+          "specifiers": ["Flow"]
         }
       ],
-      "exports": [
-        "Button"
-      ],
+      "exports": ["Button"],
       "totalLines": 97,
       "hasStructuralAnalysis": true
     },
@@ -4241,9 +3217,7 @@
       "functions": [
         {
           "name": "Container",
-          "params": [
-            "{ children }"
-          ],
+          "params": ["{ children }"],
           "exported": true,
           "lineCount": 5
         }
@@ -4252,20 +3226,14 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView"
-          ]
+          "specifiers": ["SafeAreaView"]
         }
       ],
-      "exports": [
-        "Container"
-      ],
+      "exports": ["Container"],
       "totalLines": 9,
       "hasStructuralAnalysis": true
     },
@@ -4284,10 +3252,7 @@
             "componentDidCatch",
             "render"
           ],
-          "properties": [
-            "_mounted",
-            "handleRetry"
-          ],
+          "properties": ["_mounted", "handleRetry"],
           "exported": true,
           "lineCount": 59
         }
@@ -4295,24 +3260,14 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "Component",
-            "ErrorInfo",
-            "ReactNode"
-          ]
+          "specifiers": ["Component", "ErrorInfo", "ReactNode"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "Text",
-            "View",
-            "Pressable"
-          ]
+          "specifiers": ["Text", "View", "Pressable"]
         }
       ],
-      "exports": [
-        "ErrorBoundary"
-      ],
+      "exports": ["ErrorBoundary"],
       "totalLines": 73,
       "hasStructuralAnalysis": true
     },
@@ -4322,9 +3277,7 @@
       "functions": [
         {
           "name": "Icon",
-          "params": [
-            "{ name, color, size, ...svgProps }"
-          ],
+          "params": ["{ name, color, size, ...svgProps }"],
           "exported": false,
           "lineCount": 6
         }
@@ -4333,21 +3286,15 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "lucide-react-native",
-          "specifiers": [
-            "icons"
-          ]
+          "specifiers": ["icons"]
         },
         {
           "source": "react-native-svg",
-          "specifiers": [
-            "SvgProps"
-          ]
+          "specifiers": ["SvgProps"]
         }
       ],
       "exports": [],
@@ -4362,9 +3309,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "forwardRef"
-          ]
+          "specifiers": ["forwardRef"]
         },
         {
           "source": "react-native",
@@ -4378,27 +3323,18 @@
         },
         {
           "source": "@/lib/constants",
-          "specifiers": [
-            "NAV_THEME"
-          ]
+          "specifiers": ["NAV_THEME"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon",
-            "IconName"
-          ]
+          "specifiers": ["Icon", "IconName"]
         },
         {
           "source": "@/lib/use-color-scheme",
-          "specifiers": [
-            "useColorScheme"
-          ]
+          "specifiers": ["useColorScheme"]
         }
       ],
-      "exports": [
-        "Input"
-      ],
+      "exports": ["Input"],
       "totalLines": 114,
       "hasStructuralAnalysis": true
     },
@@ -4408,9 +3344,7 @@
       "functions": [
         {
           "name": "Skeleton",
-          "params": [
-            "{ children }"
-          ],
+          "params": ["{ children }"],
           "exported": true,
           "lineCount": 20
         },
@@ -4427,17 +3361,11 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React",
-            "useEffect"
-          ]
+          "specifiers": ["React", "useEffect"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "View",
-            "ViewStyle"
-          ]
+          "specifiers": ["View", "ViewStyle"]
         },
         {
           "source": "react-native-reanimated",
@@ -4452,10 +3380,7 @@
           ]
         }
       ],
-      "exports": [
-        "Skeleton",
-        "SkeletonBlock"
-      ],
+      "exports": ["Skeleton", "SkeletonBlock"],
       "totalLines": 105,
       "hasStructuralAnalysis": true
     },
@@ -4465,9 +3390,7 @@
       "functions": [
         {
           "name": "EnterCodeModal",
-          "params": [
-            "{\n  visible,\n  onSubmit,\n  onClose,\n}"
-          ],
+          "params": ["{\n  visible,\n  onSubmit,\n  onClose,\n}"],
           "exported": true,
           "lineCount": 111
         }
@@ -4476,9 +3399,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useState"
-          ]
+          "specifiers": ["useState"]
         },
         {
           "source": "react-native",
@@ -4494,41 +3415,26 @@
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["useSafeAreaInsets"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS",
-            "BR_SHADOW"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
         },
         {
           "source": "@/lib/fonts",
-          "specifiers": [
-            "COLORS"
-          ]
+          "specifiers": ["COLORS"]
         }
       ],
-      "exports": [
-        "EnterCodeModal"
-      ],
+      "exports": ["EnterCodeModal"],
       "totalLines": 240,
       "hasStructuralAnalysis": true
     },
@@ -4540,47 +3446,30 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React",
-            "useState"
-          ]
+          "specifiers": ["React", "useState"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "View",
-            "Image",
-            "Pressable"
-          ]
+          "specifiers": ["View", "Image", "Pressable"]
         },
         {
           "source": "@/components/layout/tabbar-icon",
-          "specifiers": [
-            "TabBarIcon"
-          ]
+          "specifiers": ["TabBarIcon"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router"
-          ]
+          "specifiers": ["router"]
         },
         {
           "source": "@/components/qr-scanner-modal",
-          "specifiers": [
-            "QRScannerModal"
-          ]
+          "specifiers": ["QRScannerModal"]
         },
         {
           "source": "@/components/enter-code-modal",
-          "specifiers": [
-            "EnterCodeModal"
-          ]
+          "specifiers": ["EnterCodeModal"]
         }
       ],
-      "exports": [
-        "HeaderBar"
-      ],
+      "exports": ["HeaderBar"],
       "totalLines": 67,
       "hasStructuralAnalysis": true
     },
@@ -4590,9 +3479,7 @@
       "functions": [
         {
           "name": "PageWithHeader",
-          "params": [
-            "{ children }"
-          ],
+          "params": ["{ children }"],
           "exported": true,
           "lineCount": 10
         }
@@ -4601,26 +3488,18 @@
       "imports": [
         {
           "source": "react-native",
-          "specifiers": [
-            "View"
-          ]
+          "specifiers": ["View"]
         },
         {
           "source": "./header-bar",
-          "specifiers": [
-            "HeaderBar"
-          ]
+          "specifiers": ["HeaderBar"]
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "SafeAreaView"
-          ]
+          "specifiers": ["SafeAreaView"]
         }
       ],
-      "exports": [
-        "PageWithHeader"
-      ],
+      "exports": ["PageWithHeader"],
       "totalLines": 15,
       "hasStructuralAnalysis": true
     },
@@ -4630,9 +3509,7 @@
       "functions": [
         {
           "name": "TabBarIcon",
-          "params": [
-            "props"
-          ],
+          "params": ["props"],
           "exported": true,
           "lineCount": 3
         }
@@ -4641,15 +3518,10 @@
       "imports": [
         {
           "source": "../common/icon",
-          "specifiers": [
-            "Icon",
-            "IconName"
-          ]
+          "specifiers": ["Icon", "IconName"]
         }
       ],
-      "exports": [
-        "TabBarIcon"
-      ],
+      "exports": ["TabBarIcon"],
       "totalLines": 6,
       "hasStructuralAnalysis": true
     },
@@ -4659,26 +3531,20 @@
       "functions": [
         {
           "name": "formatPrice",
-          "params": [
-            "cents"
-          ],
+          "params": ["cents"],
           "returnType": "string",
           "exported": false,
           "lineCount": 4
         },
         {
           "name": "PriceItemCard",
-          "params": [
-            "{\n  orderItem,\n  priceInCents,\n  onUpdatePrice,\n}"
-          ],
+          "params": ["{\n  orderItem,\n  priceInCents,\n  onUpdatePrice,\n}"],
           "exported": false,
           "lineCount": 75
         },
         {
           "name": "SectionHeader",
-          "params": [
-            "{\n  title,\n  pricedCount,\n  totalCount,\n}"
-          ],
+          "params": ["{\n  title,\n  pricedCount,\n  totalCount,\n}"],
           "exported": false,
           "lineCount": 21
         },
@@ -4695,11 +3561,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React",
-            "useState",
-            "useMemo"
-          ]
+          "specifiers": ["React", "useState", "useMemo"]
         },
         {
           "source": "react-native",
@@ -4716,40 +3578,26 @@
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["useSafeAreaInsets"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         },
         {
           "source": "@/lib/order-item-grouping",
-          "specifiers": [
-            "groupOrderItemsByParticipant"
-          ]
+          "specifiers": ["groupOrderItemsByParticipant"]
         }
       ],
-      "exports": [
-        "ManualPriceEntrySheet"
-      ],
+      "exports": ["ManualPriceEntrySheet"],
       "totalLines": 425,
       "hasStructuralAnalysis": true
     },
@@ -4770,17 +3618,11 @@
       "imports": [
         {
           "source": "@/lib/use-color-scheme",
-          "specifiers": [
-            "useColorScheme"
-          ]
+          "specifiers": ["useColorScheme"]
         },
         {
           "source": "react",
-          "specifiers": [
-            "useState",
-            "useRef",
-            "useEffect"
-          ]
+          "specifiers": ["useState", "useRef", "useEffect"]
         },
         {
           "source": "react-native",
@@ -4795,27 +3637,18 @@
         },
         {
           "source": "react-native-actions-sheet",
-          "specifiers": [
-            "ActionSheet",
-            "ActionSheetRef"
-          ]
+          "specifiers": ["ActionSheet", "ActionSheetRef"]
         },
         {
           "source": "@/components/common/button",
-          "specifiers": [
-            "Button"
-          ]
+          "specifiers": ["Button"]
         },
         {
           "source": "@/components/common/avatar",
-          "specifiers": [
-            "Avatar"
-          ]
+          "specifiers": ["Avatar"]
         }
       ],
-      "exports": [
-        "MultiSelectSheet"
-      ],
+      "exports": ["MultiSelectSheet"],
       "totalLines": 178,
       "hasStructuralAnalysis": true
     },
@@ -4825,9 +3658,7 @@
       "functions": [
         {
           "name": "NotificationPermissionModal",
-          "params": [
-            "{\n  visible,\n  onAllow,\n  onDeny,\n}"
-          ],
+          "params": ["{\n  visible,\n  onAllow,\n  onDeny,\n}"],
           "exported": true,
           "lineCount": 57
         }
@@ -4836,39 +3667,22 @@
       "imports": [
         {
           "source": "react-native",
-          "specifiers": [
-            "View",
-            "Text",
-            "Modal",
-            "Pressable",
-            "StyleSheet"
-          ]
+          "specifiers": ["View", "Text", "Modal", "Pressable", "StyleSheet"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS",
-            "BR_SHADOW"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         }
       ],
-      "exports": [
-        "NotificationPermissionModal"
-      ],
+      "exports": ["NotificationPermissionModal"],
       "totalLines": 190,
       "hasStructuralAnalysis": true
     },
@@ -4887,41 +3701,27 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "@/lib/constants",
-          "specifiers": [
-            "NAV_THEME"
-          ]
+          "specifiers": ["NAV_THEME"]
         },
         {
           "source": "@/lib/use-color-scheme",
-          "specifiers": [
-            "useColorScheme"
-          ]
+          "specifiers": ["useColorScheme"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "View",
-            "Text",
-            "TouchableOpacity"
-          ]
+          "specifiers": ["View", "Text", "TouchableOpacity"]
         },
         {
           "source": "./common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "./common/avatar",
-          "specifiers": [
-            "Avatar"
-          ]
+          "specifiers": ["Avatar"]
         },
         {
           "source": "react-native-reanimated",
@@ -4938,22 +3738,14 @@
         },
         {
           "source": "react",
-          "specifiers": [
-            "useEffect"
-          ]
+          "specifiers": ["useEffect"]
         },
         {
           "source": "./common/skeleton",
-          "specifiers": [
-            "Skeleton",
-            "SkeletonBlock"
-          ]
+          "specifiers": ["Skeleton", "SkeletonBlock"]
         }
       ],
-      "exports": [
-        "OrderCard",
-        "OrderCardSkeleton"
-      ],
+      "exports": ["OrderCard", "OrderCardSkeleton"],
       "totalLines": 295,
       "hasStructuralAnalysis": true
     },
@@ -4963,9 +3755,7 @@
       "functions": [
         {
           "name": "PaymentSetupSplash",
-          "params": [
-            "{\n  visible,\n  onSetUp,\n  onSkip,\n}"
-          ],
+          "params": ["{\n  visible,\n  onSetUp,\n  onSkip,\n}"],
           "exported": true,
           "lineCount": 84
         }
@@ -4974,41 +3764,26 @@
       "imports": [
         {
           "source": "react-native",
-          "specifiers": [
-            "View",
-            "Text",
-            "Modal",
-            "Pressable"
-          ]
+          "specifiers": ["View", "Text", "Modal", "Pressable"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/components/common/button",
-          "specifiers": [
-            "Button"
-          ]
+          "specifiers": ["Button"]
         },
         {
           "source": "@/lib/use-color-scheme",
-          "specifiers": [
-            "useColorScheme"
-          ]
+          "specifiers": ["useColorScheme"]
         },
         {
           "source": "@/lib/constants",
-          "specifiers": [
-            "NAV_THEME"
-          ]
+          "specifiers": ["NAV_THEME"]
         }
       ],
-      "exports": [
-        "PaymentSetupSplash"
-      ],
+      "exports": ["PaymentSetupSplash"],
       "totalLines": 118,
       "hasStructuralAnalysis": true
     },
@@ -5029,41 +3804,26 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "Pressable",
-            "View",
-            "Text"
-          ]
+          "specifiers": ["Pressable", "View", "Text"]
         },
         {
           "source": "../common/icon",
-          "specifiers": [
-            "Icon",
-            "IconName"
-          ]
+          "specifiers": ["Icon", "IconName"]
         },
         {
           "source": "@/lib/constants",
-          "specifiers": [
-            "NAV_THEME"
-          ]
+          "specifiers": ["NAV_THEME"]
         },
         {
           "source": "@/lib/use-color-scheme",
-          "specifiers": [
-            "useColorScheme"
-          ]
+          "specifiers": ["useColorScheme"]
         }
       ],
-      "exports": [
-        "ListItem"
-      ],
+      "exports": ["ListItem"],
       "totalLines": 48,
       "hasStructuralAnalysis": true
     },
@@ -5073,9 +3833,7 @@
       "functions": [
         {
           "name": "QRCodeModal",
-          "params": [
-            "{\n  visible,\n  orderId,\n  orderName,\n  onClose,\n}"
-          ],
+          "params": ["{\n  visible,\n  orderId,\n  orderName,\n  onClose,\n}"],
           "exported": true,
           "lineCount": 191
         }
@@ -5084,10 +3842,7 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React",
-            "useEffect"
-          ]
+          "specifiers": ["React", "useEffect"]
         },
         {
           "source": "react-native",
@@ -5104,66 +3859,42 @@
         },
         {
           "source": "expo-clipboard",
-          "specifiers": [
-            "* as Clipboard"
-          ]
+          "specifiers": ["* as Clipboard"]
         },
         {
           "source": "expo-haptics",
-          "specifiers": [
-            "* as Haptics"
-          ]
+          "specifiers": ["* as Haptics"]
         },
         {
           "source": "react-native-qrcode-svg",
-          "specifiers": [
-            "QRCode"
-          ]
+          "specifiers": ["QRCode"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS",
-            "BR_SHADOW"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useMutation",
-            "useQuery"
-          ]
+          "specifiers": ["useMutation", "useQuery"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/convex/_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         }
       ],
-      "exports": [
-        "QRCodeModal"
-      ],
+      "exports": ["QRCodeModal"],
       "totalLines": 376,
       "hasStructuralAnalysis": true
     },
@@ -5173,9 +3904,7 @@
       "functions": [
         {
           "name": "QRScannerModal",
-          "params": [
-            "{\n  visible,\n  onScan,\n  onClose,\n  onEnterCode,\n}"
-          ],
+          "params": ["{\n  visible,\n  onScan,\n  onClose,\n  onEnterCode,\n}"],
           "exported": true,
           "lineCount": 145
         }
@@ -5184,39 +3913,22 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useState",
-            "useEffect",
-            "useRef"
-          ]
+          "specifiers": ["useState", "useEffect", "useRef"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "View",
-            "Text",
-            "Modal",
-            "Pressable",
-            "StyleSheet"
-          ]
+          "specifiers": ["View", "Text", "Modal", "Pressable", "StyleSheet"]
         },
         {
           "source": "expo-camera",
-          "specifiers": [
-            "CameraView",
-            "useCameraPermissions"
-          ]
+          "specifiers": ["CameraView", "useCameraPermissions"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         }
       ],
-      "exports": [
-        "QRScannerModal"
-      ],
+      "exports": ["QRScannerModal"],
       "totalLines": 158,
       "hasStructuralAnalysis": true
     },
@@ -5226,27 +3938,21 @@
       "functions": [
         {
           "name": "formatPrice",
-          "params": [
-            "cents"
-          ],
+          "params": ["cents"],
           "returnType": "string",
           "exported": false,
           "lineCount": 4
         },
         {
           "name": "getEffectivePrice",
-          "params": [
-            "item"
-          ],
+          "params": ["item"],
           "returnType": "number | null",
           "exported": false,
           "lineCount": 6
         },
         {
           "name": "confidenceConfig",
-          "params": [
-            "confidence"
-          ],
+          "params": ["confidence"],
           "exported": false,
           "lineCount": 7
         },
@@ -5268,9 +3974,7 @@
         },
         {
           "name": "SectionHeader",
-          "params": [
-            "{ title, count }"
-          ],
+          "params": ["{ title, count }"],
           "exported": false,
           "lineCount": 13
         },
@@ -5295,18 +3999,11 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "React"
-          ]
+          "specifiers": ["React"]
         },
         {
           "source": "react",
-          "specifiers": [
-            "useState",
-            "useMemo",
-            "useEffect",
-            "useCallback"
-          ]
+          "specifiers": ["useState", "useMemo", "useEffect", "useCallback"]
         },
         {
           "source": "react-native",
@@ -5325,46 +4022,30 @@
         },
         {
           "source": "react-native-safe-area-context",
-          "specifiers": [
-            "useSafeAreaInsets"
-          ]
+          "specifiers": ["useSafeAreaInsets"]
         },
         {
           "source": "@/components/common/icon",
-          "specifiers": [
-            "Icon"
-          ]
+          "specifiers": ["Icon"]
         },
         {
           "source": "@/lib/br-theme",
-          "specifiers": [
-            "BR",
-            "BR_FONT",
-            "BR_RADIUS"
-          ]
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
         },
         {
           "source": "@/components/br",
-          "specifiers": [
-            "BrText"
-          ]
+          "specifiers": ["BrText"]
         },
         {
           "source": "@/hooks/useReceiptScanning",
-          "specifiers": [
-            "MatchedItem"
-          ]
+          "specifiers": ["MatchedItem"]
         },
         {
           "source": "@/lib/order-item-grouping",
-          "specifiers": [
-            "groupOrderItemsByParticipant"
-          ]
+          "specifiers": ["groupOrderItemsByParticipant"]
         }
       ],
-      "exports": [
-        "ReceiptConfirmationSheet"
-      ],
+      "exports": ["ReceiptConfirmationSheet"],
       "totalLines": 1005,
       "hasStructuralAnalysis": true
     },
@@ -5376,119 +4057,79 @@
       "imports": [
         {
           "source": "../auth.js",
-          "specifiers": [
-            "* as auth"
-          ]
+          "specifiers": ["* as auth"]
         },
         {
           "source": "../authHelper.js",
-          "specifiers": [
-            "* as authHelper"
-          ]
+          "specifiers": ["* as authHelper"]
         },
         {
           "source": "../fees.js",
-          "specifiers": [
-            "* as fees"
-          ]
+          "specifiers": ["* as fees"]
         },
         {
           "source": "../friends.js",
-          "specifiers": [
-            "* as friends"
-          ]
+          "specifiers": ["* as friends"]
         },
         {
           "source": "../http.js",
-          "specifiers": [
-            "* as http"
-          ]
+          "specifiers": ["* as http"]
         },
         {
           "source": "../lib/utils.js",
-          "specifiers": [
-            "* as lib_utils"
-          ]
+          "specifiers": ["* as lib_utils"]
         },
         {
           "source": "../orderInvites.js",
-          "specifiers": [
-            "* as orderInvites"
-          ]
+          "specifiers": ["* as orderInvites"]
         },
         {
           "source": "../orderItems.js",
-          "specifiers": [
-            "* as orderItems"
-          ]
+          "specifiers": ["* as orderItems"]
         },
         {
           "source": "../orderLocations.js",
-          "specifiers": [
-            "* as orderLocations"
-          ]
+          "specifiers": ["* as orderLocations"]
         },
         {
           "source": "../orderUsers.js",
-          "specifiers": [
-            "* as orderUsers"
-          ]
+          "specifiers": ["* as orderUsers"]
         },
         {
           "source": "../orders.js",
-          "specifiers": [
-            "* as orders"
-          ]
+          "specifiers": ["* as orders"]
         },
         {
           "source": "../payments.js",
-          "specifiers": [
-            "* as payments"
-          ]
+          "specifiers": ["* as payments"]
         },
         {
           "source": "../pushNotifications.js",
-          "specifiers": [
-            "* as pushNotifications"
-          ]
+          "specifiers": ["* as pushNotifications"]
         },
         {
           "source": "../receiptScanning.js",
-          "specifiers": [
-            "* as receiptScanning"
-          ]
+          "specifiers": ["* as receiptScanning"]
         },
         {
           "source": "../squads.js",
-          "specifiers": [
-            "* as squads"
-          ]
+          "specifiers": ["* as squads"]
         },
         {
           "source": "../stripeConnect.js",
-          "specifiers": [
-            "* as stripeConnect"
-          ]
+          "specifiers": ["* as stripeConnect"]
         },
         {
           "source": "../users.js",
-          "specifiers": [
-            "* as users"
-          ]
+          "specifiers": ["* as users"]
         },
         {
           "source": "../waitlist.js",
-          "specifiers": [
-            "* as waitlist"
-          ]
+          "specifiers": ["* as waitlist"]
         },
         {
           "source": "convex/server",
-          "specifiers": [
-            "ApiFromModules",
-            "FilterApi",
-            "FunctionReference"
-          ]
+          "specifiers": ["ApiFromModules", "FilterApi", "FunctionReference"]
         }
       ],
       "exports": [],
@@ -5503,17 +4144,10 @@
       "imports": [
         {
           "source": "convex/server",
-          "specifiers": [
-            "anyApi",
-            "componentsGeneric"
-          ]
+          "specifiers": ["anyApi", "componentsGeneric"]
         }
       ],
-      "exports": [
-        "api",
-        "internal",
-        "components"
-      ],
+      "exports": ["api", "internal", "components"],
       "totalLines": 24,
       "hasStructuralAnalysis": true
     },
@@ -5534,15 +4168,11 @@
         },
         {
           "source": "convex/values",
-          "specifiers": [
-            "GenericId"
-          ]
+          "specifiers": ["GenericId"]
         },
         {
           "source": "../schema.js",
-          "specifiers": [
-            "schema"
-          ]
+          "specifiers": ["schema"]
         }
       ],
       "exports": [],
@@ -5571,9 +4201,7 @@
         },
         {
           "source": "./dataModel.js",
-          "specifiers": [
-            "DataModel"
-          ]
+          "specifiers": ["DataModel"]
         }
       ],
       "exports": [],
@@ -5619,15 +4247,11 @@
       "imports": [
         {
           "source": "@convex-dev/better-auth/auth-config",
-          "specifiers": [
-            "getAuthConfigProvider"
-          ]
+          "specifiers": ["getAuthConfigProvider"]
         },
         {
           "source": "convex/server",
-          "specifiers": [
-            "AuthConfig"
-          ]
+          "specifiers": ["AuthConfig"]
         }
       ],
       "exports": [],
@@ -5640,9 +4264,7 @@
       "functions": [
         {
           "name": "createAuth",
-          "params": [
-            "ctx"
-          ],
+          "params": ["ctx"],
           "exported": true,
           "lineCount": 90
         }
@@ -5651,57 +4273,38 @@
       "imports": [
         {
           "source": "better-auth",
-          "specifiers": [
-            "betterAuth"
-          ]
+          "specifiers": ["betterAuth"]
         },
         {
           "source": "better-auth/plugins",
-          "specifiers": [
-            "emailOTP"
-          ]
+          "specifiers": ["emailOTP"]
         },
         {
           "source": "@better-auth/expo",
-          "specifiers": [
-            "expo"
-          ]
+          "specifiers": ["expo"]
         },
         {
           "source": "@convex-dev/better-auth",
-          "specifiers": [
-            "createClient"
-          ]
+          "specifiers": ["createClient"]
         },
         {
           "source": "@convex-dev/better-auth/plugins",
-          "specifiers": [
-            "convex"
-          ]
+          "specifiers": ["convex"]
         },
         {
           "source": "resend",
-          "specifiers": [
-            "Resend"
-          ]
+          "specifiers": ["Resend"]
         },
         {
           "source": "./_generated/api",
-          "specifiers": [
-            "components"
-          ]
+          "specifiers": ["components"]
         },
         {
           "source": "./auth.config",
-          "specifiers": [
-            "authConfig"
-          ]
+          "specifiers": ["authConfig"]
         }
       ],
-      "exports": [
-        "authComponent",
-        "createAuth"
-      ],
+      "exports": ["authComponent", "createAuth"],
       "totalLines": 150,
       "hasStructuralAnalysis": true
     },
@@ -5711,36 +4314,28 @@
       "functions": [
         {
           "name": "getUserId",
-          "params": [
-            "ctx"
-          ],
+          "params": ["ctx"],
           "returnType": "Promise<Id<\"users\"> | null>",
           "exported": true,
           "lineCount": 16
         },
         {
           "name": "ensureUser",
-          "params": [
-            "ctx"
-          ],
+          "params": ["ctx"],
           "returnType": "Promise<Id<\"users\"> | null>",
           "exported": true,
           "lineCount": 42
         },
         {
           "name": "requireUserId",
-          "params": [
-            "ctx"
-          ],
+          "params": ["ctx"],
           "returnType": "Promise<Id<\"users\">>",
           "exported": true,
           "lineCount": 9
         },
         {
           "name": "requireUserIdWithSync",
-          "params": [
-            "ctx"
-          ],
+          "params": ["ctx"],
           "returnType": "Promise<Id<\"users\">>",
           "exported": true,
           "lineCount": 9
@@ -5750,28 +4345,19 @@
       "imports": [
         {
           "source": "./_generated/server",
-          "specifiers": [
-            "QueryCtx",
-            "MutationCtx"
-          ]
+          "specifiers": ["QueryCtx", "MutationCtx"]
         },
         {
           "source": "./_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "./auth",
-          "specifiers": [
-            "authComponent"
-          ]
+          "specifiers": ["authComponent"]
         },
         {
           "source": "./lib/utils",
-          "specifiers": [
-            "splitName"
-          ]
+          "specifiers": ["splitName"]
         }
       ],
       "exports": [
@@ -5791,21 +4377,15 @@
       "imports": [
         {
           "source": "convex/server",
-          "specifiers": [
-            "defineApp"
-          ]
+          "specifiers": ["defineApp"]
         },
         {
           "source": "@convex-dev/better-auth/convex.config",
-          "specifiers": [
-            "betterAuth"
-          ]
+          "specifiers": ["betterAuth"]
         },
         {
           "source": "@convex-dev/expo-push-notifications/convex.config",
-          "specifiers": [
-            "pushNotifications"
-          ]
+          "specifiers": ["pushNotifications"]
         }
       ],
       "exports": [],
@@ -5818,9 +4398,7 @@
       "functions": [
         {
           "name": "calculatePlatformFee",
-          "params": [
-            "amountCents"
-          ],
+          "params": ["amountCents"],
           "returnType": "number",
           "exported": true,
           "lineCount": 7
@@ -5844,28 +4422,19 @@
       "imports": [
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         },
         {
           "source": "./_generated/server",
-          "specifiers": [
-            "query",
-            "mutation"
-          ]
+          "specifiers": ["query", "mutation"]
         },
         {
           "source": "./_generated/api",
-          "specifiers": [
-            "internal"
-          ]
+          "specifiers": ["internal"]
         },
         {
           "source": "./authHelper",
-          "specifiers": [
-            "getUserId"
-          ]
+          "specifiers": ["getUserId"]
         }
       ],
       "exports": [
@@ -5887,10 +4456,7 @@
       "functions": [
         {
           "name": "stripeRedirectHtml",
-          "params": [
-            "deepLink",
-            "title"
-          ],
+          "params": ["deepLink", "title"],
           "exported": false,
           "lineCount": 8
         }
@@ -5899,28 +4465,19 @@
       "imports": [
         {
           "source": "convex/server",
-          "specifiers": [
-            "httpRouter"
-          ]
+          "specifiers": ["httpRouter"]
         },
         {
           "source": "./_generated/server",
-          "specifiers": [
-            "httpAction"
-          ]
+          "specifiers": ["httpAction"]
         },
         {
           "source": "./_generated/api",
-          "specifiers": [
-            "internal"
-          ]
+          "specifiers": ["internal"]
         },
         {
           "source": "./auth",
-          "specifiers": [
-            "authComponent",
-            "createAuth"
-          ]
+          "specifiers": ["authComponent", "createAuth"]
         }
       ],
       "exports": [],
@@ -5933,9 +4490,7 @@
       "functions": [
         {
           "name": "splitName",
-          "params": [
-            "fullName"
-          ],
+          "params": ["fullName"],
           "returnType": "{\n  firstName: string | null;\n  lastName: string | null;\n}",
           "exported": true,
           "lineCount": 46
@@ -5943,9 +4498,7 @@
       ],
       "classes": [],
       "imports": [],
-      "exports": [
-        "splitName"
-      ],
+      "exports": ["splitName"],
       "totalLines": 51,
       "hasStructuralAnalysis": true
     },
@@ -5965,29 +4518,19 @@
       "imports": [
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         },
         {
           "source": "./_generated/server",
-          "specifiers": [
-            "query",
-            "mutation"
-          ]
+          "specifiers": ["query", "mutation"]
         },
         {
           "source": "./_generated/api",
-          "specifiers": [
-            "internal"
-          ]
+          "specifiers": ["internal"]
         },
         {
           "source": "./authHelper",
-          "specifiers": [
-            "getUserId",
-            "requireUserIdWithSync"
-          ]
+          "specifiers": ["getUserId", "requireUserIdWithSync"]
         }
       ],
       "exports": [
@@ -6005,137 +4548,104 @@
       "functions": [
         {
           "name": "normalizeEntryLines",
-          "params": [
-            "text"
-          ],
+          "params": ["text"],
           "returnType": "string[]",
           "exported": false,
           "lineCount": 6
         },
         {
           "name": "buildParticipantName",
-          "params": [
-            "firstName",
-            "lastName"
-          ],
+          "params": ["firstName", "lastName"],
           "exported": false,
           "lineCount": 4
         },
         {
           "name": "normalizeLabel",
-          "params": [
-            "text"
-          ],
+          "params": ["text"],
           "returnType": "string",
           "exported": false,
           "lineCount": 3
         },
         {
           "name": "normalizeVoiceOrderItems",
-          "params": [
-            "items"
-          ],
+          "params": ["items"],
           "returnType": "string[]",
           "exported": false,
           "lineCount": 5
         },
         {
           "name": "parseQuantityPrefixedItem",
-          "params": [
-            "item"
-          ],
+          "params": ["item"],
           "returnType": "{\n  quantity: number;\n  baseLabel: string;\n  displayLabel: string;\n  hasExplicitQuantity: boolean;\n}",
           "exported": false,
           "lineCount": 28
         },
         {
           "name": "reconcileVoiceOrderItems",
-          "params": [
-            "items"
-          ],
+          "params": ["items"],
           "returnType": "string[]",
           "exported": false,
           "lineCount": 47
         },
         {
           "name": "extractJsonObject",
-          "params": [
-            "text"
-          ],
+          "params": ["text"],
           "returnType": "string",
           "exported": false,
           "lineCount": 19
         },
         {
           "name": "buildOrderSummary",
-          "params": [
-            "orderId",
-            "rawSummary"
-          ],
+          "params": ["orderId", "rawSummary"],
           "returnType": "Promise<OrderSummaryData | null>",
           "exported": false,
           "lineCount": 10
         },
         {
           "name": "buildSummarySignature",
-          "params": [
-            "summary"
-          ],
+          "params": ["summary"],
           "returnType": "string",
           "exported": false,
           "lineCount": 8
         },
         {
           "name": "buildAiSeedGroupsForLocation",
-          "params": [
-            "locationSummary"
-          ],
+          "params": ["locationSummary"],
           "returnType": "AiLocationSeedSummary",
           "exported": false,
           "lineCount": 20
         },
         {
           "name": "validateAiGroupsForLocation",
-          "params": [
-            "locationSummary",
-            "groups"
-          ],
+          "params": ["locationSummary", "groups"],
           "returnType": "ResolvedOrderItemTextGroup[]",
           "exported": false,
           "lineCount": 63
         },
         {
           "name": "toPersistedAiSummaryLocations",
-          "params": [
-            "locations"
-          ],
+          "params": ["locations"],
           "returnType": "PersistedAiSummaryLocation[]",
           "exported": false,
           "lineCount": 13
         },
         {
           "name": "generateAiSummaryForLocation",
-          "params": [
-            "locationSummary"
-          ],
+          "params": ["locationSummary"],
           "returnType": "Promise<AiOrderSummary[\"locations\"][number]>",
           "exported": false,
           "lineCount": 94
         },
         {
           "name": "generateAiOrderSummaryResult",
-          "params": [
-            "seedSummaries"
-          ],
+          "params": ["seedSummaries"],
           "returnType": "Promise<AiOrderSummary[\"locations\"]>",
           "exported": false,
           "lineCount": 9
         },
         {
           "name": "parseVoiceOrderItemsWithAi",
-          "params": [
-            "args"
-          ],
+          "params": ["args"],
           "returnType": "Promise<string[]>",
           "exported": false,
           "lineCount": 49
@@ -6145,28 +4655,19 @@
       "imports": [
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         },
         {
           "source": "ai",
-          "specifiers": [
-            "generateObject",
-            "generateText"
-          ]
+          "specifiers": ["generateObject", "generateText"]
         },
         {
           "source": "@openrouter/ai-sdk-provider",
-          "specifiers": [
-            "createOpenRouter"
-          ]
+          "specifiers": ["createOpenRouter"]
         },
         {
           "source": "zod",
-          "specifiers": [
-            "z"
-          ]
+          "specifiers": ["z"]
         },
         {
           "source": "./_generated/server",
@@ -6180,22 +4681,15 @@
         },
         {
           "source": "./_generated/api",
-          "specifiers": [
-            "api",
-            "internal"
-          ]
+          "specifiers": ["api", "internal"]
         },
         {
           "source": "./_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "./authHelper",
-          "specifiers": [
-            "getUserId"
-          ]
+          "specifiers": ["getUserId"]
         },
         {
           "source": "../lib/order-item-grouping",
@@ -6227,27 +4721,18 @@
       "imports": [
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         },
         {
           "source": "./_generated/server",
-          "specifiers": [
-            "query"
-          ]
+          "specifiers": ["query"]
         },
         {
           "source": "./authHelper",
-          "specifiers": [
-            "getUserId"
-          ]
+          "specifiers": ["getUserId"]
         }
       ],
-      "exports": [
-        "listForOrder",
-        "get"
-      ],
+      "exports": ["listForOrder", "get"],
       "totalLines": 56,
       "hasStructuralAnalysis": true
     },
@@ -6257,46 +4742,31 @@
       "functions": [
         {
           "name": "buildUserName",
-          "params": [
-            "firstName",
-            "lastName",
-            "email"
-          ],
+          "params": ["firstName", "lastName", "email"],
           "exported": false,
           "lineCount": 4
         },
         {
           "name": "normalizeLocationNames",
-          "params": [
-            "locationNames"
-          ],
+          "params": ["locationNames"],
           "exported": false,
           "lineCount": 21
         },
         {
           "name": "getOrderLocationsForOrder",
-          "params": [
-            "ctx",
-            "orderId"
-          ],
+          "params": ["ctx", "orderId"],
           "exported": false,
           "lineCount": 10
         },
         {
           "name": "countLinesForLocation",
-          "params": [
-            "ctx",
-            "orderLocationId"
-          ],
+          "params": ["ctx", "orderLocationId"],
           "exported": false,
           "lineCount": 13
         },
         {
           "name": "countLinesForOrder",
-          "params": [
-            "ctx",
-            "orderId"
-          ],
+          "params": ["ctx", "orderId"],
           "exported": false,
           "lineCount": 10
         }
@@ -6305,40 +4775,27 @@
       "imports": [
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         },
         {
           "source": "./_generated/server",
-          "specifiers": [
-            "mutation",
-            "query"
-          ]
+          "specifiers": ["mutation", "query"]
         },
         {
           "source": "./_generated/api",
-          "specifiers": [
-            "internal"
-          ]
+          "specifiers": ["internal"]
         },
         {
           "source": "./_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "./authHelper",
-          "specifiers": [
-            "getUserId"
-          ]
+          "specifiers": ["getUserId"]
         },
         {
           "source": "./schema",
-          "specifiers": [
-            "orderStatusValidator"
-          ]
+          "specifiers": ["orderStatusValidator"]
         }
       ],
       "exports": [
@@ -6367,42 +4824,26 @@
       "imports": [
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         },
         {
           "source": "./_generated/server",
-          "specifiers": [
-            "query",
-            "mutation"
-          ]
+          "specifiers": ["query", "mutation"]
         },
         {
           "source": "./_generated/api",
-          "specifiers": [
-            "internal"
-          ]
+          "specifiers": ["internal"]
         },
         {
           "source": "./authHelper",
-          "specifiers": [
-            "getUserId"
-          ]
+          "specifiers": ["getUserId"]
         },
         {
           "source": "./schema",
-          "specifiers": [
-            "orderUserStatusValidator"
-          ]
+          "specifiers": ["orderUserStatusValidator"]
         }
       ],
-      "exports": [
-        "getForOrder",
-        "setStatus",
-        "leaveOrder",
-        "removeFromOrder"
-      ],
+      "exports": ["getForOrder", "setStatus", "leaveOrder", "removeFromOrder"],
       "totalLines": 172,
       "hasStructuralAnalysis": true
     },
@@ -6414,9 +4855,7 @@
       "imports": [
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         },
         {
           "source": "./_generated/server",
@@ -6429,27 +4868,19 @@
         },
         {
           "source": "./_generated/api",
-          "specifiers": [
-            "internal"
-          ]
+          "specifiers": ["internal"]
         },
         {
           "source": "./authHelper",
-          "specifiers": [
-            "getUserId"
-          ]
+          "specifiers": ["getUserId"]
         },
         {
           "source": "./schema",
-          "specifiers": [
-            "stripePaymentStatusValidator"
-          ]
+          "specifiers": ["stripePaymentStatusValidator"]
         },
         {
           "source": "./fees",
-          "specifiers": [
-            "calculatePlatformFee"
-          ]
+          "specifiers": ["calculatePlatformFee"]
         }
       ],
       "exports": [
@@ -6484,35 +4915,23 @@
       "imports": [
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         },
         {
           "source": "./_generated/server",
-          "specifiers": [
-            "query",
-            "mutation",
-            "internalMutation"
-          ]
+          "specifiers": ["query", "mutation", "internalMutation"]
         },
         {
           "source": "./_generated/api",
-          "specifiers": [
-            "components"
-          ]
+          "specifiers": ["components"]
         },
         {
           "source": "./authHelper",
-          "specifiers": [
-            "getUserId"
-          ]
+          "specifiers": ["getUserId"]
         },
         {
           "source": "@convex-dev/expo-push-notifications",
-          "specifiers": [
-            "PushNotifications"
-          ]
+          "specifiers": ["PushNotifications"]
         }
       ],
       "exports": [
@@ -6532,56 +4951,42 @@
       "functions": [
         {
           "name": "sanitizeQuantity",
-          "params": [
-            "quantity"
-          ],
+          "params": ["quantity"],
           "returnType": "number",
           "exported": false,
           "lineCount": 6
         },
         {
           "name": "normalizeReceiptName",
-          "params": [
-            "name"
-          ],
+          "params": ["name"],
           "returnType": "string",
           "exported": false,
           "lineCount": 11
         },
         {
           "name": "looksLikeComboHeader",
-          "params": [
-            "name"
-          ],
+          "params": ["name"],
           "returnType": "boolean",
           "exported": false,
           "lineCount": 3
         },
         {
           "name": "namesLookSimilar",
-          "params": [
-            "left",
-            "right"
-          ],
+          "params": ["left", "right"],
           "returnType": "boolean",
           "exported": false,
           "lineCount": 26
         },
         {
           "name": "allocatePerUnitPrices",
-          "params": [
-            "comboUnitPriceInCents",
-            "componentQuantities"
-          ],
+          "params": ["comboUnitPriceInCents", "componentQuantities"],
           "returnType": "number[]",
           "exported": false,
           "lineCount": 94
         },
         {
           "name": "normalizeParsedReceiptItems",
-          "params": [
-            "parsedItems"
-          ],
+          "params": ["parsedItems"],
           "returnType": "NormalizedReceiptItem[]",
           "exported": false,
           "lineCount": 132
@@ -6591,49 +4996,31 @@
       "imports": [
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         },
         {
           "source": "./_generated/server",
-          "specifiers": [
-            "mutation",
-            "action",
-            "internalMutation",
-            "query"
-          ]
+          "specifiers": ["mutation", "action", "internalMutation", "query"]
         },
         {
           "source": "./_generated/api",
-          "specifiers": [
-            "internal",
-            "api"
-          ]
+          "specifiers": ["internal", "api"]
         },
         {
           "source": "./authHelper",
-          "specifiers": [
-            "getUserId"
-          ]
+          "specifiers": ["getUserId"]
         },
         {
           "source": "ai",
-          "specifiers": [
-            "generateObject"
-          ]
+          "specifiers": ["generateObject"]
         },
         {
           "source": "@openrouter/ai-sdk-provider",
-          "specifiers": [
-            "createOpenRouter"
-          ]
+          "specifiers": ["createOpenRouter"]
         },
         {
           "source": "zod",
-          "specifiers": [
-            "z"
-          ]
+          "specifiers": ["z"]
         }
       ],
       "exports": [
@@ -6657,16 +5044,11 @@
       "imports": [
         {
           "source": "convex/server",
-          "specifiers": [
-            "defineSchema",
-            "defineTable"
-          ]
+          "specifiers": ["defineSchema", "defineTable"]
         },
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         }
       ],
       "exports": [
@@ -6686,36 +5068,22 @@
       "imports": [
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         },
         {
           "source": "./_generated/server",
-          "specifiers": [
-            "query",
-            "mutation"
-          ]
+          "specifiers": ["query", "mutation"]
         },
         {
           "source": "./authHelper",
-          "specifiers": [
-            "getUserId"
-          ]
+          "specifiers": ["getUserId"]
         },
         {
           "source": "./_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         }
       ],
-      "exports": [
-        "list",
-        "create",
-        "update",
-        "remove"
-      ],
+      "exports": ["list", "create", "update", "remove"],
       "totalLines": 149,
       "hasStructuralAnalysis": true
     },
@@ -6731,28 +5099,21 @@
         },
         {
           "name": "calculateInstantPayoutFee",
-          "params": [
-            "amountCents"
-          ],
+          "params": ["amountCents"],
           "returnType": "number",
           "exported": false,
           "lineCount": 7
         },
         {
           "name": "calculateMaxInstantPayout",
-          "params": [
-            "amountAvailableCents"
-          ],
+          "params": ["amountAvailableCents"],
           "returnType": "{\n  amount: number;\n  fee: number;\n}",
           "exported": false,
           "lineCount": 34
         },
         {
           "name": "getPayoutDestinationAvailability",
-          "params": [
-            "stripe",
-            "stripeAccountId"
-          ],
+          "params": ["stripe", "stripeAccountId"],
           "returnType": "Promise<{\n  hasInstantPayoutCard: boolean;\n  hasBankPayoutAccount: boolean;\n}>",
           "exported": false,
           "lineCount": 26
@@ -6762,34 +5123,23 @@
       "imports": [
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         },
         {
           "source": "./_generated/server",
-          "specifiers": [
-            "action"
-          ]
+          "specifiers": ["action"]
         },
         {
           "source": "./_generated/api",
-          "specifiers": [
-            "api",
-            "internal"
-          ]
+          "specifiers": ["api", "internal"]
         },
         {
           "source": "stripe",
-          "specifiers": [
-            "Stripe"
-          ]
+          "specifiers": ["Stripe"]
         },
         {
           "source": "./fees",
-          "specifiers": [
-            "calculatePlatformFee"
-          ]
+          "specifiers": ["calculatePlatformFee"]
         }
       ],
       "exports": [
@@ -6822,23 +5172,15 @@
       "imports": [
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         },
         {
           "source": "./_generated/server",
-          "specifiers": [
-            "query",
-            "mutation"
-          ]
+          "specifiers": ["query", "mutation"]
         },
         {
           "source": "./authHelper",
-          "specifiers": [
-            "getUserId",
-            "ensureUser"
-          ]
+          "specifiers": ["getUserId", "ensureUser"]
         }
       ],
       "exports": [
@@ -6868,31 +5210,19 @@
       "imports": [
         {
           "source": "convex/values",
-          "specifiers": [
-            "v"
-          ]
+          "specifiers": ["v"]
         },
         {
           "source": "resend",
-          "specifiers": [
-            "Resend"
-          ]
+          "specifiers": ["Resend"]
         },
         {
           "source": "./_generated/server",
-          "specifiers": [
-            "query",
-            "action",
-            "internalMutation",
-            "internalQuery"
-          ]
+          "specifiers": ["query", "action", "internalMutation", "internalQuery"]
         },
         {
           "source": "./_generated/api",
-          "specifiers": [
-            "api",
-            "internal"
-          ]
+          "specifiers": ["api", "internal"]
         }
       ],
       "exports": [
@@ -6931,46 +5261,34 @@
       "functions": [
         {
           "name": "getFreshAiSummaryResult",
-          "params": [
-            "orderId"
-          ],
+          "params": ["orderId"],
           "returnType": "AiOrderSummary | null",
           "exported": false,
           "lineCount": 13
         },
         {
           "name": "clearAiOrderSummaryRequestCache",
-          "params": [
-            "orderId"
-          ],
+          "params": ["orderId"],
           "exported": false,
           "lineCount": 4
         },
         {
           "name": "primeAiOrderSummaryRequest",
-          "params": [
-            "generateAiOrderSummary",
-            "orderId"
-          ],
+          "params": ["generateAiOrderSummary", "orderId"],
           "returnType": "Promise<AiOrderSummary>",
           "exported": true,
           "lineCount": 31
         },
         {
           "name": "getErrorMessage",
-          "params": [
-            "error"
-          ],
+          "params": ["error"],
           "returnType": "string",
           "exported": false,
           "lineCount": 16
         },
         {
           "name": "useAiOrderSummary",
-          "params": [
-            "orderId",
-            "rawSummary"
-          ],
+          "params": ["orderId", "rawSummary"],
           "returnType": "UseAiOrderSummaryResult",
           "exported": true,
           "lineCount": 128
@@ -6980,42 +5298,26 @@
       "imports": [
         {
           "source": "convex/react",
-          "specifiers": [
-            "useAction"
-          ]
+          "specifiers": ["useAction"]
         },
         {
           "source": "react",
-          "specifiers": [
-            "useEffect",
-            "useMemo",
-            "useRef",
-            "useState"
-          ]
+          "specifiers": ["useEffect", "useMemo", "useRef", "useState"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/convex/_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "@/lib/order-item-grouping",
-          "specifiers": [
-            "buildOrderSummaryTextSignature"
-          ]
+          "specifiers": ["buildOrderSummaryTextSignature"]
         }
       ],
-      "exports": [
-        "primeAiOrderSummaryRequest",
-        "useAiOrderSummary"
-      ],
+      "exports": ["primeAiOrderSummaryRequest", "useAiOrderSummary"],
       "totalLines": 276,
       "hasStructuralAnalysis": true
     },
@@ -7025,10 +5327,7 @@
       "functions": [
         {
           "name": "useManualPriceEntry",
-          "params": [
-            "orderLocationId",
-            "orderId"
-          ],
+          "params": ["orderLocationId", "orderId"],
           "returnType": "UseManualPriceEntryResult",
           "exported": true,
           "lineCount": 191
@@ -7038,41 +5337,26 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useState",
-            "useCallback",
-            "useEffect"
-          ]
+          "specifiers": ["useState", "useCallback", "useEffect"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useMutation",
-            "useQuery"
-          ]
+          "specifiers": ["useMutation", "useQuery"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/convex/_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "@react-native-async-storage/async-storage",
-          "specifiers": [
-            "AsyncStorage"
-          ]
+          "specifiers": ["AsyncStorage"]
         }
       ],
-      "exports": [
-        "useManualPriceEntry"
-      ],
+      "exports": ["useManualPriceEntry"],
       "totalLines": 232,
       "hasStructuralAnalysis": true
     },
@@ -7082,10 +5366,7 @@
       "functions": [
         {
           "name": "useReceiptScanning",
-          "params": [
-            "orderLocationId",
-            "orderId"
-          ],
+          "params": ["orderLocationId", "orderId"],
           "returnType": "UseReceiptScanningResult",
           "exported": true,
           "lineCount": 440
@@ -7095,60 +5376,38 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useState",
-            "useCallback",
-            "useEffect"
-          ]
+          "specifiers": ["useState", "useCallback", "useEffect"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useMutation",
-            "useAction",
-            "useQuery"
-          ]
+          "specifiers": ["useMutation", "useAction", "useQuery"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/convex/_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         },
         {
           "source": "expo-image-picker",
-          "specifiers": [
-            "* as ImagePicker"
-          ]
+          "specifiers": ["* as ImagePicker"]
         },
         {
           "source": "expo-image-manipulator",
-          "specifiers": [
-            "* as ImageManipulator"
-          ]
+          "specifiers": ["* as ImageManipulator"]
         },
         {
           "source": "@react-native-async-storage/async-storage",
-          "specifiers": [
-            "AsyncStorage"
-          ]
+          "specifiers": ["AsyncStorage"]
         },
         {
           "source": "@/lib/fuzzy-match",
-          "specifiers": [
-            "autoMatchReceiptItems"
-          ]
+          "specifiers": ["autoMatchReceiptItems"]
         }
       ],
-      "exports": [
-        "useReceiptScanning"
-      ],
+      "exports": ["useReceiptScanning"],
       "totalLines": 513,
       "hasStructuralAnalysis": true
     },
@@ -7180,11 +5439,7 @@
       "imports": [
         {
           "source": "convex/server",
-          "specifiers": [
-            "ApiFromModules",
-            "FilterApi",
-            "FunctionReference"
-          ]
+          "specifiers": ["ApiFromModules", "FilterApi", "FunctionReference"]
         }
       ],
       "exports": [],
@@ -7199,17 +5454,10 @@
       "imports": [
         {
           "source": "convex/server",
-          "specifiers": [
-            "anyApi",
-            "componentsGeneric"
-          ]
+          "specifiers": ["anyApi", "componentsGeneric"]
         }
       ],
-      "exports": [
-        "api",
-        "internal",
-        "components"
-      ],
+      "exports": ["api", "internal", "components"],
       "totalLines": 24,
       "hasStructuralAnalysis": true
     },
@@ -7221,15 +5469,11 @@
       "imports": [
         {
           "source": "convex/server",
-          "specifiers": [
-            "AnyDataModel"
-          ]
+          "specifiers": ["AnyDataModel"]
         },
         {
           "source": "convex/values",
-          "specifiers": [
-            "GenericId"
-          ]
+          "specifiers": ["GenericId"]
         }
       ],
       "exports": [],
@@ -7258,9 +5502,7 @@
         },
         {
           "source": "./dataModel.js",
-          "specifiers": [
-            "DataModel"
-          ]
+          "specifiers": ["DataModel"]
         }
       ],
       "exports": [],
@@ -7316,40 +5558,27 @@
       "imports": [
         {
           "source": "@eslint/js",
-          "specifiers": [
-            "js"
-          ]
+          "specifiers": ["js"]
         },
         {
           "source": "globals",
-          "specifiers": [
-            "globals"
-          ]
+          "specifiers": ["globals"]
         },
         {
           "source": "eslint-plugin-react-hooks",
-          "specifiers": [
-            "reactHooks"
-          ]
+          "specifiers": ["reactHooks"]
         },
         {
           "source": "eslint-plugin-react-refresh",
-          "specifiers": [
-            "reactRefresh"
-          ]
+          "specifiers": ["reactRefresh"]
         },
         {
           "source": "typescript-eslint",
-          "specifiers": [
-            "tseslint"
-          ]
+          "specifiers": ["tseslint"]
         },
         {
           "source": "eslint/config",
-          "specifiers": [
-            "defineConfig",
-            "globalIgnores"
-          ]
+          "specifiers": ["defineConfig", "globalIgnores"]
         }
       ],
       "exports": [],
@@ -7402,9 +5631,7 @@
       "functions": [
         {
           "name": "App",
-          "params": [
-            "{ waitlistEnabled }"
-          ],
+          "params": ["{ waitlistEnabled }"],
           "exported": false,
           "lineCount": 14
         }
@@ -7413,45 +5640,31 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useState"
-          ]
+          "specifiers": ["useState"]
         },
         {
           "source": "./components/SplashIntro",
-          "specifiers": [
-            "SplashIntro"
-          ]
+          "specifiers": ["SplashIntro"]
         },
         {
           "source": "./components/Hero",
-          "specifiers": [
-            "Hero"
-          ]
+          "specifiers": ["Hero"]
         },
         {
           "source": "./components/HowItWorks",
-          "specifiers": [
-            "HowItWorks"
-          ]
+          "specifiers": ["HowItWorks"]
         },
         {
           "source": "./components/Features",
-          "specifiers": [
-            "Features"
-          ]
+          "specifiers": ["Features"]
         },
         {
           "source": "./components/Payments",
-          "specifiers": [
-            "Payments"
-          ]
+          "specifiers": ["Payments"]
         },
         {
           "source": "./components/Footer",
-          "specifiers": [
-            "Footer"
-          ]
+          "specifiers": ["Footer"]
         }
       ],
       "exports": [],
@@ -7473,23 +5686,14 @@
       "imports": [
         {
           "source": "framer-motion",
-          "specifiers": [
-            "motion"
-          ]
+          "specifiers": ["motion"]
         },
         {
           "source": "lucide-react",
-          "specifiers": [
-            "QrCode",
-            "ScanLine",
-            "Radio",
-            "CheckCircle"
-          ]
+          "specifiers": ["QrCode", "ScanLine", "Radio", "CheckCircle"]
         }
       ],
-      "exports": [
-        "Features"
-      ],
+      "exports": ["Features"],
       "totalLines": 132,
       "hasStructuralAnalysis": true
     },
@@ -7499,9 +5703,7 @@
       "functions": [
         {
           "name": "Footer",
-          "params": [
-            "{ waitlistEnabled }"
-          ],
+          "params": ["{ waitlistEnabled }"],
           "exported": true,
           "lineCount": 52
         }
@@ -7510,32 +5712,22 @@
       "imports": [
         {
           "source": "framer-motion",
-          "specifiers": [
-            "motion"
-          ]
+          "specifiers": ["motion"]
         },
         {
           "source": "lucide-react",
-          "specifiers": [
-            "Sparkles"
-          ]
+          "specifiers": ["Sparkles"]
         },
         {
           "source": "./Logo",
-          "specifiers": [
-            "Logo"
-          ]
+          "specifiers": ["Logo"]
         },
         {
           "source": "./WaitlistForm",
-          "specifiers": [
-            "WaitlistForm"
-          ]
+          "specifiers": ["WaitlistForm"]
         }
       ],
-      "exports": [
-        "Footer"
-      ],
+      "exports": ["Footer"],
       "totalLines": 62,
       "hasStructuralAnalysis": true
     },
@@ -7545,9 +5737,7 @@
       "functions": [
         {
           "name": "Hero",
-          "params": [
-            "{ waitlistEnabled }"
-          ],
+          "params": ["{ waitlistEnabled }"],
           "exported": true,
           "lineCount": 151
         }
@@ -7556,28 +5746,18 @@
       "imports": [
         {
           "source": "framer-motion",
-          "specifiers": [
-            "motion"
-          ]
+          "specifiers": ["motion"]
         },
         {
           "source": "lucide-react",
-          "specifiers": [
-            "Users",
-            "Receipt",
-            "CreditCard"
-          ]
+          "specifiers": ["Users", "Receipt", "CreditCard"]
         },
         {
           "source": "./WaitlistForm",
-          "specifiers": [
-            "WaitlistForm"
-          ]
+          "specifiers": ["WaitlistForm"]
         }
       ],
-      "exports": [
-        "Hero"
-      ],
+      "exports": ["Hero"],
       "totalLines": 162,
       "hasStructuralAnalysis": true
     },
@@ -7596,23 +5776,14 @@
       "imports": [
         {
           "source": "framer-motion",
-          "specifiers": [
-            "motion"
-          ]
+          "specifiers": ["motion"]
         },
         {
           "source": "lucide-react",
-          "specifiers": [
-            "QrCode",
-            "ShoppingBag",
-            "ScanLine",
-            "ChevronRight"
-          ]
+          "specifiers": ["QrCode", "ShoppingBag", "ScanLine", "ChevronRight"]
         }
       ],
-      "exports": [
-        "HowItWorks"
-      ],
+      "exports": ["HowItWorks"],
       "totalLines": 107,
       "hasStructuralAnalysis": true
     },
@@ -7622,18 +5793,14 @@
       "functions": [
         {
           "name": "Logo",
-          "params": [
-            "{ className = \"\" }"
-          ],
+          "params": ["{ className = \"\" }"],
           "exported": true,
           "lineCount": 54
         }
       ],
       "classes": [],
       "imports": [],
-      "exports": [
-        "Logo"
-      ],
+      "exports": ["Logo"],
       "totalLines": 55,
       "hasStructuralAnalysis": true
     },
@@ -7652,22 +5819,14 @@
       "imports": [
         {
           "source": "framer-motion",
-          "specifiers": [
-            "motion"
-          ]
+          "specifiers": ["motion"]
         },
         {
           "source": "lucide-react",
-          "specifiers": [
-            "Lock",
-            "ShieldCheck",
-            "CreditCard"
-          ]
+          "specifiers": ["Lock", "ShieldCheck", "CreditCard"]
         }
       ],
-      "exports": [
-        "Payments"
-      ],
+      "exports": ["Payments"],
       "totalLines": 102,
       "hasStructuralAnalysis": true
     },
@@ -7686,20 +5845,14 @@
       "imports": [
         {
           "source": "framer-motion",
-          "specifiers": [
-            "motion"
-          ]
+          "specifiers": ["motion"]
         },
         {
           "source": "lucide-react",
-          "specifiers": [
-            "MessageCircle"
-          ]
+          "specifiers": ["MessageCircle"]
         }
       ],
-      "exports": [
-        "SocialProof"
-      ],
+      "exports": ["SocialProof"],
       "totalLines": 57,
       "hasStructuralAnalysis": true
     },
@@ -7709,9 +5862,7 @@
       "functions": [
         {
           "name": "SplashIntro",
-          "params": [
-            "{ onComplete }"
-          ],
+          "params": ["{ onComplete }"],
           "exported": true,
           "lineCount": 23
         }
@@ -7720,14 +5871,10 @@
       "imports": [
         {
           "source": "framer-motion",
-          "specifiers": [
-            "motion"
-          ]
+          "specifiers": ["motion"]
         }
       ],
-      "exports": [
-        "SplashIntro"
-      ],
+      "exports": ["SplashIntro"],
       "totalLines": 30,
       "hasStructuralAnalysis": true
     },
@@ -7737,9 +5884,7 @@
       "functions": [
         {
           "name": "WaitlistForm",
-          "params": [
-            "{ enabled }"
-          ],
+          "params": ["{ enabled }"],
           "exported": true,
           "lineCount": 17
         },
@@ -7754,41 +5899,26 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useState",
-            "FormEvent"
-          ]
+          "specifiers": ["useState", "FormEvent"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useAction"
-          ]
+          "specifiers": ["useAction"]
         },
         {
           "source": "convex/server",
-          "specifiers": [
-            "makeFunctionReference"
-          ]
+          "specifiers": ["makeFunctionReference"]
         },
         {
           "source": "framer-motion",
-          "specifiers": [
-            "motion",
-            "AnimatePresence"
-          ]
+          "specifiers": ["motion", "AnimatePresence"]
         },
         {
           "source": "lucide-react",
-          "specifiers": [
-            "CheckCircle",
-            "Loader2"
-          ]
+          "specifiers": ["CheckCircle", "Loader2"]
         }
       ],
-      "exports": [
-        "WaitlistForm"
-      ],
+      "exports": ["WaitlistForm"],
       "totalLines": 117,
       "hasStructuralAnalysis": true
     },
@@ -7810,22 +5940,15 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "StrictMode"
-          ]
+          "specifiers": ["StrictMode"]
         },
         {
           "source": "react-dom/client",
-          "specifiers": [
-            "createRoot"
-          ]
+          "specifiers": ["createRoot"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "ConvexProvider",
-            "ConvexReactClient"
-          ]
+          "specifiers": ["ConvexProvider", "ConvexReactClient"]
         },
         {
           "source": "./index.css",
@@ -7833,9 +5956,7 @@
         },
         {
           "source": "./App.tsx",
-          "specifiers": [
-            "App"
-          ]
+          "specifiers": ["App"]
         }
       ],
       "exports": [],
@@ -7880,21 +6001,15 @@
       "imports": [
         {
           "source": "vite",
-          "specifiers": [
-            "defineConfig"
-          ]
+          "specifiers": ["defineConfig"]
         },
         {
           "source": "@vitejs/plugin-react",
-          "specifiers": [
-            "react"
-          ]
+          "specifiers": ["react"]
         },
         {
           "source": "@tailwindcss/vite",
-          "specifiers": [
-            "tailwindcss"
-          ]
+          "specifiers": ["tailwindcss"]
         }
       ],
       "exports": [],
@@ -7909,38 +6024,26 @@
       "imports": [
         {
           "source": "better-auth/react",
-          "specifiers": [
-            "createAuthClient"
-          ]
+          "specifiers": ["createAuthClient"]
         },
         {
           "source": "better-auth/client/plugins",
-          "specifiers": [
-            "emailOTPClient"
-          ]
+          "specifiers": ["emailOTPClient"]
         },
         {
           "source": "@better-auth/expo/client",
-          "specifiers": [
-            "expoClient"
-          ]
+          "specifiers": ["expoClient"]
         },
         {
           "source": "@convex-dev/better-auth/client/plugins",
-          "specifiers": [
-            "convexClient"
-          ]
+          "specifiers": ["convexClient"]
         },
         {
           "source": "expo-secure-store",
-          "specifiers": [
-            "* as SecureStore"
-          ]
+          "specifiers": ["* as SecureStore"]
         }
       ],
-      "exports": [
-        "authClient"
-      ],
+      "exports": ["authClient"],
       "totalLines": 33,
       "hasStructuralAnalysis": true
     },
@@ -7950,47 +6053,33 @@
       "functions": [
         {
           "name": "createFormHandlers",
-          "params": [
-            "_form",
-            "setForm"
-          ],
+          "params": ["_form", "setForm"],
           "exported": true,
           "lineCount": 37
         },
         {
           "name": "validateField",
-          "params": [
-            "key",
-            "value",
-            "form"
-          ],
+          "params": ["key", "value", "form"],
           "returnType": "string | null",
           "exported": true,
           "lineCount": 13
         },
         {
           "name": "validateEmail",
-          "params": [
-            "email"
-          ],
+          "params": ["email"],
           "exported": true,
           "lineCount": 6
         },
         {
           "name": "getAuthErrorMessage",
-          "params": [
-            "error",
-            "context"
-          ],
+          "params": ["error", "context"],
           "returnType": "AuthErrorResult",
           "exported": true,
           "lineCount": 180
         },
         {
           "name": "splitName",
-          "params": [
-            "fullName"
-          ],
+          "params": ["fullName"],
           "returnType": "{\n  firstName: string | null;\n  lastName: string | null;\n}",
           "exported": true,
           "lineCount": 43
@@ -8000,9 +6089,7 @@
       "imports": [
         {
           "source": "expo-auth-session",
-          "specifiers": [
-            "makeRedirectUri"
-          ]
+          "specifiers": ["makeRedirectUri"]
         }
       ],
       "exports": [
@@ -8022,9 +6109,7 @@
       "functions": [
         {
           "name": "avatarColors",
-          "params": [
-            "name"
-          ],
+          "params": ["name"],
           "returnType": "{ bg: string; fg: string }",
           "exported": true,
           "lineCount": 5
@@ -8032,13 +6117,7 @@
       ],
       "classes": [],
       "imports": [],
-      "exports": [
-        "BR",
-        "BR_RADIUS",
-        "BR_FONT",
-        "BR_SHADOW",
-        "avatarColors"
-      ],
+      "exports": ["BR", "BR_RADIUS", "BR_FONT", "BR_SHADOW", "avatarColors"],
       "totalLines": 88,
       "hasStructuralAnalysis": true
     },
@@ -8048,9 +6127,7 @@
       "functions": [
         {
           "name": "hsl",
-          "params": [
-            "value"
-          ],
+          "params": ["value"],
           "exported": false,
           "lineCount": 1
         }
@@ -8059,14 +6136,10 @@
       "imports": [
         {
           "source": "@/tokens.json",
-          "specifiers": [
-            "tokens"
-          ]
+          "specifiers": ["tokens"]
         }
       ],
-      "exports": [
-        "NAV_THEME"
-      ],
+      "exports": ["NAV_THEME"],
       "totalLines": 23,
       "hasStructuralAnalysis": true
     },
@@ -8082,9 +6155,7 @@
         },
         {
           "name": "AuthProvider",
-          "params": [
-            "{ children }"
-          ],
+          "params": ["{ children }"],
           "exported": true,
           "lineCount": 60
         }
@@ -8106,23 +6177,14 @@
         },
         {
           "source": "./auth-client",
-          "specifiers": [
-            "authClient"
-          ]
+          "specifiers": ["authClient"]
         },
         {
           "source": "./auth-client",
-          "specifiers": [
-            "Session",
-            "User"
-          ]
+          "specifiers": ["Session", "User"]
         }
       ],
-      "exports": [
-        "AuthContext",
-        "useAuth",
-        "AuthProvider"
-      ],
+      "exports": ["AuthContext", "useAuth", "AuthProvider"],
       "totalLines": 111,
       "hasStructuralAnalysis": true
     },
@@ -8132,10 +6194,7 @@
       "functions": [],
       "classes": [],
       "imports": [],
-      "exports": [
-        "FONTS",
-        "COLORS"
-      ],
+      "exports": ["FONTS", "COLORS"],
       "totalLines": 39,
       "hasStructuralAnalysis": true
     },
@@ -8145,50 +6204,35 @@
       "functions": [
         {
           "name": "levenshteinDistance",
-          "params": [
-            "str1",
-            "str2"
-          ],
+          "params": ["str1", "str2"],
           "returnType": "number",
           "exported": false,
           "lineCount": 30
         },
         {
           "name": "calculateSimilarity",
-          "params": [
-            "str1",
-            "str2"
-          ],
+          "params": ["str1", "str2"],
           "returnType": "number",
           "exported": true,
           "lineCount": 13
         },
         {
           "name": "containsSubstantialMatch",
-          "params": [
-            "str1",
-            "str2"
-          ],
+          "params": ["str1", "str2"],
           "returnType": "boolean",
           "exported": false,
           "lineCount": 18
         },
         {
           "name": "findBestMatch",
-          "params": [
-            "receiptItemName",
-            "candidates"
-          ],
+          "params": ["receiptItemName", "candidates"],
           "returnType": "MatchResult | null",
           "exported": true,
           "lineCount": 35
         },
         {
           "name": "autoMatchReceiptItems",
-          "params": [
-            "receiptItems",
-            "orderItems"
-          ],
+          "params": ["receiptItems", "orderItems"],
           "returnType": "Array<{\n  id: string;\n  receiptItem: {\n    name: string;\n    quantity: number;\n    priceInCents: number | null;\n  };\n  matchedOrderItemId: string | null;\n  matchedItemName: string | null;\n  matchedUserName: string | null;\n  confidence: number;\n}>",
           "exported": true,
           "lineCount": 64
@@ -8225,34 +6269,22 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useState"
-          ]
+          "specifiers": ["useState"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useQuery",
-            "useMutation"
-          ]
+          "specifiers": ["useQuery", "useMutation"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/convex/_generated/dataModel",
-          "specifiers": [
-            "Id"
-          ]
+          "specifiers": ["Id"]
         }
       ],
-      "exports": [
-        "useFriends",
-        "useCreateOrder"
-      ],
+      "exports": ["useFriends", "useCreateOrder"],
       "totalLines": 46,
       "hasStructuralAnalysis": true
     },
@@ -8282,9 +6314,7 @@
         },
         {
           "name": "handleNotificationTap",
-          "params": [
-            "data"
-          ],
+          "params": ["data"],
           "exported": false,
           "lineCount": 10
         }
@@ -8293,72 +6323,46 @@
       "imports": [
         {
           "source": "react",
-          "specifiers": [
-            "useEffect",
-            "useRef",
-            "useState",
-            "useCallback"
-          ]
+          "specifiers": ["useEffect", "useRef", "useState", "useCallback"]
         },
         {
           "source": "react-native",
-          "specifiers": [
-            "Platform"
-          ]
+          "specifiers": ["Platform"]
         },
         {
           "source": "expo-router",
-          "specifiers": [
-            "router"
-          ]
+          "specifiers": ["router"]
         },
         {
           "source": "expo-notifications",
-          "specifiers": [
-            "* as Notifications"
-          ]
+          "specifiers": ["* as Notifications"]
         },
         {
           "source": "expo-device",
-          "specifiers": [
-            "* as Device"
-          ]
+          "specifiers": ["* as Device"]
         },
         {
           "source": "expo-constants",
-          "specifiers": [
-            "Constants"
-          ]
+          "specifiers": ["Constants"]
         },
         {
           "source": "@react-native-async-storage/async-storage",
-          "specifiers": [
-            "AsyncStorage"
-          ]
+          "specifiers": ["AsyncStorage"]
         },
         {
           "source": "convex/react",
-          "specifiers": [
-            "useMutation",
-            "useQuery"
-          ]
+          "specifiers": ["useMutation", "useQuery"]
         },
         {
           "source": "@/convex/_generated/api",
-          "specifiers": [
-            "api"
-          ]
+          "specifiers": ["api"]
         },
         {
           "source": "@/lib/convex-auth-context",
-          "specifiers": [
-            "useAuth"
-          ]
+          "specifiers": ["useAuth"]
         }
       ],
-      "exports": [
-        "usePushNotifications"
-      ],
+      "exports": ["usePushNotifications"],
       "totalLines": 245,
       "hasStructuralAnalysis": true
     },
@@ -8368,111 +6372,84 @@
       "functions": [
         {
           "name": "normalizeDisplayText",
-          "params": [
-            "text"
-          ],
+          "params": ["text"],
           "returnType": "string",
           "exported": false,
           "lineCount": 3
         },
         {
           "name": "normalizeSizeTokens",
-          "params": [
-            "text"
-          ],
+          "params": ["text"],
           "returnType": "string",
           "exported": false,
           "lineCount": 8
         },
         {
           "name": "normalizeOrderItemText",
-          "params": [
-            "text"
-          ],
+          "params": ["text"],
           "returnType": "string",
           "exported": true,
           "lineCount": 15
         },
         {
           "name": "tokenizeNormalizedText",
-          "params": [
-            "text"
-          ],
+          "params": ["text"],
           "returnType": "string[]",
           "exported": false,
           "lineCount": 6
         },
         {
           "name": "getNumericTokens",
-          "params": [
-            "text"
-          ],
+          "params": ["text"],
           "returnType": "string[]",
           "exported": false,
           "lineCount": 3
         },
         {
           "name": "getTokenSet",
-          "params": [
-            "text"
-          ],
+          "params": ["text"],
           "returnType": "Set<string>",
           "exported": false,
           "lineCount": 5
         },
         {
           "name": "tokenSetsOverlap",
-          "params": [
-            "left",
-            "right"
-          ],
+          "params": ["left", "right"],
           "returnType": "boolean",
           "exported": false,
           "lineCount": 15
         },
         {
           "name": "tokenSetsMatch",
-          "params": [
-            "left",
-            "right"
-          ],
+          "params": ["left", "right"],
           "returnType": "boolean",
           "exported": false,
           "lineCount": 13
         },
         {
           "name": "numericTokensMatch",
-          "params": [
-            "left",
-            "right"
-          ],
+          "params": ["left", "right"],
           "returnType": "boolean",
           "exported": false,
           "lineCount": 7
         },
         {
           "name": "chooseDisplayName",
-          "params": [
-            "texts"
-          ],
+          "params": ["texts"],
           "returnType": "string",
           "exported": false,
           "lineCount": 23
         },
         {
           "name": "sortParticipantGroups",
-          "params": [
-            "groups"
-          ],
+          "params": ["groups"],
           "returnType": "OrderItemGroup<T>[]",
           "exported": false,
           "lineCount": 5
         },
         {
           "name": "buildParticipantGroups",
-          "params": [
-            "orderItems"
-          ],
+          "params": ["orderItems"],
           "returnType": "OrderItemGroup<T>[]",
           "exported": false,
           "lineCount": 68
@@ -8491,73 +6468,56 @@
         },
         {
           "name": "sortTextGroups",
-          "params": [
-            "groups"
-          ],
+          "params": ["groups"],
           "returnType": "OrderItemTextGroup<T>[]",
           "exported": false,
           "lineCount": 17
         },
         {
           "name": "buildAmbiguousClusters",
-          "params": [
-            "groups"
-          ],
+          "params": ["groups"],
           "returnType": "AmbiguousOrderItemTextCluster<T>[]",
           "exported": false,
           "lineCount": 120
         },
         {
           "name": "buildOrderItemTextGroupingSignature",
-          "params": [
-            "orderItems"
-          ],
+          "params": ["orderItems"],
           "returnType": "string",
           "exported": true,
           "lineCount": 8
         },
         {
           "name": "buildOrderSummaryTextSignature",
-          "params": [
-            "locations"
-          ],
+          "params": ["locations"],
           "returnType": "string",
           "exported": true,
           "lineCount": 17
         },
         {
           "name": "analyzeOrderItemTextGroups",
-          "params": [
-            "orderItems"
-          ],
+          "params": ["orderItems"],
           "returnType": "OrderItemTextGroupingAnalysis<T>",
           "exported": true,
           "lineCount": 31
         },
         {
           "name": "groupOrderItemsByParticipant",
-          "params": [
-            "orderItems"
-          ],
+          "params": ["orderItems"],
           "returnType": "OrderItemGroup<T>[]",
           "exported": true,
           "lineCount": 5
         },
         {
           "name": "groupOrderItemsByItemText",
-          "params": [
-            "orderItems"
-          ],
+          "params": ["orderItems"],
           "returnType": "OrderItemTextGroup<T>[]",
           "exported": true,
           "lineCount": 5
         },
         {
           "name": "materializeResolvedOrderItemTextGroups",
-          "params": [
-            "orderItems",
-            "resolvedGroups"
-          ],
+          "params": ["orderItems", "resolvedGroups"],
           "returnType": "OrderItemTextGroup<T>[]",
           "exported": true,
           "lineCount": 52
@@ -8567,9 +6527,7 @@
       "imports": [
         {
           "source": "./fuzzy-match",
-          "specifiers": [
-            "calculateSimilarity"
-          ]
+          "specifiers": ["calculateSimilarity"]
         }
       ],
       "exports": [
@@ -8609,14 +6567,10 @@
       "imports": [
         {
           "source": "nativewind",
-          "specifiers": [
-            "useNativewindColorScheme"
-          ]
+          "specifiers": ["useNativewindColorScheme"]
         }
       ],
-      "exports": [
-        "useColorScheme"
-      ],
+      "exports": ["useColorScheme"],
       "totalLines": 13,
       "hasStructuralAnalysis": true
     },
@@ -8696,9 +6650,7 @@
       "functions": [
         {
           "name": "parseVarsFromCss",
-          "params": [
-            "css"
-          ],
+          "params": ["css"],
           "exported": false,
           "lineCount": 27
         }
@@ -8717,18 +6669,10 @@
       "imports": [
         {
           "source": "nativewind/theme",
-          "specifiers": [
-            "hairlineWidth"
-          ]
+          "specifiers": ["hairlineWidth"]
         }
       ],
-      "exports": [
-        "darkMode",
-        "content",
-        "presets",
-        "theme",
-        "plugins"
-      ],
+      "exports": ["darkMode", "content", "presets", "theme", "plugins"],
       "totalLines": 60,
       "hasStructuralAnalysis": true
     },

@@ -185,8 +185,7 @@ export const canDeleteAccount = query({
     if (owedToMe > 0n || iOwe > 0n) {
       return {
         allowed: false,
-        reason:
-          "Settle outstanding payments before deleting your account.",
+        reason: "Settle outstanding payments before deleting your account.",
       };
     }
 

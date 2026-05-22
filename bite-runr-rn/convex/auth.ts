@@ -1,10 +1,7 @@
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins";
 import { expo } from "@better-auth/expo";
-import {
-  createClient,
-  type AuthFunctions,
-} from "@convex-dev/better-auth";
+import { createClient, type AuthFunctions } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { Resend } from "resend";
 import { components, internal } from "./_generated/api";

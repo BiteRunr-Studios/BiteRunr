@@ -47,12 +47,7 @@
       "name": "SKILL.md",
       "filePath": ".claude/skills/convex/SKILL.md",
       "summary": "Comprehensive Convex backend development guide covering function syntax, validators, schema definitions, queries, mutations, actions, scheduling, HTTP endpoints, storage, search, and TypeScript patterns.",
-      "tags": [
-        "documentation",
-        "convex",
-        "backend",
-        "development-guide"
-      ],
+      "tags": ["documentation", "convex", "backend", "development-guide"],
       "complexity": "complex"
     },
     {
@@ -61,12 +56,7 @@
       "name": "SKILL.md",
       "filePath": ".claude/skills/frontend-design/SKILL.md",
       "summary": "Frontend design guidance emphasizing user-oriented decisions, modern aesthetics, responsive layouts, and polished interaction details.",
-      "tags": [
-        "documentation",
-        "frontend",
-        "design-system",
-        "ux-guidelines"
-      ],
+      "tags": ["documentation", "frontend", "design-system", "ux-guidelines"],
       "complexity": "simple"
     },
     {
@@ -75,12 +65,7 @@
       "name": ".env.example",
       "filePath": ".env.example",
       "summary": "Example environment file listing Convex, Stripe, Expo bundle identifiers, Apple sign-in, EAS project, and Expo owner variables required for local and build configuration.",
-      "tags": [
-        "configuration",
-        "environment",
-        "convex",
-        "expo"
-      ],
+      "tags": ["configuration", "environment", "convex", "expo"],
       "complexity": "simple"
     },
     {
@@ -89,12 +74,7 @@
       "name": "checks.yml",
       "filePath": ".github/workflows/checks.yml",
       "summary": "GitHub Actions workflow that runs on pushes and pull requests, installs dependencies with Bun, and executes the repository check command with concurrency cancellation.",
-      "tags": [
-        "ci-cd",
-        "github-actions",
-        "quality-checks",
-        "automation"
-      ],
+      "tags": ["ci-cd", "github-actions", "quality-checks", "automation"],
       "complexity": "simple"
     },
     {
@@ -103,12 +83,7 @@
       "name": ".prettierignore",
       "filePath": ".prettierignore",
       "summary": "Root Prettier ignore list excluding dependencies, build artifacts, Expo output, generated native folders, Convex generated files, and generated route typings.",
-      "tags": [
-        "configuration",
-        "formatting",
-        "prettier",
-        "generated-files"
-      ],
+      "tags": ["configuration", "formatting", "prettier", "generated-files"],
       "complexity": "simple"
     },
     {
@@ -117,12 +92,7 @@
       "name": ".cta.json",
       "filePath": "admin/.cta.json",
       "summary": "Create TanStack App metadata recording the admin app scaffold choices, including framework, TypeScript, Tailwind, package manager, and selected add-ons.",
-      "tags": [
-        "configuration",
-        "scaffolding",
-        "tanstack",
-        "admin-app"
-      ],
+      "tags": ["configuration", "scaffolding", "tanstack", "admin-app"],
       "complexity": "simple"
     },
     {
@@ -131,12 +101,7 @@
       "name": ".dockerignore",
       "filePath": "admin/.dockerignore",
       "summary": "Docker build ignore rules for the admin package that keep dependencies, build output, logs, and local environment files out of the container context.",
-      "tags": [
-        "configuration",
-        "docker",
-        "containerization",
-        "ignore-rules"
-      ],
+      "tags": ["configuration", "docker", "containerization", "ignore-rules"],
       "complexity": "simple"
     },
     {
@@ -145,12 +110,7 @@
       "name": ".prettierignore",
       "filePath": "admin/.prettierignore",
       "summary": "Admin-specific Prettier ignore file excluding installed dependencies and generated build output from formatting.",
-      "tags": [
-        "configuration",
-        "formatting",
-        "prettier",
-        "admin-app"
-      ],
+      "tags": ["configuration", "formatting", "prettier", "admin-app"],
       "complexity": "simple"
     },
     {
@@ -159,12 +119,7 @@
       "name": "components.json",
       "filePath": "admin/components.json",
       "summary": "shadcn component configuration for the admin app, defining Tailwind integration, path aliases, icon library, menu colors, and registries.",
-      "tags": [
-        "configuration",
-        "shadcn",
-        "tailwind",
-        "component-system"
-      ],
+      "tags": ["configuration", "shadcn", "tailwind", "component-system"],
       "complexity": "simple"
     },
     {
@@ -173,12 +128,7 @@
       "name": "Dockerfile",
       "filePath": "admin/Dockerfile",
       "summary": "Multi-stage Docker build for the admin TanStack Start app, installing dependencies with pnpm, baking Vite environment variables, building `.output`, and serving it with Node on port 3000.",
-      "tags": [
-        "containerization",
-        "infrastructure",
-        "deployment",
-        "admin-app"
-      ],
+      "tags": ["containerization", "infrastructure", "deployment", "admin-app"],
       "complexity": "moderate",
       "languageNotes": "Uses separate base, build, and production stages to cache dependency installation and keep the runtime image focused on built server output."
     },
@@ -188,12 +138,7 @@
       "name": "base",
       "filePath": "admin/Dockerfile",
       "summary": "Base Docker stage using `node:20-alpine` and Corepack to activate the pinned pnpm version before dependency installation.",
-      "tags": [
-        "containerization",
-        "docker-stage",
-        "node",
-        "pnpm"
-      ],
+      "tags": ["containerization", "docker-stage", "node", "pnpm"],
       "complexity": "simple"
     },
     {
@@ -202,12 +147,7 @@
       "name": "build",
       "filePath": "admin/Dockerfile",
       "summary": "Build Docker stage that installs admin dependencies, copies the admin source, injects `VITE_CONVEX_URL`, and runs the production build.",
-      "tags": [
-        "containerization",
-        "docker-stage",
-        "build-system",
-        "vite"
-      ],
+      "tags": ["containerization", "docker-stage", "build-system", "vite"],
       "complexity": "moderate"
     },
     {
@@ -216,12 +156,7 @@
       "name": "node",
       "filePath": "admin/Dockerfile",
       "summary": "Runtime Docker stage that copies the built `.output` directory and starts the TanStack Start server with Node on port 3000.",
-      "tags": [
-        "containerization",
-        "docker-stage",
-        "runtime",
-        "node"
-      ],
+      "tags": ["containerization", "docker-stage", "runtime", "node"],
       "complexity": "simple"
     },
     {
@@ -230,12 +165,7 @@
       "name": "eslint.config.js",
       "filePath": "admin/eslint.config.js",
       "summary": "Admin ESLint configuration that reuses TanStack's shared ESLint config with TypeScript and React support enabled.",
-      "tags": [
-        "configuration",
-        "linting",
-        "eslint",
-        "admin-app"
-      ],
+      "tags": ["configuration", "linting", "eslint", "admin-app"],
       "complexity": "simple"
     },
     {
@@ -258,12 +188,7 @@
       "name": "prettier.config.js",
       "filePath": "admin/prettier.config.js",
       "summary": "Admin Prettier configuration that enables Tailwind and shadcn class ordering plugins for consistent component styling.",
-      "tags": [
-        "configuration",
-        "formatting",
-        "prettier",
-        "tailwind"
-      ],
+      "tags": ["configuration", "formatting", "prettier", "tailwind"],
       "complexity": "simple"
     },
     {
@@ -272,12 +197,7 @@
       "name": "manifest.json",
       "filePath": "admin/public/manifest.json",
       "summary": "Web app manifest for the admin package defining app names, icon assets, start URL, display mode, and theme/background colors.",
-      "tags": [
-        "configuration",
-        "web-manifest",
-        "pwa",
-        "branding"
-      ],
+      "tags": ["configuration", "web-manifest", "pwa", "branding"],
       "complexity": "simple"
     },
     {
@@ -286,12 +206,7 @@
       "name": "robots.txt",
       "filePath": "admin/public/robots.txt",
       "summary": "Robots policy for the admin public site that allows all crawlers and declares the root path.",
-      "tags": [
-        "documentation",
-        "seo",
-        "robots",
-        "public-assets"
-      ],
+      "tags": ["documentation", "seo", "robots", "public-assets"],
       "complexity": "simple"
     },
     {
@@ -300,12 +215,7 @@
       "name": "README.md",
       "filePath": "admin/README.md",
       "summary": "Brief admin package README identifying the BiteRunr Admin app and pointing developers to the repository-level guidance.",
-      "tags": [
-        "documentation",
-        "admin-app",
-        "overview",
-        "entry-point"
-      ],
+      "tags": ["documentation", "admin-app", "overview", "entry-point"],
       "complexity": "simple"
     },
     {
@@ -314,12 +224,7 @@
       "name": "router.tsx",
       "filePath": "admin/src/router.tsx",
       "summary": "Creates the TanStack Router instance for the admin app using the generated route tree, scroll restoration, and zero stale preload time.",
-      "tags": [
-        "entry-point",
-        "routing",
-        "tanstack-router",
-        "factory"
-      ],
+      "tags": ["entry-point", "routing", "tanstack-router", "factory"],
       "complexity": "simple"
     },
     {
@@ -327,16 +232,9 @@
       "type": "function",
       "name": "getRouter",
       "filePath": "admin/src/router.tsx",
-      "lineRange": [
-        7,
-        15
-      ],
+      "lineRange": [7, 15],
       "summary": "Constructs and returns the configured TanStack Router instance for the admin app.",
-      "tags": [
-        "factory",
-        "routing",
-        "tanstack-router"
-      ],
+      "tags": ["factory", "routing", "tanstack-router"],
       "complexity": "simple"
     },
     {
@@ -345,12 +243,7 @@
       "name": "__root.tsx",
       "filePath": "admin/src/routes/__root.tsx",
       "summary": "Defines the root TanStack Router route, document shell, global stylesheet link, page metadata, outlet, scripts, and development router devtools.",
-      "tags": [
-        "routing",
-        "layout",
-        "tanstack-router",
-        "react-component"
-      ],
+      "tags": ["routing", "layout", "tanstack-router", "react-component"],
       "complexity": "moderate"
     },
     {
@@ -358,16 +251,9 @@
       "type": "function",
       "name": "RootDocument",
       "filePath": "admin/src/routes/__root.tsx",
-      "lineRange": [
-        37,
-        62
-      ],
+      "lineRange": [37, 62],
       "summary": "Renders the HTML document shell with head content, route children, conditional TanStack devtools, and router scripts.",
-      "tags": [
-        "react-component",
-        "layout",
-        "document-shell"
-      ],
+      "tags": ["react-component", "layout", "document-shell"],
       "complexity": "moderate"
     },
     {
@@ -376,12 +262,7 @@
       "name": "index.tsx",
       "filePath": "admin/src/routes/index.tsx",
       "summary": "Admin home route explaining that this package currently hosts public policy pages and linking users to the privacy policy.",
-      "tags": [
-        "routing",
-        "react-component",
-        "homepage",
-        "public-page"
-      ],
+      "tags": ["routing", "react-component", "homepage", "public-page"],
       "complexity": "moderate"
     },
     {
@@ -389,16 +270,9 @@
       "type": "function",
       "name": "IndexPage",
       "filePath": "admin/src/routes/index.tsx",
-      "lineRange": [
-        8,
-        60
-      ],
+      "lineRange": [8, 60],
       "summary": "Renders the admin package landing page with scope messaging, policy navigation, and static informational sections.",
-      "tags": [
-        "react-component",
-        "homepage",
-        "static-content"
-      ],
+      "tags": ["react-component", "homepage", "static-content"],
       "complexity": "moderate"
     },
     {
@@ -407,12 +281,7 @@
       "name": "privacy.tsx",
       "filePath": "admin/src/routes/privacy.tsx",
       "summary": "Privacy-policy route for BiteRunr containing static legal content about account data, orders, payments, payouts, social features, notifications, receipt scanning, third-party services, retention, and user rights.",
-      "tags": [
-        "routing",
-        "react-component",
-        "privacy-policy",
-        "legal"
-      ],
+      "tags": ["routing", "react-component", "privacy-policy", "legal"],
       "complexity": "complex"
     },
     {
@@ -420,17 +289,9 @@
       "type": "function",
       "name": "PrivacyPolicy",
       "filePath": "admin/src/routes/privacy.tsx",
-      "lineRange": [
-        7,
-        227
-      ],
+      "lineRange": [7, 227],
       "summary": "Renders the complete static BiteRunr privacy policy page with structured sections and support contact link.",
-      "tags": [
-        "react-component",
-        "privacy-policy",
-        "static-content",
-        "legal"
-      ],
+      "tags": ["react-component", "privacy-policy", "static-content", "legal"],
       "complexity": "complex"
     },
     {
@@ -454,12 +315,7 @@
       "name": "styles.css",
       "filePath": "admin/src/styles.css",
       "summary": "Admin global stylesheet importing Tailwind, animation, shadcn, and JetBrains Mono assets while defining light/dark OKLCH theme tokens and base layer styles.",
-      "tags": [
-        "stylesheet",
-        "tailwind",
-        "theme-tokens",
-        "design-system"
-      ],
+      "tags": ["stylesheet", "tailwind", "theme-tokens", "design-system"],
       "complexity": "moderate",
       "languageNotes": "Uses Tailwind v4 `@theme inline` tokens and OKLCH color variables for light and dark themes."
     },
@@ -469,12 +325,7 @@
       "name": "tsconfig.json",
       "filePath": "admin/tsconfig.json",
       "summary": "Admin TypeScript compiler configuration for React JSX, Vite client types, bundler module resolution, strict lint-style checks, and `@/*` path aliases to `src`.",
-      "tags": [
-        "configuration",
-        "typescript",
-        "build-system",
-        "path-alias"
-      ],
+      "tags": ["configuration", "typescript", "build-system", "path-alias"],
       "complexity": "simple"
     },
     {
@@ -483,12 +334,7 @@
       "name": "vite.config.ts",
       "filePath": "admin/vite.config.ts",
       "summary": "Vite configuration for the admin app composing TanStack devtools, Nitro, TypeScript path aliases, Tailwind, TanStack Start, and React plugins.",
-      "tags": [
-        "configuration",
-        "vite",
-        "build-system",
-        "tanstack-start"
-      ],
+      "tags": ["configuration", "vite", "build-system", "tanstack-start"],
       "complexity": "simple"
     },
     {
@@ -511,12 +357,7 @@
       "name": "app.config.ts",
       "filePath": "app.config.ts",
       "summary": "Defines the Expo application configuration for BiteRunr, including app identity, plugins, native permissions, React Compiler settings, EAS metadata, and environment-derived Convex/Stripe values.",
-      "tags": [
-        "configuration",
-        "expo",
-        "build-system",
-        "native-config"
-      ],
+      "tags": ["configuration", "expo", "build-system", "native-config"],
       "complexity": "moderate",
       "languageNotes": "Expo config is assembled in TypeScript and merges local developer-specific EAS settings from app.config.local."
     },
@@ -526,12 +367,7 @@
       "name": "_layout.tsx",
       "filePath": "app/_layout.tsx",
       "summary": "Bootstraps the mobile app shell with Stripe, Convex Better Auth, theme, safe-area, font, toast, and splash-screen providers before rendering the root Expo Router stack.",
-      "tags": [
-        "entry-point",
-        "routing",
-        "provider-stack",
-        "app-shell"
-      ],
+      "tags": ["entry-point", "routing", "provider-stack", "app-shell"],
       "complexity": "complex",
       "languageNotes": "Uses Expo Router root layout conventions and React Native provider composition to centralize app-wide runtime setup."
     },
@@ -540,17 +376,9 @@
       "type": "function",
       "name": "useToastConfig",
       "filePath": "app/_layout.tsx",
-      "lineRange": [
-        96,
-        193
-      ],
+      "lineRange": [96, 193],
       "summary": "Builds Tamagui toast viewport configuration from the current color scheme and platform-specific safe area behavior.",
-      "tags": [
-        "hook",
-        "toast",
-        "theme",
-        "ui-config"
-      ],
+      "tags": ["hook", "toast", "theme", "ui-config"],
       "complexity": "moderate"
     },
     {
@@ -558,17 +386,9 @@
       "type": "function",
       "name": "RootAppShell",
       "filePath": "app/_layout.tsx",
-      "lineRange": [
-        195,
-        254
-      ],
+      "lineRange": [195, 254],
       "summary": "Coordinates auth readiness, font loading, splash-screen dismissal, toast viewport setup, and the root navigation stack.",
-      "tags": [
-        "component",
-        "app-shell",
-        "routing",
-        "splash-screen"
-      ],
+      "tags": ["component", "app-shell", "routing", "splash-screen"],
       "complexity": "moderate"
     },
     {
@@ -576,17 +396,9 @@
       "type": "function",
       "name": "RootLayout",
       "filePath": "app/_layout.tsx",
-      "lineRange": [
-        256,
-        300
-      ],
+      "lineRange": [256, 300],
       "summary": "Loads fonts and composes the app-wide providers for Stripe, Convex auth, theme, safe areas, splash overlay, and navigation.",
-      "tags": [
-        "entry-point",
-        "provider-stack",
-        "routing",
-        "theme"
-      ],
+      "tags": ["entry-point", "provider-stack", "routing", "theme"],
       "complexity": "simple"
     },
     {
@@ -595,12 +407,7 @@
       "name": "_layout.tsx",
       "filePath": "app/(auth)/_layout.tsx",
       "summary": "Controls the authentication route group, redirecting authenticated users away from sign-in flows and defining the auth stack screens.",
-      "tags": [
-        "routing",
-        "auth",
-        "redirect",
-        "layout"
-      ],
+      "tags": ["routing", "auth", "redirect", "layout"],
       "complexity": "simple"
     },
     {
@@ -608,17 +415,9 @@
       "type": "function",
       "name": "AuthLayout",
       "filePath": "app/(auth)/_layout.tsx",
-      "lineRange": [
-        4,
-        48
-      ],
+      "lineRange": [4, 48],
       "summary": "Redirects authenticated users to protected tabs and declares the authentication stack screens.",
-      "tags": [
-        "component",
-        "auth",
-        "routing",
-        "redirect"
-      ],
+      "tags": ["component", "auth", "routing", "redirect"],
       "complexity": "simple"
     },
     {
@@ -627,12 +426,7 @@
       "name": "email-sign-in.tsx",
       "filePath": "app/(auth)/email-sign-in.tsx",
       "summary": "Implements the email/password sign-in screen with local form validation, Better Auth email login, session refresh, and navigation to signup or OTP flows.",
-      "tags": [
-        "component",
-        "auth",
-        "form-handling",
-        "screen"
-      ],
+      "tags": ["component", "auth", "form-handling", "screen"],
       "complexity": "complex"
     },
     {
@@ -640,17 +434,9 @@
       "type": "function",
       "name": "EmailSignInScreen",
       "filePath": "app/(auth)/email-sign-in.tsx",
-      "lineRange": [
-        30,
-        208
-      ],
+      "lineRange": [30, 208],
       "summary": "Manages email/password login state, validation, Better Auth sign-in, error display, and auth navigation links.",
-      "tags": [
-        "component",
-        "auth",
-        "form-handling",
-        "screen"
-      ],
+      "tags": ["component", "auth", "form-handling", "screen"],
       "complexity": "moderate"
     },
     {
@@ -659,12 +445,7 @@
       "name": "sign-in.tsx",
       "filePath": "app/(auth)/sign-in.tsx",
       "summary": "Renders the polished sign-in landing screen with animated hero artwork, OAuth entry points, and navigation into email sign-in or account creation.",
-      "tags": [
-        "component",
-        "auth",
-        "animation",
-        "screen"
-      ],
+      "tags": ["component", "auth", "animation", "screen"],
       "complexity": "complex"
     },
     {
@@ -672,17 +453,9 @@
       "type": "function",
       "name": "FloatCard",
       "filePath": "app/(auth)/sign-in.tsx",
-      "lineRange": [
-        24,
-        57
-      ],
+      "lineRange": [24, 57],
       "summary": "Renders a looping animated decorative card used in the sign-in hero backdrop.",
-      "tags": [
-        "component",
-        "animation",
-        "hero",
-        "ui"
-      ],
+      "tags": ["component", "animation", "hero", "ui"],
       "complexity": "simple"
     },
     {
@@ -690,17 +463,9 @@
       "type": "function",
       "name": "Twinkle",
       "filePath": "app/(auth)/sign-in.tsx",
-      "lineRange": [
-        59,
-        105
-      ],
+      "lineRange": [59, 105],
       "summary": "Renders a looping animated sparkle element for the sign-in hero backdrop.",
-      "tags": [
-        "component",
-        "animation",
-        "hero",
-        "ui"
-      ],
+      "tags": ["component", "animation", "hero", "ui"],
       "complexity": "simple"
     },
     {
@@ -708,17 +473,9 @@
       "type": "function",
       "name": "HeroBackdrop",
       "filePath": "app/(auth)/sign-in.tsx",
-      "lineRange": [
-        107,
-        212
-      ],
+      "lineRange": [107, 212],
       "summary": "Composes the animated sign-in hero scene, including floating order cards, avatars, and decorative motion elements.",
-      "tags": [
-        "component",
-        "animation",
-        "hero",
-        "auth"
-      ],
+      "tags": ["component", "animation", "hero", "auth"],
       "complexity": "moderate"
     },
     {
@@ -726,17 +483,9 @@
       "type": "function",
       "name": "SignInScreen",
       "filePath": "app/(auth)/sign-in.tsx",
-      "lineRange": [
-        214,
-        298
-      ],
+      "lineRange": [214, 298],
       "summary": "Presents the main sign-in screen with OAuth providers, email sign-in navigation, signup navigation, and terms link handling.",
-      "tags": [
-        "component",
-        "auth",
-        "oauth",
-        "screen"
-      ],
+      "tags": ["component", "auth", "oauth", "screen"],
       "complexity": "moderate"
     },
     {
@@ -745,12 +494,7 @@
       "name": "sign-up.tsx",
       "filePath": "app/(auth)/sign-up.tsx",
       "summary": "Provides the account creation form that validates profile fields, creates a Better Auth email account, sends an OTP, and routes users to verification.",
-      "tags": [
-        "component",
-        "auth",
-        "form-handling",
-        "registration"
-      ],
+      "tags": ["component", "auth", "form-handling", "registration"],
       "complexity": "complex"
     },
     {
@@ -758,17 +502,9 @@
       "type": "function",
       "name": "SignUpScreen",
       "filePath": "app/(auth)/sign-up.tsx",
-      "lineRange": [
-        29,
-        302
-      ],
+      "lineRange": [29, 302],
       "summary": "Captures registration fields, validates input, creates an email account, sends the verification OTP, and moves to OTP verification.",
-      "tags": [
-        "component",
-        "auth",
-        "registration",
-        "form-handling"
-      ],
+      "tags": ["component", "auth", "registration", "form-handling"],
       "complexity": "complex"
     },
     {
@@ -777,12 +513,7 @@
       "name": "verify-otp.tsx",
       "filePath": "app/(auth)/verify-otp.tsx",
       "summary": "Handles email OTP verification with segmented code entry, resend cooldowns, Better Auth verification calls, and post-verification session refresh.",
-      "tags": [
-        "component",
-        "auth",
-        "otp",
-        "verification"
-      ],
+      "tags": ["component", "auth", "otp", "verification"],
       "complexity": "complex"
     },
     {
@@ -790,17 +521,9 @@
       "type": "function",
       "name": "VerifyOtpScreen",
       "filePath": "app/(auth)/verify-otp.tsx",
-      "lineRange": [
-        29,
-        240
-      ],
+      "lineRange": [29, 240],
       "summary": "Handles OTP digit input, paste/backspace behavior, verification submission, resend cooldowns, and authenticated-session refresh.",
-      "tags": [
-        "component",
-        "auth",
-        "otp",
-        "verification"
-      ],
+      "tags": ["component", "auth", "otp", "verification"],
       "complexity": "complex"
     },
     {
@@ -809,12 +532,7 @@
       "name": "_layout.tsx",
       "filePath": "app/(protected)/_layout.tsx",
       "summary": "Guards authenticated routes, synchronizes fresh OAuth users into the app users table, registers push notifications, and defines the protected stack.",
-      "tags": [
-        "routing",
-        "auth",
-        "protected-route",
-        "notifications"
-      ],
+      "tags": ["routing", "auth", "protected-route", "notifications"],
       "complexity": "moderate"
     },
     {
@@ -822,17 +540,9 @@
       "type": "function",
       "name": "ProtectedLayout",
       "filePath": "app/(protected)/_layout.tsx",
-      "lineRange": [
-        14,
-        81
-      ],
+      "lineRange": [14, 81],
       "summary": "Synchronizes the signed-in user into Convex, registers push notifications, redirects unauthenticated users, and declares protected routes.",
-      "tags": [
-        "component",
-        "auth",
-        "routing",
-        "notifications"
-      ],
+      "tags": ["component", "auth", "routing", "notifications"],
       "complexity": "moderate"
     },
     {
@@ -841,12 +551,7 @@
       "name": "_layout.tsx",
       "filePath": "app/(protected)/(tabs)/_layout.tsx",
       "summary": "Defines the protected native tab navigator for home, groups, and account screens with shared BiteRunr tab styling.",
-      "tags": [
-        "routing",
-        "tabs",
-        "navigation",
-        "layout"
-      ],
+      "tags": ["routing", "tabs", "navigation", "layout"],
       "complexity": "simple"
     },
     {
@@ -854,17 +559,9 @@
       "type": "function",
       "name": "TabLayout",
       "filePath": "app/(protected)/(tabs)/_layout.tsx",
-      "lineRange": [
-        9,
-        41
-      ],
+      "lineRange": [9, 41],
       "summary": "Configures the bottom tab navigator and tab bar presentation for the protected app tabs.",
-      "tags": [
-        "component",
-        "tabs",
-        "routing",
-        "navigation"
-      ],
+      "tags": ["component", "tabs", "routing", "navigation"],
       "complexity": "simple"
     },
     {
@@ -873,12 +570,7 @@
       "name": "account.tsx",
       "filePath": "app/(protected)/(tabs)/account.tsx",
       "summary": "Builds the account tab dashboard with profile summary, payment state, order statistics, settings links, and sign-out handling.",
-      "tags": [
-        "component",
-        "account",
-        "dashboard",
-        "screen"
-      ],
+      "tags": ["component", "account", "dashboard", "screen"],
       "complexity": "complex"
     },
     {
@@ -886,17 +578,9 @@
       "type": "function",
       "name": "AccountTab",
       "filePath": "app/(protected)/(tabs)/account.tsx",
-      "lineRange": [
-        51,
-        325
-      ],
+      "lineRange": [51, 325],
       "summary": "Aggregates profile, payment, order, and friend data into the account dashboard and routes into account detail screens.",
-      "tags": [
-        "component",
-        "account",
-        "dashboard",
-        "queries"
-      ],
+      "tags": ["component", "account", "dashboard", "queries"],
       "complexity": "complex"
     },
     {
@@ -904,17 +588,9 @@
       "type": "function",
       "name": "ProfileSkeleton",
       "filePath": "app/(protected)/(tabs)/account.tsx",
-      "lineRange": [
-        336,
-        380
-      ],
+      "lineRange": [336, 380],
       "summary": "Renders placeholder account dashboard rows while account data is loading.",
-      "tags": [
-        "component",
-        "skeleton",
-        "loading",
-        "account"
-      ],
+      "tags": ["component", "skeleton", "loading", "account"],
       "complexity": "simple"
     },
     {
@@ -923,12 +599,7 @@
       "name": "groups.tsx",
       "filePath": "app/(protected)/(tabs)/groups.tsx",
       "summary": "Shows the groups/runs tab with upcoming and past order cards, QR/code join flows, payment setup prompts, and time-section grouping.",
-      "tags": [
-        "component",
-        "orders",
-        "groups",
-        "screen"
-      ],
+      "tags": ["component", "orders", "groups", "screen"],
       "complexity": "complex"
     },
     {
@@ -936,17 +607,9 @@
       "type": "function",
       "name": "groupByTime",
       "filePath": "app/(protected)/(tabs)/groups.tsx",
-      "lineRange": [
-        56,
-        82
-      ],
+      "lineRange": [56, 82],
       "summary": "Groups order cards into Today, This Week, and Earlier buckets based on creation date.",
-      "tags": [
-        "utility",
-        "orders",
-        "date-grouping",
-        "presentation"
-      ],
+      "tags": ["utility", "orders", "date-grouping", "presentation"],
       "complexity": "simple"
     },
     {
@@ -954,17 +617,9 @@
       "type": "function",
       "name": "PulseDot",
       "filePath": "app/(protected)/(tabs)/groups.tsx",
-      "lineRange": [
-        97,
-        157
-      ],
+      "lineRange": [97, 157],
       "summary": "Renders a reusable animated status dot with scale and opacity pulses.",
-      "tags": [
-        "component",
-        "animation",
-        "status",
-        "ui"
-      ],
+      "tags": ["component", "animation", "status", "ui"],
       "complexity": "moderate"
     },
     {
@@ -972,17 +627,9 @@
       "type": "function",
       "name": "RunCard",
       "filePath": "app/(protected)/(tabs)/groups.tsx",
-      "lineRange": [
-        159,
-        321
-      ],
+      "lineRange": [159, 321],
       "summary": "Displays an order summary card with status, participants, date, location, and navigation affordances.",
-      "tags": [
-        "component",
-        "orders",
-        "card",
-        "navigation"
-      ],
+      "tags": ["component", "orders", "card", "navigation"],
       "complexity": "moderate"
     },
     {
@@ -990,17 +637,9 @@
       "type": "function",
       "name": "GroupsTab",
       "filePath": "app/(protected)/(tabs)/groups.tsx",
-      "lineRange": [
-        323,
-        716
-      ],
+      "lineRange": [323, 716],
       "summary": "Coordinates group and order list queries, join-code modals, QR scanning, payment setup prompts, and sectioned run rendering.",
-      "tags": [
-        "component",
-        "groups",
-        "orders",
-        "screen"
-      ],
+      "tags": ["component", "groups", "orders", "screen"],
       "complexity": "complex"
     },
     {
@@ -1009,12 +648,7 @@
       "name": "index.tsx",
       "filePath": "app/(protected)/(tabs)/index.tsx",
       "summary": "Implements the home tab, aggregating user, order, friend, invite, and settlement queries into the primary dashboard and quick actions.",
-      "tags": [
-        "component",
-        "home",
-        "dashboard",
-        "orders"
-      ],
+      "tags": ["component", "home", "dashboard", "orders"],
       "complexity": "complex"
     },
     {
@@ -1022,17 +656,9 @@
       "type": "function",
       "name": "PulseDot",
       "filePath": "app/(protected)/(tabs)/index.tsx",
-      "lineRange": [
-        46,
-        90
-      ],
+      "lineRange": [46, 90],
       "summary": "Renders a reusable animated status dot with scale and opacity pulses.",
-      "tags": [
-        "component",
-        "animation",
-        "status",
-        "ui"
-      ],
+      "tags": ["component", "animation", "status", "ui"],
       "complexity": "simple"
     },
     {
@@ -1040,17 +666,9 @@
       "type": "function",
       "name": "IconButton",
       "filePath": "app/(protected)/(tabs)/index.tsx",
-      "lineRange": [
-        107,
-        126
-      ],
+      "lineRange": [107, 126],
       "summary": "Renders a compact icon-only action button used by the home dashboard header.",
-      "tags": [
-        "component",
-        "button",
-        "icons",
-        "ui"
-      ],
+      "tags": ["component", "button", "icons", "ui"],
       "complexity": "simple"
     },
     {
@@ -1058,17 +676,9 @@
       "type": "function",
       "name": "HomeTab",
       "filePath": "app/(protected)/(tabs)/index.tsx",
-      "lineRange": [
-        128,
-        830
-      ],
+      "lineRange": [128, 830],
       "summary": "Builds the primary home dashboard by combining user, order, invite, friend, and settlement data with navigation actions.",
-      "tags": [
-        "component",
-        "home",
-        "dashboard",
-        "queries"
-      ],
+      "tags": ["component", "home", "dashboard", "queries"],
       "complexity": "complex"
     },
     {
@@ -1076,17 +686,9 @@
       "type": "function",
       "name": "HomeSkeleton",
       "filePath": "app/(protected)/(tabs)/index.tsx",
-      "lineRange": [
-        832,
-        853
-      ],
+      "lineRange": [832, 853],
       "summary": "Renders the loading placeholder for the home dashboard.",
-      "tags": [
-        "component",
-        "skeleton",
-        "loading",
-        "home"
-      ],
+      "tags": ["component", "skeleton", "loading", "home"],
       "complexity": "simple"
     },
     {
@@ -1095,12 +697,7 @@
       "name": "_layout.tsx",
       "filePath": "app/(protected)/account/_layout.tsx",
       "summary": "Defines the nested stack layout for account-related detail screens under the protected account route group.",
-      "tags": [
-        "routing",
-        "account",
-        "layout",
-        "navigation"
-      ],
+      "tags": ["routing", "account", "layout", "navigation"],
       "complexity": "simple"
     },
     {
@@ -1108,17 +705,9 @@
       "type": "function",
       "name": "AccountLayout",
       "filePath": "app/(protected)/account/_layout.tsx",
-      "lineRange": [
-        3,
-        12
-      ],
+      "lineRange": [3, 12],
       "summary": "Declares the nested account settings stack with hidden headers.",
-      "tags": [
-        "component",
-        "account",
-        "routing",
-        "layout"
-      ],
+      "tags": ["component", "account", "routing", "layout"],
       "complexity": "simple"
     },
     {
@@ -1127,12 +716,7 @@
       "name": "about.tsx",
       "filePath": "app/(protected)/account/about.tsx",
       "summary": "Presents the about screen with BiteRunr product positioning, app metadata, feature highlights, and navigation back to account settings.",
-      "tags": [
-        "component",
-        "account",
-        "about",
-        "screen"
-      ],
+      "tags": ["component", "account", "about", "screen"],
       "complexity": "complex"
     },
     {
@@ -1140,17 +724,9 @@
       "type": "function",
       "name": "FeatureItem",
       "filePath": "app/(protected)/account/about.tsx",
-      "lineRange": [
-        26,
-        44
-      ],
+      "lineRange": [26, 44],
       "summary": "Displays a feature highlight row for account informational screens.",
-      "tags": [
-        "component",
-        "about",
-        "feature-row",
-        "ui"
-      ],
+      "tags": ["component", "about", "feature-row", "ui"],
       "complexity": "simple"
     },
     {
@@ -1158,17 +734,9 @@
       "type": "function",
       "name": "AboutScreen",
       "filePath": "app/(protected)/account/about.tsx",
-      "lineRange": [
-        89,
-        177
-      ],
+      "lineRange": [89, 177],
       "summary": "Renders BiteRunr product information, version details, feature rows, and animated account about content.",
-      "tags": [
-        "component",
-        "about",
-        "account",
-        "screen"
-      ],
+      "tags": ["component", "about", "account", "screen"],
       "complexity": "moderate"
     },
     {
@@ -1177,12 +745,7 @@
       "name": "account-info.tsx",
       "filePath": "app/(protected)/account/account-info.tsx",
       "summary": "Lets users edit profile information and avatar images, including Convex profile mutations, media-picker permissions, avatar upload, and delete-account flow.",
-      "tags": [
-        "component",
-        "account",
-        "profile",
-        "mutation"
-      ],
+      "tags": ["component", "account", "profile", "mutation"],
       "complexity": "complex"
     },
     {
@@ -1190,17 +753,9 @@
       "type": "function",
       "name": "AccountInfoScreen",
       "filePath": "app/(protected)/account/account-info.tsx",
-      "lineRange": [
-        24,
-        317
-      ],
+      "lineRange": [24, 317],
       "summary": "Manages editable account profile fields, avatar selection/upload, profile save, and destructive account actions.",
-      "tags": [
-        "component",
-        "account",
-        "profile",
-        "mutation"
-      ],
+      "tags": ["component", "account", "profile", "mutation"],
       "complexity": "complex"
     },
     {
@@ -1209,12 +764,7 @@
       "name": "friends.tsx",
       "filePath": "app/(protected)/account/friends.tsx",
       "summary": "Implements the friends management experience with squad creation, friend lists, inbound/outbound requests, user search, and Convex friend/squad mutations.",
-      "tags": [
-        "component",
-        "friends",
-        "squads",
-        "screen"
-      ],
+      "tags": ["component", "friends", "squads", "screen"],
       "complexity": "complex"
     },
     {
@@ -1222,17 +772,9 @@
       "type": "function",
       "name": "TabPill",
       "filePath": "app/(protected)/account/friends.tsx",
-      "lineRange": [
-        49,
-        106
-      ],
+      "lineRange": [49, 106],
       "summary": "Renders a selectable segmented tab control pill for the friends screen.",
-      "tags": [
-        "component",
-        "tabs",
-        "segmented-control",
-        "ui"
-      ],
+      "tags": ["component", "tabs", "segmented-control", "ui"],
       "complexity": "moderate"
     },
     {
@@ -1240,17 +782,9 @@
       "type": "function",
       "name": "CreateSquadSheet",
       "filePath": "app/(protected)/account/friends.tsx",
-      "lineRange": [
-        109,
-        448
-      ],
+      "lineRange": [109, 448],
       "summary": "Manages the squad creation bottom sheet with name, color, emoji, member selection, haptics, and Convex mutation submission.",
-      "tags": [
-        "component",
-        "squads",
-        "form-handling",
-        "mutation"
-      ],
+      "tags": ["component", "squads", "form-handling", "mutation"],
       "complexity": "complex"
     },
     {
@@ -1258,17 +792,9 @@
       "type": "function",
       "name": "FriendsTab",
       "filePath": "app/(protected)/account/friends.tsx",
-      "lineRange": [
-        451,
-        745
-      ],
+      "lineRange": [451, 745],
       "summary": "Displays squads and accepted friends with controls for creating squads and navigating friend relationships.",
-      "tags": [
-        "component",
-        "friends",
-        "squads",
-        "screen"
-      ],
+      "tags": ["component", "friends", "squads", "screen"],
       "complexity": "complex"
     },
     {
@@ -1276,17 +802,9 @@
       "type": "function",
       "name": "RequestsTab",
       "filePath": "app/(protected)/account/friends.tsx",
-      "lineRange": [
-        748,
-        993
-      ],
+      "lineRange": [748, 993],
       "summary": "Displays incoming and outgoing friend requests with accept, reject, cancel, and loading states.",
-      "tags": [
-        "component",
-        "friends",
-        "requests",
-        "mutation"
-      ],
+      "tags": ["component", "friends", "requests", "mutation"],
       "complexity": "complex"
     },
     {
@@ -1294,17 +812,9 @@
       "type": "function",
       "name": "SearchTab",
       "filePath": "app/(protected)/account/friends.tsx",
-      "lineRange": [
-        996,
-        1226
-      ],
+      "lineRange": [996, 1226],
       "summary": "Handles user search, friend request sending, and search result presentation for adding friends.",
-      "tags": [
-        "component",
-        "friends",
-        "search",
-        "mutation"
-      ],
+      "tags": ["component", "friends", "search", "mutation"],
       "complexity": "complex"
     },
     {
@@ -1312,17 +822,9 @@
       "type": "function",
       "name": "FriendsScreen",
       "filePath": "app/(protected)/account/friends.tsx",
-      "lineRange": [
-        1229,
-        1328
-      ],
+      "lineRange": [1229, 1328],
       "summary": "Coordinates the friends, requests, and search tabs with Convex queries and sheet state.",
-      "tags": [
-        "component",
-        "friends",
-        "tabs",
-        "screen"
-      ],
+      "tags": ["component", "friends", "tabs", "screen"],
       "complexity": "moderate"
     },
     {
@@ -1331,12 +833,7 @@
       "name": "payments.tsx",
       "filePath": "app/(protected)/account/payments.tsx",
       "summary": "Manages Stripe Connect payment setup, onboarding refreshes, dashboard/account links, balance display, payout controls, and account disconnect handling.",
-      "tags": [
-        "component",
-        "payments",
-        "stripe-connect",
-        "screen"
-      ],
+      "tags": ["component", "payments", "stripe-connect", "screen"],
       "complexity": "complex"
     },
     {
@@ -1344,17 +841,9 @@
       "type": "function",
       "name": "PaymentsScreen",
       "filePath": "app/(protected)/account/payments.tsx",
-      "lineRange": [
-        118,
-        863
-      ],
+      "lineRange": [118, 863],
       "summary": "Coordinates Stripe Connect onboarding, dashboard links, account status, available balance animation, payout actions, and disconnect flows.",
-      "tags": [
-        "component",
-        "payments",
-        "stripe-connect",
-        "actions"
-      ],
+      "tags": ["component", "payments", "stripe-connect", "actions"],
       "complexity": "complex"
     },
     {
@@ -1363,12 +852,7 @@
       "name": "support.tsx",
       "filePath": "app/(protected)/account/support.tsx",
       "summary": "Provides support contact options, FAQ disclosure rows, and legal/policy links from the account settings area.",
-      "tags": [
-        "component",
-        "support",
-        "account",
-        "screen"
-      ],
+      "tags": ["component", "support", "account", "screen"],
       "complexity": "complex"
     },
     {
@@ -1376,17 +860,9 @@
       "type": "function",
       "name": "FAQItem",
       "filePath": "app/(protected)/account/support.tsx",
-      "lineRange": [
-        20,
-        37
-      ],
+      "lineRange": [20, 37],
       "summary": "Renders an expandable FAQ row with local open/closed state.",
-      "tags": [
-        "component",
-        "support",
-        "accordion",
-        "ui"
-      ],
+      "tags": ["component", "support", "accordion", "ui"],
       "complexity": "simple"
     },
     {
@@ -1394,17 +870,9 @@
       "type": "function",
       "name": "SupportScreen",
       "filePath": "app/(protected)/account/support.tsx",
-      "lineRange": [
-        94,
-        194
-      ],
+      "lineRange": [94, 194],
       "summary": "Displays support contact actions, FAQ rows, and legal links for account help.",
-      "tags": [
-        "component",
-        "support",
-        "account",
-        "screen"
-      ],
+      "tags": ["component", "support", "account", "screen"],
       "complexity": "moderate"
     },
     {
@@ -1413,12 +881,7 @@
       "name": "_layout.tsx",
       "filePath": "app/(protected)/order/_layout.tsx",
       "summary": "Defines the nested stack layout for protected order flow screens and hides default headers.",
-      "tags": [
-        "routing",
-        "orders",
-        "layout",
-        "navigation"
-      ],
+      "tags": ["routing", "orders", "layout", "navigation"],
       "complexity": "simple"
     },
     {
@@ -1426,17 +889,9 @@
       "type": "function",
       "name": "OrderLayout",
       "filePath": "app/(protected)/order/_layout.tsx",
-      "lineRange": [
-        3,
-        13
-      ],
+      "lineRange": [3, 13],
       "summary": "Declares the nested order-flow stack with hidden headers.",
-      "tags": [
-        "component",
-        "orders",
-        "routing",
-        "layout"
-      ],
+      "tags": ["component", "orders", "routing", "layout"],
       "complexity": "simple"
     },
     {
@@ -1445,12 +900,7 @@
       "name": "[orderId].tsx",
       "filePath": "app/(protected)/order/[orderId].tsx",
       "summary": "Renders the active order detail screen with participant item lists, invite sharing, receipt scanning actions, status transitions, swipe removal, and order summary access.",
-      "tags": [
-        "component",
-        "orders",
-        "participants",
-        "screen"
-      ],
+      "tags": ["component", "orders", "participants", "screen"],
       "complexity": "complex"
     },
     {
@@ -1458,17 +908,9 @@
       "type": "function",
       "name": "UserItemsList",
       "filePath": "app/(protected)/order/[orderId].tsx",
-      "lineRange": [
-        46,
-        98
-      ],
+      "lineRange": [46, 98],
       "summary": "Renders the item list for one participant in an order with per-item price display.",
-      "tags": [
-        "component",
-        "orders",
-        "items",
-        "participant"
-      ],
+      "tags": ["component", "orders", "items", "participant"],
       "complexity": "moderate"
     },
     {
@@ -1476,17 +918,9 @@
       "type": "function",
       "name": "RemoveRightAction",
       "filePath": "app/(protected)/order/[orderId].tsx",
-      "lineRange": [
-        100,
-        148
-      ],
+      "lineRange": [100, 148],
       "summary": "Renders the animated swipe-to-remove action for order members.",
-      "tags": [
-        "component",
-        "gesture",
-        "orders",
-        "animation"
-      ],
+      "tags": ["component", "gesture", "orders", "animation"],
       "complexity": "simple"
     },
     {
@@ -1494,17 +928,9 @@
       "type": "function",
       "name": "SpecificOrder",
       "filePath": "app/(protected)/order/[orderId].tsx",
-      "lineRange": [
-        150,
-        1123
-      ],
+      "lineRange": [150, 1123],
       "summary": "Coordinates an active order screen with member expansion, invite sharing, order updates, receipt scanning, and settlement navigation.",
-      "tags": [
-        "component",
-        "orders",
-        "participants",
-        "screen"
-      ],
+      "tags": ["component", "orders", "participants", "screen"],
       "complexity": "complex"
     },
     {
@@ -1513,12 +939,7 @@
       "name": "completed-order.tsx",
       "filePath": "app/(protected)/order/completed-order.tsx",
       "summary": "Displays a receipt-styled completed order view with participant settlement details, expandable rows, completion metadata, and navigation back to account history.",
-      "tags": [
-        "component",
-        "orders",
-        "receipt",
-        "settlement"
-      ],
+      "tags": ["component", "orders", "receipt", "settlement"],
       "complexity": "complex"
     },
     {
@@ -1526,17 +947,9 @@
       "type": "function",
       "name": "TornEdge",
       "filePath": "app/(protected)/order/completed-order.tsx",
-      "lineRange": [
-        27,
-        62
-      ],
+      "lineRange": [27, 62],
       "summary": "Renders a repeated torn-paper edge decoration based on available screen width.",
-      "tags": [
-        "component",
-        "receipt",
-        "decoration",
-        "ui"
-      ],
+      "tags": ["component", "receipt", "decoration", "ui"],
       "complexity": "simple"
     },
     {
@@ -1544,17 +957,9 @@
       "type": "function",
       "name": "Rule",
       "filePath": "app/(protected)/order/completed-order.tsx",
-      "lineRange": [
-        84,
-        94
-      ],
+      "lineRange": [84, 94],
       "summary": "Renders a simple receipt-style divider rule.",
-      "tags": [
-        "component",
-        "receipt",
-        "divider",
-        "ui"
-      ],
+      "tags": ["component", "receipt", "divider", "ui"],
       "complexity": "simple"
     },
     {
@@ -1562,17 +967,9 @@
       "type": "function",
       "name": "CompletedOrder",
       "filePath": "app/(protected)/order/completed-order.tsx",
-      "lineRange": [
-        96,
-        448
-      ],
+      "lineRange": [96, 448],
       "summary": "Builds the completed order receipt view with participants, totals, metadata, and expandable settlement details.",
-      "tags": [
-        "component",
-        "orders",
-        "receipt",
-        "settlement"
-      ],
+      "tags": ["component", "orders", "receipt", "settlement"],
       "complexity": "complex"
     },
     {
@@ -1581,12 +978,7 @@
       "name": "create.tsx",
       "filePath": "app/(protected)/order/create.tsx",
       "summary": "Implements the create-order flow, including reorder parameter parsing, pickup location entry, friend selection, squad shortcuts, and Convex order creation.",
-      "tags": [
-        "component",
-        "orders",
-        "creation",
-        "friends"
-      ],
+      "tags": ["component", "orders", "creation", "friends"],
       "complexity": "complex"
     },
     {
@@ -1594,17 +986,9 @@
       "type": "function",
       "name": "parseReorderLocationNames",
       "filePath": "app/(protected)/order/create.tsx",
-      "lineRange": [
-        51,
-        64
-      ],
+      "lineRange": [51, 64],
       "summary": "Parses reorder location names from JSON or comma-separated route parameters into a clean string list.",
-      "tags": [
-        "utility",
-        "orders",
-        "routing",
-        "parsing"
-      ],
+      "tags": ["utility", "orders", "routing", "parsing"],
       "complexity": "simple"
     },
     {
@@ -1612,17 +996,9 @@
       "type": "function",
       "name": "CreateOrder",
       "filePath": "app/(protected)/order/create.tsx",
-      "lineRange": [
-        131,
-        683
-      ],
+      "lineRange": [131, 683],
       "summary": "Manages the create-order form, friend/squad selection, location inputs, reorder defaults, and order creation flow.",
-      "tags": [
-        "component",
-        "orders",
-        "creation",
-        "friends"
-      ],
+      "tags": ["component", "orders", "creation", "friends"],
       "complexity": "complex"
     },
     {
@@ -1631,12 +1007,7 @@
       "name": "items.tsx",
       "filePath": "app/(protected)/order/items.tsx",
       "summary": "Provides the order item entry screen with manual and voice-driven item capture, speech error handling, receipt visual styling, and Convex item writes.",
-      "tags": [
-        "component",
-        "orders",
-        "voice-input",
-        "items"
-      ],
+      "tags": ["component", "orders", "voice-input", "items"],
       "complexity": "complex"
     },
     {
@@ -1644,17 +1015,9 @@
       "type": "function",
       "name": "mergeVoiceTranscriptSegments",
       "filePath": "app/(protected)/order/items.tsx",
-      "lineRange": [
-        63,
-        76
-      ],
+      "lineRange": [63, 76],
       "summary": "Merges committed and incoming speech transcript text while avoiding duplicated prefixes.",
-      "tags": [
-        "utility",
-        "voice-input",
-        "text-normalization",
-        "orders"
-      ],
+      "tags": ["utility", "voice-input", "text-normalization", "orders"],
       "complexity": "simple"
     },
     {
@@ -1662,17 +1025,9 @@
       "type": "function",
       "name": "extractSpeechTranscript",
       "filePath": "app/(protected)/order/items.tsx",
-      "lineRange": [
-        78,
-        104
-      ],
+      "lineRange": [78, 104],
       "summary": "Extracts normalized transcript text from several possible native speech-recognition result shapes.",
-      "tags": [
-        "utility",
-        "voice-input",
-        "parsing",
-        "orders"
-      ],
+      "tags": ["utility", "voice-input", "parsing", "orders"],
       "complexity": "simple"
     },
     {
@@ -1680,17 +1035,9 @@
       "type": "function",
       "name": "getSpeechErrorMessage",
       "filePath": "app/(protected)/order/items.tsx",
-      "lineRange": [
-        106,
-        128
-      ],
+      "lineRange": [106, 128],
       "summary": "Maps native speech-recognition errors to user-facing recovery messages.",
-      "tags": [
-        "utility",
-        "voice-input",
-        "error-handling",
-        "orders"
-      ],
+      "tags": ["utility", "voice-input", "error-handling", "orders"],
       "complexity": "simple"
     },
     {
@@ -1698,17 +1045,9 @@
       "type": "function",
       "name": "VoiceRippleOrb",
       "filePath": "app/(protected)/order/items.tsx",
-      "lineRange": [
-        132,
-        267
-      ],
+      "lineRange": [132, 267],
       "summary": "Renders the animated voice-listening orb used during speech input.",
-      "tags": [
-        "component",
-        "voice-input",
-        "animation",
-        "ui"
-      ],
+      "tags": ["component", "voice-input", "animation", "ui"],
       "complexity": "moderate"
     },
     {
@@ -1716,17 +1055,9 @@
       "type": "function",
       "name": "TornEdge",
       "filePath": "app/(protected)/order/items.tsx",
-      "lineRange": [
-        275,
-        310
-      ],
+      "lineRange": [275, 310],
       "summary": "Renders a repeated torn-paper edge decoration based on available screen width.",
-      "tags": [
-        "component",
-        "receipt",
-        "decoration",
-        "ui"
-      ],
+      "tags": ["component", "receipt", "decoration", "ui"],
       "complexity": "simple"
     },
     {
@@ -1734,17 +1065,9 @@
       "type": "function",
       "name": "WriteOrder",
       "filePath": "app/(protected)/order/items.tsx",
-      "lineRange": [
-        314,
-        1321
-      ],
+      "lineRange": [314, 1321],
       "summary": "Manages order item entry with manual text, voice transcription, receipt-styled UI, and Convex item updates.",
-      "tags": [
-        "component",
-        "orders",
-        "items",
-        "voice-input"
-      ],
+      "tags": ["component", "orders", "items", "voice-input"],
       "complexity": "complex"
     },
     {
@@ -1753,12 +1076,7 @@
       "name": "my-settlement.tsx",
       "filePath": "app/(protected)/order/my-settlement.tsx",
       "summary": "Shows a buyer-focused settlement screen with owed amount, payment status steps, Stripe PaymentSheet card payment, and cash settlement fallback.",
-      "tags": [
-        "component",
-        "settlement",
-        "payments",
-        "stripe"
-      ],
+      "tags": ["component", "settlement", "payments", "stripe"],
       "complexity": "complex"
     },
     {
@@ -1766,17 +1084,9 @@
       "type": "function",
       "name": "getCurrentStep",
       "filePath": "app/(protected)/order/my-settlement.tsx",
-      "lineRange": [
-        52,
-        63
-      ],
+      "lineRange": [52, 63],
       "summary": "Maps settlement status into the current visual progress step.",
-      "tags": [
-        "utility",
-        "settlement",
-        "status",
-        "presentation"
-      ],
+      "tags": ["utility", "settlement", "status", "presentation"],
       "complexity": "simple"
     },
     {
@@ -1784,17 +1094,9 @@
       "type": "function",
       "name": "TornEdge",
       "filePath": "app/(protected)/order/my-settlement.tsx",
-      "lineRange": [
-        70,
-        104
-      ],
+      "lineRange": [70, 104],
       "summary": "Renders a repeated torn-paper edge decoration based on available screen width.",
-      "tags": [
-        "component",
-        "receipt",
-        "decoration",
-        "ui"
-      ],
+      "tags": ["component", "receipt", "decoration", "ui"],
       "complexity": "simple"
     },
     {
@@ -1802,17 +1104,9 @@
       "type": "function",
       "name": "StatusStepper",
       "filePath": "app/(protected)/order/my-settlement.tsx",
-      "lineRange": [
-        114,
-        150
-      ],
+      "lineRange": [114, 150],
       "summary": "Renders the buyer settlement progress indicator from unpaid through confirmed states.",
-      "tags": [
-        "component",
-        "settlement",
-        "progress",
-        "ui"
-      ],
+      "tags": ["component", "settlement", "progress", "ui"],
       "complexity": "simple"
     },
     {
@@ -1820,17 +1114,9 @@
       "type": "function",
       "name": "MySettlement",
       "filePath": "app/(protected)/order/my-settlement.tsx",
-      "lineRange": [
-        154,
-        493
-      ],
+      "lineRange": [154, 493],
       "summary": "Coordinates buyer payment settlement, Stripe PaymentSheet setup, cash fallback, and status-driven UI.",
-      "tags": [
-        "component",
-        "settlement",
-        "payments",
-        "stripe"
-      ],
+      "tags": ["component", "settlement", "payments", "stripe"],
       "complexity": "complex"
     },
     {
@@ -1839,12 +1125,7 @@
       "name": "settlement.tsx",
       "filePath": "app/(protected)/order/settlement.tsx",
       "summary": "Gives runners a settlement dashboard for tracking member payment statuses, marking in-person settlements, and completing the order once balances are handled.",
-      "tags": [
-        "component",
-        "settlement",
-        "runner",
-        "orders"
-      ],
+      "tags": ["component", "settlement", "runner", "orders"],
       "complexity": "complex"
     },
     {
@@ -1852,17 +1133,9 @@
       "type": "function",
       "name": "TornEdge",
       "filePath": "app/(protected)/order/settlement.tsx",
-      "lineRange": [
-        59,
-        93
-      ],
+      "lineRange": [59, 93],
       "summary": "Renders a repeated torn-paper edge decoration based on available screen width.",
-      "tags": [
-        "component",
-        "receipt",
-        "decoration",
-        "ui"
-      ],
+      "tags": ["component", "receipt", "decoration", "ui"],
       "complexity": "simple"
     },
     {
@@ -1870,17 +1143,9 @@
       "type": "function",
       "name": "MemberRow",
       "filePath": "app/(protected)/order/settlement.tsx",
-      "lineRange": [
-        97,
-        185
-      ],
+      "lineRange": [97, 185],
       "summary": "Displays one member settlement row with payment status, amount owed, and runner actions.",
-      "tags": [
-        "component",
-        "settlement",
-        "member-row",
-        "runner"
-      ],
+      "tags": ["component", "settlement", "member-row", "runner"],
       "complexity": "moderate"
     },
     {
@@ -1888,17 +1153,9 @@
       "type": "function",
       "name": "Settlement",
       "filePath": "app/(protected)/order/settlement.tsx",
-      "lineRange": [
-        189,
-        558
-      ],
+      "lineRange": [189, 558],
       "summary": "Coordinates runner settlement tracking, in-person settlement marking, and final order completion.",
-      "tags": [
-        "component",
-        "settlement",
-        "runner",
-        "orders"
-      ],
+      "tags": ["component", "settlement", "runner", "orders"],
       "complexity": "complex"
     },
     {
@@ -1923,12 +1180,7 @@
       "name": "+not-found.tsx",
       "filePath": "app/+not-found.tsx",
       "summary": "Expo Router not-found route that displays a centered fallback message and a link back to the app home route. It uses the older common Container and NativeWind utility classes.",
-      "tags": [
-        "route",
-        "fallback",
-        "navigation",
-        "component"
-      ],
+      "tags": ["route", "fallback", "navigation", "component"],
       "complexity": "simple"
     },
     {
@@ -1937,13 +1189,7 @@
       "name": "[code].tsx",
       "filePath": "app/join/[code].tsx",
       "summary": "Invite-code join route that validates an order invite, handles unauthenticated redirects, joins the current user through Convex, and renders invalid, already-member, and join-preview states. It is the public modal-style entry point for shared order links.",
-      "tags": [
-        "route",
-        "invite-code",
-        "convex",
-        "auth",
-        "component"
-      ],
+      "tags": ["route", "invite-code", "convex", "auth", "component"],
       "complexity": "complex"
     },
     {
@@ -1952,13 +1198,7 @@
       "name": "babel.config.js",
       "filePath": "babel.config.js",
       "summary": "Babel configuration for Expo and NativeWind that adds the React Native worklets plugin required by Reanimated and worklet-based runtime code. It enables NativeWind JSX import handling through the Expo preset and NativeWind Babel preset.",
-      "tags": [
-        "configuration",
-        "babel",
-        "expo",
-        "nativewind",
-        "worklets"
-      ],
+      "tags": ["configuration", "babel", "expo", "nativewind", "worklets"],
       "complexity": "simple"
     },
     {
@@ -1967,12 +1207,7 @@
       "name": "biome.json",
       "filePath": "biome.json",
       "summary": "Biome configuration enabling git-aware linting, disabling Biome formatting, excluding sibling apps and generated native output, and allowing import organization assists. Recommended lint rules are active while explicit any and unknown at-rules are allowed for this codebase.",
-      "tags": [
-        "configuration",
-        "linting",
-        "biome",
-        "code-quality"
-      ],
+      "tags": ["configuration", "linting", "biome", "code-quality"],
       "complexity": "simple"
     },
     {
@@ -1981,11 +1216,7 @@
       "name": "CLAUDE.md",
       "filePath": "CLAUDE.md",
       "summary": "Documentation pointer that redirects agent guidance to AGENTS.md. It keeps legacy Claude tooling aligned with the repository's active agent instructions.",
-      "tags": [
-        "documentation",
-        "agent-guidance",
-        "pointer"
-      ],
+      "tags": ["documentation", "agent-guidance", "pointer"],
       "complexity": "simple"
     },
     {
@@ -2010,13 +1241,7 @@
       "name": "oauth-button.tsx",
       "filePath": "components/auth/oauth-button.tsx",
       "summary": "OAuth sign-in button for Google and Apple that animates a loading spinner, handles native Apple identity tokens on iOS, opens Better Auth social sign-in, and surfaces errors through callbacks and alerts. It intentionally relies on auth context changes after browser or deep-link completion.",
-      "tags": [
-        "component",
-        "auth",
-        "oauth",
-        "better-auth",
-        "animation"
-      ],
+      "tags": ["component", "auth", "oauth", "better-auth", "animation"],
       "complexity": "moderate"
     },
     {
@@ -2025,12 +1250,7 @@
       "name": "avatar.tsx",
       "filePath": "components/br/avatar.tsx",
       "summary": "BR design-system avatar component that renders cached remote profile images when available and deterministic initials with themed colors otherwise. It supports size, ring, background, and foreground overrides.",
-      "tags": [
-        "component",
-        "design-system",
-        "avatar",
-        "profile-image"
-      ],
+      "tags": ["component", "design-system", "avatar", "profile-image"],
       "complexity": "moderate"
     },
     {
@@ -2039,12 +1259,7 @@
       "name": "button.tsx",
       "filePath": "components/br/button.tsx",
       "summary": "BR design-system button component with themed variants, loading state, optional slots, pill shape, size options, and pressed scaling. It centralizes orange, ink, mint, ghost, and soft-mint button styling.",
-      "tags": [
-        "component",
-        "design-system",
-        "button",
-        "interaction"
-      ],
+      "tags": ["component", "design-system", "button", "interaction"],
       "complexity": "moderate"
     },
     {
@@ -2053,12 +1268,7 @@
       "name": "card.tsx",
       "filePath": "components/br/card.tsx",
       "summary": "BR design-system card wrapper that applies consistent padding, radius, background, border, and optional shadow variants. It provides the newer app screens with a shared framed content primitive.",
-      "tags": [
-        "component",
-        "design-system",
-        "card",
-        "layout"
-      ],
+      "tags": ["component", "design-system", "card", "layout"],
       "complexity": "moderate"
     },
     {
@@ -2067,12 +1277,7 @@
       "name": "chip.tsx",
       "filePath": "components/br/chip.tsx",
       "summary": "BR design-system chip component for compact labels with themed neutral, orange, mint, lilac, coral, and yolk color variants. It supports medium and large sizing plus optional leading content.",
-      "tags": [
-        "component",
-        "design-system",
-        "chip",
-        "label"
-      ],
+      "tags": ["component", "design-system", "chip", "label"],
       "complexity": "moderate"
     },
     {
@@ -2081,12 +1286,7 @@
       "name": "index.ts",
       "filePath": "components/br/index.ts",
       "summary": "Barrel entry point that re-exports all BR design-system primitives from one import path. It gives screens a stable surface for BrText, BrCard, BrButton, BrChip, BrAvatar, BrSticker, and BrInput.",
-      "tags": [
-        "barrel",
-        "design-system",
-        "exports",
-        "entry-point"
-      ],
+      "tags": ["barrel", "design-system", "exports", "entry-point"],
       "complexity": "simple",
       "languageNotes": "TypeScript barrel file composed entirely of named re-exports."
     },
@@ -2096,13 +1296,7 @@
       "name": "input.tsx",
       "filePath": "components/br/input.tsx",
       "summary": "BR design-system text input with optional left and right Lucide icons, right-icon action handling, error styling, and inline error messages. It forwards the native TextInput ref for form focus control.",
-      "tags": [
-        "component",
-        "design-system",
-        "input",
-        "form",
-        "validation"
-      ],
+      "tags": ["component", "design-system", "input", "form", "validation"],
       "complexity": "moderate"
     },
     {
@@ -2111,12 +1305,7 @@
       "name": "sticker.tsx",
       "filePath": "components/br/sticker.tsx",
       "summary": "BR design-system sticker label that renders bold text and optional leading content in a rotated, bordered, shadowed badge. It is used for playful callouts that match the orange-forward visual system.",
-      "tags": [
-        "component",
-        "design-system",
-        "sticker",
-        "label"
-      ],
+      "tags": ["component", "design-system", "sticker", "label"],
       "complexity": "moderate"
     },
     {
@@ -2125,12 +1314,7 @@
       "name": "text.tsx",
       "filePath": "components/br/text.tsx",
       "summary": "BR design-system text component that maps semantic variants to display, body, label, metadata, eyebrow, and monospace styles. It also supports color, italic, and weight overrides while preserving shared typography tokens.",
-      "tags": [
-        "component",
-        "design-system",
-        "typography",
-        "text"
-      ],
+      "tags": ["component", "design-system", "typography", "text"],
       "complexity": "moderate"
     },
     {
@@ -2139,12 +1323,7 @@
       "name": "animated-pressable.tsx",
       "filePath": "components/common/animated-pressable.tsx",
       "summary": "Common pressable wrapper that scales content down on press-in and springs back on press-out using Reanimated. It wraps Pressable in Animated.View so animated styles are applied to the correct layer.",
-      "tags": [
-        "component",
-        "interaction",
-        "animation",
-        "reanimated"
-      ],
+      "tags": ["component", "interaction", "animation", "reanimated"],
       "complexity": "moderate"
     },
     {
@@ -2153,12 +1332,7 @@
       "name": "avatar.tsx",
       "filePath": "components/common/avatar.tsx",
       "summary": "Older shared avatar component that renders Expo Image profile photos or NativeWind-styled initials. It predates the BR avatar and uses muted theme classes for fallback initials.",
-      "tags": [
-        "component",
-        "avatar",
-        "profile-image",
-        "legacy-ui"
-      ],
+      "tags": ["component", "avatar", "profile-image", "legacy-ui"],
       "complexity": "simple"
     },
     {
@@ -2167,12 +1341,7 @@
       "name": "button.tsx",
       "filePath": "components/common/button.tsx",
       "summary": "Older shared button component with full and outline variants, optional Lucide icon, disabled state, and animated loading spinner width. It uses NativeWind layout classes and NAV_THEME colors.",
-      "tags": [
-        "component",
-        "button",
-        "legacy-ui",
-        "animation"
-      ],
+      "tags": ["component", "button", "legacy-ui", "animation"],
       "complexity": "moderate"
     },
     {
@@ -2181,12 +1350,7 @@
       "name": "container.tsx",
       "filePath": "components/common/container.tsx",
       "summary": "Minimal SafeAreaView wrapper that applies full-screen background styling through NativeWind. It gives older screens a common safe-area container.",
-      "tags": [
-        "component",
-        "layout",
-        "safe-area",
-        "legacy-ui"
-      ],
+      "tags": ["component", "layout", "safe-area", "legacy-ui"],
       "complexity": "simple"
     },
     {
@@ -2195,12 +1359,7 @@
       "name": "error-boundary.tsx",
       "filePath": "components/common/error-boundary.tsx",
       "summary": "React class error boundary for React Native screens that catches render errors, logs diagnostics, displays a fallback UI, and allows retrying by resetting state. It also supports a caller-provided fallback node.",
-      "tags": [
-        "component",
-        "error-boundary",
-        "resilience",
-        "legacy-ui"
-      ],
+      "tags": ["component", "error-boundary", "resilience", "legacy-ui"],
       "complexity": "moderate"
     },
     {
@@ -2209,12 +1368,7 @@
       "name": "icon.tsx",
       "filePath": "components/common/icon.tsx",
       "summary": "Lucide icon adapter that exposes a typed IconName union and renders icons from lucide-react-native with React Native SVG props. It centralizes pointer event handling for icon-only visuals.",
-      "tags": [
-        "component",
-        "icon",
-        "lucide",
-        "type-definition"
-      ],
+      "tags": ["component", "icon", "lucide", "type-definition"],
       "complexity": "simple"
     },
     {
@@ -2223,13 +1377,7 @@
       "name": "input.tsx",
       "filePath": "components/common/input.tsx",
       "summary": "Older shared text input with optional left and right icons, theme-aware placeholder and icon colors, secure entry support, and animated NativeWind error text visibility. It forwards the TextInput ref for imperative focus use.",
-      "tags": [
-        "component",
-        "input",
-        "form",
-        "legacy-ui",
-        "validation"
-      ],
+      "tags": ["component", "input", "form", "legacy-ui", "validation"],
       "complexity": "moderate"
     },
     {
@@ -2253,13 +1401,7 @@
       "name": "enter-code-modal.tsx",
       "filePath": "components/enter-code-modal.tsx",
       "summary": "Full-screen modal for manually entering an 8-character invite code before joining a food run. It normalizes input to uppercase, respects safe-area insets, and submits trimmed codes through a caller-provided callback.",
-      "tags": [
-        "component",
-        "modal",
-        "invite-code",
-        "form",
-        "design-system"
-      ],
+      "tags": ["component", "modal", "invite-code", "form", "design-system"],
       "complexity": "complex"
     },
     {
@@ -2267,16 +1409,9 @@
       "type": "function",
       "name": "SummaryShell",
       "filePath": "app/(protected)/order/summary.tsx",
-      "lineRange": [
-        55,
-        79
-      ],
+      "lineRange": [55, 79],
       "summary": "Wraps summary loading states in a BR-themed safe top area with a back button, centered title, and injected children.",
-      "tags": [
-        "component",
-        "layout",
-        "header"
-      ],
+      "tags": ["component", "layout", "header"],
       "complexity": "simple"
     },
     {
@@ -2284,16 +1419,9 @@
       "type": "function",
       "name": "SummaryAiLoadingScreen",
       "filePath": "app/(protected)/order/summary.tsx",
-      "lineRange": [
-        83,
-        124
-      ],
+      "lineRange": [83, 124],
       "summary": "Displays the AI summarization loading state with an icon tile, explanatory text, and spinner while grouped order data is being generated.",
-      "tags": [
-        "component",
-        "loading-state",
-        "ai-summary"
-      ],
+      "tags": ["component", "loading-state", "ai-summary"],
       "complexity": "moderate"
     },
     {
@@ -2301,16 +1429,9 @@
       "type": "function",
       "name": "SummaryDataLoadingScreen",
       "filePath": "app/(protected)/order/summary.tsx",
-      "lineRange": [
-        128,
-        150
-      ],
+      "lineRange": [128, 150],
       "summary": "Renders skeleton placeholders for the summary header, filters, and item rows while base order data is loading.",
-      "tags": [
-        "component",
-        "loading-state",
-        "skeleton"
-      ],
+      "tags": ["component", "loading-state", "skeleton"],
       "complexity": "simple"
     },
     {
@@ -2318,16 +1439,9 @@
       "type": "function",
       "name": "CornerBracket",
       "filePath": "app/(protected)/order/summary.tsx",
-      "lineRange": [
-        157,
-        203
-      ],
+      "lineRange": [157, 203],
       "summary": "Draws one absolute-positioned corner bracket used by the receipt scanning viewport overlay.",
-      "tags": [
-        "component",
-        "receipt-scanning",
-        "overlay"
-      ],
+      "tags": ["component", "receipt-scanning", "overlay"],
       "complexity": "moderate"
     },
     {
@@ -2335,17 +1449,9 @@
       "type": "function",
       "name": "ScanningOverlay",
       "filePath": "app/(protected)/order/summary.tsx",
-      "lineRange": [
-        205,
-        391
-      ],
+      "lineRange": [205, 391],
       "summary": "Shows the full-screen receipt scanning modal with photo preview, animated scan beam, upload or parsing status, error state, retry action, and dismiss action.",
-      "tags": [
-        "component",
-        "receipt-scanning",
-        "modal",
-        "animation"
-      ],
+      "tags": ["component", "receipt-scanning", "modal", "animation"],
       "complexity": "complex"
     },
     {
@@ -2353,10 +1459,7 @@
       "type": "function",
       "name": "OrderSummary",
       "filePath": "app/(protected)/order/summary.tsx",
-      "lineRange": [
-        395,
-        1035
-      ],
+      "lineRange": [395, 1035],
       "summary": "Main order summary route component that fetches order summaries, groups lines by item or participant, manages receipt scan and manual price entry workflows, and conditionally renders settlement or pricing CTAs.",
       "tags": [
         "screen",
@@ -2372,16 +1475,9 @@
       "type": "function",
       "name": "NotFoundScreen",
       "filePath": "app/+not-found.tsx",
-      "lineRange": [
-        5,
-        29
-      ],
+      "lineRange": [5, 29],
       "summary": "Renders the app's not-found route with an Oops stack title, explanatory copy, and home navigation link.",
-      "tags": [
-        "route",
-        "fallback",
-        "navigation"
-      ],
+      "tags": ["route", "fallback", "navigation"],
       "complexity": "simple"
     },
     {
@@ -2389,17 +1485,9 @@
       "type": "function",
       "name": "JoinOrderPage",
       "filePath": "app/join/[code].tsx",
-      "lineRange": [
-        20,
-        276
-      ],
+      "lineRange": [20, 276],
       "summary": "Validates invite links, redirects unauthenticated users to sign-in, joins orders through Convex, and renders public invite states for invalid, already-joined, and valid codes.",
-      "tags": [
-        "route",
-        "invite-code",
-        "auth",
-        "convex"
-      ],
+      "tags": ["route", "invite-code", "auth", "convex"],
       "complexity": "complex"
     },
     {
@@ -2407,17 +1495,9 @@
       "type": "function",
       "name": "useSplashAnimations",
       "filePath": "components/animated-splash-screen.tsx",
-      "lineRange": [
-        30,
-        113
-      ],
+      "lineRange": [30, 113],
       "summary": "Creates Reanimated mutable values and exposes entrance and exit animation commands plus animated styles for the splash screen and app icon.",
-      "tags": [
-        "hook",
-        "animation",
-        "reanimated",
-        "splash-screen"
-      ],
+      "tags": ["hook", "animation", "reanimated", "splash-screen"],
       "complexity": "moderate"
     },
     {
@@ -2425,17 +1505,9 @@
       "type": "function",
       "name": "AnimatedSplashScreen",
       "filePath": "components/animated-splash-screen.tsx",
-      "lineRange": [
-        115,
-        270
-      ],
+      "lineRange": [115, 270],
       "summary": "Coordinates reduced-motion detection, minimum splash visibility, first-frame reporting, exit timers, and rendering of the themed animated splash icon overlay.",
-      "tags": [
-        "component",
-        "splash-screen",
-        "animation",
-        "accessibility"
-      ],
+      "tags": ["component", "splash-screen", "animation", "accessibility"],
       "complexity": "complex"
     },
     {
@@ -2443,17 +1515,9 @@
       "type": "function",
       "name": "OAuthButton",
       "filePath": "components/auth/oauth-button.tsx",
-      "lineRange": [
-        23,
-        149
-      ],
+      "lineRange": [23, 149],
       "summary": "Renders a provider-specific OAuth button, animates loading affordances, invokes Better Auth social sign-in, and handles Apple native credentials and sign-in errors.",
-      "tags": [
-        "component",
-        "auth",
-        "oauth",
-        "event-handler"
-      ],
+      "tags": ["component", "auth", "oauth", "event-handler"],
       "complexity": "moderate"
     },
     {
@@ -2461,16 +1525,9 @@
       "type": "function",
       "name": "BrButton",
       "filePath": "components/br/button.tsx",
-      "lineRange": [
-        26,
-        78
-      ],
+      "lineRange": [26, 78],
       "summary": "Renders a themed BR button with variant tokens, optional left and right slots, loading indicator, sizing, disabled opacity, and pressed transform.",
-      "tags": [
-        "component",
-        "design-system",
-        "button"
-      ],
+      "tags": ["component", "design-system", "button"],
       "complexity": "moderate"
     },
     {
@@ -2478,16 +1535,9 @@
       "type": "function",
       "name": "BrCard",
       "filePath": "components/br/card.tsx",
-      "lineRange": [
-        14,
-        48
-      ],
+      "lineRange": [14, 48],
       "summary": "Applies BR card variants and layout tokens around children, including shadowed, outlined, and flat treatments.",
-      "tags": [
-        "component",
-        "design-system",
-        "layout"
-      ],
+      "tags": ["component", "design-system", "layout"],
       "complexity": "simple"
     },
     {
@@ -2495,16 +1545,9 @@
       "type": "function",
       "name": "BrChip",
       "filePath": "components/br/chip.tsx",
-      "lineRange": [
-        24,
-        57
-      ],
+      "lineRange": [24, 57],
       "summary": "Renders a compact BR chip using color and size token maps, optional leading content, and semibold BR text.",
-      "tags": [
-        "component",
-        "design-system",
-        "label"
-      ],
+      "tags": ["component", "design-system", "label"],
       "complexity": "simple"
     },
     {
@@ -2512,16 +1555,9 @@
       "type": "function",
       "name": "BrSticker",
       "filePath": "components/br/sticker.tsx",
-      "lineRange": [
-        14,
-        51
-      ],
+      "lineRange": [14, 51],
       "summary": "Renders a rotated BR sticker badge with ink border, hard shadow, optional leading content, and bold text.",
-      "tags": [
-        "component",
-        "design-system",
-        "label"
-      ],
+      "tags": ["component", "design-system", "label"],
       "complexity": "simple"
     },
     {
@@ -2529,16 +1565,9 @@
       "type": "function",
       "name": "BrText",
       "filePath": "components/br/text.tsx",
-      "lineRange": [
-        23,
-        43
-      ],
+      "lineRange": [23, 43],
       "summary": "Selects a semantic BR typography variant and combines optional italic, color, and weight overrides before rendering React Native Text.",
-      "tags": [
-        "component",
-        "design-system",
-        "typography"
-      ],
+      "tags": ["component", "design-system", "typography"],
       "complexity": "simple"
     },
     {
@@ -2546,17 +1575,9 @@
       "type": "function",
       "name": "Button",
       "filePath": "components/common/button.tsx",
-      "lineRange": [
-        19,
-        96
-      ],
+      "lineRange": [19, 96],
       "summary": "Renders the older shared button with loading spinner animation, optional icon, full or outline styling, and disabled handling.",
-      "tags": [
-        "component",
-        "button",
-        "legacy-ui",
-        "animation"
-      ],
+      "tags": ["component", "button", "legacy-ui", "animation"],
       "complexity": "moderate"
     },
     {
@@ -2564,16 +1585,9 @@
       "type": "function",
       "name": "Container",
       "filePath": "components/common/container.tsx",
-      "lineRange": [
-        4,
-        8
-      ],
+      "lineRange": [4, 8],
       "summary": "Wraps children in a full-height SafeAreaView with the app background class.",
-      "tags": [
-        "component",
-        "layout",
-        "safe-area"
-      ],
+      "tags": ["component", "layout", "safe-area"],
       "complexity": "simple"
     },
     {
@@ -2581,17 +1595,9 @@
       "type": "class",
       "name": "ErrorBoundary",
       "filePath": "components/common/error-boundary.tsx",
-      "lineRange": [
-        14,
-        72
-      ],
+      "lineRange": [14, 72],
       "summary": "React component class that catches child render errors, stores error state, logs component stack details, renders fallback UI, and resets itself on retry.",
-      "tags": [
-        "component",
-        "error-boundary",
-        "class-component",
-        "resilience"
-      ],
+      "tags": ["component", "error-boundary", "class-component", "resilience"],
       "complexity": "moderate"
     },
     {
@@ -2599,17 +1605,9 @@
       "type": "function",
       "name": "Skeleton",
       "filePath": "components/common/skeleton.tsx",
-      "lineRange": [
-        31,
-        50
-      ],
+      "lineRange": [31, 50],
       "summary": "Provides a looping Reanimated shimmer shared value through context for nested skeleton blocks.",
-      "tags": [
-        "component",
-        "loading-state",
-        "context",
-        "animation"
-      ],
+      "tags": ["component", "loading-state", "context", "animation"],
       "complexity": "simple"
     },
     {
@@ -2617,17 +1615,9 @@
       "type": "function",
       "name": "SkeletonBlock",
       "filePath": "components/common/skeleton.tsx",
-      "lineRange": [
-        55,
-        104
-      ],
+      "lineRange": [55, 104],
       "summary": "Renders a configurable placeholder block and, when inside Skeleton, overlays an animated shimmer stripe across the block.",
-      "tags": [
-        "component",
-        "loading-state",
-        "skeleton",
-        "animation"
-      ],
+      "tags": ["component", "loading-state", "skeleton", "animation"],
       "complexity": "moderate"
     },
     {
@@ -2635,17 +1625,9 @@
       "type": "function",
       "name": "EnterCodeModal",
       "filePath": "components/enter-code-modal.tsx",
-      "lineRange": [
-        23,
-        133
-      ],
+      "lineRange": [23, 133],
       "summary": "Shows a full-screen invite-code modal, clears input on show, uppercases typed codes, and submits non-empty trimmed codes through the provided handler.",
-      "tags": [
-        "component",
-        "modal",
-        "invite-code",
-        "form"
-      ],
+      "tags": ["component", "modal", "invite-code", "form"],
       "complexity": "moderate"
     },
     {
@@ -2654,12 +1636,7 @@
       "name": "header-bar.tsx",
       "filePath": "components/layout/header-bar.tsx",
       "summary": "Renders the mobile app header with the BiteRunr logo, QR scanner entry point, and fallback invite-code entry modal. It routes successful scans and submitted codes into the join flow.",
-      "tags": [
-        "component",
-        "navigation",
-        "qr-code",
-        "modal"
-      ],
+      "tags": ["component", "navigation", "qr-code", "modal"],
       "complexity": "moderate"
     },
     {
@@ -2667,16 +1644,9 @@
       "type": "function",
       "name": "HeaderBar",
       "filePath": "components/layout/header-bar.tsx",
-      "lineRange": [
-        8,
-        66
-      ],
+      "lineRange": [8, 66],
       "summary": "Memoized header component that manages scanner and code-entry modal state before routing users to a join code.",
-      "tags": [
-        "component",
-        "navigation",
-        "event-handler"
-      ],
+      "tags": ["component", "navigation", "event-handler"],
       "complexity": "moderate"
     },
     {
@@ -2685,11 +1655,7 @@
       "name": "page-with-header.tsx",
       "filePath": "components/layout/page-with-header.tsx",
       "summary": "Provides a simple layout wrapper that places the shared header above arbitrary screen content. It is used to standardize pages that need the header chrome.",
-      "tags": [
-        "component",
-        "layout",
-        "wrapper"
-      ],
+      "tags": ["component", "layout", "wrapper"],
       "complexity": "simple"
     },
     {
@@ -2697,16 +1663,9 @@
       "type": "function",
       "name": "PageWithHeader",
       "filePath": "components/layout/page-with-header.tsx",
-      "lineRange": [
-        5,
-        14
-      ],
+      "lineRange": [5, 14],
       "summary": "Wraps children in a flex container and renders HeaderBar above them.",
-      "tags": [
-        "component",
-        "layout",
-        "wrapper"
-      ],
+      "tags": ["component", "layout", "wrapper"],
       "complexity": "simple"
     },
     {
@@ -2715,11 +1674,7 @@
       "name": "tabbar-icon.tsx",
       "filePath": "components/layout/tabbar-icon.tsx",
       "summary": "Adapts the shared Icon component to the prop shape expected by tab bar and header icon usage. It centralizes icon size defaults for navigation chrome.",
-      "tags": [
-        "component",
-        "icon",
-        "navigation"
-      ],
+      "tags": ["component", "icon", "navigation"],
       "complexity": "simple"
     },
     {
@@ -2727,16 +1682,9 @@
       "type": "function",
       "name": "TabBarIcon",
       "filePath": "components/layout/tabbar-icon.tsx",
-      "lineRange": [
-        3,
-        5
-      ],
+      "lineRange": [3, 5],
       "summary": "Small exported adapter that renders a shared Icon at the tab bar size.",
-      "tags": [
-        "component",
-        "icon",
-        "adapter"
-      ],
+      "tags": ["component", "icon", "adapter"],
       "complexity": "simple"
     },
     {
@@ -2745,12 +1693,7 @@
       "name": "manual-price-entry-sheet.tsx",
       "filePath": "components/manual-price-entry-sheet.tsx",
       "summary": "Implements a bottom sheet for manually entering prices for order items grouped by participant. It tracks pricing completeness, totals entered cents, and saves price adjustments back through callbacks.",
-      "tags": [
-        "component",
-        "bottom-sheet",
-        "pricing",
-        "order-items"
-      ],
+      "tags": ["component", "bottom-sheet", "pricing", "order-items"],
       "complexity": "complex",
       "languageNotes": "The component keeps prices in integer cents while formatting only for display and input."
     },
@@ -2759,16 +1702,9 @@
       "type": "function",
       "name": "PriceItemCard",
       "filePath": "components/manual-price-entry-sheet.tsx",
-      "lineRange": [
-        42,
-        116
-      ],
+      "lineRange": [42, 116],
       "summary": "Renders a single order line with participant details and a currency input that normalizes edits into cents.",
-      "tags": [
-        "component",
-        "pricing",
-        "form-input"
-      ],
+      "tags": ["component", "pricing", "form-input"],
       "complexity": "moderate"
     },
     {
@@ -2776,16 +1712,9 @@
       "type": "function",
       "name": "SectionHeader",
       "filePath": "components/manual-price-entry-sheet.tsx",
-      "lineRange": [
-        118,
-        138
-      ],
+      "lineRange": [118, 138],
       "summary": "Displays participant section progress with a priced-versus-total count.",
-      "tags": [
-        "component",
-        "section-header",
-        "status"
-      ],
+      "tags": ["component", "section-header", "status"],
       "complexity": "simple"
     },
     {
@@ -2793,17 +1722,9 @@
       "type": "function",
       "name": "ManualPriceEntrySheet",
       "filePath": "components/manual-price-entry-sheet.tsx",
-      "lineRange": [
-        140,
-        268
-      ],
+      "lineRange": [140, 268],
       "summary": "Coordinates the manual price-entry workflow, grouping order items by participant and computing completion and total entered amount.",
-      "tags": [
-        "component",
-        "bottom-sheet",
-        "pricing",
-        "workflow"
-      ],
+      "tags": ["component", "bottom-sheet", "pricing", "workflow"],
       "complexity": "complex"
     },
     {
@@ -2812,12 +1733,7 @@
       "name": "multi-select-sheet.tsx",
       "filePath": "components/multi-select-sheet.tsx",
       "summary": "Provides an action-sheet based multi-select picker with search, local selection state, avatars, and confirm/cancel behavior. It is suited for choosing friends or participants from a list.",
-      "tags": [
-        "component",
-        "bottom-sheet",
-        "selection",
-        "search"
-      ],
+      "tags": ["component", "bottom-sheet", "selection", "search"],
       "complexity": "moderate"
     },
     {
@@ -2825,17 +1741,9 @@
       "type": "function",
       "name": "MultiSelectSheet",
       "filePath": "components/multi-select-sheet.tsx",
-      "lineRange": [
-        31,
-        177
-      ],
+      "lineRange": [31, 177],
       "summary": "Manages modal sheet visibility, search filtering, local selected IDs, and confirmation for multi-select lists.",
-      "tags": [
-        "component",
-        "selection",
-        "search",
-        "state-management"
-      ],
+      "tags": ["component", "selection", "search", "state-management"],
       "complexity": "moderate"
     },
     {
@@ -2844,12 +1752,7 @@
       "name": "notification-permission-modal.tsx",
       "filePath": "components/notifications/notification-permission-modal.tsx",
       "summary": "Renders a branded modal asking users to allow push notifications, with feature bullets and allow/deny actions. It uses the newer BR design system for modal presentation.",
-      "tags": [
-        "component",
-        "notifications",
-        "permission",
-        "modal"
-      ],
+      "tags": ["component", "notifications", "permission", "modal"],
       "complexity": "moderate"
     },
     {
@@ -2857,16 +1760,9 @@
       "type": "function",
       "name": "NotificationPermissionModal",
       "filePath": "components/notifications/notification-permission-modal.tsx",
-      "lineRange": [
-        33,
-        89
-      ],
+      "lineRange": [33, 89],
       "summary": "Displays notification permission rationale and delegates allow or deny choices to parent callbacks.",
-      "tags": [
-        "component",
-        "notifications",
-        "permission"
-      ],
+      "tags": ["component", "notifications", "permission"],
       "complexity": "moderate"
     },
     {
@@ -2875,12 +1771,7 @@
       "name": "order-card.tsx",
       "filePath": "components/order-card.tsx",
       "summary": "Defines the order summary card used to display order status, participants, locations, line counts, and reorder actions. It also exports a matching skeleton placeholder for loading states.",
-      "tags": [
-        "component",
-        "order-summary",
-        "animation",
-        "skeleton"
-      ],
+      "tags": ["component", "order-summary", "animation", "skeleton"],
       "complexity": "complex"
     },
     {
@@ -2888,17 +1779,9 @@
       "type": "function",
       "name": "OrderCard",
       "filePath": "components/order-card.tsx",
-      "lineRange": [
-        40,
-        260
-      ],
+      "lineRange": [40, 260],
       "summary": "Memoized order card that derives status display, animates active orders, and renders participant avatars and order metadata.",
-      "tags": [
-        "component",
-        "order-summary",
-        "animation",
-        "status"
-      ],
+      "tags": ["component", "order-summary", "animation", "status"],
       "complexity": "complex"
     },
     {
@@ -2906,16 +1789,9 @@
       "type": "function",
       "name": "OrderCardSkeleton",
       "filePath": "components/order-card.tsx",
-      "lineRange": [
-        262,
-        294
-      ],
+      "lineRange": [262, 294],
       "summary": "Renders placeholder blocks mirroring the order-card layout while order data loads.",
-      "tags": [
-        "component",
-        "skeleton",
-        "loading-state"
-      ],
+      "tags": ["component", "skeleton", "loading-state"],
       "complexity": "simple"
     },
     {
@@ -2924,12 +1800,7 @@
       "name": "payment-setup-splash.tsx",
       "filePath": "components/payment-setup-splash.tsx",
       "summary": "Shows a modal splash encouraging runners to configure payments before collecting orders. It explains payment benefits and exposes setup or skip actions.",
-      "tags": [
-        "component",
-        "payments",
-        "onboarding",
-        "modal"
-      ],
+      "tags": ["component", "payments", "onboarding", "modal"],
       "complexity": "moderate"
     },
     {
@@ -2937,16 +1808,9 @@
       "type": "function",
       "name": "PaymentSetupSplash",
       "filePath": "components/payment-setup-splash.tsx",
-      "lineRange": [
-        34,
-        117
-      ],
+      "lineRange": [34, 117],
       "summary": "Renders the payment setup prompt with feature rows and primary/secondary actions for Stripe onboarding.",
-      "tags": [
-        "component",
-        "payments",
-        "onboarding"
-      ],
+      "tags": ["component", "payments", "onboarding"],
       "complexity": "moderate"
     },
     {
@@ -2955,12 +1819,7 @@
       "name": "list-item.tsx",
       "filePath": "components/profile/list-item.tsx",
       "summary": "Defines a reusable profile settings row with an icon, title, optional subtitle, and chevron affordance. It adapts border and text colors to the current theme.",
-      "tags": [
-        "component",
-        "profile",
-        "list-item",
-        "theme"
-      ],
+      "tags": ["component", "profile", "list-item", "theme"],
       "complexity": "simple"
     },
     {
@@ -2968,16 +1827,9 @@
       "type": "function",
       "name": "ListItem",
       "filePath": "components/profile/list-item.tsx",
-      "lineRange": [
-        16,
-        47
-      ],
+      "lineRange": [16, 47],
       "summary": "Renders a tappable profile/settings row using themed colors and a trailing chevron.",
-      "tags": [
-        "component",
-        "profile",
-        "navigation"
-      ],
+      "tags": ["component", "profile", "navigation"],
       "complexity": "simple"
     },
     {
@@ -2986,12 +1838,7 @@
       "name": "qr-code-modal.tsx",
       "filePath": "components/qr-code-modal.tsx",
       "summary": "Creates and displays an order invite QR code, deep link, share action, copy-to-clipboard behavior, and invite expiry details. It uses Convex queries and mutations to retrieve or create active invites.",
-      "tags": [
-        "component",
-        "qr-code",
-        "invites",
-        "convex"
-      ],
+      "tags": ["component", "qr-code", "invites", "convex"],
       "complexity": "complex"
     },
     {
@@ -2999,17 +1846,9 @@
       "type": "function",
       "name": "QRCodeModal",
       "filePath": "components/qr-code-modal.tsx",
-      "lineRange": [
-        29,
-        219
-      ],
+      "lineRange": [29, 219],
       "summary": "Coordinates invite creation, QR rendering, clipboard copy feedback, sharing, and modal state for joining an order.",
-      "tags": [
-        "component",
-        "qr-code",
-        "invites",
-        "state-management"
-      ],
+      "tags": ["component", "qr-code", "invites", "state-management"],
       "complexity": "complex"
     },
     {
@@ -3018,12 +1857,7 @@
       "name": "qr-scanner-modal.tsx",
       "filePath": "components/qr-scanner-modal.tsx",
       "summary": "Implements a camera-backed modal for scanning BiteRunr invite QR codes with permission handling and a manual code fallback. It extracts join codes from scanned URLs or raw values before notifying the parent.",
-      "tags": [
-        "component",
-        "qr-code",
-        "camera",
-        "permission"
-      ],
+      "tags": ["component", "qr-code", "camera", "permission"],
       "complexity": "moderate"
     },
     {
@@ -3031,17 +1865,9 @@
       "type": "function",
       "name": "QRScannerModal",
       "filePath": "components/qr-scanner-modal.tsx",
-      "lineRange": [
-        13,
-        157
-      ],
+      "lineRange": [13, 157],
       "summary": "Handles camera permission state, scan debouncing, join-code extraction, and scanner modal controls.",
-      "tags": [
-        "component",
-        "qr-code",
-        "camera",
-        "event-handler"
-      ],
+      "tags": ["component", "qr-code", "camera", "event-handler"],
       "complexity": "moderate"
     },
     {
@@ -3050,12 +1876,7 @@
       "name": "receipt-confirmation-sheet.tsx",
       "filePath": "components/receipt-confirmation-sheet.tsx",
       "summary": "Implements the full-screen receipt confirmation workflow for reviewing scanned receipt matches, linking unmatched receipt lines, adjusting prices, and saving matched totals. It groups order items by participant and tracks completion across all order lines.",
-      "tags": [
-        "component",
-        "receipt-scanning",
-        "matching",
-        "pricing"
-      ],
+      "tags": ["component", "receipt-scanning", "matching", "pricing"],
       "complexity": "complex",
       "languageNotes": "The sheet combines several local React components and memoized maps to keep receipt-line matching state efficient."
     },
@@ -3064,16 +1885,9 @@
       "type": "function",
       "name": "UnmatchedCard",
       "filePath": "components/receipt-confirmation-sheet.tsx",
-      "lineRange": [
-        68,
-        112
-      ],
+      "lineRange": [68, 112],
       "summary": "Renders an unmatched receipt line and lets the user select it for linking to an order item.",
-      "tags": [
-        "component",
-        "receipt-scanning",
-        "selection"
-      ],
+      "tags": ["component", "receipt-scanning", "selection"],
       "complexity": "moderate"
     },
     {
@@ -3081,17 +1895,9 @@
       "type": "function",
       "name": "OrderItemCard",
       "filePath": "components/receipt-confirmation-sheet.tsx",
-      "lineRange": [
-        116,
-        267
-      ],
+      "lineRange": [116, 267],
       "summary": "Displays an order item, its linked receipt line, confidence badge, unlink action, and manual price override input.",
-      "tags": [
-        "component",
-        "receipt-scanning",
-        "pricing",
-        "matching"
-      ],
+      "tags": ["component", "receipt-scanning", "pricing", "matching"],
       "complexity": "complex"
     },
     {
@@ -3099,16 +1905,9 @@
       "type": "function",
       "name": "SectionHeader",
       "filePath": "components/receipt-confirmation-sheet.tsx",
-      "lineRange": [
-        271,
-        283
-      ],
+      "lineRange": [271, 283],
       "summary": "Renders a section label and count for receipt review groups.",
-      "tags": [
-        "component",
-        "section-header",
-        "receipt-scanning"
-      ],
+      "tags": ["component", "section-header", "receipt-scanning"],
       "complexity": "simple"
     },
     {
@@ -3116,16 +1915,9 @@
       "type": "function",
       "name": "PersonSection",
       "filePath": "components/receipt-confirmation-sheet.tsx",
-      "lineRange": [
-        285,
-        324
-      ],
+      "lineRange": [285, 324],
       "summary": "Provides a collapsible participant section showing whether that person's items have all been matched.",
-      "tags": [
-        "component",
-        "collapsible",
-        "participant"
-      ],
+      "tags": ["component", "collapsible", "participant"],
       "complexity": "moderate"
     },
     {
@@ -3133,17 +1925,9 @@
       "type": "function",
       "name": "ReceiptConfirmationSheet",
       "filePath": "components/receipt-confirmation-sheet.tsx",
-      "lineRange": [
-        328,
-        612
-      ],
+      "lineRange": [328, 612],
       "summary": "Coordinates receipt review state, matched-item lookup maps, unmatched-line selection, participant grouping, totals, and the final save action.",
-      "tags": [
-        "component",
-        "receipt-scanning",
-        "matching",
-        "workflow"
-      ],
+      "tags": ["component", "receipt-scanning", "matching", "workflow"],
       "complexity": "complex"
     },
     {
@@ -3152,12 +1936,7 @@
       "name": "api.d.ts",
       "filePath": "convex/_generated/api.d.ts",
       "summary": "Generated Convex TypeScript declaration file for the typed API surface exposed by backend modules and components. It lets frontend and backend code reference Convex functions with generated type information.",
-      "tags": [
-        "type-definition",
-        "generated",
-        "convex",
-        "api"
-      ],
+      "tags": ["type-definition", "generated", "convex", "api"],
       "complexity": "complex",
       "languageNotes": "This generated declaration file is intentionally large because it mirrors the Convex deployment API map."
     },
@@ -3167,12 +1946,7 @@
       "name": "api.js",
       "filePath": "convex/_generated/api.js",
       "summary": "Generated Convex JavaScript runtime entry that exposes api, internal, and components references for function calls. Application modules import these references instead of constructing Convex function paths manually.",
-      "tags": [
-        "generated",
-        "convex",
-        "api",
-        "barrel"
-      ],
+      "tags": ["generated", "convex", "api", "barrel"],
       "complexity": "simple"
     },
     {
@@ -3181,12 +1955,7 @@
       "name": "dataModel.d.ts",
       "filePath": "convex/_generated/dataModel.d.ts",
       "summary": "Generated Convex data model declarations for document IDs, table names, and typed documents. It connects schema-derived types to application and backend code.",
-      "tags": [
-        "type-definition",
-        "generated",
-        "convex",
-        "data-model"
-      ],
+      "tags": ["type-definition", "generated", "convex", "data-model"],
       "complexity": "simple"
     },
     {
@@ -3195,12 +1964,7 @@
       "name": "server.d.ts",
       "filePath": "convex/_generated/server.d.ts",
       "summary": "Generated Convex server type declarations for query, mutation, action, and HTTP action builders. Backend functions use these declarations to receive typed contexts and arguments.",
-      "tags": [
-        "type-definition",
-        "generated",
-        "convex",
-        "server"
-      ],
+      "tags": ["type-definition", "generated", "convex", "server"],
       "complexity": "moderate"
     },
     {
@@ -3209,12 +1973,7 @@
       "name": "server.js",
       "filePath": "convex/_generated/server.js",
       "summary": "Generated Convex runtime helpers for defining queries, mutations, actions, internal functions, and HTTP actions. Backend modules import these builders to register server functions.",
-      "tags": [
-        "generated",
-        "convex",
-        "server",
-        "factory"
-      ],
+      "tags": ["generated", "convex", "server", "factory"],
       "complexity": "moderate"
     },
     {
@@ -3223,11 +1982,7 @@
       "name": "auth.config.ts",
       "filePath": "convex/auth.config.ts",
       "summary": "Defines the Convex auth provider configuration file for Better Auth integration. The current configuration leaves provider details to the runtime auth setup.",
-      "tags": [
-        "config",
-        "authentication",
-        "convex"
-      ],
+      "tags": ["config", "authentication", "convex"],
       "complexity": "simple"
     },
     {
@@ -3236,12 +1991,7 @@
       "name": "auth.ts",
       "filePath": "convex/auth.ts",
       "summary": "Configures Better Auth on Convex with conditional social providers, Expo support, email OTP, and Resend email delivery. It exports the auth component and factory used by Convex HTTP routes.",
-      "tags": [
-        "authentication",
-        "convex",
-        "email-otp",
-        "oauth"
-      ],
+      "tags": ["authentication", "convex", "email-otp", "oauth"],
       "complexity": "moderate"
     },
     {
@@ -3249,17 +1999,9 @@
       "type": "function",
       "name": "createAuth",
       "filePath": "convex/auth.ts",
-      "lineRange": [
-        60,
-        149
-      ],
+      "lineRange": [60, 149],
       "summary": "Builds the Better Auth instance with Convex storage, Expo plugin support, email OTP delivery, and configured social providers.",
-      "tags": [
-        "factory",
-        "authentication",
-        "convex",
-        "email-otp"
-      ],
+      "tags": ["factory", "authentication", "convex", "email-otp"],
       "complexity": "moderate"
     },
     {
@@ -3268,12 +2010,7 @@
       "name": "authHelper.ts",
       "filePath": "convex/authHelper.ts",
       "summary": "Provides Convex helpers that bridge Better Auth users to the app-owned users table by email. It supports read-only lookup, mutation-time user materialization, and require-style guards.",
-      "tags": [
-        "authentication",
-        "convex",
-        "utility",
-        "user-sync"
-      ],
+      "tags": ["authentication", "convex", "utility", "user-sync"],
       "complexity": "moderate"
     },
     {
@@ -3281,16 +2018,9 @@
       "type": "function",
       "name": "getUserId",
       "filePath": "convex/authHelper.ts",
-      "lineRange": [
-        11,
-        26
-      ],
+      "lineRange": [11, 26],
       "summary": "Looks up the current Better Auth user and returns the matching app users table ID by email, or null if unavailable.",
-      "tags": [
-        "authentication",
-        "convex",
-        "lookup"
-      ],
+      "tags": ["authentication", "convex", "lookup"],
       "complexity": "simple"
     },
     {
@@ -3298,16 +2028,9 @@
       "type": "function",
       "name": "ensureUser",
       "filePath": "convex/authHelper.ts",
-      "lineRange": [
-        33,
-        74
-      ],
+      "lineRange": [33, 74],
       "summary": "Ensures the current Better Auth user has an app users row, creating one with parsed first and last names when needed.",
-      "tags": [
-        "authentication",
-        "user-sync",
-        "mutation"
-      ],
+      "tags": ["authentication", "user-sync", "mutation"],
       "complexity": "moderate"
     },
     {
@@ -3315,16 +2038,9 @@
       "type": "function",
       "name": "requireUserId",
       "filePath": "convex/authHelper.ts",
-      "lineRange": [
-        81,
-        89
-      ],
+      "lineRange": [81, 89],
       "summary": "Requires an existing app users row for the current auth session and throws when authentication or sync is missing.",
-      "tags": [
-        "authentication",
-        "guard",
-        "convex"
-      ],
+      "tags": ["authentication", "guard", "convex"],
       "complexity": "simple"
     },
     {
@@ -3332,16 +2048,9 @@
       "type": "function",
       "name": "requireUserIdWithSync",
       "filePath": "convex/authHelper.ts",
-      "lineRange": [
-        95,
-        103
-      ],
+      "lineRange": [95, 103],
       "summary": "Requires a current user while allowing mutation-time app user creation for newly authenticated accounts.",
-      "tags": [
-        "authentication",
-        "guard",
-        "user-sync"
-      ],
+      "tags": ["authentication", "guard", "user-sync"],
       "complexity": "simple"
     },
     {
@@ -3350,12 +2059,7 @@
       "name": "convex.config.ts",
       "filePath": "convex/convex.config.ts",
       "summary": "Registers Convex components used by the backend, including Better Auth and Expo push notifications. It defines component mount points consumed by generated Convex bindings.",
-      "tags": [
-        "config",
-        "convex",
-        "authentication",
-        "notifications"
-      ],
+      "tags": ["config", "convex", "authentication", "notifications"],
       "complexity": "simple"
     },
     {
@@ -3364,12 +2068,7 @@
       "name": "fees.ts",
       "filePath": "convex/fees.ts",
       "summary": "Centralizes BiteRunr platform fee calculation constants and logic for payment flows. It applies a percentage fee with a minimum cents threshold.",
-      "tags": [
-        "utility",
-        "payments",
-        "fees",
-        "money"
-      ],
+      "tags": ["utility", "payments", "fees", "money"],
       "complexity": "simple"
     },
     {
@@ -3377,16 +2076,9 @@
       "type": "function",
       "name": "calculatePlatformFee",
       "filePath": "convex/fees.ts",
-      "lineRange": [
-        7,
-        13
-      ],
+      "lineRange": [7, 13],
       "summary": "Returns the larger of the minimum application fee and the rounded percentage fee for an amount in cents.",
-      "tags": [
-        "utility",
-        "payments",
-        "fees"
-      ],
+      "tags": ["utility", "payments", "fees"],
       "complexity": "simple"
     },
     {
@@ -3395,12 +2087,7 @@
       "name": "friends.ts",
       "filePath": "convex/friends.ts",
       "summary": "Implements Convex friend and friend-request operations, including listing friends, sending and accepting requests, user search, removal, and pending counts. It enforces current-user authorization and sends push notifications for new requests.",
-      "tags": [
-        "service",
-        "convex",
-        "friends",
-        "notifications"
-      ],
+      "tags": ["service", "convex", "friends", "notifications"],
       "complexity": "complex"
     },
     {
@@ -3408,17 +2095,9 @@
       "type": "function",
       "name": "list",
       "filePath": "convex/friends.ts",
-      "lineRange": [
-        7,
-        34
-      ],
+      "lineRange": [7, 34],
       "summary": "Lists the current user's friends and resolves each friendship to user profile details.",
-      "tags": [
-        "api-handler",
-        "convex",
-        "friends",
-        "query"
-      ],
+      "tags": ["api-handler", "convex", "friends", "query"],
       "complexity": "moderate"
     },
     {
@@ -3426,17 +2105,9 @@
       "type": "function",
       "name": "listPendingRequests",
       "filePath": "convex/friends.ts",
-      "lineRange": [
-        37,
-        69
-      ],
+      "lineRange": [37, 69],
       "summary": "Lists pending friend requests received by the current user with sender profile details.",
-      "tags": [
-        "api-handler",
-        "convex",
-        "friends",
-        "query"
-      ],
+      "tags": ["api-handler", "convex", "friends", "query"],
       "complexity": "moderate"
     },
     {
@@ -3444,17 +2115,9 @@
       "type": "function",
       "name": "sendRequest",
       "filePath": "convex/friends.ts",
-      "lineRange": [
-        72,
-        152
-      ],
+      "lineRange": [72, 152],
       "summary": "Creates a friend request, auto-accepts reciprocal requests, prevents duplicates, and schedules a receiver push notification.",
-      "tags": [
-        "api-handler",
-        "convex",
-        "friends",
-        "mutation"
-      ],
+      "tags": ["api-handler", "convex", "friends", "mutation"],
       "complexity": "complex"
     },
     {
@@ -3462,17 +2125,9 @@
       "type": "function",
       "name": "acceptRequest",
       "filePath": "convex/friends.ts",
-      "lineRange": [
-        155,
-        180
-      ],
+      "lineRange": [155, 180],
       "summary": "Accepts a pending request after authorization and creates bidirectional friendship records.",
-      "tags": [
-        "api-handler",
-        "convex",
-        "friends",
-        "mutation"
-      ],
+      "tags": ["api-handler", "convex", "friends", "mutation"],
       "complexity": "moderate"
     },
     {
@@ -3480,17 +2135,9 @@
       "type": "function",
       "name": "rejectRequest",
       "filePath": "convex/friends.ts",
-      "lineRange": [
-        183,
-        196
-      ],
+      "lineRange": [183, 196],
       "summary": "Rejects a pending friend request after confirming the current user is the receiver.",
-      "tags": [
-        "api-handler",
-        "convex",
-        "friends",
-        "mutation"
-      ],
+      "tags": ["api-handler", "convex", "friends", "mutation"],
       "complexity": "simple"
     },
     {
@@ -3498,17 +2145,9 @@
       "type": "function",
       "name": "searchUsers",
       "filePath": "convex/friends.ts",
-      "lineRange": [
-        199,
-        288
-      ],
+      "lineRange": [199, 288],
       "summary": "Searches users across name and email indexes, deduplicates results, and excludes the current user, existing friends, and pending requests.",
-      "tags": [
-        "api-handler",
-        "convex",
-        "search",
-        "friends"
-      ],
+      "tags": ["api-handler", "convex", "search", "friends"],
       "complexity": "complex"
     },
     {
@@ -3516,17 +2155,9 @@
       "type": "function",
       "name": "removeFriend",
       "filePath": "convex/friends.ts",
-      "lineRange": [
-        291,
-        335
-      ],
+      "lineRange": [291, 335],
       "summary": "Removes both directions of a friendship and clears any pending friend requests between the two users.",
-      "tags": [
-        "api-handler",
-        "convex",
-        "friends",
-        "mutation"
-      ],
+      "tags": ["api-handler", "convex", "friends", "mutation"],
       "complexity": "moderate"
     },
     {
@@ -3534,17 +2165,9 @@
       "type": "function",
       "name": "pendingRequestCount",
       "filePath": "convex/friends.ts",
-      "lineRange": [
-        338,
-        351
-      ],
+      "lineRange": [338, 351],
       "summary": "Returns the number of pending friend requests received by the current user.",
-      "tags": [
-        "api-handler",
-        "convex",
-        "friends",
-        "query"
-      ],
+      "tags": ["api-handler", "convex", "friends", "query"],
       "complexity": "simple"
     },
     {
@@ -3553,12 +2176,7 @@
       "name": "http.ts",
       "filePath": "convex/http.ts",
       "summary": "Registers Convex HTTP routes for Better Auth, mobile OAuth redirects, Stripe onboarding and checkout redirects, and Stripe Connect webhooks. Webhook handling verifies signatures and updates payments or notifies runners for Stripe events.",
-      "tags": [
-        "api-handler",
-        "convex",
-        "webhook",
-        "payments"
-      ],
+      "tags": ["api-handler", "convex", "webhook", "payments"],
       "complexity": "complex",
       "languageNotes": "The Stripe webhook path uses Web Crypto HMAC verification rather than relying on Node-specific Stripe helpers."
     },
@@ -3568,12 +2186,7 @@
       "name": "utils.ts",
       "filePath": "convex/lib/utils.ts",
       "summary": "Provides backend utility helpers, currently focused on parsing a display name into first and last names while filtering common OAuth provider stop words. Auth synchronization uses it when creating app user records.",
-      "tags": [
-        "utility",
-        "authentication",
-        "user-sync",
-        "string-processing"
-      ],
+      "tags": ["utility", "authentication", "user-sync", "string-processing"],
       "complexity": "simple"
     },
     {
@@ -3581,16 +2194,9 @@
       "type": "function",
       "name": "splitName",
       "filePath": "convex/lib/utils.ts",
-      "lineRange": [
-        5,
-        50
-      ],
+      "lineRange": [5, 50],
       "summary": "Normalizes a full name, removes email-like and stop-word tokens, title-cases remaining parts, and returns first and last name fields.",
-      "tags": [
-        "utility",
-        "string-processing",
-        "authentication"
-      ],
+      "tags": ["utility", "string-processing", "authentication"],
       "complexity": "moderate"
     },
     {
@@ -3599,12 +2205,7 @@
       "name": "orderInvites.ts",
       "filePath": "convex/orderInvites.ts",
       "summary": "Implements Convex queries and mutations for QR-style order invite codes, including creation, validation, expiration, usage limits, and joining an order from a code.",
-      "tags": [
-        "api-handler",
-        "invites",
-        "orders",
-        "validation"
-      ],
+      "tags": ["api-handler", "invites", "orders", "validation"],
       "complexity": "complex"
     },
     {
@@ -3613,12 +2214,7 @@
       "name": "orderItems.ts",
       "filePath": "convex/orderItems.ts",
       "summary": "Manages order item entry, replacement, listing, voice-to-item parsing, and AI-assisted order summary grouping for pickup locations.",
-      "tags": [
-        "api-handler",
-        "order-items",
-        "ai-processing",
-        "voice-input"
-      ],
+      "tags": ["api-handler", "order-items", "ai-processing", "voice-input"],
       "complexity": "complex",
       "languageNotes": "This file combines Convex query/mutation/action exports with Zod schemas and AI SDK calls for structured OpenRouter responses."
     },
@@ -3628,12 +2224,7 @@
       "name": "orderLocations.ts",
       "filePath": "convex/orderLocations.ts",
       "summary": "Provides small Convex read APIs for listing pickup locations on an order and fetching a single location after membership checks.",
-      "tags": [
-        "api-handler",
-        "order-locations",
-        "authorization",
-        "queries"
-      ],
+      "tags": ["api-handler", "order-locations", "authorization", "queries"],
       "complexity": "simple"
     },
     {
@@ -3642,12 +2233,7 @@
       "name": "orders.ts",
       "filePath": "convex/orders.ts",
       "summary": "Owns core order lifecycle APIs for creating, updating, transferring runner responsibility, listing active and past orders, and assembling settlement-oriented order views.",
-      "tags": [
-        "api-handler",
-        "orders",
-        "settlements",
-        "workflow"
-      ],
+      "tags": ["api-handler", "orders", "settlements", "workflow"],
       "complexity": "complex"
     },
     {
@@ -3656,12 +2242,7 @@
       "name": "orderUsers.ts",
       "filePath": "convex/orderUsers.ts",
       "summary": "Controls membership-level order operations such as status updates, leaving orders, and runner-authorized participant removal.",
-      "tags": [
-        "api-handler",
-        "participants",
-        "orders",
-        "authorization"
-      ],
+      "tags": ["api-handler", "participants", "orders", "authorization"],
       "complexity": "moderate"
     },
     {
@@ -3670,12 +2251,7 @@
       "name": "payments.ts",
       "filePath": "convex/payments.ts",
       "summary": "Stores and updates Stripe Connect account and settlement payment records, including checkout readiness, payment status transitions, in-person settlements, and nudges.",
-      "tags": [
-        "api-handler",
-        "payments",
-        "stripe",
-        "settlements"
-      ],
+      "tags": ["api-handler", "payments", "stripe", "settlements"],
       "complexity": "complex"
     },
     {
@@ -3684,12 +2260,7 @@
       "name": "pushNotifications.ts",
       "filePath": "convex/pushNotifications.ts",
       "summary": "Wraps the Convex Expo push notification component with token registration helpers and server-side sends to one or more users.",
-      "tags": [
-        "service",
-        "push-notifications",
-        "mobile",
-        "messaging"
-      ],
+      "tags": ["service", "push-notifications", "mobile", "messaging"],
       "complexity": "moderate"
     },
     {
@@ -3713,12 +2284,7 @@
       "name": "schema.ts",
       "filePath": "convex/schema.ts",
       "summary": "Defines the Convex data model for users, orders, locations, items, invites, Stripe accounts, payments, squads, friends, and waitlist entries.",
-      "tags": [
-        "data-model",
-        "schema-definition",
-        "convex",
-        "database"
-      ],
+      "tags": ["data-model", "schema-definition", "convex", "database"],
       "complexity": "moderate"
     },
     {
@@ -3727,12 +2293,7 @@
       "name": "squads.ts",
       "filePath": "convex/squads.ts",
       "summary": "Implements CRUD operations for user-owned friend squads with display metadata and member id lists.",
-      "tags": [
-        "api-handler",
-        "squads",
-        "social-graph",
-        "crud"
-      ],
+      "tags": ["api-handler", "squads", "social-graph", "crud"],
       "complexity": "moderate"
     },
     {
@@ -3741,12 +2302,7 @@
       "name": "stripeConnect.ts",
       "filePath": "convex/stripeConnect.ts",
       "summary": "Runs Node-only Stripe Connect actions for account onboarding, Payment Sheet setup, balance inspection, instant or standard payouts, and dashboard links.",
-      "tags": [
-        "service",
-        "stripe-connect",
-        "payments",
-        "payouts"
-      ],
+      "tags": ["service", "stripe-connect", "payments", "payouts"],
       "complexity": "complex",
       "languageNotes": "The `use node` directive enables Stripe SDK usage in Convex actions that need Node runtime APIs."
     },
@@ -3756,12 +2312,7 @@
       "name": "tsconfig.json",
       "filePath": "convex/tsconfig.json",
       "summary": "TypeScript configuration for Convex functions, enabling strict checking, bundler module resolution, DOM libraries, and exclusion of generated Convex output.",
-      "tags": [
-        "configuration",
-        "typescript",
-        "convex",
-        "build-system"
-      ],
+      "tags": ["configuration", "typescript", "convex", "build-system"],
       "complexity": "simple"
     },
     {
@@ -3770,12 +2321,7 @@
       "name": "users.ts",
       "filePath": "convex/users.ts",
       "summary": "Synchronizes Better Auth users into the app users table and exposes profile, avatar upload, and avatar removal mutations for the current user.",
-      "tags": [
-        "api-handler",
-        "users",
-        "auth-sync",
-        "profile"
-      ],
+      "tags": ["api-handler", "users", "auth-sync", "profile"],
       "complexity": "moderate"
     },
     {
@@ -3784,12 +2330,7 @@
       "name": "waitlist.ts",
       "filePath": "convex/waitlist.ts",
       "summary": "Handles public waitlist joins, duplicate prevention, counts, admin listing, and launch email fan-out through the Convex scheduler.",
-      "tags": [
-        "api-handler",
-        "waitlist",
-        "email",
-        "admin"
-      ],
+      "tags": ["api-handler", "waitlist", "email", "admin"],
       "complexity": "moderate"
     },
     {
@@ -3798,12 +2339,7 @@
       "name": "eas.json",
       "filePath": "eas.json",
       "summary": "EAS build and submit configuration for development, preview, and production mobile builds, including public Convex and Stripe environment values.",
-      "tags": [
-        "configuration",
-        "deployment",
-        "expo",
-        "mobile-build"
-      ],
+      "tags": ["configuration", "deployment", "expo", "mobile-build"],
       "complexity": "simple"
     },
     {
@@ -3812,12 +2348,7 @@
       "name": "global.css",
       "filePath": "global.css",
       "summary": "Defines Tailwind base imports and light/dark shadcn-style CSS custom properties that feed the app theme tokens.",
-      "tags": [
-        "styling",
-        "theme",
-        "tailwind",
-        "design-system"
-      ],
+      "tags": ["styling", "theme", "tailwind", "design-system"],
       "complexity": "simple",
       "languageNotes": "The HSL CSS variables are consumed by Tailwind and synchronized into runtime theme tokens."
     },
@@ -3827,12 +2358,7 @@
       "name": "useAiOrderSummary.ts",
       "filePath": "hooks/useAiOrderSummary.ts",
       "summary": "Provides React state management for AI order summary generation, including request caching, optimistic priming, error normalization, and persisted paused summaries.",
-      "tags": [
-        "hook",
-        "ai-processing",
-        "order-summary",
-        "state-management"
-      ],
+      "tags": ["hook", "ai-processing", "order-summary", "state-management"],
       "complexity": "complex"
     },
     {
@@ -3841,12 +2367,7 @@
       "name": "useManualPriceEntry.ts",
       "filePath": "hooks/useManualPriceEntry.ts",
       "summary": "Coordinates manual receipt price entry UI state for order location items, including dirty tracking, item selection, local validation, and saving confirmed prices.",
-      "tags": [
-        "hook",
-        "receipt-pricing",
-        "state-management",
-        "validation"
-      ],
+      "tags": ["hook", "receipt-pricing", "state-management", "validation"],
       "complexity": "complex"
     },
     {
@@ -3855,12 +2376,7 @@
       "name": "useReceiptScanning.ts",
       "filePath": "hooks/useReceiptScanning.ts",
       "summary": "Coordinates the mobile receipt scan flow from image selection and upload through AI parsing, fuzzy matching, draft persistence, and confirmation.",
-      "tags": [
-        "hook",
-        "receipt-scanning",
-        "image-upload",
-        "state-management"
-      ],
+      "tags": ["hook", "receipt-scanning", "image-upload", "state-management"],
       "complexity": "complex"
     },
     {
@@ -3883,12 +2399,7 @@
       "name": "Caddyfile",
       "filePath": "landing/Caddyfile",
       "summary": "Caddy configuration for serving the landing app from `/srv` on the provided port with SPA fallback to `index.html`.",
-      "tags": [
-        "configuration",
-        "routing",
-        "static-hosting",
-        "landing-app"
-      ],
+      "tags": ["configuration", "routing", "static-hosting", "landing-app"],
       "complexity": "simple"
     },
     {
@@ -3897,12 +2408,7 @@
       "name": "api.d.ts",
       "filePath": "landing/convex/_generated/api.d.ts",
       "summary": "Generated TypeScript declarations for the landing app Convex API and internal function references.",
-      "tags": [
-        "type-definition",
-        "generated-code",
-        "convex",
-        "api-client"
-      ],
+      "tags": ["type-definition", "generated-code", "convex", "api-client"],
       "complexity": "simple"
     },
     {
@@ -3911,12 +2417,7 @@
       "name": "api.js",
       "filePath": "landing/convex/_generated/api.js",
       "summary": "Generated JavaScript Convex API reference objects for the landing app, exposing public, internal, and component namespaces.",
-      "tags": [
-        "generated-code",
-        "convex",
-        "api-client",
-        "barrel"
-      ],
+      "tags": ["generated-code", "convex", "api-client", "barrel"],
       "complexity": "simple"
     },
     {
@@ -3925,12 +2426,7 @@
       "name": "dataModel.d.ts",
       "filePath": "landing/convex/_generated/dataModel.d.ts",
       "summary": "Generated TypeScript data model declarations for the landing app Convex deployment, including document and id helper types.",
-      "tags": [
-        "type-definition",
-        "generated-code",
-        "convex",
-        "data-model"
-      ],
+      "tags": ["type-definition", "generated-code", "convex", "data-model"],
       "complexity": "simple"
     },
     {
@@ -3939,12 +2435,7 @@
       "name": "server.d.ts",
       "filePath": "landing/convex/_generated/server.d.ts",
       "summary": "Generated TypeScript server helper declarations for landing app Convex queries, mutations, actions, and internal functions.",
-      "tags": [
-        "type-definition",
-        "generated-code",
-        "convex",
-        "server-api"
-      ],
+      "tags": ["type-definition", "generated-code", "convex", "server-api"],
       "complexity": "moderate"
     },
     {
@@ -3952,16 +2443,9 @@
       "type": "function",
       "name": "generateInviteCode",
       "filePath": "convex/orderInvites.ts",
-      "lineRange": [
-        7,
-        17
-      ],
+      "lineRange": [7, 17],
       "summary": "Creates an eight-character invite code using cryptographically secure random bytes and an alphabet that avoids ambiguous characters.",
-      "tags": [
-        "utility",
-        "invites",
-        "random-code"
-      ],
+      "tags": ["utility", "invites", "random-code"],
       "complexity": "simple"
     },
     {
@@ -3969,16 +2453,9 @@
       "type": "function",
       "name": "parseQuantityPrefixedItem",
       "filePath": "convex/orderItems.ts",
-      "lineRange": [
-        212,
-        239
-      ],
+      "lineRange": [212, 239],
       "summary": "Parses order item labels with optional `2x` quantity prefixes into a normalized quantity, base label, and display label.",
-      "tags": [
-        "utility",
-        "order-items",
-        "normalization"
-      ],
+      "tags": ["utility", "order-items", "normalization"],
       "complexity": "simple"
     },
     {
@@ -3986,16 +2463,9 @@
       "type": "function",
       "name": "reconcileVoiceOrderItems",
       "filePath": "convex/orderItems.ts",
-      "lineRange": [
-        241,
-        287
-      ],
+      "lineRange": [241, 287],
       "summary": "Merges AI-produced voice order lines by normalized item label so explicit quantity updates replace duplicate single-item entries.",
-      "tags": [
-        "ai-processing",
-        "voice-input",
-        "normalization"
-      ],
+      "tags": ["ai-processing", "voice-input", "normalization"],
       "complexity": "moderate"
     },
     {
@@ -4003,16 +2473,9 @@
       "type": "function",
       "name": "extractJsonObject",
       "filePath": "convex/orderItems.ts",
-      "lineRange": [
-        289,
-        307
-      ],
+      "lineRange": [289, 307],
       "summary": "Extracts a JSON object from raw model output, supporting both plain JSON and fenced JSON blocks before throwing on invalid responses.",
-      "tags": [
-        "utility",
-        "ai-processing",
-        "json-parsing"
-      ],
+      "tags": ["utility", "ai-processing", "json-parsing"],
       "complexity": "simple"
     },
     {
@@ -4020,16 +2483,9 @@
       "type": "function",
       "name": "buildOrderSummary",
       "filePath": "convex/orderItems.ts",
-      "lineRange": [
-        309,
-        318
-      ],
+      "lineRange": [309, 318],
       "summary": "Guards a raw order summary response so downstream AI summary code only uses data matching the requested order id.",
-      "tags": [
-        "validation",
-        "order-summary",
-        "utility"
-      ],
+      "tags": ["validation", "order-summary", "utility"],
       "complexity": "simple"
     },
     {
@@ -4037,16 +2493,9 @@
       "type": "function",
       "name": "buildAiSeedGroupsForLocation",
       "filePath": "convex/orderItems.ts",
-      "lineRange": [
-        329,
-        348
-      ],
+      "lineRange": [329, 348],
       "summary": "Converts analyzed order item text groups into compact AI seed groups for one pickup location.",
-      "tags": [
-        "ai-processing",
-        "order-summary",
-        "grouping"
-      ],
+      "tags": ["ai-processing", "order-summary", "grouping"],
       "complexity": "moderate"
     },
     {
@@ -4054,16 +2503,9 @@
       "type": "function",
       "name": "validateAiGroupsForLocation",
       "filePath": "convex/orderItems.ts",
-      "lineRange": [
-        350,
-        412
-      ],
+      "lineRange": [350, 412],
       "summary": "Validates AI grouping output by checking labels, seed ids, duplicates, and one-time assignment before returning resolved order item groups.",
-      "tags": [
-        "validation",
-        "ai-processing",
-        "order-summary"
-      ],
+      "tags": ["validation", "ai-processing", "order-summary"],
       "complexity": "complex"
     },
     {
@@ -4071,16 +2513,9 @@
       "type": "function",
       "name": "toPersistedAiSummaryLocations",
       "filePath": "convex/orderItems.ts",
-      "lineRange": [
-        414,
-        426
-      ],
+      "lineRange": [414, 426],
       "summary": "Transforms resolved AI summary locations into the persisted shape used on order records.",
-      "tags": [
-        "serialization",
-        "order-summary",
-        "persistence"
-      ],
+      "tags": ["serialization", "order-summary", "persistence"],
       "complexity": "simple"
     },
     {
@@ -4088,16 +2523,9 @@
       "type": "function",
       "name": "generateAiSummaryForLocation",
       "filePath": "convex/orderItems.ts",
-      "lineRange": [
-        428,
-        521
-      ],
+      "lineRange": [428, 521],
       "summary": "Calls OpenRouter to merge seed item groups for one location, parses structured JSON, validates assignments, and enforces full item coverage.",
-      "tags": [
-        "ai-processing",
-        "openrouter",
-        "order-summary"
-      ],
+      "tags": ["ai-processing", "openrouter", "order-summary"],
       "complexity": "complex"
     },
     {
@@ -4105,16 +2533,9 @@
       "type": "function",
       "name": "parseVoiceOrderItemsWithAi",
       "filePath": "convex/orderItems.ts",
-      "lineRange": [
-        533,
-        581
-      ],
+      "lineRange": [533, 581],
       "summary": "Uses OpenRouter structured generation to convert a spoken update and existing items into a reconciled list of order item labels.",
-      "tags": [
-        "ai-processing",
-        "voice-input",
-        "openrouter"
-      ],
+      "tags": ["ai-processing", "voice-input", "openrouter"],
       "complexity": "complex"
     },
     {
@@ -4122,16 +2543,9 @@
       "type": "function",
       "name": "normalizeLocationNames",
       "filePath": "convex/orders.ts",
-      "lineRange": [
-        13,
-        33
-      ],
+      "lineRange": [13, 33],
       "summary": "Trims, filters, and case-insensitively deduplicates pickup location names before order creation or update.",
-      "tags": [
-        "utility",
-        "orders",
-        "normalization"
-      ],
+      "tags": ["utility", "orders", "normalization"],
       "complexity": "simple"
     },
     {
@@ -4139,16 +2553,9 @@
       "type": "function",
       "name": "getOrderLocationsForOrder",
       "filePath": "convex/orders.ts",
-      "lineRange": [
-        35,
-        44
-      ],
+      "lineRange": [35, 44],
       "summary": "Loads and creation-time sorts all pickup locations associated with an order.",
-      "tags": [
-        "utility",
-        "orders",
-        "order-locations"
-      ],
+      "tags": ["utility", "orders", "order-locations"],
       "complexity": "simple"
     },
     {
@@ -4156,16 +2563,9 @@
       "type": "function",
       "name": "countLinesForLocation",
       "filePath": "convex/orders.ts",
-      "lineRange": [
-        46,
-        58
-      ],
+      "lineRange": [46, 58],
       "summary": "Counts order item lines attached to a specific pickup location.",
-      "tags": [
-        "utility",
-        "orders",
-        "order-items"
-      ],
+      "tags": ["utility", "orders", "order-items"],
       "complexity": "simple"
     },
     {
@@ -4173,16 +2573,9 @@
       "type": "function",
       "name": "countLinesForOrder",
       "filePath": "convex/orders.ts",
-      "lineRange": [
-        60,
-        69
-      ],
+      "lineRange": [60, 69],
       "summary": "Aggregates item-line counts across every pickup location on an order.",
-      "tags": [
-        "utility",
-        "orders",
-        "aggregation"
-      ],
+      "tags": ["utility", "orders", "aggregation"],
       "complexity": "simple"
     },
     {
@@ -4190,16 +2583,9 @@
       "type": "function",
       "name": "normalizeReceiptName",
       "filePath": "convex/receiptScanning.ts",
-      "lineRange": [
-        136,
-        146
-      ],
+      "lineRange": [136, 146],
       "summary": "Canonicalizes receipt item names for fuzzy comparison by removing punctuation, filler words, and case differences.",
-      "tags": [
-        "utility",
-        "receipt-scanning",
-        "normalization"
-      ],
+      "tags": ["utility", "receipt-scanning", "normalization"],
       "complexity": "simple"
     },
     {
@@ -4207,16 +2593,9 @@
       "type": "function",
       "name": "namesLookSimilar",
       "filePath": "convex/receiptScanning.ts",
-      "lineRange": [
-        152,
-        177
-      ],
+      "lineRange": [152, 177],
       "summary": "Compares normalized receipt and order item names using equality, containment, and word overlap heuristics.",
-      "tags": [
-        "utility",
-        "fuzzy-match",
-        "receipt-scanning"
-      ],
+      "tags": ["utility", "fuzzy-match", "receipt-scanning"],
       "complexity": "moderate"
     },
     {
@@ -4224,16 +2603,9 @@
       "type": "function",
       "name": "allocatePerUnitPrices",
       "filePath": "convex/receiptScanning.ts",
-      "lineRange": [
-        179,
-        272
-      ],
+      "lineRange": [179, 272],
       "summary": "Distributes combo or component pricing across included item quantities while preserving integer cent totals.",
-      "tags": [
-        "utility",
-        "money",
-        "receipt-scanning"
-      ],
+      "tags": ["utility", "money", "receipt-scanning"],
       "complexity": "complex"
     },
     {
@@ -4241,16 +2613,9 @@
       "type": "function",
       "name": "normalizeParsedReceiptItems",
       "filePath": "convex/receiptScanning.ts",
-      "lineRange": [
-        274,
-        405
-      ],
+      "lineRange": [274, 405],
       "summary": "Expands and cleans parsed receipt lines, handles combo headers and included items, and normalizes quantities and cent prices.",
-      "tags": [
-        "receipt-scanning",
-        "normalization",
-        "money"
-      ],
+      "tags": ["receipt-scanning", "normalization", "money"],
       "complexity": "complex"
     },
     {
@@ -4258,16 +2623,9 @@
       "type": "function",
       "name": "calculateMaxInstantPayout",
       "filePath": "convex/stripeConnect.ts",
-      "lineRange": [
-        30,
-        63
-      ],
+      "lineRange": [30, 63],
       "summary": "Computes the maximum instant payout amount that fits within an available balance after Stripe instant payout fees.",
-      "tags": [
-        "payments",
-        "payouts",
-        "money"
-      ],
+      "tags": ["payments", "payouts", "money"],
       "complexity": "moderate"
     },
     {
@@ -4275,16 +2633,9 @@
       "type": "function",
       "name": "getPayoutDestinationAvailability",
       "filePath": "convex/stripeConnect.ts",
-      "lineRange": [
-        65,
-        90
-      ],
+      "lineRange": [65, 90],
       "summary": "Checks Stripe external accounts to determine whether instant card payouts and bank payouts are available.",
-      "tags": [
-        "stripe-connect",
-        "payouts",
-        "service"
-      ],
+      "tags": ["stripe-connect", "payouts", "service"],
       "complexity": "moderate"
     },
     {
@@ -4292,16 +2643,9 @@
       "type": "function",
       "name": "getWaitlistAdminEmails",
       "filePath": "convex/waitlist.ts",
-      "lineRange": [
-        11,
-        27
-      ],
+      "lineRange": [11, 27],
       "summary": "Reads and normalizes comma-separated waitlist admin email addresses from Convex environment configuration.",
-      "tags": [
-        "utility",
-        "waitlist",
-        "configuration"
-      ],
+      "tags": ["utility", "waitlist", "configuration"],
       "complexity": "simple"
     },
     {
@@ -4309,16 +2653,9 @@
       "type": "function",
       "name": "getFreshAiSummaryResult",
       "filePath": "hooks/useAiOrderSummary.ts",
-      "lineRange": [
-        80,
-        92
-      ],
+      "lineRange": [80, 92],
       "summary": "Returns a cached in-flight AI summary request only while it is still within the freshness window.",
-      "tags": [
-        "hook-helper",
-        "ai-processing",
-        "cache"
-      ],
+      "tags": ["hook-helper", "ai-processing", "cache"],
       "complexity": "simple"
     },
     {
@@ -4326,16 +2663,9 @@
       "type": "function",
       "name": "primeAiOrderSummaryRequest",
       "filePath": "hooks/useAiOrderSummary.ts",
-      "lineRange": [
-        99,
-        129
-      ],
+      "lineRange": [99, 129],
       "summary": "Starts and caches an AI summary generation request so screen flows can prefetch or share pending work.",
-      "tags": [
-        "hook-helper",
-        "ai-processing",
-        "cache"
-      ],
+      "tags": ["hook-helper", "ai-processing", "cache"],
       "complexity": "moderate"
     },
     {
@@ -4343,16 +2673,9 @@
       "type": "function",
       "name": "getErrorMessage",
       "filePath": "hooks/useAiOrderSummary.ts",
-      "lineRange": [
-        131,
-        146
-      ],
+      "lineRange": [131, 146],
       "summary": "Normalizes unknown thrown values into user-facing error text for the AI summary hook.",
-      "tags": [
-        "utility",
-        "error-handling",
-        "hooks"
-      ],
+      "tags": ["utility", "error-handling", "hooks"],
       "complexity": "simple"
     },
     {
@@ -4360,16 +2683,9 @@
       "type": "function",
       "name": "useAiOrderSummary",
       "filePath": "hooks/useAiOrderSummary.ts",
-      "lineRange": [
-        148,
-        275
-      ],
+      "lineRange": [148, 275],
       "summary": "Exposes AI summary state, generation, save, reset, and dirty tracking behavior for order summary screens.",
-      "tags": [
-        "hook",
-        "ai-processing",
-        "state-management"
-      ],
+      "tags": ["hook", "ai-processing", "state-management"],
       "complexity": "complex"
     },
     {
@@ -4377,16 +2693,9 @@
       "type": "function",
       "name": "useManualPriceEntry",
       "filePath": "hooks/useManualPriceEntry.ts",
-      "lineRange": [
-        41,
-        231
-      ],
+      "lineRange": [41, 231],
       "summary": "Maintains editable manual price-entry state for matched order items and saves confirmed receipt prices through Convex mutations.",
-      "tags": [
-        "hook",
-        "receipt-pricing",
-        "state-management"
-      ],
+      "tags": ["hook", "receipt-pricing", "state-management"],
       "complexity": "complex"
     },
     {
@@ -4394,16 +2703,9 @@
       "type": "function",
       "name": "useReceiptScanning",
       "filePath": "hooks/useReceiptScanning.ts",
-      "lineRange": [
-        73,
-        512
-      ],
+      "lineRange": [73, 512],
       "summary": "Manages receipt image selection, upload, AI parsing, fuzzy item matching, draft persistence, confirmation, and scan reset behavior.",
-      "tags": [
-        "hook",
-        "receipt-scanning",
-        "state-management"
-      ],
+      "tags": ["hook", "receipt-scanning", "state-management"],
       "complexity": "complex"
     },
     {
@@ -4412,12 +2714,7 @@
       "name": "server.js",
       "filePath": "landing/convex/_generated/server.js",
       "summary": "Generated Convex server helper module that re-exports typed wrappers for public and internal queries, mutations, actions, and HTTP actions in the landing app.",
-      "tags": [
-        "generated-code",
-        "convex",
-        "server-helpers",
-        "api-wrapper"
-      ],
+      "tags": ["generated-code", "convex", "server-helpers", "api-wrapper"],
       "complexity": "moderate",
       "languageNotes": "Generated JavaScript module that aliases Convex generic builders as named exports."
     },
@@ -4441,17 +2738,9 @@
       "type": "service",
       "name": "build",
       "filePath": "landing/Dockerfile",
-      "lineRange": [
-        1,
-        15
-      ],
+      "lineRange": [1, 15],
       "summary": "Node 20 Alpine build stage that installs dependencies, injects the Vite Convex URL build argument, and runs the production build.",
-      "tags": [
-        "containerization",
-        "build-stage",
-        "vite",
-        "node"
-      ],
+      "tags": ["containerization", "build-stage", "vite", "node"],
       "complexity": "simple"
     },
     {
@@ -4459,17 +2748,9 @@
       "type": "service",
       "name": "caddy",
       "filePath": "landing/Dockerfile",
-      "lineRange": [
-        16,
-        19
-      ],
+      "lineRange": [16, 19],
       "summary": "Caddy runtime stage that copies the landing Caddyfile and serves the built static dist directory from the container.",
-      "tags": [
-        "containerization",
-        "runtime-stage",
-        "caddy",
-        "static-site"
-      ],
+      "tags": ["containerization", "runtime-stage", "caddy", "static-site"],
       "complexity": "simple"
     },
     {
@@ -4478,12 +2759,7 @@
       "name": "eslint.config.js",
       "filePath": "landing/eslint.config.js",
       "summary": "Flat ESLint configuration for the landing app, combining JavaScript, TypeScript, React Hooks, and Vite React Refresh rules while ignoring build and generated Convex output.",
-      "tags": [
-        "configuration",
-        "linting",
-        "typescript",
-        "react"
-      ],
+      "tags": ["configuration", "linting", "typescript", "react"],
       "complexity": "simple"
     },
     {
@@ -4492,12 +2768,7 @@
       "name": "index.html",
       "filePath": "landing/index.html",
       "summary": "Landing site HTML shell that sets favicon, viewport and Inter font preconnects, then mounts the React application at the root element.",
-      "tags": [
-        "entry-point",
-        "markup",
-        "vite",
-        "html-shell"
-      ],
+      "tags": ["entry-point", "markup", "vite", "html-shell"],
       "complexity": "simple"
     },
     {
@@ -4520,12 +2791,7 @@
       "name": "railway.toml",
       "filePath": "landing/railway.toml",
       "summary": "Railway deployment configuration that selects Dockerfile builds, checks the root path for health, and restarts failed deployments up to three times.",
-      "tags": [
-        "configuration",
-        "deployment",
-        "railway",
-        "healthcheck"
-      ],
+      "tags": ["configuration", "deployment", "railway", "healthcheck"],
       "complexity": "simple"
     },
     {
@@ -4534,12 +2800,7 @@
       "name": "README.md",
       "filePath": "landing/README.md",
       "summary": "Deployment and local development notes for running the landing site as its own Railway service from the landing directory.",
-      "tags": [
-        "documentation",
-        "deployment",
-        "railway",
-        "getting-started"
-      ],
+      "tags": ["documentation", "deployment", "railway", "getting-started"],
       "complexity": "simple"
     },
     {
@@ -4548,12 +2809,7 @@
       "name": "App.tsx",
       "filePath": "landing/src/App.tsx",
       "summary": "Top-level landing page component that gates the animated splash intro and composes the hero, workflow, feature, payments, and footer sections.",
-      "tags": [
-        "component",
-        "entry-point",
-        "composition",
-        "landing-page"
-      ],
+      "tags": ["component", "entry-point", "composition", "landing-page"],
       "complexity": "simple"
     },
     {
@@ -4561,17 +2817,9 @@
       "type": "function",
       "name": "App",
       "filePath": "landing/src/App.tsx",
-      "lineRange": [
-        13,
-        26
-      ],
+      "lineRange": [13, 26],
       "summary": "Coordinates splash completion state and renders the full landing page section stack with waitlist availability passed into CTA components.",
-      "tags": [
-        "component",
-        "state",
-        "composition",
-        "landing-page"
-      ],
+      "tags": ["component", "state", "composition", "landing-page"],
       "complexity": "simple"
     },
     {
@@ -4580,12 +2828,7 @@
       "name": "Features.tsx",
       "filePath": "landing/src/components/Features.tsx",
       "summary": "Animated feature section for the landing page that presents QR invites, AI receipt scanning, real-time sync, and settlement tracking with alternating layouts.",
-      "tags": [
-        "component",
-        "marketing",
-        "animation",
-        "features"
-      ],
+      "tags": ["component", "marketing", "animation", "features"],
       "complexity": "moderate"
     },
     {
@@ -4593,17 +2836,9 @@
       "type": "function",
       "name": "Features",
       "filePath": "landing/src/components/Features.tsx",
-      "lineRange": [
-        47,
-        131
-      ],
+      "lineRange": [47, 131],
       "summary": "Maps the feature content model into animated Framer Motion rows with icon treatments, responsive layout reversal, and section dividers.",
-      "tags": [
-        "component",
-        "animation",
-        "list-rendering",
-        "features"
-      ],
+      "tags": ["component", "animation", "list-rendering", "features"],
       "complexity": "moderate"
     },
     {
@@ -4612,12 +2847,7 @@
       "name": "Footer.tsx",
       "filePath": "landing/src/components/Footer.tsx",
       "summary": "Landing footer component that combines a final early-access CTA with the waitlist form, brand logo, and copyright bar.",
-      "tags": [
-        "component",
-        "cta",
-        "footer",
-        "waitlist"
-      ],
+      "tags": ["component", "cta", "footer", "waitlist"],
       "complexity": "moderate"
     },
     {
@@ -4625,17 +2855,9 @@
       "type": "function",
       "name": "Footer",
       "filePath": "landing/src/components/Footer.tsx",
-      "lineRange": [
-        10,
-        61
-      ],
+      "lineRange": [10, 61],
       "summary": "Renders the closing CTA section and footer bar, forwarding waitlist availability into the embedded signup form.",
-      "tags": [
-        "component",
-        "cta",
-        "footer",
-        "composition"
-      ],
+      "tags": ["component", "cta", "footer", "composition"],
       "complexity": "moderate"
     },
     {
@@ -4644,12 +2866,7 @@
       "name": "Hero.tsx",
       "filePath": "landing/src/components/Hero.tsx",
       "summary": "Primary landing hero with delayed splash-synchronized motion, app icon branding, waitlist signup, and floating product-state cards.",
-      "tags": [
-        "component",
-        "hero",
-        "animation",
-        "waitlist"
-      ],
+      "tags": ["component", "hero", "animation", "waitlist"],
       "complexity": "moderate"
     },
     {
@@ -4657,17 +2874,9 @@
       "type": "function",
       "name": "Hero",
       "filePath": "landing/src/components/Hero.tsx",
-      "lineRange": [
-        11,
-        161
-      ],
+      "lineRange": [11, 161],
       "summary": "Builds the first-screen marketing hero with staggered Framer Motion reveals, waitlist CTA, and animated cards for joined friends, receipt scanning, and payment splitting.",
-      "tags": [
-        "component",
-        "hero",
-        "animation",
-        "product-preview"
-      ],
+      "tags": ["component", "hero", "animation", "product-preview"],
       "complexity": "moderate"
     },
     {
@@ -4676,12 +2885,7 @@
       "name": "HowItWorks.tsx",
       "filePath": "landing/src/components/HowItWorks.tsx",
       "summary": "Animated process section that explains the three-step group ordering flow from invite creation through item entry and settlement.",
-      "tags": [
-        "component",
-        "marketing",
-        "workflow",
-        "animation"
-      ],
+      "tags": ["component", "marketing", "workflow", "animation"],
       "complexity": "moderate"
     },
     {
@@ -4689,17 +2893,9 @@
       "type": "function",
       "name": "HowItWorks",
       "filePath": "landing/src/components/HowItWorks.tsx",
-      "lineRange": [
-        34,
-        106
-      ],
+      "lineRange": [34, 106],
       "summary": "Maps three workflow steps into animated cards with icons, connector arrows, and responsive explanatory copy.",
-      "tags": [
-        "component",
-        "workflow",
-        "list-rendering",
-        "animation"
-      ],
+      "tags": ["component", "workflow", "list-rendering", "animation"],
       "complexity": "moderate"
     },
     {
@@ -4708,12 +2904,7 @@
       "name": "Logo.tsx",
       "filePath": "landing/src/components/Logo.tsx",
       "summary": "Inline SVG BiteRunr wordmark component used in the landing footer and styled through a forwarded className prop.",
-      "tags": [
-        "component",
-        "branding",
-        "svg",
-        "logo"
-      ],
+      "tags": ["component", "branding", "svg", "logo"],
       "complexity": "moderate"
     },
     {
@@ -4721,17 +2912,9 @@
       "type": "function",
       "name": "Logo",
       "filePath": "landing/src/components/Logo.tsx",
-      "lineRange": [
-        1,
-        54
-      ],
+      "lineRange": [1, 54],
       "summary": "Renders the BiteRunr orange SVG logo while allowing parent components to control dimensions and opacity through className.",
-      "tags": [
-        "component",
-        "branding",
-        "svg",
-        "presentation"
-      ],
+      "tags": ["component", "branding", "svg", "presentation"],
       "complexity": "simple"
     },
     {
@@ -4740,12 +2923,7 @@
       "name": "Payments.tsx",
       "filePath": "landing/src/components/Payments.tsx",
       "summary": "Payments trust section that positions Stripe as the secure processor and highlights encryption, PCI certification, and fraud protection.",
-      "tags": [
-        "component",
-        "payments",
-        "security",
-        "marketing"
-      ],
+      "tags": ["component", "payments", "security", "marketing"],
       "complexity": "moderate"
     },
     {
@@ -4753,17 +2931,9 @@
       "type": "function",
       "name": "Payments",
       "filePath": "landing/src/components/Payments.tsx",
-      "lineRange": [
-        22,
-        101
-      ],
+      "lineRange": [22, 101],
       "summary": "Renders animated payment security cards and a Stripe badge using a small points data model and Framer Motion viewport transitions.",
-      "tags": [
-        "component",
-        "payments",
-        "security",
-        "animation"
-      ],
+      "tags": ["component", "payments", "security", "animation"],
       "complexity": "moderate"
     },
     {
@@ -4772,12 +2942,7 @@
       "name": "SocialProof.tsx",
       "filePath": "landing/src/components/SocialProof.tsx",
       "summary": "Standalone social proof quote section with animated reveal, avatar initials, and a waitlist prompt, though it is not currently imported by the landing app shell.",
-      "tags": [
-        "component",
-        "social-proof",
-        "marketing",
-        "animation"
-      ],
+      "tags": ["component", "social-proof", "marketing", "animation"],
       "complexity": "moderate"
     },
     {
@@ -4785,17 +2950,9 @@
       "type": "function",
       "name": "SocialProof",
       "filePath": "landing/src/components/SocialProof.tsx",
-      "lineRange": [
-        4,
-        56
-      ],
+      "lineRange": [4, 56],
       "summary": "Builds a quote-style social proof card with generated avatar initials and a subtle animated section entrance.",
-      "tags": [
-        "component",
-        "social-proof",
-        "avatar",
-        "animation"
-      ],
+      "tags": ["component", "social-proof", "avatar", "animation"],
       "complexity": "simple"
     },
     {
@@ -4804,12 +2961,7 @@
       "name": "SplashIntro.tsx",
       "filePath": "landing/src/components/SplashIntro.tsx",
       "summary": "Fullscreen splash intro that animates the app icon before fading out and notifying the parent when the opening sequence completes.",
-      "tags": [
-        "component",
-        "splash-screen",
-        "animation",
-        "callback"
-      ],
+      "tags": ["component", "splash-screen", "animation", "callback"],
       "complexity": "simple"
     },
     {
@@ -4817,17 +2969,9 @@
       "type": "function",
       "name": "SplashIntro",
       "filePath": "landing/src/components/SplashIntro.tsx",
-      "lineRange": [
-        7,
-        29
-      ],
+      "lineRange": [7, 29],
       "summary": "Uses Framer Motion to shrink and lift the icon, then fades the overlay and calls the completion callback after animation.",
-      "tags": [
-        "component",
-        "splash-screen",
-        "animation",
-        "callback"
-      ],
+      "tags": ["component", "splash-screen", "animation", "callback"],
       "complexity": "simple"
     },
     {
@@ -4836,12 +2980,7 @@
       "name": "WaitlistForm.tsx",
       "filePath": "landing/src/components/WaitlistForm.tsx",
       "summary": "Convex-backed waitlist form that handles disabled deployments, email submission, local submission persistence, loading, success, duplicate, and error states.",
-      "tags": [
-        "component",
-        "waitlist",
-        "convex",
-        "form"
-      ],
+      "tags": ["component", "waitlist", "convex", "form"],
       "complexity": "moderate"
     },
     {
@@ -4849,10 +2988,7 @@
       "type": "function",
       "name": "WaitlistForm",
       "filePath": "landing/src/components/WaitlistForm.tsx",
-      "lineRange": [
-        17,
-        33
-      ],
+      "lineRange": [17, 33],
       "summary": "Chooses between a disabled waitlist notice and the configured Convex submission form based on deployment configuration.",
       "tags": [
         "component",
@@ -4867,17 +3003,9 @@
       "type": "function",
       "name": "ConfiguredWaitlistForm",
       "filePath": "landing/src/components/WaitlistForm.tsx",
-      "lineRange": [
-        35,
-        116
-      ],
+      "lineRange": [35, 116],
       "summary": "Manages waitlist email state, calls the Convex waitlist action, stores successful submission locally, and animates form-to-success transitions.",
-      "tags": [
-        "component",
-        "form-handler",
-        "convex",
-        "state"
-      ],
+      "tags": ["component", "form-handler", "convex", "state"],
       "complexity": "moderate"
     },
     {
@@ -4886,12 +3014,7 @@
       "name": "index.css",
       "filePath": "landing/src/index.css",
       "summary": "Tailwind CSS entrypoint defining landing-specific theme colors, Inter font family, smooth scrolling, and selection styling.",
-      "tags": [
-        "styles",
-        "tailwind",
-        "theme",
-        "css"
-      ],
+      "tags": ["styles", "tailwind", "theme", "css"],
       "complexity": "simple"
     },
     {
@@ -4900,12 +3023,7 @@
       "name": "main.tsx",
       "filePath": "landing/src/main.tsx",
       "summary": "Landing React entry point that reads the Convex URL environment variable, conditionally wraps the app in ConvexProvider, and renders into the Vite root.",
-      "tags": [
-        "entry-point",
-        "react",
-        "convex",
-        "environment"
-      ],
+      "tags": ["entry-point", "react", "convex", "environment"],
       "complexity": "simple"
     },
     {
@@ -4914,12 +3032,7 @@
       "name": "tsconfig.app.json",
       "filePath": "landing/tsconfig.app.json",
       "summary": "TypeScript compiler configuration for landing browser source files using bundler resolution, React JSX, strict checks, and Vite client types.",
-      "tags": [
-        "configuration",
-        "typescript",
-        "browser",
-        "strict-mode"
-      ],
+      "tags": ["configuration", "typescript", "browser", "strict-mode"],
       "complexity": "simple"
     },
     {
@@ -4942,12 +3055,7 @@
       "name": "tsconfig.node.json",
       "filePath": "landing/tsconfig.node.json",
       "summary": "TypeScript compiler configuration for Node-side landing tooling, scoped to vite.config.ts with Node types and strict bundler-mode checks.",
-      "tags": [
-        "configuration",
-        "typescript",
-        "node",
-        "vite"
-      ],
+      "tags": ["configuration", "typescript", "node", "vite"],
       "complexity": "simple"
     },
     {
@@ -4956,12 +3064,7 @@
       "name": "vite.config.ts",
       "filePath": "landing/vite.config.ts",
       "summary": "Vite configuration for the landing app that enables the React plugin and Tailwind CSS Vite integration.",
-      "tags": [
-        "configuration",
-        "vite",
-        "react",
-        "tailwind"
-      ],
+      "tags": ["configuration", "vite", "react", "tailwind"],
       "complexity": "simple"
     },
     {
@@ -4970,12 +3073,7 @@
       "name": "auth-client.ts",
       "filePath": "lib/auth-client.ts",
       "summary": "Mobile Better Auth client setup that derives the Convex site URL, requires the public Convex environment variable, and wires email OTP, Convex, and Expo SecureStore plugins.",
-      "tags": [
-        "auth",
-        "client",
-        "better-auth",
-        "expo"
-      ],
+      "tags": ["auth", "client", "better-auth", "expo"],
       "complexity": "simple"
     },
     {
@@ -4984,12 +3082,7 @@
       "name": "auth-helpers.ts",
       "filePath": "lib/auth-helpers.ts",
       "summary": "Shared frontend auth helper library for form field state updates, validation, redirect URI construction, user-friendly auth error mapping, and full-name parsing.",
-      "tags": [
-        "auth",
-        "utility",
-        "validation",
-        "error-handling"
-      ],
+      "tags": ["auth", "utility", "validation", "error-handling"],
       "complexity": "complex"
     },
     {
@@ -4997,17 +3090,9 @@
       "type": "function",
       "name": "createFormHandlers",
       "filePath": "lib/auth-helpers.ts",
-      "lineRange": [
-        19,
-        55
-      ],
+      "lineRange": [19, 55],
       "summary": "Creates onChange and onBlur handlers that update field values, mark fields touched, and run validation once interaction has occurred.",
-      "tags": [
-        "utility",
-        "form-handler",
-        "validation",
-        "state"
-      ],
+      "tags": ["utility", "form-handler", "validation", "state"],
       "complexity": "moderate"
     },
     {
@@ -5015,17 +3100,9 @@
       "type": "function",
       "name": "validateField",
       "filePath": "lib/auth-helpers.ts",
-      "lineRange": [
-        57,
-        69
-      ],
+      "lineRange": [57, 69],
       "summary": "Validates required fields, email syntax, and password confirmation matching for the auth form state model.",
-      "tags": [
-        "utility",
-        "validation",
-        "form",
-        "auth"
-      ],
+      "tags": ["utility", "validation", "form", "auth"],
       "complexity": "simple"
     },
     {
@@ -5033,17 +3110,9 @@
       "type": "function",
       "name": "validateEmail",
       "filePath": "lib/auth-helpers.ts",
-      "lineRange": [
-        71,
-        76
-      ],
+      "lineRange": [71, 76],
       "summary": "Checks trimmed email input against a conservative email address regular expression.",
-      "tags": [
-        "utility",
-        "validation",
-        "email",
-        "auth"
-      ],
+      "tags": ["utility", "validation", "email", "auth"],
       "complexity": "simple"
     },
     {
@@ -5051,17 +3120,9 @@
       "type": "function",
       "name": "getAuthErrorMessage",
       "filePath": "lib/auth-helpers.ts",
-      "lineRange": [
-        93,
-        272
-      ],
+      "lineRange": [93, 272],
       "summary": "Normalizes varied auth error shapes into user-safe messages, target fields, and verification hints across sign-in, sign-up, verification, and password reset contexts.",
-      "tags": [
-        "utility",
-        "error-handling",
-        "auth",
-        "security"
-      ],
+      "tags": ["utility", "error-handling", "auth", "security"],
       "complexity": "complex"
     },
     {
@@ -5069,17 +3130,9 @@
       "type": "function",
       "name": "splitName",
       "filePath": "lib/auth-helpers.ts",
-      "lineRange": [
-        274,
-        316
-      ],
+      "lineRange": [274, 316],
       "summary": "Cleans a display name, removes titles and suffixes, filters invalid tokens, and returns title-cased first and last names.",
-      "tags": [
-        "utility",
-        "parsing",
-        "normalization",
-        "profile"
-      ],
+      "tags": ["utility", "parsing", "normalization", "profile"],
       "complexity": "moderate",
       "languageNotes": "Uses Unicode-aware regular expressions for title casing and Latin accented character handling."
     },
@@ -5089,12 +3142,7 @@
       "name": "br-theme.ts",
       "filePath": "lib/br-theme.ts",
       "summary": "Defines the newer BiteRunr design-system palette, radius, font, and shadow tokens used by BR components. It also provides deterministic avatar foreground/background color selection.",
-      "tags": [
-        "design-system",
-        "theme",
-        "utility",
-        "styling"
-      ],
+      "tags": ["design-system", "theme", "utility", "styling"],
       "complexity": "moderate",
       "languageNotes": "Uses const assertions so token objects preserve literal TypeScript value types."
     },
@@ -5104,12 +3152,7 @@
       "name": "constants.ts",
       "filePath": "lib/constants.ts",
       "summary": "Builds React Navigation light and dark theme values from generated HSL CSS token data. This keeps navigation colors aligned with NativeWind CSS variables.",
-      "tags": [
-        "theme",
-        "navigation",
-        "configuration",
-        "styling"
-      ],
+      "tags": ["theme", "navigation", "configuration", "styling"],
       "complexity": "simple"
     },
     {
@@ -5118,12 +3161,7 @@
       "name": "convex-auth-context.tsx",
       "filePath": "lib/convex-auth-context.tsx",
       "summary": "Provides the app-level auth context around Better Auth session state, exposing readiness, login status, sign-out, and refresh helpers. It intentionally marks initial auth loading as ready only once to avoid returning users to loading UI during later refetches.",
-      "tags": [
-        "auth",
-        "context",
-        "provider",
-        "react-hook"
-      ],
+      "tags": ["auth", "context", "provider", "react-hook"],
       "complexity": "moderate"
     },
     {
@@ -5132,12 +3170,7 @@
       "name": "fonts.ts",
       "filePath": "lib/fonts.ts",
       "summary": "Exports font-family names and color constants for older or shared UI code. The tokens mirror the BiteRunr orange-forward visual system used by the BR components.",
-      "tags": [
-        "design-system",
-        "fonts",
-        "theme",
-        "constants"
-      ],
+      "tags": ["design-system", "fonts", "theme", "constants"],
       "complexity": "simple"
     },
     {
@@ -5146,12 +3179,7 @@
       "name": "fuzzy-match.ts",
       "filePath": "lib/fuzzy-match.ts",
       "summary": "Implements fuzzy string matching for receipt lines and order items using Levenshtein similarity, word-overlap boosts, and one-to-one assignment. It supports receipt scanning flows that need to map parsed receipt items back to participant order lines.",
-      "tags": [
-        "utility",
-        "matching",
-        "receipt-scanning",
-        "algorithm"
-      ],
+      "tags": ["utility", "matching", "receipt-scanning", "algorithm"],
       "complexity": "moderate"
     },
     {
@@ -5160,12 +3188,7 @@
       "name": "use-order-api.ts",
       "filePath": "lib/hooks/use-order-api.ts",
       "summary": "Wraps Convex friend listing and order creation APIs in React hooks with UI-friendly shapes. The create-order hook tracks pending mutation state and casts selected friend IDs to Convex user IDs.",
-      "tags": [
-        "hook",
-        "convex",
-        "orders",
-        "api-client"
-      ],
+      "tags": ["hook", "convex", "orders", "api-client"],
       "complexity": "simple"
     },
     {
@@ -5174,12 +3197,7 @@
       "name": "use-push-notifications.ts",
       "filePath": "lib/hooks/use-push-notifications.ts",
       "summary": "Coordinates Expo push notification permission prompts, token registration with Convex, foreground listeners, tap routing, and logout cleanup. It handles returning users by silently reusing an already granted OS notification permission.",
-      "tags": [
-        "hook",
-        "push-notifications",
-        "convex",
-        "device-integration"
-      ],
+      "tags": ["hook", "push-notifications", "convex", "device-integration"],
       "complexity": "complex"
     },
     {
@@ -5188,12 +3206,7 @@
       "name": "order-item-grouping.ts",
       "filePath": "lib/order-item-grouping.ts",
       "summary": "Groups order items by participant and normalized item text, detects ambiguous text clusters, and materializes AI-resolved groupings. This powers order summaries and receipt reconciliation where duplicate or similar item names need stable display grouping.",
-      "tags": [
-        "utility",
-        "orders",
-        "grouping",
-        "receipt-scanning"
-      ],
+      "tags": ["utility", "orders", "grouping", "receipt-scanning"],
       "complexity": "complex",
       "languageNotes": "Heavy use of generic constraints lets the grouping helpers preserve caller-specific item shapes while requiring only the fields they operate on."
     },
@@ -5203,12 +3216,7 @@
       "name": "types.ts",
       "filePath": "lib/types.ts",
       "summary": "Defines shared TypeScript domain types for BiteRunr entities and UI-facing data structures. It centralizes order, user, location, item, and settlement shapes used across the mobile app.",
-      "tags": [
-        "type-definition",
-        "domain-model",
-        "orders",
-        "settlements"
-      ],
+      "tags": ["type-definition", "domain-model", "orders", "settlements"],
       "complexity": "complex"
     },
     {
@@ -5217,12 +3225,7 @@
       "name": "use-color-scheme.ts",
       "filePath": "lib/use-color-scheme.ts",
       "summary": "Wraps NativeWind color-scheme state with a default dark-mode fallback and a convenience boolean. Screens can use it to read, set, or toggle the current theme mode.",
-      "tags": [
-        "hook",
-        "theme",
-        "nativewind",
-        "utility"
-      ],
+      "tags": ["hook", "theme", "nativewind", "utility"],
       "complexity": "simple"
     },
     {
@@ -5231,12 +3234,7 @@
       "name": "metro.config.js",
       "filePath": "metro.config.js",
       "summary": "Configures Expo Metro with NativeWind CSS input and enables package exports resolution. This supports Tailwind-style styling and modern package entry resolution in the React Native app.",
-      "tags": [
-        "configuration",
-        "metro",
-        "nativewind",
-        "build-system"
-      ],
+      "tags": ["configuration", "metro", "nativewind", "build-system"],
       "complexity": "simple"
     },
     {
@@ -5245,12 +3243,7 @@
       "name": "nativewind-env.d.ts",
       "filePath": "nativewind-env.d.ts",
       "summary": "Declares NativeWind TypeScript ambient types for className support in React Native components. The file is included by tsconfig so editor and compiler tooling understand NativeWind extensions.",
-      "tags": [
-        "type-definition",
-        "nativewind",
-        "typescript",
-        "styling"
-      ],
+      "tags": ["type-definition", "nativewind", "typescript", "styling"],
       "complexity": "simple"
     },
     {
@@ -5259,12 +3252,7 @@
       "name": "package.json",
       "filePath": "package.json",
       "summary": "Defines the Expo app entry point, development scripts, Convex/EAS commands, lint and formatting commands, and the mobile app dependency graph. It pins React Native, Expo, Better Auth, Convex, Stripe, NativeWind, and related tooling versions.",
-      "tags": [
-        "configuration",
-        "dependencies",
-        "scripts",
-        "build-system"
-      ],
+      "tags": ["configuration", "dependencies", "scripts", "build-system"],
       "complexity": "moderate"
     },
     {
@@ -5273,12 +3261,7 @@
       "name": "prettier.config.cjs",
       "filePath": "prettier.config.cjs",
       "summary": "Sets repository formatting preferences for Prettier, including width, semicolons, double quotes, trailing commas, and LF line endings. It is used by the npm formatting scripts.",
-      "tags": [
-        "configuration",
-        "formatting",
-        "prettier",
-        "developer-tooling"
-      ],
+      "tags": ["configuration", "formatting", "prettier", "developer-tooling"],
       "complexity": "simple"
     },
     {
@@ -5287,12 +3270,7 @@
       "name": "railway.toml",
       "filePath": "railway.toml",
       "summary": "Configures Railway deployment to build from the admin Dockerfile and use a root health check with restart-on-failure behavior. This belongs to the sibling admin deployment rather than the mobile Expo app runtime.",
-      "tags": [
-        "configuration",
-        "deployment",
-        "railway",
-        "admin-app"
-      ],
+      "tags": ["configuration", "deployment", "railway", "admin-app"],
       "complexity": "simple"
     },
     {
@@ -5301,12 +3279,7 @@
       "name": "README.html",
       "filePath": "README.html",
       "summary": "HTML version of the project README that presents the BiteRunr overview, setup steps, feature list, tech stack, scripts, and architecture notes. It uses plain searchable HTML with referenced SVG panels for the visual README presentation.",
-      "tags": [
-        "documentation",
-        "markup",
-        "overview",
-        "onboarding"
-      ],
+      "tags": ["documentation", "markup", "overview", "onboarding"],
       "complexity": "complex"
     },
     {
@@ -5315,12 +3288,7 @@
       "name": "README.md",
       "filePath": "README.md",
       "summary": "Primary project documentation covering BiteRunr's purpose, quick start, environment setup, Expo and Convex commands, features, tech stack, structure, and architecture notes. It emphasizes the mobile app while calling out the sibling admin and landing apps.",
-      "tags": [
-        "documentation",
-        "entry-point",
-        "onboarding",
-        "architecture"
-      ],
+      "tags": ["documentation", "entry-point", "onboarding", "architecture"],
       "complexity": "moderate"
     },
     {
@@ -5329,12 +3297,7 @@
       "name": "sync-style-tokens.cjs",
       "filePath": "scripts/sync-style-tokens.cjs",
       "summary": "Parses HSL CSS custom properties from global.css and writes the generated tokens.json file. The script keeps JavaScript theme consumers synchronized with NativeWind and Tailwind CSS variables before Expo commands run.",
-      "tags": [
-        "script",
-        "theme",
-        "codegen",
-        "styling"
-      ],
+      "tags": ["script", "theme", "codegen", "styling"],
       "complexity": "simple"
     },
     {
@@ -5343,12 +3306,7 @@
       "name": "tailwind.config.js",
       "filePath": "tailwind.config.js",
       "summary": "Configures NativeWind/Tailwind content scanning, dark mode, CSS-variable-backed colors, border radius tokens, and hairline borders. It maps shadcn-style HSL variables into utility classes for app and component files.",
-      "tags": [
-        "configuration",
-        "tailwind",
-        "nativewind",
-        "styling"
-      ],
+      "tags": ["configuration", "tailwind", "nativewind", "styling"],
       "complexity": "moderate"
     },
     {
@@ -5357,12 +3315,7 @@
       "name": "tokens.json",
       "filePath": "tokens.json",
       "summary": "Generated theme-token snapshot containing light and dark CSS variable values from global.css. JavaScript code imports it to build runtime navigation colors without parsing CSS.",
-      "tags": [
-        "configuration",
-        "theme",
-        "generated",
-        "styling"
-      ],
+      "tags": ["configuration", "theme", "generated", "styling"],
       "complexity": "simple"
     },
     {
@@ -5371,12 +3324,7 @@
       "name": "tsconfig.json",
       "filePath": "tsconfig.json",
       "summary": "TypeScript configuration extending Expo defaults, enabling strict checking, defining the @/* path alias, and including Expo and NativeWind ambient types. It excludes the sibling admin app from the mobile TypeScript project.",
-      "tags": [
-        "configuration",
-        "typescript",
-        "path-alias",
-        "build-system"
-      ],
+      "tags": ["configuration", "typescript", "path-alias", "build-system"],
       "complexity": "simple"
     },
     {
@@ -5384,17 +3332,9 @@
       "type": "function",
       "name": "avatarColors",
       "filePath": "lib/br-theme.ts",
-      "lineRange": [
-        83,
-        87
-      ],
+      "lineRange": [83, 87],
       "summary": "Chooses a deterministic avatar background and foreground color pair from the BR palette based on the first character of a display name.",
-      "tags": [
-        "utility",
-        "avatar",
-        "theme",
-        "color"
-      ],
+      "tags": ["utility", "avatar", "theme", "color"],
       "complexity": "simple"
     },
     {
@@ -5402,17 +3342,9 @@
       "type": "function",
       "name": "useAuth",
       "filePath": "lib/convex-auth-context.tsx",
-      "lineRange": [
-        43,
-        45
-      ],
+      "lineRange": [43, 45],
       "summary": "Returns the current AuthContext value for components that need session, readiness, login, or auth action state.",
-      "tags": [
-        "hook",
-        "auth",
-        "context",
-        "utility"
-      ],
+      "tags": ["hook", "auth", "context", "utility"],
       "complexity": "simple"
     },
     {
@@ -5420,17 +3352,9 @@
       "type": "function",
       "name": "AuthProvider",
       "filePath": "lib/convex-auth-context.tsx",
-      "lineRange": [
-        51,
-        110
-      ],
+      "lineRange": [51, 110],
       "summary": "Wraps children with normalized Better Auth session state and stable auth actions. It tracks one-time readiness separately from later session refetches.",
-      "tags": [
-        "provider",
-        "auth",
-        "context",
-        "react-state"
-      ],
+      "tags": ["provider", "auth", "context", "react-state"],
       "complexity": "moderate"
     },
     {
@@ -5438,17 +3362,9 @@
       "type": "function",
       "name": "levenshteinDistance",
       "filePath": "lib/fuzzy-match.ts",
-      "lineRange": [
-        4,
-        33
-      ],
+      "lineRange": [4, 33],
       "summary": "Computes edit distance between two strings using a dynamic programming matrix.",
-      "tags": [
-        "algorithm",
-        "string-matching",
-        "utility",
-        "distance"
-      ],
+      "tags": ["algorithm", "string-matching", "utility", "distance"],
       "complexity": "moderate"
     },
     {
@@ -5456,17 +3372,9 @@
       "type": "function",
       "name": "calculateSimilarity",
       "filePath": "lib/fuzzy-match.ts",
-      "lineRange": [
-        38,
-        50
-      ],
+      "lineRange": [38, 50],
       "summary": "Normalizes two strings and converts their Levenshtein distance into a zero-to-one similarity score.",
-      "tags": [
-        "algorithm",
-        "string-matching",
-        "utility",
-        "receipt-scanning"
-      ],
+      "tags": ["algorithm", "string-matching", "utility", "receipt-scanning"],
       "complexity": "simple"
     },
     {
@@ -5474,17 +3382,9 @@
       "type": "function",
       "name": "containsSubstantialMatch",
       "filePath": "lib/fuzzy-match.ts",
-      "lineRange": [
-        55,
-        72
-      ],
+      "lineRange": [55, 72],
       "summary": "Checks whether meaningful words in one item name overlap or contain meaningful words from another item name.",
-      "tags": [
-        "algorithm",
-        "string-matching",
-        "word-overlap",
-        "utility"
-      ],
+      "tags": ["algorithm", "string-matching", "word-overlap", "utility"],
       "complexity": "simple"
     },
     {
@@ -5492,17 +3392,9 @@
       "type": "function",
       "name": "findBestMatch",
       "filePath": "lib/fuzzy-match.ts",
-      "lineRange": [
-        88,
-        122
-      ],
+      "lineRange": [88, 122],
       "summary": "Scores receipt item text against candidate order items, applies a word-overlap boost, and returns the highest-confidence match above threshold.",
-      "tags": [
-        "matching",
-        "receipt-scanning",
-        "algorithm",
-        "confidence-score"
-      ],
+      "tags": ["matching", "receipt-scanning", "algorithm", "confidence-score"],
       "complexity": "moderate"
     },
     {
@@ -5510,17 +3402,9 @@
       "type": "function",
       "name": "autoMatchReceiptItems",
       "filePath": "lib/fuzzy-match.ts",
-      "lineRange": [
-        127,
-        190
-      ],
+      "lineRange": [127, 190],
       "summary": "Maps receipt items to unmatched order items in a one-to-one pass and returns match metadata with user names and confidence scores.",
-      "tags": [
-        "matching",
-        "receipt-scanning",
-        "orders",
-        "assignment"
-      ],
+      "tags": ["matching", "receipt-scanning", "orders", "assignment"],
       "complexity": "moderate"
     },
     {
@@ -5528,17 +3412,9 @@
       "type": "function",
       "name": "useFriends",
       "filePath": "lib/hooks/use-order-api.ts",
-      "lineRange": [
-        6,
-        18
-      ],
+      "lineRange": [6, 18],
       "summary": "Reads the Convex friends list and adapts friend fields to the snake_case shape expected by older UI code.",
-      "tags": [
-        "hook",
-        "convex",
-        "friends",
-        "adapter"
-      ],
+      "tags": ["hook", "convex", "friends", "adapter"],
       "complexity": "simple"
     },
     {
@@ -5546,17 +3422,9 @@
       "type": "function",
       "name": "useCreateOrder",
       "filePath": "lib/hooks/use-order-api.ts",
-      "lineRange": [
-        20,
-        45
-      ],
+      "lineRange": [20, 45],
       "summary": "Wraps the Convex order creation mutation with pending state and converts UI order payloads into backend mutation arguments.",
-      "tags": [
-        "hook",
-        "convex",
-        "orders",
-        "mutation"
-      ],
+      "tags": ["hook", "convex", "orders", "mutation"],
       "complexity": "simple"
     },
     {
@@ -5564,17 +3432,9 @@
       "type": "function",
       "name": "usePushNotifications",
       "filePath": "lib/hooks/use-push-notifications.ts",
-      "lineRange": [
-        25,
-        175
-      ],
+      "lineRange": [25, 175],
       "summary": "Manages push-token lifecycle for logged-in users, including permission modal state, silent re-registration, listener setup, and logout cleanup.",
-      "tags": [
-        "hook",
-        "push-notifications",
-        "auth",
-        "device-integration"
-      ],
+      "tags": ["hook", "push-notifications", "auth", "device-integration"],
       "complexity": "complex"
     },
     {
@@ -5582,10 +3442,7 @@
       "type": "function",
       "name": "registerForPushNotificationsAsync",
       "filePath": "lib/hooks/use-push-notifications.ts",
-      "lineRange": [
-        177,
-        215
-      ],
+      "lineRange": [177, 215],
       "summary": "Requests notification permission on a physical device, fetches an Expo push token, and configures the Android default notification channel.",
       "tags": [
         "push-notifications",
@@ -5600,17 +3457,9 @@
       "type": "function",
       "name": "getExistingPushToken",
       "filePath": "lib/hooks/use-push-notifications.ts",
-      "lineRange": [
-        218,
-        233
-      ],
+      "lineRange": [218, 233],
       "summary": "Retrieves an Expo push token only when device notification permission has already been granted.",
-      "tags": [
-        "push-notifications",
-        "permissions",
-        "expo",
-        "utility"
-      ],
+      "tags": ["push-notifications", "permissions", "expo", "utility"],
       "complexity": "simple"
     },
     {
@@ -5618,17 +3467,9 @@
       "type": "function",
       "name": "handleNotificationTap",
       "filePath": "lib/hooks/use-push-notifications.ts",
-      "lineRange": [
-        235,
-        244
-      ],
+      "lineRange": [235, 244],
       "summary": "Routes tapped notifications to friend requests, order detail screens, or settlement screens based on notification payload type.",
-      "tags": [
-        "routing",
-        "push-notifications",
-        "event-handler",
-        "expo-router"
-      ],
+      "tags": ["routing", "push-notifications", "event-handler", "expo-router"],
       "complexity": "simple"
     },
     {
@@ -5636,17 +3477,9 @@
       "type": "function",
       "name": "normalizeOrderItemText",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        77,
-        91
-      ],
+      "lineRange": [77, 91],
       "summary": "Normalizes free-form item text for grouping by lowercasing, expanding common modifiers, standardizing size and inch tokens, and stripping punctuation.",
-      "tags": [
-        "normalization",
-        "orders",
-        "grouping",
-        "text-processing"
-      ],
+      "tags": ["normalization", "orders", "grouping", "text-processing"],
       "complexity": "simple"
     },
     {
@@ -5654,17 +3487,9 @@
       "type": "function",
       "name": "tokenSetsOverlap",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        110,
-        124
-      ],
+      "lineRange": [110, 124],
       "summary": "Measures whether two normalized token sets overlap enough to be treated as potentially related item names.",
-      "tags": [
-        "matching",
-        "tokenization",
-        "grouping",
-        "utility"
-      ],
+      "tags": ["matching", "tokenization", "grouping", "utility"],
       "complexity": "simple"
     },
     {
@@ -5672,17 +3497,9 @@
       "type": "function",
       "name": "tokenSetsMatch",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        126,
-        138
-      ],
+      "lineRange": [126, 138],
       "summary": "Checks whether two token sets contain exactly the same normalized tokens.",
-      "tags": [
-        "matching",
-        "tokenization",
-        "grouping",
-        "utility"
-      ],
+      "tags": ["matching", "tokenization", "grouping", "utility"],
       "complexity": "simple"
     },
     {
@@ -5690,17 +3507,9 @@
       "type": "function",
       "name": "chooseDisplayName",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        148,
-        170
-      ],
+      "lineRange": [148, 170],
       "summary": "Chooses the most representative display name for grouped item text by frequency, length, and lexical fallback.",
-      "tags": [
-        "display-name",
-        "grouping",
-        "orders",
-        "sorting"
-      ],
+      "tags": ["display-name", "grouping", "orders", "sorting"],
       "complexity": "simple"
     },
     {
@@ -5708,17 +3517,9 @@
       "type": "function",
       "name": "buildParticipantGroups",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        178,
-        245
-      ],
+      "lineRange": [178, 245],
       "summary": "Groups order items by participant ID while preserving input order and disambiguating duplicate participant display names.",
-      "tags": [
-        "grouping",
-        "orders",
-        "participants",
-        "display-name"
-      ],
+      "tags": ["grouping", "orders", "participants", "display-name"],
       "complexity": "moderate"
     },
     {
@@ -5726,17 +3527,9 @@
       "type": "function",
       "name": "buildTextGroup",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        247,
-        287
-      ],
+      "lineRange": [247, 287],
       "summary": "Builds a stable order-item text group with sorted items, display name, people count, sort order, and optional subtotal.",
-      "tags": [
-        "grouping",
-        "orders",
-        "subtotal",
-        "sorting"
-      ],
+      "tags": ["grouping", "orders", "subtotal", "sorting"],
       "complexity": "moderate"
     },
     {
@@ -5744,17 +3537,9 @@
       "type": "function",
       "name": "sortTextGroups",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        289,
-        305
-      ],
+      "lineRange": [289, 305],
       "summary": "Sorts item text groups by group size, original order, and display name for stable UI presentation.",
-      "tags": [
-        "sorting",
-        "grouping",
-        "orders",
-        "ui-data"
-      ],
+      "tags": ["sorting", "grouping", "orders", "ui-data"],
       "complexity": "simple"
     },
     {
@@ -5762,17 +3547,9 @@
       "type": "function",
       "name": "buildAmbiguousClusters",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        307,
-        426
-      ],
+      "lineRange": [307, 426],
       "summary": "Builds connected clusters of similar-but-not-identical item text groups using numeric-token checks, token overlap, and fuzzy similarity. These clusters identify groups that may need AI or user resolution.",
-      "tags": [
-        "matching",
-        "grouping",
-        "receipt-scanning",
-        "algorithm"
-      ],
+      "tags": ["matching", "grouping", "receipt-scanning", "algorithm"],
       "complexity": "complex"
     },
     {
@@ -5780,17 +3557,9 @@
       "type": "function",
       "name": "buildOrderItemTextGroupingSignature",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        428,
-        435
-      ],
+      "lineRange": [428, 435],
       "summary": "Creates a stable signature for an order item collection by sorting IDs and pairing them with display-normalized text.",
-      "tags": [
-        "signature",
-        "grouping",
-        "orders",
-        "cache-key"
-      ],
+      "tags": ["signature", "grouping", "orders", "cache-key"],
       "complexity": "simple"
     },
     {
@@ -5798,17 +3567,9 @@
       "type": "function",
       "name": "buildOrderSummaryTextSignature",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        437,
-        453
-      ],
+      "lineRange": [437, 453],
       "summary": "Creates a stable signature across order locations by combining location IDs with per-location item text signatures.",
-      "tags": [
-        "signature",
-        "orders",
-        "locations",
-        "cache-key"
-      ],
+      "tags": ["signature", "orders", "locations", "cache-key"],
       "complexity": "simple"
     },
     {
@@ -5816,17 +3577,9 @@
       "type": "function",
       "name": "analyzeOrderItemTextGroups",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        455,
-        485
-      ],
+      "lineRange": [455, 485],
       "summary": "Normalizes and groups order items by text, then returns the grouping signature, sorted groups, and ambiguous clusters.",
-      "tags": [
-        "analysis",
-        "grouping",
-        "orders",
-        "receipt-scanning"
-      ],
+      "tags": ["analysis", "grouping", "orders", "receipt-scanning"],
       "complexity": "moderate"
     },
     {
@@ -5834,17 +3587,9 @@
       "type": "function",
       "name": "groupOrderItemsByParticipant",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        487,
-        491
-      ],
+      "lineRange": [487, 491],
       "summary": "Public helper that groups order items into participant buckets with stable display names.",
-      "tags": [
-        "grouping",
-        "orders",
-        "participants",
-        "utility"
-      ],
+      "tags": ["grouping", "orders", "participants", "utility"],
       "complexity": "simple"
     },
     {
@@ -5852,17 +3597,9 @@
       "type": "function",
       "name": "groupOrderItemsByItemText",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        493,
-        497
-      ],
+      "lineRange": [493, 497],
       "summary": "Public helper that returns only the sorted item-text groups from the full grouping analysis.",
-      "tags": [
-        "grouping",
-        "orders",
-        "item-text",
-        "utility"
-      ],
+      "tags": ["grouping", "orders", "item-text", "utility"],
       "complexity": "simple"
     },
     {
@@ -5870,17 +3607,9 @@
       "type": "function",
       "name": "materializeResolvedOrderItemTextGroups",
       "filePath": "lib/order-item-grouping.ts",
-      "lineRange": [
-        499,
-        550
-      ],
+      "lineRange": [499, 550],
       "summary": "Builds final text groups from AI- or user-resolved group definitions, then appends unresolved remaining items through deterministic grouping.",
-      "tags": [
-        "grouping",
-        "orders",
-        "ai-resolution",
-        "materialization"
-      ],
+      "tags": ["grouping", "orders", "ai-resolution", "materialization"],
       "complexity": "moderate"
     },
     {
@@ -5888,17 +3617,9 @@
       "type": "function",
       "name": "useColorScheme",
       "filePath": "lib/use-color-scheme.ts",
-      "lineRange": [
-        3,
-        12
-      ],
+      "lineRange": [3, 12],
       "summary": "Returns NativeWind color-scheme controls with a dark default and a convenience boolean for dark-mode checks.",
-      "tags": [
-        "hook",
-        "theme",
-        "nativewind",
-        "utility"
-      ],
+      "tags": ["hook", "theme", "nativewind", "utility"],
       "complexity": "simple"
     },
     {
@@ -5906,17 +3627,9 @@
       "type": "function",
       "name": "parseVarsFromCss",
       "filePath": "scripts/sync-style-tokens.cjs",
-      "lineRange": [
-        5,
-        31
-      ],
+      "lineRange": [5, 31],
       "summary": "Extracts light and dark CSS custom properties from global.css blocks and returns them as plain objects for token generation.",
-      "tags": [
-        "parser",
-        "theme",
-        "codegen",
-        "css-variables"
-      ],
+      "tags": ["parser", "theme", "codegen", "css-variables"],
       "complexity": "simple"
     }
   ],
@@ -10922,9 +8635,7 @@
       "order": 1,
       "title": "Project Overview",
       "description": "Start with the README to understand BiteRunr as a mobile-first app for coordinating group food runs, receipt scanning, and per-line settlement. It also frames the repository boundary: the Expo app and Convex backend are primary, while admin and landing are sibling Vite apps with their own deployments.",
-      "nodeIds": [
-        "document:README.md"
-      ]
+      "nodeIds": ["document:README.md"]
     },
     {
       "order": 2,
