@@ -6,7 +6,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   type TextInput,
   View,
@@ -112,40 +111,36 @@ export default function EmailSignInScreen() {
   }, [form, refreshSession]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: BR.paper }}>
+    <View className="flex-1 bg-[#FFF7EE]">
       <StatusBar style="dark" />
-      <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
+      <SafeAreaView className="flex-1" edges={["top", "bottom"]}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
+          className="flex-1"
         >
           <ScrollView
-            contentContainerStyle={styles.scroll}
+            contentContainerClassName="px-[22px] pt-2 pb-8"
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <Pressable onPress={() => router.back()} style={styles.backBtn}>
+            <Pressable
+              onPress={() => router.back()}
+              className="w-[38px] h-[38px] rounded-full bg-[#FCEFE0] items-center justify-center"
+            >
               <Icon name="ChevronLeft" size={20} color={BR.ink} />
             </Pressable>
 
-            <View style={{ marginTop: 18 }}>
+            <View className="mt-[18px]">
               <BrText variant="eyebrow">Sign in with email</BrText>
-              <BrText variant="h1" style={{ marginTop: 8 }}>
+              <BrText variant="h1" className="mt-2">
                 Welcome back.
               </BrText>
-              <BrText
-                style={{
-                  color: BR.ink2,
-                  marginTop: 8,
-                  fontSize: 14,
-                  lineHeight: 21,
-                }}
-              >
+              <BrText className="mt-2 text-sm leading-[21px] text-[#4A3C32]">
                 Pick up where the squad left off.
               </BrText>
             </View>
 
-            <View style={{ marginTop: 24, gap: 12 }}>
+            <View className="mt-6 gap-3">
               <BrInput
                 value={form.email?.value}
                 placeholder="Email"
@@ -172,7 +167,7 @@ export default function EmailSignInScreen() {
               />
             </View>
 
-            <View style={{ marginTop: 18 }}>
+            <View className="mt-[18px]">
               <Pressable
                 onPress={handleEmailSignIn}
                 disabled={loading}
@@ -192,10 +187,10 @@ export default function EmailSignInScreen() {
               </Pressable>
             </View>
 
-            <View style={styles.signupRow}>
-              <BrText style={{ color: BR.ink3 }}>No account?</BrText>
+            <View className="flex-row gap-2 justify-center items-center mt-[18px]">
+              <BrText className="text-[#8A7A6E]">No account?</BrText>
               <Pressable onPress={() => router.push("/(auth)/sign-up")}>
-                <BrText weight="semibold" color={BR.orangeDeep}>
+                <BrText weight="semibold" className="text-[#E8551A]">
                   Sign up
                 </BrText>
               </Pressable>
@@ -206,26 +201,3 @@ export default function EmailSignInScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  scroll: {
-    paddingHorizontal: 22,
-    paddingTop: 8,
-    paddingBottom: 32,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  signupRow: {
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 18,
-  },
-});

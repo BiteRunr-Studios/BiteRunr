@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { View, Text, Pressable, StyleSheet, Dimensions } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
@@ -16,21 +16,21 @@ import { router } from "expo-router";
 import { BrText, BrSticker } from "@/components/br";
 import { OAuthButton } from "@/components/auth/oauth-button";
 import Icon from "@/components/common/icon";
-import { BR, BR_FONT } from "@/lib/br-theme";
+import { BR } from "@/lib/br-theme";
 import { openURL } from "expo-linking";
 
-const { width: SCREEN_W } = Dimensions.get("window");
+const RING_SIZES = [320, 440, 560] as const;
 
 function FloatCard({
   delay = 0,
   rotate,
   children,
-  style,
+  className,
 }: {
   delay?: number;
   rotate: number;
   children: React.ReactNode;
-  style?: object;
+  className?: string;
 }) {
   const ty = useSharedValue(0);
   useEffect(() => {
@@ -47,24 +47,22 @@ function FloatCard({
     transform: [{ translateY: ty.value }, { rotate: `${rotate}deg` }],
   }));
   return (
-    <Animated.View
-      entering={FadeInUp.duration(600).delay(delay)}
-      style={[animStyle, style]}
-    >
-      {children}
-    </Animated.View>
+    <View className={className}>
+      <Animated.View
+        entering={FadeInUp.duration(600).delay(delay)}
+        style={animStyle}
+      >
+        {children}
+      </Animated.View>
+    </View>
   );
 }
 
 function Twinkle({
-  left,
-  top,
-  size,
+  className,
   delay = 0,
 }: {
-  left: number | string;
-  top: number | string;
-  size: number;
+  className?: string;
   delay?: number;
 }) {
   const opacity = useSharedValue(0.3);
@@ -88,122 +86,114 @@ function Twinkle({
   }));
   return (
     <Animated.View
-      style={[
-        {
-          position: "absolute",
-          left: left as number,
-          top: top as number,
-          width: size,
-          height: size,
-          borderRadius: 999,
-          backgroundColor: "rgba(255,255,255,0.6)",
-        },
-        animStyle,
-      ]}
+      className={`absolute rounded-full bg-white/60 ${className ?? ""}`}
+      style={animStyle}
     />
   );
 }
 
 function HeroBackdrop() {
   return (
-    <View style={styles.hero} pointerEvents="none">
-      {/* Huge italic R watermark */}
-      <Text style={styles.watermark}>R</Text>
+    <View
+      className="absolute inset-0 overflow-hidden bg-[#E8551A]"
+      pointerEvents="none"
+    >
+      <Text className="absolute -left-10 -top-[60px] font-['BricolageGrotesque_800ExtraBold'] italic text-[520px] leading-[520px] text-white/10 tracking-[-42px]">
+        R
+      </Text>
 
-      {/* Concentric rings */}
-      {[0, 1, 2].map((i) => (
+      {RING_SIZES.map((size) => (
         <View
-          key={i}
-          style={[
-            styles.ring,
-            {
-              width: 320 + i * 120,
-              height: 320 + i * 120,
-              left: SCREEN_W / 2 - (320 + i * 120) / 2,
-              top: "62%",
-              marginTop: -(320 + i * 120) / 2,
-            },
-          ]}
+          key={size}
+          className="absolute top-[62%] left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-[1.5px] border-white/[0.12]"
+          style={{ width: size, height: size }}
         />
       ))}
 
-      <Twinkle left="12%" top="70%" size={6} />
-      <Twinkle left="85%" top="55%" size={8} delay={3} />
-      <Twinkle left="75%" top="78%" size={5} delay={6} />
-      <Twinkle left="20%" top="45%" size={5} delay={9} />
-      <Twinkle left="55%" top="82%" size={7} delay={12} />
+      <Twinkle className="left-[12%] top-[70%] h-1.5 w-1.5" />
+      <Twinkle className="left-[85%] top-[55%] h-2 w-2" delay={3} />
+      <Twinkle className="left-[75%] top-[78%] h-[5px] w-[5px]" delay={6} />
+      <Twinkle className="left-[20%] top-[45%] h-[5px] w-[5px]" delay={9} />
+      <Twinkle className="left-[55%] top-[82%] h-[7px] w-[7px]" delay={12} />
 
-      {/* Floating receipt card */}
       <FloatCard
         delay={150}
         rotate={-7}
-        style={{ position: "absolute", top: 120, left: 24 }}
+        className="absolute top-[120px] left-6"
       >
-        <View style={styles.receiptCard}>
-          <Text style={styles.receiptBrand}>BiteRunr</Text>
-          <View style={styles.receiptDash} />
-          <View style={styles.receiptRow}>
-            <Text style={styles.receiptText}>Big Mac</Text>
-            <Text style={styles.receiptText}>9.99</Text>
+        <View className="w-40 rounded-[18px] bg-[#FFFCF6] p-3.5 shadow-2xl">
+          <Text className="font-['BricolageGrotesque_700Bold'] text-sm font-bold italic text-[#E8551A]">
+            BiteRunr
+          </Text>
+          <View className="my-1.5 border-t border-dashed border-black/20" />
+          <View className="flex-row justify-between">
+            <Text className="font-['JetBrainsMono_500Medium'] text-[10px] text-[#4A3C32]">
+              Big Mac
+            </Text>
+            <Text className="font-['JetBrainsMono_500Medium'] text-[10px] text-[#4A3C32]">
+              9.99
+            </Text>
           </View>
-          <View style={styles.receiptRow}>
-            <Text style={styles.receiptText}>Fries lg</Text>
-            <Text style={styles.receiptText}>3.49</Text>
+          <View className="flex-row justify-between">
+            <Text className="font-['JetBrainsMono_500Medium'] text-[10px] text-[#4A3C32]">
+              Fries lg
+            </Text>
+            <Text className="font-['JetBrainsMono_500Medium'] text-[10px] text-[#4A3C32]">
+              3.49
+            </Text>
           </View>
-          <View style={styles.receiptRow}>
-            <Text style={styles.receiptText}>Coke</Text>
-            <Text style={styles.receiptText}>2.29</Text>
+          <View className="flex-row justify-between">
+            <Text className="font-['JetBrainsMono_500Medium'] text-[10px] text-[#4A3C32]">
+              Coke
+            </Text>
+            <Text className="font-['JetBrainsMono_500Medium'] text-[10px] text-[#4A3C32]">
+              2.29
+            </Text>
           </View>
-          <View style={styles.receiptDash} />
-          <View style={styles.receiptRow}>
-            <Text
-              style={[styles.receiptText, { fontWeight: "700", fontSize: 12 }]}
-            >
+          <View className="my-1.5 border-t border-dashed border-black/20" />
+          <View className="flex-row justify-between">
+            <Text className="font-['JetBrainsMono_500Medium'] text-xs font-bold text-[#4A3C32]">
               Total
             </Text>
-            <Text
-              style={[styles.receiptText, { fontWeight: "700", fontSize: 12 }]}
-            >
+            <Text className="font-['JetBrainsMono_500Medium'] text-xs font-bold text-[#4A3C32]">
               $15.77
             </Text>
           </View>
         </View>
       </FloatCard>
 
-      {/* Floating live order card */}
       <FloatCard
         delay={400}
         rotate={6}
-        style={{ position: "absolute", top: 150, right: 18 }}
+        className="absolute top-[150px] right-[18px]"
       >
-        <View style={styles.orderCard}>
-          <View style={styles.liveRow}>
-            <View style={styles.liveDot} />
-            <Text style={styles.liveText}>LIVE · 4 IN</Text>
+        <View className="w-[168px] rounded-[18px] bg-white p-3.5 shadow-2xl">
+          <View className="flex-row items-center gap-1.5">
+            <View className="h-1.5 w-1.5 rounded-full bg-[#2EBE7B]" />
+            <Text className="text-[9px] font-bold tracking-wider text-[#1B6B43]">
+              LIVE · 4 IN
+            </Text>
           </View>
-          <Text style={styles.orderName}>McDonald's run</Text>
-          <View style={styles.avatarRow}>
+          <Text className="mt-1.5 font-['BricolageGrotesque_700Bold'] text-base font-bold text-[#1A1410]">
+            McDonald's run
+          </Text>
+          <View className="mt-2.5 flex-row">
             {[
-              { i: "JD", bg: "#FFE7D4", fg: "#B85A1F" },
-              { i: "AL", bg: "#E6E2FF", fg: "#3A2DC2" },
-              { i: "MP", bg: "#DDF5E8", fg: "#1B6B43" },
-              { i: "LD", bg: "#FFE0E6", fg: "#B82340" },
+              { i: "JD", bg: "bg-[#FFE7D4]", fg: "text-[#B85A1F]" },
+              { i: "AL", bg: "bg-[#E6E2FF]", fg: "text-[#3A2DC2]" },
+              { i: "MP", bg: "bg-[#DDF5E8]", fg: "text-[#1B6B43]" },
+              { i: "LD", bg: "bg-[#FFE0E6]", fg: "text-[#B82340]" },
             ].map((a, idx) => (
               <View
                 key={a.i}
-                style={[
-                  styles.miniAvatar,
-                  { backgroundColor: a.bg, marginLeft: idx ? -7 : 0 },
-                ]}
+                className={`h-[26px] w-[26px] items-center justify-center rounded-full border-2 border-white ${a.bg} ${idx ? "-ml-[7px]" : ""}`}
               >
-                <Text style={[styles.miniAvatarText, { color: a.fg }]}>
-                  {a.i}
-                </Text>
+                <Text className={`text-[9px] font-bold ${a.fg}`}>{a.i}</Text>
               </View>
             ))}
           </View>
-          <View style={styles.miniProgress}>
-            <View style={styles.miniProgressFill} />
+          <View className="mt-2.5 h-1 rounded-full bg-[#FFE7D4]">
+            <View className="h-full w-3/4 rounded-full bg-[#FF6A1F]" />
           </View>
         </View>
       </FloatCard>
@@ -213,77 +203,65 @@ function HeroBackdrop() {
 
 export default function SignInScreen() {
   return (
-    <View style={{ flex: 1, backgroundColor: BR.orangeDeep }}>
+    <View className="flex-1 bg-[#E8551A]">
       <StatusBar style="dark" />
 
-      <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-        <View style={{ flex: 1 }}>
-          {/* Hero: full-screen orange background */}
+      <SafeAreaView className="flex-1" edges={["top"]}>
+        <View className="flex-1">
           <HeroBackdrop />
 
-          {/* Bottom paper sheet */}
-          <View style={styles.sheet}>
-            <View style={{ flex: 1 }}>
+          <View className="absolute right-0 bottom-0 left-0 h-[62%] rounded-t-[36px] bg-[#FFF7EE] px-[26px] pt-[26px] pb-8 shadow-2xl">
+            <View className="flex-1">
               <BrSticker
                 rotate={-3}
                 background={BR.yolkSoft}
                 leftSlot={<Icon name="Sparkles" size={11} color="#7A4A20" />}
               >
-                <BrText weight="bold" style={{ fontSize: 12 }}>
+                <BrText weight="bold" className="text-xs">
                   Quick. Easy. Fun.
                 </BrText>
               </BrSticker>
 
               <BrText
                 variant="h1"
-                style={{ fontSize: 36, marginTop: 14, lineHeight: 38 }}
+                className="mt-3.5 text-[36px] leading-[38px]"
               >
                 Order with the{"\n"}
                 <BrText
                   variant="h1"
                   italic
                   color={BR.orange}
-                  style={{ fontSize: 36, lineHeight: 38 }}
+                  className="text-[36px] leading-[38px]"
                 >
                   squad.
                 </BrText>
               </BrText>
-              <BrText
-                style={{
-                  fontSize: 14,
-                  color: BR.ink2,
-                  marginTop: 8,
-                  lineHeight: 21,
-                }}
-              >
+              <BrText className="mt-2 text-sm leading-[21px] text-[#4A3C32]">
                 Group orders, voice ordering, and bill splitting, without the
                 math.
               </BrText>
 
-              <View style={{ flex: 1 }} />
+              <View className="flex-1" />
 
-              <View style={{ gap: 10 }}>
+              <View className="gap-2.5">
                 <Pressable
                   onPress={() => router.push("/(auth)/email-sign-in")}
-                  className="flex-row gap-2 justify-center items-center p-4 w-full rounded-2xl border h-[55px] border-muted active:opacity-80"
+                  className="h-[55px] w-full flex-row items-center justify-center gap-2 rounded-2xl border border-muted p-4 active:opacity-80"
                   accessibilityRole="button"
                   accessibilityLabel="Continue with email"
                 >
                   <Icon name="Mail" color={BR.ink} size={22} />
-                  <Text
-                    className="text-lg font-semibold"
-                    style={{ color: BR.ink }}
-                  >
+                  <Text className="text-lg font-semibold text-[#1A1410]">
                     Continue with email
                   </Text>
                 </Pressable>
                 <OAuthButton provider="apple" />
                 <OAuthButton provider="google" />
-                <Text style={styles.legalText}>
+                <Text className="mt-1 text-center text-[11px] leading-4 text-[#8A7A6E]">
                   By continuing you agree to BiteRunr's{" "}
                   <Text
                     onPress={() => openURL("https://app.biterunr.com/privacy")}
-                    style={{ textDecorationLine: "underline" }}
+                    className="underline"
                   >
                     Terms and Privacy
                   </Text>
@@ -296,144 +274,3 @@ export default function SignInScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  hero: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: BR.orangeDeep,
-    overflow: "hidden",
-  },
-  watermark: {
-    position: "absolute",
-    left: -40,
-    top: -60,
-    fontFamily: BR_FONT.displayExtraBold,
-    fontStyle: "italic",
-    fontSize: 520,
-    lineHeight: 520,
-    color: "rgba(255,255,255,0.10)",
-    letterSpacing: -42,
-  },
-  ring: {
-    position: "absolute",
-    borderRadius: 999,
-    borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.12)",
-  },
-  receiptCard: {
-    width: 160,
-    padding: 14,
-    borderRadius: 18,
-    backgroundColor: "#FFFCF6",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 24 },
-    shadowOpacity: 0.35,
-    shadowRadius: 28,
-    elevation: 12,
-  },
-  receiptBrand: {
-    fontFamily: BR_FONT.display,
-    fontStyle: "italic",
-    fontSize: 14,
-    fontWeight: "700",
-    color: BR.orangeDeep,
-  },
-  receiptDash: {
-    borderTopWidth: 1,
-    borderTopColor: "rgba(0,0,0,0.2)",
-    borderStyle: "dashed",
-    marginVertical: 6,
-  },
-  receiptRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  receiptText: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 10,
-    color: BR.ink2,
-  },
-  orderCard: {
-    width: 168,
-    padding: 14,
-    borderRadius: 18,
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 30 },
-    shadowOpacity: 0.4,
-    shadowRadius: 32,
-    elevation: 14,
-  },
-  liveRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  liveDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 999,
-    backgroundColor: BR.mint,
-  },
-  liveText: {
-    fontSize: 9,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-    color: BR.mintInk,
-  },
-  orderName: {
-    fontFamily: BR_FONT.display,
-    fontWeight: "700",
-    fontSize: 16,
-    marginTop: 6,
-    color: BR.ink,
-  },
-  avatarRow: { flexDirection: "row", marginTop: 10 },
-  miniAvatar: {
-    width: 26,
-    height: 26,
-    borderRadius: 999,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "#fff",
-  },
-  miniAvatarText: { fontSize: 9, fontWeight: "700" },
-  miniProgress: {
-    marginTop: 10,
-    height: 4,
-    borderRadius: 999,
-    backgroundColor: BR.orangeSoft,
-  },
-  miniProgressFill: {
-    width: "75%",
-    height: "100%",
-    borderRadius: 999,
-    backgroundColor: BR.orange,
-  },
-  sheet: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: "62%",
-    backgroundColor: BR.paper,
-    borderTopLeftRadius: 36,
-    borderTopRightRadius: 36,
-    paddingHorizontal: 26,
-    paddingTop: 26,
-    paddingBottom: 32,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -20 },
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
-    elevation: 20,
-  },
-  legalText: {
-    fontSize: 11,
-    color: BR.ink3,
-    textAlign: "center",
-    marginTop: 4,
-    lineHeight: 16,
-  },
-});

@@ -5,7 +5,6 @@ import {
   Alert,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -21,7 +20,7 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { BrText, BrChip, BrAvatar } from "@/components/br";
-import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
+import { BR, BR_FONT_STYLE, BR_SHADOW } from "@/lib/br-theme";
 
 type Member = {
   orderUserId: string;
@@ -65,12 +64,8 @@ function TornEdge({ position }: { position: "top" | "bottom" }) {
   );
   return (
     <View
-      style={{
-        height: TOOTH_H,
-        backgroundColor: BR.paper,
-        flexDirection: "row",
-        overflow: "hidden",
-      }}
+      className="flex-row overflow-hidden bg-[#FFF7EE]"
+      style={{ height: TOOTH_H }}
     >
       {teeth.map((toothKey) => (
         <View
@@ -116,19 +111,21 @@ function MemberRow({
     : isSent
       ? "Sent"
       : "Awaiting";
-  const chipDotColor = isPaid ? BR.mint : isSent ? BR.orange : BR.coral;
+  const chipDotClass = isPaid
+    ? "bg-[#2EBE7B]"
+    : isSent
+      ? "bg-[#FF6A1F]"
+      : "bg-[#FF4D6D]";
 
   return (
     <Animated.View
       entering={FadeInUp.duration(280).delay(idx * 55 + 100)}
-      style={[
-        styles.memberCard,
-        {
-          backgroundColor: isSent ? BR.orangeTint : BR.card,
-          borderColor: isSent ? "rgba(255,106,31,0.25)" : BR.line,
-          opacity: isPaid ? 0.88 : 1,
-        },
-      ]}
+      className={`flex-row items-center gap-3 rounded-[22px] border p-3.5 ${
+        isSent
+          ? "border-[rgba(255,106,31,0.25)] bg-[#FFF1E2]"
+          : "border-[rgba(26,20,16,0.08)] bg-white"
+      } ${isPaid ? "opacity-[0.88]" : ""}`}
+      style={BR_SHADOW.card}
     >
       <BrAvatar
         name={`${m.firstName} ${m.lastName}`}
@@ -136,47 +133,57 @@ function MemberRow({
         size={44}
       />
 
-      <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
-        <Text style={styles.memberName} numberOfLines={1}>
+      <View className="min-w-0 flex-1 gap-1">
+        <Text
+          className="text-[14px] text-[#1A1410]"
+          style={BR_FONT_STYLE.display}
+          numberOfLines={1}
+        >
           {m.firstName} {m.lastName}
         </Text>
         <BrChip
           color={chipColor}
           leftSlot={
-            <View
-              style={{
-                width: 5,
-                height: 5,
-                borderRadius: 999,
-                backgroundColor: chipDotColor,
-              }}
-            />
+            <View className={`h-[5px] w-[5px] rounded-full ${chipDotClass}`} />
           }
         >
           {chipLabel}
         </BrChip>
       </View>
 
-      <View style={{ alignItems: "flex-end", gap: 6 }}>
+      <View className="items-end gap-1.5">
         <Text
-          style={[
-            styles.memberAmount,
-            { color: isPaid ? BR.mintInk : BR.ink },
-            isPaid && { textDecorationLine: "line-through", opacity: 0.55 },
-          ]}
+          className={`text-[17px] ${isPaid ? "text-[#1B6B43] line-through opacity-[0.55]" : "text-[#1A1410]"}`}
+          style={BR_FONT_STYLE.displayExtraBold}
         >
           {formatCents(Number(m.amountOwed))}
         </Text>
         {isOut && (
-          <View style={{ flexDirection: "row", gap: 6 }}>
-            <Pressable onPress={onMarkCash} style={styles.cashBtn}>
-              <Text style={styles.cashBtnText}>CASH</Text>
+          <View className="flex-row gap-1.5">
+            <Pressable
+              onPress={onMarkCash}
+              className="h-7 items-center justify-center rounded-full bg-[#DDF5E8] px-2.5"
+            >
+              <Text
+                className="text-[11px] tracking-[0.5px] text-[#1B6B43]"
+                style={BR_FONT_STYLE.monoBold}
+              >
+                CASH
+              </Text>
             </Pressable>
           </View>
         )}
         {isSent && (
-          <Pressable onPress={onMarkCash} style={styles.confirmPill}>
-            <Text style={styles.confirmPillText}>CONFIRM</Text>
+          <Pressable
+            onPress={onMarkCash}
+            className="h-7 items-center justify-center rounded-full border border-[rgba(26,20,16,0.14)] bg-[#FCEFE0] px-2.5"
+          >
+            <Text
+              className="text-[11px] tracking-[0.5px] text-[#4A3C32]"
+              style={BR_FONT_STYLE.monoBold}
+            >
+              CONFIRM
+            </Text>
           </Pressable>
         )}
       </View>
@@ -278,14 +285,7 @@ export default function Settlement() {
 
   if (paymentStatus === undefined) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: BR.paper,
-        }}
-      >
+      <View className="flex-1 items-center justify-center bg-[#FFF7EE]">
         <ActivityIndicator size="large" color={BR.orange} />
       </View>
     );
@@ -293,15 +293,8 @@ export default function Settlement() {
 
   if (paymentStatus === null) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: BR.paper,
-        }}
-      >
-        <Text style={{ fontFamily: BR_FONT.mono, color: BR.coralInk }}>
+      <View className="flex-1 items-center justify-center bg-[#FFF7EE]">
+        <Text className="text-[#B82340]" style={BR_FONT_STYLE.mono}>
           Not authorized to view settlement
         </Text>
       </View>
@@ -339,37 +332,50 @@ export default function Settlement() {
 
   return (
     <>
-      <SafeAreaView edges={["top"]} style={{ backgroundColor: BR.paper }} />
+      <SafeAreaView edges={["top"]} className="bg-[#FFF7EE]" />
 
       {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+      <View className="flex-row items-center justify-between bg-[#FFF7EE] px-[18px] pb-3 pt-2">
+        <Pressable
+          onPress={() => router.back()}
+          className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+        >
           <Icon name="ChevronLeft" size={20} color={BR.ink} />
         </Pressable>
-        <View pointerEvents="none" style={styles.headerTitle}>
-          <BrText weight="bold" style={{ fontSize: 17, lineHeight: 24 }}>
-            Settle up
-          </BrText>
-        </View>
-        <View style={{ width: 38 }} />
+        <BrText
+          weight="bold"
+          className="text-[17px] leading-6"
+          style={BR_FONT_STYLE.display}
+        >
+          Settle up
+        </BrText>
+        <View className="w-[38px]" />
       </View>
 
       <ScrollView
-        style={{ flex: 1, backgroundColor: BR.paper }}
-        contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 140 }}
+        className="flex-1 bg-[#FFF7EE]"
+        contentContainerClassName="px-[18px] pb-[140px]"
         showsVerticalScrollIndicator={false}
       >
-        <BrText variant="eyebrow" style={{ marginBottom: 10 }}>
+        <BrText variant="eyebrow" className="mb-2.5">
           {paymentStatus.orderName}
         </BrText>
 
         {/* Receipt card */}
         <Animated.View entering={FadeInUp.duration(300)}>
           <TornEdge position="top" />
-          <View style={styles.receipt}>
-            <View style={{ alignItems: "center" }}>
-              <Text style={styles.receiptTitle}>You are the runner</Text>
-              <Text style={styles.receiptMeta}>
+          <View className="bg-white px-[22px] py-6">
+            <View className="items-center">
+              <Text
+                className="text-center text-[20px] italic text-[#E8551A]"
+                style={BR_FONT_STYLE.displayExtraBold}
+              >
+                You are the runner
+              </Text>
+              <Text
+                className="mt-[3px] text-center text-[11px] tracking-[1.2px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
+              >
                 ·{" "}
                 {new Date()
                   .toLocaleDateString("en-US", {
@@ -382,76 +388,102 @@ export default function Settlement() {
               </Text>
             </View>
 
-            <View style={styles.rule} />
+            <View className="my-3.5 h-px bg-[rgba(26,20,16,0.1)]" />
 
-            <View style={styles.receiptRow}>
-              <Text style={styles.rowLabel}>Members</Text>
-              <Text style={styles.rowValue}>{nonCreatorMembers.length}</Text>
+            <View className="mb-[5px] flex-row justify-between">
+              <Text
+                className="text-[13px] text-[#4A3C32]"
+                style={BR_FONT_STYLE.mono}
+              >
+                Members
+              </Text>
+              <Text
+                className="text-[13px] text-[#1A1410]"
+                style={BR_FONT_STYLE.mono}
+              >
+                {nonCreatorMembers.length}
+              </Text>
             </View>
-            <View style={styles.receiptRow}>
-              <Text style={styles.rowLabel}>Total owed</Text>
-              <Text style={styles.rowValue}>{formatCents(totalOwed)}</Text>
+            <View className="mb-[5px] flex-row justify-between">
+              <Text
+                className="text-[13px] text-[#4A3C32]"
+                style={BR_FONT_STYLE.mono}
+              >
+                Total owed
+              </Text>
+              <Text
+                className="text-[13px] text-[#1A1410]"
+                style={BR_FONT_STYLE.mono}
+              >
+                {formatCents(totalOwed)}
+              </Text>
             </View>
-            <View style={styles.receiptRow}>
-              <Text style={styles.rowLabel}>Collected</Text>
-              <Text style={[styles.rowValue, { color: BR.mintInk }]}>
+            <View className="mb-[5px] flex-row justify-between">
+              <Text
+                className="text-[13px] text-[#4A3C32]"
+                style={BR_FONT_STYLE.mono}
+              >
+                Collected
+              </Text>
+              <Text
+                className="text-[13px] text-[#1B6B43]"
+                style={BR_FONT_STYLE.mono}
+              >
                 + {formatCents(totalPaid)}
               </Text>
             </View>
 
-            <View style={styles.rule} />
+            <View className="my-3.5 h-px bg-[rgba(26,20,16,0.1)]" />
 
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "baseline",
-              }}
-            >
-              <Text style={styles.outstandingLabel}>OUTSTANDING</Text>
+            <View className="flex-row items-baseline justify-between">
               <Text
-                style={[
-                  styles.outstandingAmount,
-                  { color: allSettled ? BR.mintInk : BR.coral },
-                ]}
+                className="text-lg text-[#1A1410]"
+                style={BR_FONT_STYLE.displayExtraBold}
+              >
+                OUTSTANDING
+              </Text>
+              <Text
+                className={`text-[32px] ${allSettled ? "text-[#1B6B43]" : "text-[#FF4D6D]"}`}
+                style={BR_FONT_STYLE.displayExtraBold}
               >
                 {formatCents(outstanding)}
               </Text>
             </View>
 
-            <View style={{ marginTop: 14 }}>
-              <View style={styles.progressTrack}>
+            <View className="mt-3.5">
+              <View className="h-1.5 overflow-hidden rounded-full bg-[#FCEFE0]">
                 <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${pct}%` as any,
-                      backgroundColor: allSettled ? BR.mint : BR.orange,
-                    },
-                  ]}
+                  className={`h-full rounded-full ${allSettled ? "bg-[#2EBE7B]" : "bg-[#FF6A1F]"}`}
+                  style={{ width: `${pct}%` }}
                 />
               </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  marginTop: 6,
-                }}
-              >
-                <Text style={styles.progressMeta}>
+              <View className="mt-1.5 flex-row justify-between">
+                <Text
+                  className="text-[11px] text-[#8A7A6E]"
+                  style={BR_FONT_STYLE.mono}
+                >
                   {paidCount} of {nonCreatorMembers.length} paid
                 </Text>
-                <Text style={styles.progressMeta}>{pct}%</Text>
+                <Text
+                  className="text-[11px] text-[#8A7A6E]"
+                  style={BR_FONT_STYLE.mono}
+                >
+                  {pct}%
+                </Text>
               </View>
             </View>
 
-            <View style={styles.rule} />
-            <View style={{ alignItems: "center" }}>
-              <Text style={styles.receiptCode}>
+            <View className="my-3.5 h-px bg-[rgba(26,20,16,0.1)]" />
+            <View className="items-center">
+              <Text
+                className="text-[10px] tracking-[1px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
+              >
                 BR-RUN-{orderId?.slice(-4).toUpperCase() ?? "----"}
               </Text>
               <Text
-                style={[styles.receiptCode, { marginTop: 5, letterSpacing: 5 }]}
+                className="mt-[5px] text-[10px] tracking-[5px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
               >
                 · · · · · · · ·
               </Text>
@@ -463,9 +495,9 @@ export default function Settlement() {
         {/* Ledger */}
         <Animated.View
           entering={FadeInUp.duration(300).delay(80)}
-          style={{ marginTop: 22 }}
+          className="mt-[22px]"
         >
-          <View style={styles.ledgerHeader}>
+          <View className="mb-2.5 flex-row items-center justify-between">
             <BrText variant="eyebrow">
               Ledger · {nonCreatorMembers.length}
             </BrText>
@@ -473,23 +505,23 @@ export default function Settlement() {
               onPress={handleNudgeAll}
               disabled={isNudging || outstandingCount === 0}
               hitSlop={8}
-              style={[
-                { flexDirection: "row", alignItems: "center", gap: 5 },
-                (isNudging || outstandingCount === 0) && { opacity: 0.45 },
-              ]}
+              className={`flex-row items-center gap-[5px] ${isNudging || outstandingCount === 0 ? "opacity-[0.45]" : ""}`}
             >
               {isNudging ? (
                 <ActivityIndicator size="small" color={BR.orangeDeep} />
               ) : (
                 <Icon name="Bell" size={11} color={BR.orangeDeep} />
               )}
-              <Text style={styles.nudgeAllText}>
+              <Text
+                className="text-[11px] tracking-[0.5px] text-[#E8551A]"
+                style={BR_FONT_STYLE.monoBold}
+              >
                 {isNudging ? "NUDGING" : "NUDGE ALL"}
               </Text>
             </Pressable>
           </View>
 
-          <View style={{ gap: 10 }}>
+          <View className="gap-2.5">
             {nonCreatorMembers.map((m, i) => (
               <MemberRow
                 key={m.orderUserId}
@@ -501,9 +533,15 @@ export default function Settlement() {
           </View>
 
           {!allSettled && (
-            <View style={{ alignItems: "center", marginTop: 20 }}>
-              <View style={styles.sticker}>
-                <Text style={styles.stickerText}>
+            <View className="mt-5 items-center">
+              <View
+                className="rounded-full bg-[#FFF1C4] px-3.5 py-[7px]"
+                style={{ transform: [{ rotate: "-2deg" }] }}
+              >
+                <Text
+                  className="text-[11px] text-[#7A4A20]"
+                  style={BR_FONT_STYLE.mono}
+                >
                   ☕ Runs settle 2× faster with a nudge
                 </Text>
               </View>
@@ -514,37 +552,48 @@ export default function Settlement() {
 
       {/* Footer */}
       <View
-        style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}
+        className="gap-2.5 border-t border-[rgba(26,20,16,0.08)] bg-[#FFF7EE] px-[18px] pt-3.5"
+        style={{ paddingBottom: Math.max(insets.bottom, 16) }}
       >
         {!allSettled && (
-          <View style={styles.warningBanner}>
+          <View className="flex-row items-center gap-2 rounded-2xl border border-[rgba(255,77,109,0.2)] bg-[#FFE0E6] p-3">
             <Icon name="CircleAlert" size={14} color={BR.coralInk} />
-            <Text style={styles.warningText} numberOfLines={1}>
+            <Text
+              className="flex-1 text-xs text-[#B82340]"
+              style={BR_FONT_STYLE.monoSemibold}
+              numberOfLines={1}
+            >
               {formatCents(outstanding)} outstanding from {outstandingCount}
             </Text>
             <Pressable
               onPress={handleCompleteOrder}
-              style={styles.closeAnywayBtn}
+              className="rounded-lg bg-[rgba(255,77,109,0.18)] px-2.5 py-1.5"
             >
-              <Text style={styles.closeAnywayText}>CLOSE ANYWAY</Text>
+              <Text
+                className="text-[11px] tracking-[0.5px] text-[#B82340]"
+                style={BR_FONT_STYLE.monoBold}
+              >
+                CLOSE ANYWAY
+              </Text>
             </Pressable>
           </View>
         )}
         <TouchableOpacity
           onPress={handleCompleteOrder}
           disabled={isCompleting}
-          style={[
-            styles.completeBtn,
-            allSettled && { backgroundColor: BR.mint, shadowColor: BR.mint },
-            isCompleting && { opacity: 0.6 },
-          ]}
+          className={`h-[54px] flex-row items-center justify-center gap-2 rounded-2xl ${allSettled ? "bg-[#2EBE7B]" : "bg-[#FF6A1F]"} ${isCompleting ? "opacity-60" : ""}`}
+          style={
+            allSettled
+              ? { ...BR_SHADOW.primary, shadowColor: BR.mint }
+              : BR_SHADOW.primary
+          }
         >
           {isCompleting ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
             <Icon name={allSettled ? "Check" : "Flag"} size={16} color="#fff" />
           )}
-          <Text style={styles.completeBtnText}>
+          <Text className="text-base text-white" style={BR_FONT_STYLE.display}>
             {isCompleting
               ? "Completing…"
               : allSettled
@@ -556,230 +605,3 @@ export default function Settlement() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 12,
-    backgroundColor: BR.paper,
-    position: "relative",
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerTitle: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 8,
-    bottom: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  receipt: {
-    backgroundColor: BR.card,
-    paddingHorizontal: 22,
-    paddingVertical: 24,
-  },
-  receiptTitle: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontStyle: "italic",
-    fontSize: 20,
-    color: BR.orangeDeep,
-    textAlign: "center",
-  },
-  receiptMeta: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 11,
-    color: BR.ink3,
-    letterSpacing: 1.2,
-    marginTop: 3,
-  },
-  rule: {
-    height: 1,
-    backgroundColor: "rgba(26,20,16,0.1)",
-    marginVertical: 14,
-  },
-  receiptRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 5,
-  },
-  rowLabel: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 13,
-    color: BR.ink2,
-  },
-  rowValue: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 13,
-    color: BR.ink,
-  },
-  outstandingLabel: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontSize: 18,
-    color: BR.ink,
-  },
-  outstandingAmount: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontSize: 32,
-  },
-  progressTrack: {
-    height: 6,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: 999,
-  },
-  progressMeta: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 11,
-    color: BR.ink3,
-  },
-  receiptCode: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 10,
-    color: BR.ink3,
-    letterSpacing: 1,
-  },
-  ledgerHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  nudgeAllText: {
-    fontFamily: BR_FONT.monoBold,
-    fontSize: 11,
-    color: BR.orangeDeep,
-    letterSpacing: 0.5,
-  },
-  memberCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 14,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    ...BR_SHADOW.card,
-  },
-  memberName: {
-    fontFamily: BR_FONT.display,
-    fontSize: 14,
-    fontWeight: "700",
-    color: BR.ink,
-  },
-  memberAmount: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontSize: 17,
-  },
-  cashBtn: {
-    height: 28,
-    paddingHorizontal: 10,
-    borderRadius: 999,
-    backgroundColor: BR.mintSoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cashBtnText: {
-    fontFamily: BR_FONT.monoBold,
-    fontSize: 11,
-    color: BR.mintInk,
-    letterSpacing: 0.5,
-  },
-  confirmPill: {
-    height: 28,
-    paddingHorizontal: 10,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: BR.line2,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  confirmPillText: {
-    fontFamily: BR_FONT.monoBold,
-    fontSize: 11,
-    color: BR.ink2,
-    letterSpacing: 0.5,
-  },
-  sticker: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 999,
-    backgroundColor: BR.yolkSoft,
-    transform: [{ rotate: "-2deg" }],
-  },
-  stickerText: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 11,
-    color: "#7A4A20",
-  },
-  footer: {
-    paddingHorizontal: 18,
-    paddingTop: 14,
-    gap: 10,
-    backgroundColor: BR.paper,
-    borderTopWidth: 1,
-    borderTopColor: BR.line,
-  },
-  warningBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    padding: 12,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.coralSoft,
-    borderWidth: 1,
-    borderColor: "rgba(255,77,109,0.2)",
-  },
-  warningText: {
-    flex: 1,
-    fontFamily: BR_FONT.mono,
-    fontSize: 12,
-    color: BR.coralInk,
-    fontWeight: "600",
-  },
-  closeAnywayBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: "rgba(255,77,109,0.18)",
-  },
-  closeAnywayText: {
-    fontFamily: BR_FONT.monoBold,
-    fontSize: 11,
-    color: BR.coralInk,
-    letterSpacing: 0.5,
-  },
-  completeBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    height: 54,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.orange,
-    ...BR_SHADOW.primary,
-  },
-  completeBtnText: {
-    fontFamily: BR_FONT.display,
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-  },
-});

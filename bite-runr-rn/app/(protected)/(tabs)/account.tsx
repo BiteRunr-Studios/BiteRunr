@@ -1,13 +1,5 @@
 import { useContext } from "react";
-import {
-  ScrollView,
-  Text,
-  View,
-  Alert,
-  Pressable,
-  Image,
-  StyleSheet,
-} from "react-native";
+import { ScrollView, Text, View, Alert, Pressable, Image } from "react-native";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { AuthContext } from "@/lib/convex-auth-context";
 import { useQuery } from "convex/react";
@@ -20,7 +12,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { BrAvatar, BrSticker, BrText } from "@/components/br";
-import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { BR } from "@/lib/br-theme";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import type { icons } from "lucide-react-native";
 
@@ -152,19 +144,16 @@ export default function AccountTab() {
 
   return (
     <ErrorBoundary>
-      <SafeAreaView
-        edges={["top"]}
-        style={{ flex: 1, backgroundColor: BR.paper }}
-      >
+      <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
         {/* Top bar */}
-        <View style={styles.topBar}>
+        <View className="flex-row items-center justify-between px-[18px] pt-3 pb-2">
           <Image
             source={require("@/assets/images/icon-no-bg.png")}
-            style={{ width: 44, height: 44 }}
+            className="h-11 w-11"
             resizeMode="contain"
           />
           <Pressable
-            style={styles.iconBtn}
+            className="h-9 w-9 items-center justify-center rounded-full bg-[#FCEFE0]"
             onPress={() => router.push("/account/account-info")}
           >
             <Icon name="Settings" size={16} color={BR.ink} />
@@ -172,11 +161,9 @@ export default function AccountTab() {
         </View>
 
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            paddingHorizontal: 18,
-            paddingBottom: 80 + insets.bottom,
-          }}
+          className="flex-1"
+          contentContainerClassName="px-[18px]"
+          contentContainerStyle={{ paddingBottom: 80 + insets.bottom }}
           showsVerticalScrollIndicator={false}
         >
           {isLoading && <ProfileSkeleton />}
@@ -184,12 +171,12 @@ export default function AccountTab() {
           {!isLoading && user && (
             <Animated.View
               entering={FadeInUp.duration(300)}
-              style={{ gap: 10 }}
+              className="gap-2.5"
             >
               {/* Profile hero */}
-              <View style={styles.profileHero}>
+              <View className="relative mt-2.5 items-center overflow-hidden rounded-[22px] border border-[rgba(255,106,31,0.2)] bg-[#FFF1E2] p-[22px]">
                 {/* Level sticker */}
-                <View style={styles.stickerWrap}>
+                <View className="absolute right-3 top-3">
                   <BrSticker
                     rotate={4}
                     leftSlot={<Icon name="Flame" size={11} color={BR.orange} />}
@@ -204,19 +191,16 @@ export default function AccountTab() {
                   size={88}
                   ring="#fff"
                 />
-                <BrText
-                  variant="h2"
-                  style={{ marginTop: 12, textAlign: "center" }}
-                >
+                <BrText variant="h2" className="mt-3 text-center">
                   {fullName || "Unknown User"}
                 </BrText>
-                <Text style={styles.heroHandle}>
+                <Text className="mt-1 font-['JetBrainsMono_500Medium'] text-[13px] text-[#E8551A]">
                   {handle} · joined {memberSince}
                 </Text>
               </View>
 
               {/* Stats row */}
-              <View style={styles.statsRow}>
+              <View className="flex-row gap-2.5">
                 <StatCard label="All time runs" value={runsCount} />
                 <StatCard label="Friends" value={friendsCount} />
                 <StatCard label="Items ordered" value={itemsCount} />
@@ -227,33 +211,29 @@ export default function AccountTab() {
                 <Animated.View
                   key={sec.title}
                   entering={FadeInUp.duration(300).delay(60 + si * 25)}
-                  style={{ marginTop: 12 }}
+                  className="mt-3"
                 >
-                  <BrText variant="eyebrow" style={{ marginBottom: 8 }}>
+                  <BrText variant="eyebrow" className="mb-2">
                     {sec.title}
                   </BrText>
-                  <View style={styles.sectionCard}>
+                  <View className="overflow-hidden rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white">
                     {sec.items.map((item, i) => (
                       <Pressable
                         key={item.key}
                         onPress={
                           item.onPress ?? (() => router.push(item.href as any))
                         }
-                        style={({ pressed }) => [
-                          i < sec.items.length - 1 && styles.sectionRowBorder,
-                          pressed && { opacity: 0.82 },
-                        ]}
+                        className={`active:opacity-[0.82] ${
+                          i < sec.items.length - 1
+                            ? "border-b border-b-[rgba(26,20,16,0.08)]"
+                            : ""
+                        }`}
                       >
-                        <View style={styles.sectionRow}>
+                        <View className="flex-row items-center gap-3 p-3.5">
                           <View
-                            style={[
-                              styles.rowIcon,
-                              {
-                                backgroundColor: item.danger
-                                  ? BR.coralSoft
-                                  : BR.paper2,
-                              },
-                            ]}
+                            className={`h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] ${
+                              item.danger ? "bg-[#FFE0E6]" : "bg-[#FCEFE0]"
+                            }`}
                           >
                             <Icon
                               name={item.icon}
@@ -262,23 +242,26 @@ export default function AccountTab() {
                             />
                           </View>
 
-                          <View style={{ flex: 1 }}>
+                          <View className="flex-1">
                             <Text
-                              style={[
-                                styles.rowLabel,
-                                item.danger && { color: BR.coralInk },
-                              ]}
+                              className={`text-sm font-semibold ${
+                                item.danger
+                                  ? "text-[#B82340]"
+                                  : "text-[#1A1410]"
+                              }`}
                             >
                               {item.label}
                             </Text>
                             {item.sub ? (
-                              <Text style={styles.rowSub}>{item.sub}</Text>
+                              <Text className="mt-px text-[11px] text-[#8A7A6E]">
+                                {item.sub}
+                              </Text>
                             ) : null}
                           </View>
 
                           {typeof item.badge === "number" && item.badge > 0 && (
-                            <View style={styles.badge}>
-                              <Text style={styles.badgeText}>
+                            <View className="h-5 min-w-5 items-center justify-center rounded-full bg-[#FF4D6D] px-[5px]">
+                              <Text className="text-[10px] font-bold text-white">
                                 {item.badge > 9 ? "9+" : item.badge}
                               </Text>
                             </View>
@@ -301,19 +284,12 @@ export default function AccountTab() {
           )}
 
           {!isLoading && !user && (
-            <View style={styles.notSignedIn}>
-              <Text style={{ fontSize: 40 }}>👤</Text>
-              <BrText variant="h3" style={{ marginTop: 12 }}>
+            <View className="mt-6 items-center rounded-[22px] border border-dashed border-[rgba(26,20,16,0.14)] bg-white px-6 py-10">
+              <Text className="text-[40px]">👤</Text>
+              <BrText variant="h3" className="mt-3">
                 Not signed in
               </BrText>
-              <BrText
-                style={{
-                  fontSize: 13,
-                  color: BR.ink3,
-                  marginTop: 4,
-                  textAlign: "center",
-                }}
-              >
+              <BrText className="mt-1 text-center text-[13px] text-[#8A7A6E]">
                 Please sign in to see your profile.
               </BrText>
             </View>
@@ -326,9 +302,11 @@ export default function AccountTab() {
 
 function StatCard({ label, value }: { label: string; value: number | string }) {
   return (
-    <View style={styles.statCard}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
+    <View className="flex-1 items-center gap-1 rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white p-3.5">
+      <Text className="font-['JetBrainsMono_700Bold'] text-2xl text-[#1A1410]">
+        {value}
+      </Text>
+      <Text className="text-center text-[11px] text-[#8A7A6E]">{label}</Text>
     </View>
   );
 }
@@ -336,36 +314,38 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
 function ProfileSkeleton() {
   return (
     <Skeleton>
-      <View style={{ gap: 10 }}>
-        <View style={[styles.profileHero, { alignItems: "center" }]}>
+      <View className="gap-2.5">
+        <View className="relative mt-2.5 items-center overflow-hidden rounded-[22px] border border-[rgba(255,106,31,0.2)] bg-[#FFF1E2] p-[22px]">
           <SkeletonBlock width={88} height={88} rounded="rounded-full" />
-          <View style={{ marginTop: 12, gap: 8, alignItems: "center" }}>
+          <View className="mt-3 items-center gap-2">
             <SkeletonBlock width={160} height={22} />
             <SkeletonBlock width={130} height={14} />
           </View>
         </View>
-        <View style={styles.statsRow}>
+        <View className="flex-row gap-2.5">
           {[1, 2, 3].map((i) => (
-            <View key={i} style={[styles.statCard, { flex: 1 }]}>
+            <View
+              key={i}
+              className="flex-1 items-center gap-1 rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white p-3.5"
+            >
               <SkeletonBlock width={40} height={24} />
               <SkeletonBlock width={60} height={12} />
             </View>
           ))}
         </View>
         {[1, 2].map((i) => (
-          <View key={i} style={{ marginTop: 12 }}>
-            <SkeletonBlock width={80} height={12} style={{ marginBottom: 8 }} />
-            <View style={styles.sectionCard}>
+          <View key={i} className="mt-3">
+            <SkeletonBlock width={80} height={12} className="mb-2" />
+            <View className="overflow-hidden rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white">
               {[1, 2].map((j) => (
                 <View
                   key={j}
-                  style={[
-                    styles.sectionRow,
-                    j === 1 && styles.sectionRowBorder,
-                  ]}
+                  className={`flex-row items-center gap-3 p-3.5 ${
+                    j === 1 ? "border-b border-b-[rgba(26,20,16,0.08)]" : ""
+                  }`}
                 >
                   <SkeletonBlock width={34} height={34} rounded="rounded-xl" />
-                  <View style={{ flex: 1, marginLeft: 12, gap: 6 }}>
+                  <View className="ml-3 flex-1 gap-1.5">
                     <SkeletonBlock width={120} height={14} />
                     <SkeletonBlock width={160} height={11} />
                   </View>
@@ -378,128 +358,3 @@ function ProfileSkeleton() {
     </Skeleton>
   );
 }
-
-const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 12,
-    paddingBottom: 8,
-  },
-  iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  profileHero: {
-    backgroundColor: BR.orangeTint,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: "rgba(255,106,31,0.2)",
-    padding: 22,
-    alignItems: "center",
-    position: "relative",
-    overflow: "hidden",
-    marginTop: 10,
-  },
-  stickerWrap: {
-    position: "absolute",
-    top: 12,
-    right: 12,
-  },
-  heroHandle: {
-    fontSize: 13,
-    fontFamily: BR_FONT.mono,
-    color: BR.orangeDeep,
-    marginTop: 4,
-  },
-  statsRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-    padding: 14,
-    alignItems: "center",
-    gap: 4,
-  },
-  statValue: {
-    fontFamily: BR_FONT.monoBold,
-    fontSize: 24,
-    color: BR.ink,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: BR.ink3,
-    textAlign: "center",
-  },
-  sectionCard: {
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-    overflow: "hidden",
-  },
-  sectionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 14,
-  },
-  sectionRowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: BR.line,
-  },
-  rowIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  rowLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: BR.ink,
-  },
-  rowSub: {
-    fontSize: 11,
-    color: BR.ink3,
-    marginTop: 1,
-  },
-  badge: {
-    minWidth: 20,
-    height: 20,
-    borderRadius: 999,
-    backgroundColor: BR.coral,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 5,
-  },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: "#fff",
-  },
-  notSignedIn: {
-    alignItems: "center",
-    paddingVertical: 40,
-    paddingHorizontal: 24,
-    marginTop: 24,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: BR.line2,
-    backgroundColor: BR.card,
-  },
-});

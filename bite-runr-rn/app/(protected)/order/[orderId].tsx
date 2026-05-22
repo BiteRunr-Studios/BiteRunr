@@ -5,7 +5,6 @@ import {
   Alert,
   Pressable,
   TouchableOpacity,
-  StyleSheet,
   InteractionManager,
 } from "react-native";
 import { Flow } from "react-native-animated-spinkit";
@@ -38,7 +37,7 @@ import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
 import { primeAiOrderSummaryRequest } from "@/hooks/useAiOrderSummary";
 import { BrAvatar, BrButton, BrText } from "@/components/br";
-import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 
 type ButtonState = "readyToRun" | "enabled" | "disabled";
 type SwipeableRef = { close: () => void };
@@ -48,7 +47,7 @@ function UserItemsList({ orderUserId }: { orderUserId: Id<"orderUsers"> }) {
 
   if (items === undefined) {
     return (
-      <View style={{ padding: 14 }}>
+      <View className="p-3.5">
         <Flow size={16} color={BR.ink3} />
       </View>
     );
@@ -56,8 +55,8 @@ function UserItemsList({ orderUserId }: { orderUserId: Id<"orderUsers"> }) {
 
   if (items.length === 0) {
     return (
-      <View style={{ padding: 14 }}>
-        <Text style={{ fontSize: 13, color: BR.ink3, fontStyle: "italic" }}>
+      <View className="p-3.5">
+        <Text className="text-[13px] italic text-[#8A7A6E]">
           No items added
         </Text>
       </View>
@@ -65,14 +64,7 @@ function UserItemsList({ orderUserId }: { orderUserId: Id<"orderUsers"> }) {
   }
 
   return (
-    <View
-      style={{
-        paddingHorizontal: 14,
-        paddingTop: 10,
-        paddingBottom: 14,
-        gap: 6,
-      }}
-    >
+    <View className="gap-1.5 px-3.5 pb-3.5 pt-2.5">
       {items.map((item, index) => {
         const showLocation =
           index === 0 ||
@@ -80,12 +72,22 @@ function UserItemsList({ orderUserId }: { orderUserId: Id<"orderUsers"> }) {
         return (
           <View key={item.id}>
             {showLocation && (
-              <Text style={styles.itemLocation}>{item.locationName}</Text>
+              <Text
+                className="mb-1 text-[10px] font-bold uppercase tracking-[0.8px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
+              >
+                {item.locationName}
+              </Text>
             )}
-            <View style={styles.itemRow}>
-              <Text style={styles.itemText}>{item.text}</Text>
+            <View className="flex-row items-start justify-between py-[3px]">
+              <Text className="flex-1 text-[13px] text-[#1A1410]">
+                {item.text}
+              </Text>
               {item.priceInCents !== null && (
-                <Text style={styles.itemPrice}>
+                <Text
+                  className="ml-3 text-[13px] text-[#4A3C32]"
+                  style={BR_FONT_STYLE.mono}
+                >
                   ${(item.priceInCents / 100).toFixed(2)}
                 </Text>
               )}
@@ -133,11 +135,11 @@ function RemoveRightAction({
     ),
   }));
   return (
-    <View style={{ justifyContent: "center", paddingLeft: 10 }}>
+    <View className="justify-center pl-2.5">
       <ReAnimated.View style={animatedStyle}>
         <TouchableOpacity
           onPress={() => onConfirmRemove(targetUserId, memberName, swipeable)}
-          style={styles.removeBtn}
+          className="h-14 w-14 items-center justify-center rounded-full bg-[#FF4D6D]"
           activeOpacity={0.75}
         >
           <Icon name="UserMinus" size={20} color="white" />
@@ -397,17 +399,14 @@ export default function SpecificOrder() {
   // ── Skeleton ──────────────────────────────────────────────────
   if (isPending) {
     return (
-      <SafeAreaView
-        edges={["top"]}
-        style={{ flex: 1, backgroundColor: BR.paper }}
-      >
-        <View style={styles.header}>
-          <View style={styles.backBtn} />
+      <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
+        <View className="flex-row items-center justify-between px-[18px] pb-3 pt-2">
+          <View className="h-[38px] w-[38px] rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]" />
           <SkeletonBlock width={120} height={18} />
-          <View style={{ width: 38 }} />
+          <View className="w-[38px]" />
         </View>
         <Skeleton>
-          <View style={{ paddingHorizontal: 18, gap: 14, marginTop: 4 }}>
+          <View className="mt-1 gap-3.5 px-[18px]">
             <SkeletonBlock width="100%" height={160} rounded="rounded-3xl" />
             <SkeletonBlock width="100%" height={80} rounded="rounded-2xl" />
             <SkeletonBlock width={100} height={14} />
@@ -427,15 +426,8 @@ export default function SpecificOrder() {
 
   if (!data) {
     return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: BR.paper,
-        }}
-      >
-        <BrText style={{ color: BR.coralInk }}>Order not found</BrText>
+      <View className="flex-1 items-center justify-center bg-[#FFF7EE]">
+        <BrText className="text-[#B82340]">Order not found</BrText>
       </View>
     );
   }
@@ -463,54 +455,72 @@ export default function SpecificOrder() {
   // ── Main render ───────────────────────────────────────────────
   return (
     <>
-      <SafeAreaView
-        edges={["top"]}
-        style={{ flex: 1, backgroundColor: BR.paper }}
-      >
+      <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
         {/* Header */}
-        <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <View className="flex-row items-center justify-between px-[18px] pb-3 pt-2">
+          <Pressable
+            onPress={() => router.back()}
+            className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+          >
             <Icon name="ChevronLeft" size={20} color={BR.ink} />
           </Pressable>
-          <BrText weight="bold" style={{ fontSize: 17 }}>
+          <BrText
+            weight="bold"
+            className="text-[17px]"
+            style={BR_FONT_STYLE.display}
+          >
             Run details
           </BrText>
           {isCreator ? (
-            <Pressable onPress={handleMoreMenu} style={styles.moreBtn}>
+            <Pressable
+              onPress={handleMoreMenu}
+              className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+            >
               <Icon name="Ellipsis" size={18} color={BR.ink} />
             </Pressable>
           ) : (
-            <View style={{ width: 38 }} />
+            <View className="w-[38px]" />
           )}
         </View>
 
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 200 }}
+          className="flex-1"
+          contentContainerClassName="px-[18px] pb-[200px]"
           showsVerticalScrollIndicator={false}
         >
           {/* Hero card */}
           <ReAnimated.View entering={FadeInUp.duration(300)}>
-            <View style={styles.heroCard}>
+            <View className="relative overflow-hidden rounded-[22px] bg-[#1A1410] p-[18px]">
               {/* "R" watermark */}
-              <Text style={styles.heroWatermark} aria-hidden>
+              <Text
+                className="absolute -bottom-[34px] -right-6 font-['BricolageGrotesque_800ExtraBold'] text-[200px] italic leading-[200px] tracking-[-12px] text-white/5"
+                aria-hidden
+              >
                 R
               </Text>
 
-              <View style={styles.heroTop}>
-                <View style={{ flex: 1 }}>
-                  <BrText style={styles.heroEyebrow}>{dateLabel}</BrText>
-                  <BrText weight="bold" style={styles.heroTitle}>
+              <View className="flex-row items-start justify-between gap-3">
+                <View className="flex-1">
+                  <BrText
+                    className="text-[11px] uppercase tracking-[0.8px] text-white/50"
+                    style={BR_FONT_STYLE.mono}
+                  >
+                    {dateLabel}
+                  </BrText>
+                  <BrText
+                    weight="bold"
+                    className="mt-1.5 text-[22px] text-white"
+                  >
                     {data.order.name}
                   </BrText>
                   {data.orderLocations?.[0]?.name && (
-                    <View style={styles.heroLocationRow}>
+                    <View className="mt-1.5 flex-row items-center gap-[5px]">
                       <Icon
                         name="MapPin"
                         size={12}
                         color="rgba(255,255,255,0.6)"
                       />
-                      <Text style={styles.heroLocationText}>
+                      <Text className="text-[13px] text-white/60">
                         {data.orderLocations[0].name}
                       </Text>
                     </View>
@@ -518,45 +528,37 @@ export default function SpecificOrder() {
                 </View>
 
                 {/* Status pill */}
-                <View style={styles.statusPill}>
-                  <View style={{ width: 6, height: 6, position: "relative" }}>
-                    <View
-                      style={[
-                        styles.statusDot,
-                        { backgroundColor: BR.orange, position: "absolute" },
-                      ]}
-                    />
+                <View className="flex-row items-center gap-1.5 rounded-full bg-[rgba(255,106,31,0.18)] px-2.5 py-1.5">
+                  <View className="relative h-1.5 w-1.5">
+                    <View className="absolute h-1.5 w-1.5 rounded-full bg-[#FF6A1F]" />
                     <ReAnimated.View
-                      style={[
-                        styles.statusDot,
-                        { backgroundColor: BR.orange, position: "absolute" },
-                        pulseStyle,
-                      ]}
+                      className="absolute h-1.5 w-1.5 rounded-full bg-[#FF6A1F]"
+                      style={pulseStyle}
                     />
                   </View>
-                  <Text style={styles.statusPillText}>{statusLabel}</Text>
+                  <Text className="text-[11px] font-bold uppercase tracking-[0.8px] text-[#FF6A1F]">
+                    {statusLabel}
+                  </Text>
                 </View>
               </View>
 
               {/* Stats pills */}
-              <View style={styles.heroStats}>
-                <View style={styles.heroStatPill}>
+              <View className="mt-3.5 flex-row gap-2.5">
+                <View className="flex-row items-center gap-1.5 rounded-full bg-white/10 px-3 py-2">
                   <Icon name="Users" size={13} color="rgba(255,255,255,0.7)" />
-                  <Text style={styles.heroStatText}>
-                    <Text style={{ fontWeight: "700" }}>
-                      {data.orderUsers.length}
-                    </Text>
+                  <Text className="text-[13px] text-white/[0.85]">
+                    <Text className="font-bold">{data.orderUsers.length}</Text>
                     {" people"}
                   </Text>
                 </View>
-                <View style={styles.heroStatPill}>
+                <View className="flex-row items-center gap-1.5 rounded-full bg-white/10 px-3 py-2">
                   <Icon
                     name="ShoppingBag"
                     size={13}
                     color="rgba(255,255,255,0.7)"
                   />
-                  <Text style={styles.heroStatText}>
-                    <Text style={{ fontWeight: "700" }}>{data.count}</Text>
+                  <Text className="text-[13px] text-white/[0.85]">
+                    <Text className="font-bold">{data.count}</Text>
                     {data.count === 1 ? " item" : " items"}
                   </Text>
                 </View>
@@ -568,39 +570,36 @@ export default function SpecificOrder() {
           {!data.order.paused && (
             <ReAnimated.View
               entering={FadeInUp.duration(300).delay(40)}
-              style={{ marginTop: 18 }}
+              className="mt-[18px]"
             >
-              <View style={styles.progressHeader}>
-                <BrText weight="bold" style={{ fontSize: 16 }}>
+              <View className="mb-2.5 flex-row items-baseline justify-between">
+                <BrText weight="bold" className="text-base">
                   Order progress
                 </BrText>
-                <Text style={styles.progressFraction}>
+                <Text
+                  className="text-xs text-[#8A7A6E]"
+                  style={BR_FONT_STYLE.mono}
+                >
                   {data.completionStats?.done}/{data.completionStats?.total}
                 </Text>
               </View>
-              <View style={styles.progressTrack}>
+              <View className="h-2 overflow-hidden rounded-full bg-[#FCEFE0]">
                 <View
-                  style={[
-                    styles.progressFill,
-                    {
-                      width: `${progressPercent}%` as any,
-                      backgroundColor: data.completionStats?.allDone
-                        ? BR.mint
-                        : BR.orange,
-                    },
-                  ]}
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${progressPercent}%`,
+                    backgroundColor: data.completionStats?.allDone
+                      ? BR.mint
+                      : BR.orange,
+                  }}
                 />
               </View>
               <Text
-                style={[
-                  styles.progressStatus,
-                  {
-                    color:
-                      data.count > 0 && data.completionStats?.allDone
-                        ? BR.mint
-                        : BR.ink3,
-                  },
-                ]}
+                className={`mt-2 text-[13px] ${
+                  data.count > 0 && data.completionStats?.allDone
+                    ? "text-[#2EBE7B]"
+                    : "text-[#8A7A6E]"
+                }`}
               >
                 {data.count === 0
                   ? "At least one item is needed before the run can start"
@@ -616,24 +615,26 @@ export default function SpecificOrder() {
           {/* Squad section */}
           <ReAnimated.View
             entering={FadeInUp.duration(300).delay(80)}
-            style={{ marginTop: 22 }}
+            className="mt-[22px]"
           >
-            <View style={styles.squadHeader}>
-              <BrText weight="bold" style={{ fontSize: 16 }}>
+            <View className="flex-row items-center justify-between">
+              <BrText weight="bold" className="text-base">
                 Squad
               </BrText>
               {isCreator && !data.order.paused && (
                 <Pressable
                   onPress={() => setShowQRModal(true)}
-                  style={styles.inviteBtn}
+                  className="flex-row items-center gap-1.5 rounded-full bg-[#FFE7D4] px-3 py-2"
                 >
                   <Icon name="UserPlus" size={13} color={BR.orangeDeep} />
-                  <Text style={styles.inviteBtnText}>Invite</Text>
+                  <Text className="text-xs font-bold text-[#E8551A]">
+                    Invite
+                  </Text>
                 </Pressable>
               )}
             </View>
 
-            <View style={{ gap: 10, marginTop: 12 }}>
+            <View className="mt-3 gap-2.5">
               {data.orderUsers.map((orderUser) => {
                 const isCurrentUser = orderUser.userId === currentUserId;
                 const isDone = orderUser.status === "done";
@@ -643,19 +644,18 @@ export default function SpecificOrder() {
 
                 const cardContent = (
                   <>
-                    <View style={styles.participantRow}>
+                    <View className="flex-row items-center gap-3 p-3.5">
                       {/* Avatar + status dot */}
-                      <View style={{ position: "relative" }}>
+                      <View className="relative">
                         <BrAvatar
                           name={memberName || "U"}
                           avatarUrl={orderUser.user?.avatarUrl ?? null}
                           size={44}
                         />
                         <View
-                          style={[
-                            styles.statusDotBadge,
-                            { backgroundColor: isDone ? BR.mint : BR.yolk },
-                          ]}
+                          className={`absolute -bottom-0.5 -right-0.5 h-[18px] w-[18px] items-center justify-center rounded-full border-[2.5px] border-white ${
+                            isDone ? "bg-[#2EBE7B]" : "bg-[#FFC542]"
+                          }`}
                         >
                           <Icon
                             name={isDone ? "Check" : "Clock"}
@@ -667,41 +667,35 @@ export default function SpecificOrder() {
                       </View>
 
                       {/* Info */}
-                      <View style={{ flex: 1, minWidth: 0 }}>
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 6,
-                            flexWrap: "wrap",
-                          }}
-                        >
+                      <View className="min-w-0 flex-1">
+                        <View className="flex-row flex-wrap items-center gap-1.5">
                           <Text
-                            style={[
-                              styles.participantName,
-                              { color: isCurrentUser ? BR.orangeDeep : BR.ink },
-                            ]}
+                            className={`text-[15px] font-bold ${
+                              isCurrentUser
+                                ? "text-[#E8551A]"
+                                : "text-[#1A1410]"
+                            }`}
                           >
                             {memberName || "Unknown"}
                             {isCurrentUser && " (you)"}
                           </Text>
                           {orderUser.isCreator && (
-                            <View style={styles.hostPill}>
-                              <Text style={styles.hostPillText}>Host</Text>
+                            <View className="rounded-full bg-[#FFE7D4] px-2 py-0.5">
+                              <Text className="text-[11px] font-bold text-[#E8551A]">
+                                Host
+                              </Text>
                             </View>
                           )}
                         </View>
-                        <View style={styles.participantMeta}>
+                        <View className="mt-[3px] flex-row items-center gap-1.5">
                           <Text
-                            style={{
-                              fontSize: 12,
-                              fontWeight: "600",
-                              color: isDone ? BR.mint : "#B27500",
-                            }}
+                            className={`text-xs font-semibold ${
+                              isDone ? "text-[#2EBE7B]" : "text-[#B27500]"
+                            }`}
                           >
                             {isDone ? "Done ordering" : "Still ordering…"}
                           </Text>
-                          <Text style={{ fontSize: 12, color: BR.ink3 }}>
+                          <Text className="text-xs text-[#8A7A6E]">
                             · {orderUser.itemCount}{" "}
                             {orderUser.itemCount === 1 ? "item" : "items"}
                           </Text>
@@ -719,12 +713,7 @@ export default function SpecificOrder() {
 
                     {/* Expanded items */}
                     {isDone && isExpanded && (
-                      <View
-                        style={[
-                          styles.expandedItems,
-                          { backgroundColor: "rgba(0,0,0,0.02)" },
-                        ]}
-                      >
+                      <View className="border-t border-[rgba(26,20,16,0.08)] bg-black/[0.02]">
                         <UserItemsList
                           orderUserId={orderUser.id as Id<"orderUsers">}
                         />
@@ -736,39 +725,21 @@ export default function SpecificOrder() {
                 const canSwipeRemove =
                   isCreator && !orderUser.isCreator && !data.order.paused;
 
+                const cardClassName = `overflow-hidden rounded-2xl border ${
+                  isCurrentUser
+                    ? "border-[rgba(255,106,31,0.25)] bg-[#FFF1E2]"
+                    : "border-[rgba(26,20,16,0.08)] bg-white"
+                }`;
+
                 const card = isDone ? (
                   <Pressable
                     onPress={() => toggleExpanded(orderUser.id)}
-                    style={[
-                      styles.participantCard,
-                      {
-                        backgroundColor: isCurrentUser
-                          ? BR.orangeTint
-                          : BR.card,
-                        borderColor: isCurrentUser
-                          ? "rgba(255,106,31,0.25)"
-                          : BR.line,
-                      },
-                    ]}
+                    className={cardClassName}
                   >
                     {cardContent}
                   </Pressable>
                 ) : (
-                  <View
-                    style={[
-                      styles.participantCard,
-                      {
-                        backgroundColor: isCurrentUser
-                          ? BR.orangeTint
-                          : BR.card,
-                        borderColor: isCurrentUser
-                          ? "rgba(255,106,31,0.25)"
-                          : BR.line,
-                      },
-                    ]}
-                  >
-                    {cardContent}
-                  </View>
+                  <View className={cardClassName}>{cardContent}</View>
                 );
 
                 return (
@@ -799,52 +770,39 @@ export default function SpecificOrder() {
 
         {/* Footer */}
         <View
-          style={[
-            styles.footer,
-            { paddingBottom: Math.max(insets.bottom, 16) + 8 },
-          ]}
+          className="border-t border-[rgba(26,20,16,0.08)] bg-[#FFF7EE] px-[18px] pt-4"
+          style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }}
         >
           {data.order.paused && !isCreator ? (
-            <View style={{ alignItems: "center", marginBottom: 8 }}>
-              <View style={styles.truckIcon}>
+            <View className="mb-2 items-center">
+              <View className="h-[52px] w-[52px] items-center justify-center rounded-full bg-[#FFE7D4]">
                 <Icon name="Truck" size={22} color={BR.orange} />
               </View>
-              <BrText
-                weight="bold"
-                style={{ fontSize: 16, marginTop: 10, textAlign: "center" }}
-              >
+              <BrText weight="bold" className="mt-2.5 text-center text-base">
                 Your order is being picked up
               </BrText>
-              <BrText
-                style={{
-                  fontSize: 13,
-                  color: BR.ink3,
-                  marginTop: 4,
-                  textAlign: "center",
-                }}
-              >
+              <BrText className="mt-1 text-center text-[13px] text-[#8A7A6E]">
                 Sit tight! You'll be notified when it's ready.
               </BrText>
               <TouchableOpacity
                 onPress={() =>
                   router.push(`/order/my-settlement?orderId=${orderId}`)
                 }
-                style={[
-                  styles.footerBtn,
-                  { backgroundColor: BR.orange, marginTop: 14 },
-                ]}
+                className="mt-3.5 w-full flex-row items-center justify-center gap-2 rounded-2xl bg-[#FF6A1F] py-4"
                 activeOpacity={0.85}
               >
                 <Icon name="Receipt" size={18} color="#fff" />
-                <Text style={styles.footerBtnText}>View my settlement</Text>
+                <Text className="text-base font-bold text-white">
+                  View my settlement
+                </Text>
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={{ gap: 10 }}>
+            <View className="gap-2.5">
               {data.order.paused && (
-                <View style={styles.pausedBanner}>
+                <View className="flex-row items-center gap-2 rounded-[10px] bg-[#FFE7D4] px-3.5 py-2.5">
                   <Icon name="CircleAlert" size={16} color={BR.orangeDeep} />
-                  <Text style={styles.pausedBannerText}>
+                  <Text className="flex-1 text-[13px] text-[#E8551A]">
                     The run has started — no more items can be added.
                   </Text>
                 </View>
@@ -857,23 +815,21 @@ export default function SpecificOrder() {
                       data.order.hasPausedAiSummary ? "cached" : "generate",
                     )
                   }
-                  style={[styles.footerBtn, { backgroundColor: BR.orange }]}
+                  className="w-full flex-row items-center justify-center gap-2 rounded-2xl bg-[#FF6A1F] py-4"
                   activeOpacity={0.85}
                 >
                   <Icon name="ClipboardList" size={18} color="#fff" />
-                  <Text style={styles.footerBtnText}>View order summary</Text>
+                  <Text className="text-base font-bold text-white">
+                    View order summary
+                  </Text>
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
                   onPress={handleSelectItems}
                   disabled={isSelectingItems}
-                  style={[
-                    styles.footerBtn,
-                    {
-                      backgroundColor: BR.orange,
-                      opacity: isSelectingItems ? 0.7 : 1,
-                    },
-                  ]}
+                  className={`w-full flex-row items-center justify-center gap-2 rounded-2xl bg-[#FF6A1F] py-4 ${
+                    isSelectingItems ? "opacity-70" : ""
+                  }`}
                   activeOpacity={0.85}
                 >
                   {isSelectingItems ? (
@@ -881,7 +837,9 @@ export default function SpecificOrder() {
                   ) : (
                     <Icon name="Plus" size={18} color="#fff" />
                   )}
-                  <Text style={styles.footerBtnText}>Add my items</Text>
+                  <Text className="text-base font-bold text-white">
+                    Add my items
+                  </Text>
                 </TouchableOpacity>
               )}
 
@@ -889,22 +847,13 @@ export default function SpecificOrder() {
                 <TouchableOpacity
                   onPress={handleStartRun}
                   disabled={isButtonDisabled}
-                  style={[
-                    styles.footerBtn,
-                    {
-                      backgroundColor: isButtonDisabled
-                        ? BR.paper2
-                        : buttonState === "readyToRun"
-                          ? BR.mint
-                          : BR.mintSoft,
-                      borderWidth: 1,
-                      borderColor: isButtonDisabled
-                        ? BR.line
-                        : buttonState === "readyToRun"
-                          ? BR.mint
-                          : "rgba(46,190,123,0.25)",
-                    },
-                  ]}
+                  className={`w-full flex-row items-center justify-center gap-2 rounded-2xl border py-4 ${
+                    isButtonDisabled
+                      ? "border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+                      : buttonState === "readyToRun"
+                        ? "border-[#2EBE7B] bg-[#2EBE7B]"
+                        : "border-[rgba(46,190,123,0.25)] bg-[#DDF5E8]"
+                  }`}
                   activeOpacity={0.85}
                 >
                   <Icon
@@ -919,16 +868,13 @@ export default function SpecificOrder() {
                     }
                   />
                   <Text
-                    style={[
-                      styles.footerBtnText,
-                      {
-                        color: isButtonDisabled
-                          ? BR.ink3
-                          : buttonState === "readyToRun"
-                            ? "#fff"
-                            : BR.mintInk,
-                      },
-                    ]}
+                    className={`text-base font-bold ${
+                      isButtonDisabled
+                        ? "text-[#8A7A6E]"
+                        : buttonState === "readyToRun"
+                          ? "text-white"
+                          : "text-[#1B6B43]"
+                    }`}
                   >
                     {data.count === 0
                       ? "Add items first"
@@ -942,18 +888,11 @@ export default function SpecificOrder() {
               {!isCreator && !data.order.paused && (
                 <TouchableOpacity
                   onPress={handleLeaveGroup}
-                  style={[
-                    styles.footerBtn,
-                    {
-                      backgroundColor: BR.paper2,
-                      borderWidth: 1,
-                      borderColor: BR.line2,
-                    },
-                  ]}
+                  className="w-full flex-row items-center justify-center gap-2 rounded-2xl border border-[rgba(26,20,16,0.14)] bg-[#FCEFE0] py-4"
                   activeOpacity={0.85}
                 >
                   <Icon name="LogOut" size={16} color={BR.ink} />
-                  <Text style={[styles.footerBtnText, { color: BR.ink }]}>
+                  <Text className="text-base font-bold text-[#1A1410]">
                     Leave group
                   </Text>
                 </TouchableOpacity>
@@ -985,28 +924,21 @@ export default function SpecificOrder() {
           paddingBottom: 24,
         }}
       >
-        <View style={{ paddingHorizontal: 18, paddingTop: 8 }}>
-          <BrText weight="bold" style={{ fontSize: 20 }}>
+        <View className="px-[18px] pt-2">
+          <BrText weight="bold" className="text-xl">
             Choose a new runner
           </BrText>
-          <BrText
-            style={{
-              fontSize: 13,
-              color: BR.ink3,
-              marginTop: 6,
-              lineHeight: 19,
-            }}
-          >
+          <BrText className="mt-1.5 text-[13px] leading-[19px] text-[#8A7A6E]">
             Anyone in the group can take over. If they don't have Stripe set up
             yet, members can settle in cash.
           </BrText>
         </View>
 
-        <View style={{ paddingHorizontal: 18, marginTop: 18, gap: 10 }}>
+        <View className="mt-[18px] gap-2.5 px-[18px]">
           {transferCandidates.length === 0 ? (
-            <View style={[styles.participantCard, { borderColor: BR.line }]}>
-              <View style={{ padding: 14 }}>
-                <BrText style={{ fontSize: 13, color: BR.ink3 }}>
+            <View className="overflow-hidden rounded-2xl border border-[rgba(26,20,16,0.08)]">
+              <View className="p-3.5">
+                <BrText className="text-[13px] text-[#8A7A6E]">
                   There isn't anyone else in this order yet.
                 </BrText>
               </View>
@@ -1020,10 +952,7 @@ export default function SpecificOrder() {
               return (
                 <Pressable
                   key={candidate.id}
-                  style={({ pressed }) => [
-                    styles.participantCard,
-                    { borderColor: BR.line, opacity: pressed ? 0.85 : 1 },
-                  ]}
+                  className="overflow-hidden rounded-2xl border border-[rgba(26,20,16,0.08)] active:opacity-85"
                   disabled={isTransferringRunner}
                   onPress={async () => {
                     transferRunnerSheetRef.current?.hide();
@@ -1065,40 +994,29 @@ export default function SpecificOrder() {
                     }, 250);
                   }}
                 >
-                  <View
-                    style={[styles.participantRow, { paddingVertical: 12 }]}
-                  >
+                  <View className="flex-row items-center gap-3 px-3.5 py-3">
                     <BrAvatar name={candidateName} size={40} />
-                    <View style={{ flex: 1 }}>
-                      <BrText weight="semibold" style={{ fontSize: 15 }}>
+                    <View className="flex-1">
+                      <BrText weight="semibold" className="text-[15px]">
                         {candidateName}
                       </BrText>
                       <Text
-                        style={{
-                          fontSize: 12,
-                          color: isEligible ? BR.mintInk : BR.ink3,
-                          marginTop: 2,
-                        }}
+                        className={`mt-0.5 text-xs ${
+                          isEligible ? "text-[#1B6B43]" : "text-[#8A7A6E]"
+                        }`}
                       >
                         {isEligible ? "Stripe ready" : "Cash only"}
                       </Text>
                     </View>
                     <View
-                      style={[
-                        styles.eligibilityPill,
-                        {
-                          backgroundColor: isEligible
-                            ? BR.mintSoft
-                            : BR.yolkSoft,
-                        },
-                      ]}
+                      className={`rounded-full px-2.5 py-1 ${
+                        isEligible ? "bg-[#DDF5E8]" : "bg-[#FFF1C4]"
+                      }`}
                     >
                       <Text
-                        style={{
-                          fontSize: 11,
-                          fontWeight: "700",
-                          color: isEligible ? BR.mintInk : "#7A4A20",
-                        }}
+                        className={`text-[11px] font-bold ${
+                          isEligible ? "text-[#1B6B43]" : "text-[#7A4A20]"
+                        }`}
                       >
                         {isEligible ? "Ready" : "Cash"}
                       </Text>
@@ -1110,7 +1028,7 @@ export default function SpecificOrder() {
           )}
         </View>
 
-        <View style={{ paddingHorizontal: 18, marginTop: 14 }}>
+        <View className="mt-3.5 px-[18px]">
           <BrButton
             label="Close"
             variant="ghost"
@@ -1121,300 +1039,3 @@ export default function SpecificOrder() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 12,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  moreBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  // Hero
-  heroCard: {
-    backgroundColor: BR.ink,
-    borderRadius: BR_RADIUS.lg,
-    padding: 18,
-    overflow: "hidden",
-    position: "relative",
-  },
-  heroWatermark: {
-    position: "absolute",
-    right: -24,
-    bottom: -34,
-    fontFamily: BR_FONT.displayExtraBold,
-    fontStyle: "italic",
-    fontSize: 200,
-    lineHeight: 200,
-    color: "rgba(255,255,255,0.05)",
-    letterSpacing: -12,
-  },
-  heroTop: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  heroEyebrow: {
-    fontSize: 11,
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    color: "rgba(255,255,255,0.5)",
-    fontFamily: BR_FONT.mono,
-  },
-  heroTitle: {
-    fontSize: 22,
-    color: "#fff",
-    marginTop: 6,
-  },
-  heroLocationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    marginTop: 6,
-  },
-  heroLocationText: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.6)",
-  },
-  statusPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,106,31,0.18)",
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 999,
-  },
-  statusPillText: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    color: BR.orange,
-  },
-  heroStats: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 14,
-  },
-  heroStatPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.08)",
-  },
-  heroStatText: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.85)",
-  },
-  // Progress
-  progressHeader: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  progressFraction: {
-    fontSize: 12,
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  progressTrack: {
-    height: 8,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: 999,
-  },
-  progressStatus: {
-    fontSize: 13,
-    marginTop: 8,
-  },
-  // Squad
-  squadHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  inviteBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: BR.orangeSoft,
-  },
-  inviteBtnText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: BR.orangeDeep,
-  },
-  participantCard: {
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    overflow: "hidden",
-  },
-  participantRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 14,
-  },
-  statusDotBadge: {
-    position: "absolute",
-    bottom: -2,
-    right: -2,
-    width: 18,
-    height: 18,
-    borderRadius: 999,
-    borderWidth: 2.5,
-    borderColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  participantName: {
-    fontWeight: "700",
-    fontSize: 15,
-  },
-  hostPill: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: BR.orangeSoft,
-  },
-  hostPillText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: BR.orangeDeep,
-  },
-  participantMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 3,
-  },
-  expandedItems: {
-    borderTopWidth: 1,
-    borderTopColor: BR.line,
-  },
-  // Items
-  itemLocation: {
-    fontSize: 10,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    color: BR.ink3,
-    marginBottom: 4,
-    fontFamily: BR_FONT.mono,
-  },
-  itemRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    paddingVertical: 3,
-  },
-  itemText: {
-    flex: 1,
-    fontSize: 13,
-    color: BR.ink,
-  },
-  itemPrice: {
-    marginLeft: 12,
-    fontSize: 13,
-    color: BR.ink2,
-    fontFamily: BR_FONT.mono,
-  },
-  // Remove action
-  removeBtn: {
-    width: 56,
-    height: 56,
-    borderRadius: 999,
-    backgroundColor: BR.coral,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  // Footer
-  footer: {
-    paddingHorizontal: 18,
-    paddingTop: 16,
-    backgroundColor: BR.paper,
-    borderTopWidth: 1,
-    borderTopColor: BR.line,
-  },
-  truckIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 999,
-    backgroundColor: BR.orangeSoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  footerBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: BR_RADIUS.md,
-    width: "100%",
-  },
-  footerBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-  },
-  pausedBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: BR_RADIUS.sm,
-    backgroundColor: BR.orangeSoft,
-  },
-  pausedBannerText: {
-    flex: 1,
-    fontSize: 13,
-    color: BR.orangeDeep,
-  },
-  // Transfer sheet
-  eligibilityPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-});

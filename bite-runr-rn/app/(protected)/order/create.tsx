@@ -30,7 +30,13 @@ import { useFriends, useCreateOrder } from "@/lib/hooks/use-order-api";
 import Icon from "@/components/common/icon";
 import { AnimatedPressable } from "@/components/common/animated-pressable";
 import { BrText, BrAvatar } from "@/components/br";
-import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
+import {
+  BR,
+  BR_FONT,
+  BR_FONT_STYLE,
+  BR_RADIUS,
+  BR_SHADOW,
+} from "@/lib/br-theme";
 
 // ── Types ─────────────────────────────────────────────────────────
 
@@ -67,6 +73,91 @@ function parseReorderLocationNames(raw?: string) {
 
 const INPUT_ACCESSORY_ID = "create-order-inputs";
 
+const inputTextStyle = {
+  fontFamily: BR_FONT.displayMedium,
+  color: BR.ink,
+  paddingVertical: 0,
+  includeFontPadding: false,
+  textAlignVertical: "center" as const,
+};
+
+const styles = StyleSheet.create({
+  inputBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    minHeight: 58,
+    paddingHorizontal: 18,
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: BR.line,
+    backgroundColor: BR.card,
+    ...BR_SHADOW.card,
+  },
+  inputBoxError: {
+    borderColor: BR.coral,
+  },
+  nameInput: {
+    ...inputTextStyle,
+    flex: 1,
+    fontSize: 20,
+    lineHeight: 26,
+  },
+  spotRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: BR_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: BR.line,
+    backgroundColor: BR.card,
+    ...BR_SHADOW.card,
+  },
+  spotRowError: {
+    borderColor: BR.coral,
+  },
+  spotInput: {
+    ...inputTextStyle,
+    flex: 1,
+    fontSize: 15,
+    lineHeight: 20,
+  },
+  footerButton: {
+    height: 54,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderRadius: BR_RADIUS.md,
+    backgroundColor: BR.orange,
+  },
+  footerButtonReady: {
+    ...BR_SHADOW.primary,
+  },
+  footerButtonDisabled: {
+    opacity: 0.55,
+  },
+  footerButtonPending: {
+    opacity: 0.6,
+  },
+  accessoryBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    borderTopWidth: 1,
+    borderTopColor: BR.line,
+    backgroundColor: BR.paper2,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  accessoryDone: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+});
+
 const FRIENDS_VISIBLE_CAP = 6;
 const FRIEND_HAPTIC_MIN_INTERVAL_MS = 80;
 
@@ -100,11 +191,7 @@ const FriendSelectRow = memo(function FriendSelectRow({
     <AnimatedPressable
       scale={0.98}
       onPress={handlePress}
-      style={[
-        styles.friendRow,
-        showBorder && styles.friendRowBorder,
-        isSelected && styles.friendRowSelected,
-      ]}
+      className={`flex-row items-center gap-3 px-3 py-2.5 ${showBorder ? "border-b border-[rgba(26,20,16,0.08)]" : ""} ${isSelected ? "bg-[#FFF1E2]" : ""}`}
     >
       <BrAvatar
         name={fullName}
@@ -112,11 +199,15 @@ const FriendSelectRow = memo(function FriendSelectRow({
         size={38}
         ring={isSelected ? BR.orange : "transparent"}
       />
-      <Text style={styles.friendName} numberOfLines={1}>
+      <Text
+        className="flex-1 text-sm text-[#1A1410]"
+        style={BR_FONT_STYLE.displaySemibold}
+        numberOfLines={1}
+      >
         {fullName}
       </Text>
       <View
-        style={[styles.checkCircle, isSelected && styles.checkCircleSelected]}
+        className={`h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full border-2 ${isSelected ? "border-[#FF6A1F] bg-[#FF6A1F]" : "border-[rgba(26,20,16,0.14)]"}`}
       >
         {isSelected && (
           <Icon name="Check" size={12} color="#fff" strokeWidth={3} />
@@ -242,107 +333,138 @@ export default function CreateOrder() {
 
   return (
     <>
-      <SafeAreaView edges={["top"]} style={{ backgroundColor: BR.paper }} />
-
-      {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Icon name="ChevronLeft" size={20} color={BR.ink} />
-        </Pressable>
-        <Text style={styles.headerTitle}>
-          {isReorder ? "Order again" : "New run"}
-        </Text>
-        <View style={styles.quickSticker}>
-          <Icon name="Sparkles" size={11} color="#7A4A20" />
-          <Text style={styles.quickStickerText}>Quick</Text>
-        </View>
-      </View>
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          style={{ flex: 1, backgroundColor: BR.paper }}
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Hero headline */}
-          <Animated.View
-            entering={FadeInUp.duration(300)}
-            style={{ paddingHorizontal: 2 }}
+      <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
+        {/* Header */}
+        <View className="flex-row items-center justify-between px-[18px] pb-3 pt-2">
+          <Pressable
+            onPress={() => router.back()}
+            className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
           >
-            <Text style={styles.headline}>
-              {"Who's "}
-              <Text style={styles.headlineAccent}>hungry?</Text>
+            <Icon name="ChevronLeft" size={20} color={BR.ink} />
+          </Pressable>
+          <Text
+            className="text-[17px] text-[#1A1410]"
+            style={BR_FONT_STYLE.display}
+          >
+            {isReorder ? "Order again" : "New run"}
+          </Text>
+          <View className="rotate-[3deg] flex-row items-center gap-[5px] rounded-full bg-[#FFF1C4] px-2.5 py-[5px]">
+            <Icon name="Sparkles" size={11} color="#7A4A20" />
+            <Text
+              className="text-[11px] text-[#7A4A20]"
+              style={BR_FONT_STYLE.monoBold}
+            >
+              Quick
             </Text>
-          </Animated.View>
+          </View>
+        </View>
 
-          {/* ── Run name ──────────────────────────────────────────────── */}
-          <Animated.View
-            entering={FadeInUp.duration(300).delay(70)}
-            style={{ marginTop: 22 }}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          className="flex-1"
+        >
+          <ScrollView
+            className="flex-1 bg-[#FFF7EE]"
+            contentContainerClassName="px-[18px] pb-6 pt-2"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            <BrText variant="eyebrow">Call it something</BrText>
-            <View
-              style={[
-                styles.nameCard,
-                fieldErrors.name && { borderColor: BR.coral },
-              ]}
-            >
-              <TextInput
-                value={name}
-                onChangeText={(t) => {
-                  setName(t);
-                  if (fieldErrors.name) clearError("name");
-                }}
-                placeholder="Friday lunch run"
-                placeholderTextColor={BR.ink3}
-                style={styles.nameInput}
-                returnKeyType="done"
-                onSubmitEditing={() => Keyboard.dismiss()}
-                inputAccessoryViewID={INPUT_ACCESSORY_ID}
-              />
-              {!name && <Text style={styles.requiredHint}>required</Text>}
-            </View>
-            {fieldErrors.name && (
-              <Text style={styles.fieldError}>{fieldErrors.name}</Text>
-            )}
-          </Animated.View>
+            {/* Hero headline */}
+            <Animated.View entering={FadeInUp.duration(300)} className="px-0.5">
+              <Text
+                className="mt-1 text-[34px] leading-[38px] tracking-[-0.5px] text-[#1A1410]"
+                style={BR_FONT_STYLE.displayExtraBold}
+              >
+                {"Who's "}
+                <Text
+                  className="italic text-[#FF6A1F]"
+                  style={BR_FONT_STYLE.displayExtraBold}
+                >
+                  hungry?
+                </Text>
+              </Text>
+            </Animated.View>
 
-          {/* ── Stops ─────────────────────────────────────────────────── */}
-          <Animated.View
-            entering={FadeInUp.duration(300).delay(100)}
-            style={{ marginTop: 22 }}
-          >
-            <View
-              style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}
+            {/* ── Run name ──────────────────────────────────────────────── */}
+            <Animated.View
+              entering={FadeInUp.duration(300).delay(70)}
+              className="mt-[22px]"
             >
-              <BrText variant="eyebrow">Where to?</BrText>
-              {spots.length > 1 && (
-                <Text style={styles.spotsCountHint}>
-                  · {spots.length} stops
+              <BrText variant="eyebrow">Call it something</BrText>
+              <View
+                style={[
+                  styles.inputBox,
+                  fieldErrors.name ? styles.inputBoxError : null,
+                ]}
+              >
+                <TextInput
+                  value={name}
+                  onChangeText={(t) => {
+                    setName(t);
+                    if (fieldErrors.name) clearError("name");
+                  }}
+                  placeholder="Friday lunch run"
+                  placeholderTextColor={BR.ink3}
+                  style={styles.nameInput}
+                  returnKeyType="done"
+                  onSubmitEditing={() => Keyboard.dismiss()}
+                  inputAccessoryViewID={INPUT_ACCESSORY_ID}
+                />
+                {!name && (
+                  <Text
+                    className="pr-4 text-[11px] text-[#8A7A6E]"
+                    style={BR_FONT_STYLE.mono}
+                  >
+                    required
+                  </Text>
+                )}
+              </View>
+              {fieldErrors.name && (
+                <Text
+                  className="ml-0.5 mt-[5px] text-[11px] text-[#FF4D6D]"
+                  style={BR_FONT_STYLE.mono}
+                >
+                  {fieldErrors.name}
                 </Text>
               )}
-            </View>
+            </Animated.View>
 
-            <View style={{ gap: 8, marginTop: 10 }}>
-              {spots.map((s, i) => {
-                const spotKey = s.trim() || `empty-location-${i}`;
-                return (
+            {/* ── Stops ─────────────────────────────────────────────────── */}
+            <Animated.View
+              entering={FadeInUp.duration(300).delay(100)}
+              className="mt-[22px]"
+            >
+              <View className="flex-row items-baseline gap-1.5">
+                <BrText variant="eyebrow">Where to?</BrText>
+                {spots.length > 1 && (
+                  <Text
+                    className="text-[11px] text-[#8A7A6E]"
+                    style={BR_FONT_STYLE.mono}
+                  >
+                    · {spots.length} stops
+                  </Text>
+                )}
+              </View>
+
+              <View className="mt-2.5 gap-2">
+                {spots.map((s, i) => (
                   <View
-                    key={spotKey}
+                    key={`location-${i}`}
                     style={[
-                      styles.spotCard,
-                      fieldErrors.order_locations &&
-                        i === 0 &&
-                        !s.trim() && { borderColor: BR.coral },
+                      styles.spotRow,
+                      fieldErrors.order_locations && i === 0 && !s.trim()
+                        ? styles.spotRowError
+                        : null,
                     ]}
                   >
-                    <View style={styles.spotBadge}>
+                    <View className="h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-[#FFF1E2]">
                       {spots.length > 1 ? (
-                        <Text style={styles.spotBadgeText}>{i + 1}</Text>
+                        <Text
+                          className="text-xs text-[#E8551A]"
+                          style={BR_FONT_STYLE.monoBold}
+                        >
+                          {i + 1}
+                        </Text>
                       ) : (
                         <Icon name="MapPin" size={15} color={BR.orangeDeep} />
                       )}
@@ -367,730 +489,348 @@ export default function CreateOrder() {
                       <Pressable
                         onPress={() => removeSpot(i)}
                         hitSlop={8}
-                        style={styles.spotRemoveBtn}
+                        className="h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-[#FCEFE0]"
                       >
                         <Icon name="X" size={12} color={BR.ink2} />
                       </Pressable>
                     )}
                     {!s.trim() && spots.length === 1 && (
-                      <Text style={styles.requiredHint}>required</Text>
+                      <Text
+                        className="text-[11px] text-[#8A7A6E]"
+                        style={BR_FONT_STYLE.mono}
+                      >
+                        required
+                      </Text>
                     )}
                   </View>
-                );
-              })}
+                ))}
 
-              {fieldErrors.order_locations && (
-                <Text style={styles.fieldError}>
-                  {fieldErrors.order_locations}
-                </Text>
-              )}
+                {fieldErrors.order_locations && (
+                  <Text
+                    className="ml-0.5 mt-[5px] text-[11px] text-[#FF4D6D]"
+                    style={BR_FONT_STYLE.mono}
+                  >
+                    {fieldErrors.order_locations}
+                  </Text>
+                )}
 
-              <Pressable onPress={addSpot} style={styles.addStopBtn}>
-                <Icon name="Plus" size={13} color={BR.ink2} strokeWidth={2.5} />
-                <Text style={styles.addStopText}>Add another stop</Text>
-              </Pressable>
-            </View>
+                <Pressable
+                  onPress={addSpot}
+                  className="flex-row items-center justify-center gap-2 rounded-2xl border border-dashed border-[rgba(26,20,16,0.14)] py-3"
+                >
+                  <Icon
+                    name="Plus"
+                    size={13}
+                    color={BR.ink2}
+                    strokeWidth={2.5}
+                  />
+                  <Text
+                    className="text-[13px] text-[#4A3C32]"
+                    style={BR_FONT_STYLE.displaySemibold}
+                  >
+                    Add another stop
+                  </Text>
+                </Pressable>
+              </View>
 
-            <View style={styles.spotHintRow}>
-              <Icon name="Info" size={11} color={BR.ink3} />
-              <Text style={styles.spotHintText}>
-                Anywhere works — a restaurant, an address, or just "the usual."
-              </Text>
-            </View>
-          </Animated.View>
-
-          {/* ── Divider ────────────────────────────────────────────────── */}
-          <Animated.View
-            entering={FadeInUp.duration(300).delay(130)}
-            style={styles.sectionDivider}
-          >
-            <View style={styles.sectionDividerLine} />
-          </Animated.View>
-
-          {/* ── Friends ────────────────────────────────────────────────── */}
-          <Animated.View
-            entering={FadeInUp.duration(300).delay(150)}
-            style={{ marginTop: 8 }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "baseline",
-              }}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}
-              >
-                <BrText variant="eyebrow">Who's coming?</BrText>
-                <Text style={styles.spotsCountHint}>
-                  {selectedFriendIds.length === 0
-                    ? "· tap to invite"
-                    : `· ${selectedFriendIds.length} invited`}
+              <View className="mt-2.5 flex-row items-start gap-1.5">
+                <Icon name="Info" size={11} color={BR.ink3} />
+                <Text
+                  className="flex-1 text-[11px] leading-[17px] text-[#8A7A6E]"
+                  style={BR_FONT_STYLE.mono}
+                >
+                  Anywhere works — a restaurant, an address, or just "the
+                  usual."
                 </Text>
               </View>
-              {selectedFriendIds.length > 0 && (
-                <Pressable onPress={() => setSelectedFriendIds([])} hitSlop={8}>
-                  <Text style={styles.clearText}>Clear</Text>
-                </Pressable>
-              )}
-            </View>
+            </Animated.View>
 
-            {/* Squad shortcuts */}
-            {squads.length > 0 && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{
-                  gap: 8,
-                  paddingVertical: 2,
-                  marginTop: 12,
-                }}
-              >
-                {squads.map((squad) => {
-                  const memberIds = squad.memberIds as string[];
-                  const allSelected =
-                    memberIds.length > 0 &&
-                    memberIds.every((id) => selectedFriendIdSet.has(id));
-                  return (
-                    <AnimatedPressable
-                      key={squad.id}
-                      scale={0.93}
-                      onPress={() => toggleSquad(memberIds)}
-                      style={[
-                        styles.squadPill,
-                        allSelected && styles.squadPillActive,
-                      ]}
-                    >
-                      {/* Stacked avatars */}
-                      <View style={{ flexDirection: "row" }}>
-                        {squad.members.slice(0, 3).map((m, i) => (
-                          <View
-                            key={m.id}
-                            style={{ marginLeft: i > 0 ? -8 : 0 }}
-                          >
-                            <BrAvatar
-                              name={`${m.firstName} ${m.lastName}`}
-                              avatarUrl={m.avatarUrl}
-                              size={22}
-                              ring={allSelected ? BR.orange : BR.card}
-                            />
-                          </View>
-                        ))}
-                      </View>
-                      <Text
-                        style={[
-                          styles.squadPillName,
-                          allSelected && { color: "#fff" },
-                        ]}
-                      >
-                        {squad.name}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.squadPillCount,
-                          allSelected && { color: "rgba(255,255,255,0.7)" },
-                        ]}
-                      >
-                        · {squad.memberIds.length}
-                      </Text>
-                      {allSelected && (
-                        <Animated.View
-                          entering={ZoomIn.duration(150).springify()}
-                        >
-                          <Icon
-                            name="Check"
-                            size={13}
-                            color="#fff"
-                            strokeWidth={3}
-                          />
-                        </Animated.View>
-                      )}
-                    </AnimatedPressable>
-                  );
-                })}
-              </ScrollView>
-            )}
+            {/* ── Divider ────────────────────────────────────────────────── */}
+            <Animated.View
+              entering={FadeInUp.duration(300).delay(130)}
+              className="my-7 flex-row items-center gap-3"
+            >
+              <View className="h-px flex-1 bg-[rgba(26,20,16,0.14)]" />
+            </Animated.View>
 
-            {/* Search */}
-            <View style={[styles.searchBar, { marginTop: 12 }]}>
-              <Icon name="Search" size={15} color={BR.ink3} />
-              <TextInput
-                value={friendQuery}
-                onChangeText={setFriendQuery}
-                placeholder={`Search ${friends.length} friends`}
-                placeholderTextColor={BR.ink3}
-                style={styles.searchInput}
-                returnKeyType="search"
-                inputAccessoryViewID={INPUT_ACCESSORY_ID}
-              />
-              {friendQuery.length > 0 && (
-                <Pressable
-                  onPress={() => setFriendQuery("")}
-                  hitSlop={8}
-                  style={styles.searchClearBtn}
-                >
-                  <Icon name="X" size={11} color={BR.ink2} />
-                </Pressable>
-              )}
-            </View>
-
-            {/* Friend list */}
-            <View style={[styles.friendList, { marginTop: 10 }]}>
-              {isLoadingFriends ? (
-                <View style={{ padding: 24, alignItems: "center" }}>
-                  <ActivityIndicator size="small" color={BR.orange} />
-                </View>
-              ) : visibleFriends.length === 0 ? (
-                <View style={{ padding: 24, alignItems: "center" }}>
+            {/* ── Friends ────────────────────────────────────────────────── */}
+            <Animated.View
+              entering={FadeInUp.duration(300).delay(150)}
+              className="mt-2"
+            >
+              <View className="flex-row items-baseline justify-between">
+                <View className="flex-row items-baseline gap-1.5">
+                  <BrText variant="eyebrow">Who's coming?</BrText>
                   <Text
-                    style={{
-                      fontFamily: BR_FONT.mono,
-                      fontSize: 13,
-                      color: BR.ink3,
-                    }}
+                    className="text-[11px] text-[#8A7A6E]"
+                    style={BR_FONT_STYLE.mono}
                   >
-                    {friendQuery
-                      ? `No matches for "${friendQuery}"`
-                      : "No friends yet"}
+                    {selectedFriendIds.length === 0
+                      ? "· tap to invite"
+                      : `· ${selectedFriendIds.length} invited`}
                   </Text>
                 </View>
-              ) : (
-                visibleFriends.map((f, i) => {
-                  const fullName = `${f.first_name} ${f.last_name}`;
-                  return (
-                    <FriendSelectRow
-                      key={f.id}
-                      friend={f}
-                      fullName={fullName}
-                      isSelected={selectedFriendIdSet.has(f.id)}
-                      showBorder={i < visibleFriends.length - 1}
-                      onToggle={toggleFriend}
-                    />
-                  );
-                })
+                {selectedFriendIds.length > 0 && (
+                  <Pressable
+                    onPress={() => setSelectedFriendIds([])}
+                    hitSlop={8}
+                  >
+                    <Text
+                      className="text-[11px] text-[#8A7A6E]"
+                      style={BR_FONT_STYLE.monoSemibold}
+                    >
+                      Clear
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+
+              {/* Squad shortcuts */}
+              {squads.length > 0 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerClassName="mt-3 gap-2 py-0.5"
+                >
+                  {squads.map((squad) => {
+                    const memberIds = squad.memberIds as string[];
+                    const allSelected =
+                      memberIds.length > 0 &&
+                      memberIds.every((id) => selectedFriendIdSet.has(id));
+                    return (
+                      <AnimatedPressable
+                        key={squad.id}
+                        scale={0.93}
+                        onPress={() => toggleSquad(memberIds)}
+                        className={`flex-row items-center gap-[7px] rounded-full py-1.5 pl-1.5 pr-3 ${allSelected ? "border border-[#FF6A1F] bg-[#FF6A1F]" : "border border-[rgba(26,20,16,0.08)] bg-white"}`}
+                      >
+                        {/* Stacked avatars */}
+                        <View className="flex-row">
+                          {squad.members.slice(0, 3).map((m, i) => (
+                            <View key={m.id} className={i > 0 ? "-ml-2" : ""}>
+                              <BrAvatar
+                                name={`${m.firstName} ${m.lastName}`}
+                                avatarUrl={m.avatarUrl}
+                                size={22}
+                                ring={allSelected ? BR.orange : BR.card}
+                              />
+                            </View>
+                          ))}
+                        </View>
+                        <Text
+                          className={`text-[13px] ${allSelected ? "text-white" : "text-[#1A1410]"}`}
+                          style={BR_FONT_STYLE.displaySemibold}
+                        >
+                          {squad.name}
+                        </Text>
+                        <Text
+                          className={`text-[11px] ${allSelected ? "text-white/70" : "text-[#8A7A6E]"}`}
+                          style={BR_FONT_STYLE.mono}
+                        >
+                          · {squad.memberIds.length}
+                        </Text>
+                        {allSelected && (
+                          <Animated.View
+                            entering={ZoomIn.duration(150).springify()}
+                          >
+                            <Icon
+                              name="Check"
+                              size={13}
+                              color="#fff"
+                              strokeWidth={3}
+                            />
+                          </Animated.View>
+                        )}
+                      </AnimatedPressable>
+                    );
+                  })}
+                </ScrollView>
               )}
-            </View>
 
-            {/* Show more */}
-            {!friendQuery && filteredFriends.length > FRIENDS_VISIBLE_CAP && (
-              <Pressable
-                onPress={() => setShowAllFriends((v) => !v)}
-                style={styles.showMoreBtn}
-                hitSlop={8}
-              >
-                <Text style={styles.showMoreText}>
-                  {showAllFriends
-                    ? "Show less"
-                    : `Show all ${friends.length} friends`}
-                </Text>
-                <Icon
-                  name={showAllFriends ? "ChevronUp" : "ChevronDown"}
-                  size={12}
-                  color={BR.orangeDeep}
+              {/* Search */}
+              <View className="mt-3 flex-row items-center gap-2.5 rounded-[22px] border border-[rgba(26,20,16,0.08)] bg-white p-3 shadow-[0_6px_18px_rgba(26,20,16,0.1)]">
+                <Icon name="Search" size={15} color={BR.ink3} />
+                <TextInput
+                  value={friendQuery}
+                  onChangeText={setFriendQuery}
+                  placeholder={`Search ${friends.length} friends`}
+                  placeholderTextColor={BR.ink3}
+                  className="flex-1 py-0 text-sm text-[#1A1410]"
+                  style={BR_FONT_STYLE.displayMedium}
+                  returnKeyType="search"
+                  inputAccessoryViewID={INPUT_ACCESSORY_ID}
                 />
-              </Pressable>
-            )}
-          </Animated.View>
+                {friendQuery.length > 0 && (
+                  <Pressable
+                    onPress={() => setFriendQuery("")}
+                    hitSlop={8}
+                    className="h-[22px] w-[22px] items-center justify-center rounded-full bg-[#FCEFE0]"
+                  >
+                    <Icon name="X" size={11} color={BR.ink2} />
+                  </Pressable>
+                )}
+              </View>
 
-          {/* ── Notes ─────────────────────────────────────────────────── */}
-          <Animated.View
-            entering={FadeInUp.duration(300).delay(180)}
-            style={{ marginTop: 18 }}
-          >
-            <View
-              style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}
+              {/* Friend list */}
+              <View className="mt-2.5 overflow-hidden rounded-[22px] border border-[rgba(26,20,16,0.08)] bg-white shadow-[0_6px_18px_rgba(26,20,16,0.1)]">
+                {isLoadingFriends ? (
+                  <View className="items-center p-6">
+                    <ActivityIndicator size="small" color={BR.orange} />
+                  </View>
+                ) : visibleFriends.length === 0 ? (
+                  <View className="items-center p-6">
+                    <Text
+                      className="text-[13px] text-[#8A7A6E]"
+                      style={BR_FONT_STYLE.mono}
+                    >
+                      {friendQuery
+                        ? `No matches for "${friendQuery}"`
+                        : "No friends yet"}
+                    </Text>
+                  </View>
+                ) : (
+                  visibleFriends.map((f, i) => {
+                    const fullName = `${f.first_name} ${f.last_name}`;
+                    return (
+                      <FriendSelectRow
+                        key={f.id}
+                        friend={f}
+                        fullName={fullName}
+                        isSelected={selectedFriendIdSet.has(f.id)}
+                        showBorder={i < visibleFriends.length - 1}
+                        onToggle={toggleFriend}
+                      />
+                    );
+                  })
+                )}
+              </View>
+
+              {/* Show more */}
+              {!friendQuery && filteredFriends.length > FRIENDS_VISIBLE_CAP && (
+                <Pressable
+                  onPress={() => setShowAllFriends((v) => !v)}
+                  className="mt-1.5 flex-row items-center justify-center gap-1.5 py-2.5"
+                  hitSlop={8}
+                >
+                  <Text
+                    className="text-xs text-[#E8551A]"
+                    style={BR_FONT_STYLE.displaySemibold}
+                  >
+                    {showAllFriends
+                      ? "Show less"
+                      : `Show all ${friends.length} friends`}
+                  </Text>
+                  <Icon
+                    name={showAllFriends ? "ChevronUp" : "ChevronDown"}
+                    size={12}
+                    color={BR.orangeDeep}
+                  />
+                </Pressable>
+              )}
+            </Animated.View>
+
+            {/* ── Notes ─────────────────────────────────────────────────── */}
+            <Animated.View
+              entering={FadeInUp.duration(300).delay(180)}
+              className="mt-[18px]"
             >
-              <BrText variant="eyebrow">Note for the squad</BrText>
-              <Text style={styles.spotsCountHint}>· optional</Text>
-            </View>
-            <View style={[styles.notesCard, { marginTop: 10 }]}>
-              <TextInput
-                value={comments}
-                onChangeText={setComments}
-                placeholder="Closing in 30 min · order ASAP 🏃‍♀️"
-                placeholderTextColor={BR.ink3}
-                style={styles.notesInput}
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-                inputAccessoryViewID={INPUT_ACCESSORY_ID}
-              />
-            </View>
-          </Animated.View>
+              <View className="flex-row items-baseline gap-1.5">
+                <BrText variant="eyebrow">Note for the squad</BrText>
+                <Text
+                  className="text-[11px] text-[#8A7A6E]"
+                  style={BR_FONT_STYLE.mono}
+                >
+                  · optional
+                </Text>
+              </View>
+              <View className="mt-2.5 rounded-[22px] border border-[rgba(26,20,16,0.08)] bg-white p-3.5 shadow-[0_6px_18px_rgba(26,20,16,0.1)]">
+                <TextInput
+                  value={comments}
+                  onChangeText={setComments}
+                  placeholder="Closing in 30 min · order ASAP 🏃‍♀️"
+                  placeholderTextColor={BR.ink3}
+                  className="min-h-[72px] p-0 text-sm leading-5 text-[#1A1410]"
+                  style={BR_FONT_STYLE.displayMedium}
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                  inputAccessoryViewID={INPUT_ACCESSORY_ID}
+                />
+              </View>
+            </Animated.View>
 
-          {/* Spacer for footer */}
-          <View style={{ height: 100 }} />
-        </ScrollView>
-      </KeyboardAvoidingView>
+            {/* Spacer for footer */}
+            <View className="h-[100px]" />
+          </ScrollView>
+        </KeyboardAvoidingView>
+
+        {/* Sticky footer */}
+        <View
+          className="gap-2.5 px-[18px] pt-3.5"
+          style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+        >
+          {isValid && (
+            <Animated.View
+              entering={FadeInDown.duration(200)}
+              className="flex-row items-center gap-2 self-stretch rounded-full border border-[rgba(46,190,123,0.25)] bg-[rgba(46,190,123,0.12)] px-3.5 py-[9px]"
+            >
+              <Icon name="CircleCheck" size={14} color={BR.mintInk} />
+              <Text
+                className="text-xs text-[#1B6B43]"
+                style={BR_FONT_STYLE.monoSemibold}
+              >
+                Ready to roll · {selectedFriendIds.length + 1}{" "}
+                {selectedFriendIds.length === 0 ? "person" : "people"}
+              </Text>
+            </Animated.View>
+          )}
+          <AnimatedPressable
+            scale={isValid ? 0.97 : 1}
+            onPress={handleCreate}
+            disabled={createOrderMutation.isPending}
+            style={[
+              styles.footerButton,
+              isValid ? styles.footerButtonReady : styles.footerButtonDisabled,
+              createOrderMutation.isPending ? styles.footerButtonPending : null,
+            ]}
+          >
+            {createOrderMutation.isPending ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Icon name="Zap" size={16} color="#fff" />
+                <Text
+                  className="text-base text-white"
+                  style={BR_FONT_STYLE.display}
+                >
+                  {isValid ? "Send the run" : "Pick a spot to continue"}
+                </Text>
+                {isValid && <Icon name="ArrowRight" size={16} color="#fff" />}
+              </>
+            )}
+          </AnimatedPressable>
+        </View>
+      </SafeAreaView>
 
       {/* Keyboard dismiss toolbar — iOS only */}
       {Platform.OS === "ios" && (
         <InputAccessoryView nativeID={INPUT_ACCESSORY_ID}>
-          <View style={styles.keyboardToolbar}>
+          <View style={styles.accessoryBar}>
             <Pressable
               onPress={() => Keyboard.dismiss()}
               hitSlop={12}
-              style={styles.keyboardDoneBtn}
+              style={styles.accessoryDone}
             >
-              <Text style={styles.keyboardDoneText}>Done</Text>
+              <Text
+                className="text-base text-[#FF6A1F]"
+                style={BR_FONT_STYLE.displaySemibold}
+              >
+                Done
+              </Text>
             </Pressable>
           </View>
         </InputAccessoryView>
       )}
-
-      {/* Sticky footer */}
-      <View
-        style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}
-      >
-        {isValid && (
-          <Animated.View
-            entering={FadeInDown.duration(200)}
-            style={styles.readyBadge}
-          >
-            <Icon name="CircleCheck" size={14} color={BR.mintInk} />
-            <Text style={styles.readyBadgeText}>
-              Ready to roll · {selectedFriendIds.length + 1}{" "}
-              {selectedFriendIds.length === 0 ? "person" : "people"}
-            </Text>
-          </Animated.View>
-        )}
-        <AnimatedPressable
-          scale={isValid ? 0.97 : 1}
-          onPress={handleCreate}
-          disabled={createOrderMutation.isPending}
-          style={[
-            styles.createBtn,
-            !isValid && styles.createBtnDisabled,
-            createOrderMutation.isPending && { opacity: 0.6 },
-          ]}
-        >
-          {createOrderMutation.isPending ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <>
-              <Icon name="Zap" size={16} color="#fff" />
-              <Text style={styles.createBtnText}>
-                {isValid ? "Send the run" : "Pick a spot to continue"}
-              </Text>
-              {isValid && <Icon name="ArrowRight" size={16} color="#fff" />}
-            </>
-          )}
-        </AnimatedPressable>
-      </View>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 12,
-    backgroundColor: BR.paper,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerTitle: {
-    fontFamily: BR_FONT.display,
-    fontSize: 17,
-    fontWeight: "700",
-    color: BR.ink,
-  },
-  quickSticker: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
-    backgroundColor: BR.yolkSoft,
-    transform: [{ rotate: "3deg" }],
-  },
-  quickStickerText: {
-    fontFamily: BR_FONT.monoBold,
-    fontSize: 11,
-    color: "#7A4A20",
-  },
-  scroll: {
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 24,
-  },
-  // headline
-  headline: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontSize: 34,
-    lineHeight: 38,
-    color: BR.ink,
-    letterSpacing: -0.5,
-    marginTop: 4,
-  },
-  headlineAccent: {
-    color: BR.orange,
-    fontStyle: "italic",
-    fontFamily: BR_FONT.displayExtraBold,
-  },
-  // keyboard toolbar
-  keyboardToolbar: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: BR.paper2,
-    borderTopWidth: 1,
-    borderTopColor: BR.line,
-  },
-  keyboardDoneBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  keyboardDoneText: {
-    fontFamily: BR_FONT.display,
-    fontSize: 16,
-    fontWeight: "600",
-    color: BR.orange,
-  },
-  // name
-  nameCard: {
-    marginTop: 10,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: BR.line,
-    flexDirection: "row",
-    alignItems: "center",
-    overflow: "hidden",
-    ...BR_SHADOW.card,
-  },
-  nameInput: {
-    flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: 18,
-    paddingBottom: 16,
-    fontFamily: BR_FONT.displayMedium,
-    fontSize: 20,
-    lineHeight: 26,
-    color: BR.ink,
-    letterSpacing: 0,
-    includeFontPadding: false,
-  },
-  requiredHint: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 11,
-    color: BR.ink3,
-    paddingRight: 16,
-  },
-  quickFillChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-  },
-  quickFillText: {
-    fontFamily: BR_FONT.display,
-    fontSize: 11,
-    color: BR.ink2,
-  },
-  fieldError: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 11,
-    color: BR.coral,
-    marginTop: 5,
-    marginLeft: 2,
-  },
-  // spots
-  spotsCountHint: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 11,
-    color: BR.ink3,
-  },
-  spotCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 12,
-    paddingLeft: 14,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: BR.line,
-    ...BR_SHADOW.card,
-  },
-  spotBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: BR.orangeTint,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  spotBadgeText: {
-    fontFamily: BR_FONT.monoBold,
-    fontSize: 12,
-    color: BR.orangeDeep,
-  },
-  spotInput: {
-    flex: 1,
-    fontFamily: BR_FONT.displayMedium,
-    fontSize: 15,
-    color: BR.ink,
-    letterSpacing: 0,
-    paddingVertical: 2,
-    includeFontPadding: false,
-  },
-  spotRemoveBtn: {
-    width: 26,
-    height: 26,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  addStopBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: BR.line2,
-  },
-  addStopText: {
-    fontFamily: BR_FONT.display,
-    fontSize: 13,
-    fontWeight: "600",
-    color: BR.ink2,
-  },
-  spotHintRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 6,
-    marginTop: 10,
-  },
-  spotHintText: {
-    flex: 1,
-    fontFamily: BR_FONT.mono,
-    fontSize: 11,
-    color: BR.ink3,
-    lineHeight: 17,
-  },
-  // divider
-  sectionDivider: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginVertical: 28,
-  },
-  sectionDividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: BR.line2,
-  },
-  sectionDividerEmoji: {
-    fontSize: 18,
-  },
-  // squads
-  squadPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-    paddingLeft: 6,
-    paddingRight: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: BR.card,
-    borderWidth: 1,
-    borderColor: BR.line,
-  },
-  squadPillActive: {
-    backgroundColor: BR.orange,
-    borderColor: BR.orange,
-  },
-  squadPillName: {
-    fontFamily: BR_FONT.display,
-    fontSize: 13,
-    fontWeight: "600",
-    color: BR.ink,
-  },
-  squadPillCount: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 11,
-    color: BR.ink3,
-  },
-  // friends
-  clearText: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 11,
-    fontWeight: "600",
-    color: BR.ink3,
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    padding: 12,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: BR.line,
-    ...BR_SHADOW.card,
-  },
-  searchInput: {
-    flex: 1,
-    fontFamily: BR_FONT.displayMedium,
-    fontSize: 14,
-    color: BR.ink,
-    letterSpacing: 0,
-    paddingVertical: 0,
-    includeFontPadding: false,
-  },
-  searchClearBtn: {
-    width: 22,
-    height: 22,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  friendList: {
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: BR.line,
-    overflow: "hidden",
-    ...BR_SHADOW.card,
-  },
-  friendRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  friendRowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: BR.line,
-  },
-  friendRowSelected: {
-    backgroundColor: BR.orangeTint,
-  },
-  friendName: {
-    flex: 1,
-    fontFamily: BR_FONT.display,
-    fontSize: 14,
-    fontWeight: "600",
-    color: BR.ink,
-  },
-  checkCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 999,
-    borderWidth: 2,
-    borderColor: BR.line2,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  checkCircleSelected: {
-    backgroundColor: BR.orange,
-    borderColor: BR.orange,
-  },
-  showMoreBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 10,
-    marginTop: 6,
-  },
-  showMoreText: {
-    fontFamily: BR_FONT.display,
-    fontSize: 12,
-    fontWeight: "600",
-    color: BR.orangeDeep,
-  },
-  // notes
-  notesCard: {
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: BR.line,
-    padding: 14,
-    ...BR_SHADOW.card,
-  },
-  notesInput: {
-    fontFamily: BR_FONT.displayMedium,
-    fontSize: 14,
-    lineHeight: 20,
-    color: BR.ink,
-    letterSpacing: 0,
-    minHeight: 72,
-    padding: 0,
-    includeFontPadding: false,
-  },
-  // footer
-  footer: {
-    paddingHorizontal: 18,
-    paddingTop: 14,
-    gap: 10,
-    backgroundColor: BR.paper,
-  },
-  readyBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 999,
-    backgroundColor: "rgba(46,190,123,0.12)",
-    borderWidth: 1,
-    borderColor: "rgba(46,190,123,0.25)",
-    alignSelf: "stretch",
-  },
-  readyBadgeText: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 12,
-    fontWeight: "600",
-    color: BR.mintInk,
-  },
-  createBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    height: 54,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.orange,
-    ...BR_SHADOW.primary,
-  },
-  createBtnDisabled: {
-    opacity: 0.55,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  createBtnText: {
-    fontFamily: BR_FONT.display,
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-  },
-});

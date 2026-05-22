@@ -26,23 +26,26 @@ import { BrText } from "@/components/br";
 import { AnimatedPressable } from "@/components/common/animated-pressable";
 import { Avatar } from "@/components/common/avatar";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
-import { FONTS, COLORS } from "@/lib/fonts";
+import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 import Animated, { FadeInUp, FadeIn } from "react-native-reanimated";
 import type { icons } from "lucide-react-native";
 
 type Tab = "friends" | "requests" | "search";
 
-const SQUAD_COLORS: {
-  key: string;
-  bg: string;
-  deep: string;
-  icon: keyof typeof icons;
-}[] = [
-  { key: "orange", bg: COLORS.orange, deep: COLORS.orangeDeep, icon: "Flame" },
-  { key: "lilac", bg: COLORS.lilac, deep: "#3A2DC2", icon: "Briefcase" },
-  { key: "mint", bg: COLORS.mint, deep: COLORS.mintDeep, icon: "House" },
-  { key: "coral", bg: COLORS.coral, deep: COLORS.coralDeep, icon: "Heart" },
-  { key: "yolk", bg: COLORS.yolk, deep: "#B27500", icon: "Star" },
+const SQUAD_BG_CLASS: Record<string, string> = {
+  orange: "bg-[#FF6A1F]",
+  lilac: "bg-[#6E5BFF]",
+  mint: "bg-[#2EBE7B]",
+  coral: "bg-[#FF4D6D]",
+  yolk: "bg-[#FFC542]",
+};
+
+const SQUAD_COLORS: { key: string; icon: keyof typeof icons }[] = [
+  { key: "orange", icon: "Flame" },
+  { key: "lilac", icon: "Briefcase" },
+  { key: "mint", icon: "House" },
+  { key: "coral", icon: "Heart" },
+  { key: "yolk", icon: "Star" },
 ];
 
 // ─── Tab pill ──────────────────────────────────────────────────────
@@ -61,42 +64,22 @@ function TabPill({
     <AnimatedPressable
       scale={0.93}
       onPress={onPress}
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 5,
-        paddingHorizontal: 14,
-        paddingVertical: 8,
-        borderRadius: 999,
-        backgroundColor: active ? COLORS.ink : COLORS.paper2,
-        borderWidth: 1,
-        borderColor: active ? COLORS.ink : COLORS.line,
-      }}
+      className={`flex-row items-center gap-[5px] rounded-full border px-3.5 py-2 ${
+        active
+          ? "border-[#1A1410] bg-[#1A1410]"
+          : "border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+      }`}
     >
       <Text
-        style={{
-          fontFamily: FONTS.display.bold,
-          fontSize: 13,
-          color: active ? "#fff" : COLORS.ink2,
-        }}
+        className={`font-['BricolageGrotesque_700Bold'] text-[13px] ${
+          active ? "text-white" : "text-[#4A3C32]"
+        }`}
       >
         {label}
       </Text>
       {!!badge && badge > 0 && (
-        <View
-          style={{
-            minWidth: 18,
-            height: 18,
-            borderRadius: 9,
-            backgroundColor: COLORS.coral,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingHorizontal: 4,
-          }}
-        >
-          <Text
-            style={{ fontFamily: FONTS.mono.bold, fontSize: 10, color: "#fff" }}
-          >
+        <View className="min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#FF4D6D] px-1">
+          <Text className="font-['JetBrainsMono_700Bold'] text-[10px] text-white">
             {badge > 9 ? "9+" : badge}
           </Text>
         </View>
@@ -181,149 +164,67 @@ function CreateSquadSheet({
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
+        className="flex-1"
       >
-        <View style={{ flex: 1, backgroundColor: COLORS.paper }}>
+        <View className="flex-1 bg-[#FFF7EE]">
           {/* Handle + header */}
-          <View
-            style={{ alignItems: "center", paddingTop: 12, paddingBottom: 4 }}
-          >
-            <View
-              style={{
-                width: 40,
-                height: 4,
-                borderRadius: 2,
-                backgroundColor: COLORS.line2,
-              }}
-            />
+          <View className="items-center pb-1 pt-3">
+            <View className="h-1 w-10 rounded-sm bg-[rgba(26,20,16,0.14)]" />
           </View>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              paddingHorizontal: 18,
-              paddingVertical: 14,
-              gap: 12,
-            }}
-          >
+          <View className="flex-row items-center gap-3 px-[18px] py-3.5">
             <View
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 14,
-                backgroundColor: colorDef.bg,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              className={`h-11 w-11 items-center justify-center rounded-[14px] ${SQUAD_BG_CLASS[selectedColor]}`}
             >
               <Icon name={colorDef.icon} size={20} color="#fff" />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  fontFamily: FONTS.display.bold,
-                  fontSize: 22,
-                  letterSpacing: -0.4,
-                  color: COLORS.ink,
-                }}
-              >
-                Create a{" "}
-                <Text style={{ color: COLORS.orange, fontStyle: "italic" }}>
-                  squad
-                </Text>
+            <View className="flex-1">
+              <Text className="font-['BricolageGrotesque_700Bold'] text-[22px] tracking-[-0.4px] text-[#1A1410]">
+                Create a <Text className="italic text-[#FF6A1F]">squad</Text>
               </Text>
-              <Text style={{ fontSize: 12, color: COLORS.ink3, marginTop: 1 }}>
+              <Text className="mt-px text-xs text-[#8A7A6E]">
                 Reusable group for fast runs & splits
               </Text>
             </View>
             <Pressable
               onPress={handleClose}
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                backgroundColor: COLORS.paper2,
-                borderWidth: 1,
-                borderColor: COLORS.line,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              className="h-8 w-8 items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
             >
-              <Icon name="X" size={15} color={COLORS.ink} />
+              <Icon name="X" size={15} color={BR.ink} />
             </Pressable>
           </View>
 
           <ScrollView
-            contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 40 }}
+            contentContainerClassName="px-[18px] pb-10"
             keyboardShouldPersistTaps="handled"
           >
             {/* Name */}
-            <Text
-              style={{
-                fontFamily: FONTS.mono.semibold,
-                fontSize: 10,
-                letterSpacing: 1.2,
-                textTransform: "uppercase",
-                color: COLORS.ink3,
-                marginBottom: 8,
-              }}
-            >
+            <Text className="mb-2 font-['JetBrainsMono_600SemiBold'] text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]">
               Squad name
             </Text>
             <TextInput
               value={name}
               onChangeText={setName}
               placeholder="e.g. Lunch crew, Roomies…"
-              placeholderTextColor={COLORS.ink3}
-              style={{
-                fontFamily: FONTS.display.medium,
-                fontSize: 18,
-                letterSpacing: 0,
-                color: COLORS.ink,
-                backgroundColor: "#fff",
-                borderRadius: 16,
-                borderWidth: 1,
-                borderColor: COLORS.line,
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                marginBottom: 20,
-              }}
+              placeholderTextColor="#8A7A6E"
+              className="mb-5 rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white px-4 py-3.5 font-['BricolageGrotesque_500Medium'] text-lg text-[#1A1410]"
             />
 
             {/* Color picker */}
-            <Text
-              style={{
-                fontFamily: FONTS.mono.semibold,
-                fontSize: 10,
-                letterSpacing: 1.2,
-                textTransform: "uppercase",
-                color: COLORS.ink3,
-                marginBottom: 10,
-              }}
-            >
+            <Text className="mb-2.5 font-['JetBrainsMono_600SemiBold'] text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]">
               Pick a vibe
             </Text>
-            <View style={{ flexDirection: "row", gap: 10, marginBottom: 22 }}>
+            <View className="mb-[22px] flex-row gap-2.5">
               {SQUAD_COLORS.map((c) => {
                 const isSelected = selectedColor === c.key;
                 return (
                   <Pressable
                     key={c.key}
                     onPress={() => setSelectedColor(c.key)}
-                    style={{
-                      flex: 1,
-                      aspectRatio: 1,
-                      borderRadius: 14,
-                      backgroundColor: c.bg,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderWidth: isSelected ? 3 : 2,
-                      borderColor: isSelected ? COLORS.ink : "transparent",
-                      shadowColor: isSelected ? COLORS.ink : "transparent",
-                      shadowOffset: { width: 2, height: 2 },
-                      shadowOpacity: isSelected ? 1 : 0,
-                      shadowRadius: 0,
-                    }}
+                    className={`aspect-square flex-1 items-center justify-center rounded-[14px] ${SQUAD_BG_CLASS[c.key]} ${
+                      isSelected
+                        ? "border-[3px] border-[#1A1410] shadow-[2px_2px_0_#1A1410]"
+                        : "border-2 border-transparent"
+                    }`}
                   >
                     <Icon name={c.icon} size={18} color="#fff" />
                   </Pressable>
@@ -332,33 +233,15 @@ function CreateSquadSheet({
             </View>
 
             {/* Friend selector */}
-            <Text
-              style={{
-                fontFamily: FONTS.mono.semibold,
-                fontSize: 10,
-                letterSpacing: 1.2,
-                textTransform: "uppercase",
-                color: COLORS.ink3,
-                marginBottom: 10,
-              }}
-            >
+            <Text className="mb-2.5 font-['JetBrainsMono_600SemiBold'] text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]">
               Add friends
             </Text>
             {friends.length === 0 ? (
-              <Text
-                style={{ fontSize: 13, color: COLORS.ink3, marginBottom: 20 }}
-              >
+              <Text className="mb-5 text-[13px] text-[#8A7A6E]">
                 Add some friends first to include them in a squad.
               </Text>
             ) : (
-              <View
-                style={{
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  gap: 8,
-                  marginBottom: 24,
-                }}
-              >
+              <View className="mb-6 flex-row flex-wrap gap-2">
                 {friends.map((f) => {
                   const isSelected = selectedMembers.has(f.id);
                   const fullName = `${f.firstName} ${f.lastName}`;
@@ -366,18 +249,11 @@ function CreateSquadSheet({
                     <Pressable
                       key={f.id}
                       onPress={() => toggleMember(f.id)}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 7,
-                        paddingRight: 12,
-                        paddingLeft: 6,
-                        paddingVertical: 6,
-                        borderRadius: 999,
-                        backgroundColor: isSelected ? COLORS.ink : "#fff",
-                        borderWidth: 1,
-                        borderColor: isSelected ? COLORS.ink : COLORS.line,
-                      }}
+                      className={`flex-row items-center gap-[7px] rounded-full py-1.5 pl-1.5 pr-3 ${
+                        isSelected
+                          ? "border border-[#1A1410] bg-[#1A1410]"
+                          : "border border-[rgba(26,20,16,0.08)] bg-white"
+                      }`}
                     >
                       <Avatar
                         name={fullName}
@@ -385,11 +261,9 @@ function CreateSquadSheet({
                         size={24}
                       />
                       <Text
-                        style={{
-                          fontFamily: FONTS.display.semibold,
-                          fontSize: 13,
-                          color: isSelected ? "#fff" : COLORS.ink,
-                        }}
+                        className={`font-['BricolageGrotesque_600SemiBold'] text-[13px] ${
+                          isSelected ? "text-white" : "text-[#1A1410]"
+                        }`}
                       >
                         {f.firstName}
                       </Text>
@@ -407,34 +281,14 @@ function CreateSquadSheet({
               scale={0.97}
               onPress={handleCreate}
               disabled={saving}
-              style={{
-                height: 54,
-                borderRadius: 16,
-                backgroundColor: COLORS.orange,
-                alignItems: "center",
-                justifyContent: "center",
-                flexDirection: "row",
-                gap: 10,
-                opacity: saving ? 0.65 : 1,
-                shadowColor: COLORS.orange,
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.4,
-                shadowRadius: 16,
-                elevation: 6,
-              }}
+              className={`h-[54px] flex-row items-center justify-center gap-2.5 rounded-2xl bg-[#FF6A1F] shadow-[0_8px_16px_rgba(255,106,31,0.4)] ${saving ? "opacity-65" : ""}`}
             >
               {saving ? (
                 <ActivityIndicator color="#fff" />
               ) : (
                 <>
                   <Icon name="Sparkles" size={16} color="#fff" />
-                  <Text
-                    style={{
-                      fontFamily: FONTS.display.bold,
-                      fontSize: 16,
-                      color: "#fff",
-                    }}
-                  >
+                  <Text className="font-['BricolageGrotesque_700Bold'] text-base text-white">
                     Create squad
                   </Text>
                 </>
@@ -485,13 +339,7 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
 
   if (friends === undefined) {
     return (
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 18,
-          paddingBottom: 32,
-          gap: 10,
-        }}
-      >
+      <ScrollView contentContainerClassName="gap-2.5 px-[18px] pb-8">
         <Skeleton>
           {[1, 2, 3, 4].map((i) => (
             <SkeletonBlock
@@ -508,7 +356,7 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
 
   return (
     <ScrollView
-      contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 32 }}
+      contentContainerClassName="px-[18px] pb-8"
       showsVerticalScrollIndicator={false}
     >
       {/* Pending request banner */}
@@ -518,28 +366,13 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
             onPress={() => {
               /* parent handles tab switch — pass via prop below */
             }}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 10,
-              padding: 12,
-              borderRadius: 16,
-              backgroundColor: COLORS.orangeTint,
-              borderWidth: 1,
-              borderColor: "rgba(255,106,31,0.2)",
-              marginBottom: 12,
-            }}
+            className="mb-3 flex-row items-center gap-2.5 rounded-2xl border border-[rgba(255,106,31,0.2)] bg-[#FFF1E2] p-3"
           >
-            <View style={{ flexDirection: "row" }}>
+            <View className="flex-row">
               {(requests ?? []).slice(0, 3).map((r, j) => (
                 <View
                   key={r.id}
-                  style={{
-                    marginLeft: j > 0 ? -10 : 0,
-                    borderRadius: 999,
-                    shadowColor: COLORS.orangeTint,
-                    shadowRadius: 0,
-                  }}
+                  className={`rounded-full ${j > 0 ? "-ml-2.5" : ""}`}
                 >
                   <Avatar
                     name={`${r.sender?.firstName} ${r.sender?.lastName}`}
@@ -549,110 +382,54 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
                 </View>
               ))}
             </View>
-            <Text
-              style={{
-                fontFamily: FONTS.display.semibold,
-                fontSize: 13,
-                color: COLORS.orangeDeep,
-                flex: 1,
-              }}
-            >
+            <Text className="flex-1 font-['BricolageGrotesque_600SemiBold'] text-[13px] text-[#E8551A]">
               {pendingCount} new friend{" "}
               {pendingCount === 1 ? "request" : "requests"}
             </Text>
-            <Icon name="ChevronRight" size={16} color={COLORS.orange} />
+            <Icon name="ChevronRight" size={16} color="#FF6A1F" />
           </Pressable>
         </Animated.View>
       )}
 
       {/* Search bar */}
       {(friends?.length ?? 0) > 3 && (
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 8,
-            backgroundColor: "#fff",
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: COLORS.line,
-            paddingHorizontal: 12,
-            height: 42,
-            marginBottom: 12,
-          }}
-        >
-          <Icon name="Search" size={15} color={COLORS.ink3} />
+        <View className="mb-3 h-[42px] flex-row items-center gap-2 rounded-[14px] border border-[rgba(26,20,16,0.08)] bg-white px-3">
+          <Icon name="Search" size={15} color="#8A7A6E" />
           <TextInput
             value={search}
             onChangeText={setSearch}
             placeholder="Search friends…"
-            placeholderTextColor={COLORS.ink3}
-            style={{
-              flex: 1,
-              fontFamily: FONTS.display.medium,
-              fontSize: 14,
-              letterSpacing: 0,
-              color: COLORS.ink,
-            }}
+            placeholderTextColor="#8A7A6E"
+            className="flex-1 font-['BricolageGrotesque_500Medium'] text-sm text-[#1A1410]"
           />
           {search.length > 0 && (
             <Pressable onPress={() => setSearch("")}>
-              <Icon name="X" size={14} color={COLORS.ink3} />
+              <Icon name="X" size={14} color="#8A7A6E" />
             </Pressable>
           )}
         </View>
       )}
 
       {friends.length === 0 ? (
-        <View
-          style={{
-            alignItems: "center",
-            paddingTop: 48,
-            paddingHorizontal: 24,
-          }}
-        >
-          <View
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 20,
-              backgroundColor: COLORS.paper2,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 14,
-            }}
-          >
-            <Icon name="Users" size={28} color={COLORS.ink3} />
+        <View className="items-center px-6 pt-12">
+          <View className="mb-3.5 h-16 w-16 items-center justify-center rounded-[20px] bg-[#FCEFE0]">
+            <Icon name="Users" size={28} color="#8A7A6E" />
           </View>
-          <Text
-            style={{
-              fontFamily: FONTS.display.bold,
-              fontSize: 17,
-              color: COLORS.ink,
-            }}
-          >
+          <Text className="font-['BricolageGrotesque_700Bold'] text-[17px] text-[#1A1410]">
             No friends yet
           </Text>
-          <Text
-            style={{
-              fontSize: 13,
-              color: COLORS.ink3,
-              textAlign: "center",
-              marginTop: 6,
-              lineHeight: 20,
-            }}
-          >
+          <Text className="mt-1.5 text-center text-[13px] leading-5 text-[#8A7A6E]">
             Search for people to add them as friends and start ordering together
           </Text>
         </View>
       ) : filtered.length === 0 ? (
-        <View style={{ alignItems: "center", paddingTop: 32 }}>
-          <Text style={{ fontSize: 13, color: COLORS.ink3 }}>
+        <View className="items-center pt-8">
+          <Text className="text-[13px] text-[#8A7A6E]">
             No friends matching "{search}"
           </Text>
         </View>
       ) : (
-        <View style={{ gap: 8 }}>
+        <View className="gap-2">
           {filtered.map((friend, i) => {
             const fullName = `${friend.firstName} ${friend.lastName}`;
             return (
@@ -668,48 +445,20 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
                       `${friend.firstName} ${friend.lastName}`,
                     )
                   }
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: 14,
-                    backgroundColor: COLORS.orangeTint,
-                    borderRadius: 18,
-                    borderWidth: 1,
-                    borderColor: "rgba(255,106,31,0.2)",
-                  }}
+                  className="flex-row items-center gap-3 rounded-[18px] border border-[rgba(255,106,31,0.2)] bg-[#FFF1E2] p-3.5"
                 >
                   <Avatar
                     name={fullName}
                     avatarUrl={friend.avatarUrl}
                     size={46}
                   />
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontFamily: FONTS.display.bold,
-                        fontSize: 15,
-                        color: COLORS.ink,
-                      }}
-                    >
+                  <View className="flex-1">
+                    <Text className="font-['BricolageGrotesque_700Bold'] text-[15px] text-[#1A1410]">
                       {fullName}
                     </Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 4,
-                        marginTop: 2,
-                      }}
-                    >
-                      <Icon name="UserCheck" size={11} color={COLORS.mint} />
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: COLORS.mint,
-                          fontFamily: FONTS.display.semibold,
-                        }}
-                      >
+                    <View className="mt-0.5 flex-row items-center gap-1">
+                      <Icon name="UserCheck" size={11} color="#2EBE7B" />
+                      <Text className="font-['BricolageGrotesque_600SemiBold'] text-xs text-[#2EBE7B]">
                         Friends
                       </Text>
                     </View>
@@ -717,21 +466,12 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
                   <Pressable
                     onPress={() => handleRemove(friend.id, fullName)}
                     disabled={removingId === friend.id}
-                    style={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: 999,
-                      backgroundColor: "#fff",
-                      borderWidth: 1,
-                      borderColor: COLORS.line,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
+                    className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-white"
                   >
                     {removingId === friend.id ? (
-                      <ActivityIndicator size="small" color={COLORS.ink3} />
+                      <ActivityIndicator size="small" color="#8A7A6E" />
                     ) : (
-                      <Icon name="X" size={16} color={COLORS.ink} />
+                      <Icon name="X" size={16} color={BR.ink} />
                     )}
                   </Pressable>
                 </AnimatedPressable>
@@ -780,13 +520,7 @@ function RequestsTab() {
 
   if (requests === undefined) {
     return (
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 18,
-          paddingBottom: 32,
-          gap: 10,
-        }}
-      >
+      <ScrollView contentContainerClassName="gap-2.5 px-[18px] pb-8">
         <Skeleton>
           {[1, 2].map((i) => (
             <SkeletonBlock
@@ -803,40 +537,14 @@ function RequestsTab() {
 
   if (requests.length === 0) {
     return (
-      <View
-        style={{ alignItems: "center", paddingTop: 48, paddingHorizontal: 24 }}
-      >
-        <View
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: 20,
-            backgroundColor: COLORS.paper2,
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: 14,
-          }}
-        >
-          <Icon name="Bell" size={28} color={COLORS.ink3} />
+      <View className="items-center px-6 pt-12">
+        <View className="mb-3.5 h-16 w-16 items-center justify-center rounded-[20px] bg-[#FCEFE0]">
+          <Icon name="Bell" size={28} color="#8A7A6E" />
         </View>
-        <Text
-          style={{
-            fontFamily: FONTS.display.bold,
-            fontSize: 17,
-            color: COLORS.ink,
-          }}
-        >
+        <Text className="font-['BricolageGrotesque_700Bold'] text-[17px] text-[#1A1410]">
           No pending requests
         </Text>
-        <Text
-          style={{
-            fontSize: 13,
-            color: COLORS.ink3,
-            textAlign: "center",
-            marginTop: 6,
-            lineHeight: 20,
-          }}
-        >
+        <Text className="mt-1.5 text-center text-[13px] leading-5 text-[#8A7A6E]">
           When someone sends you a friend request, it will appear here
         </Text>
       </View>
@@ -845,22 +553,13 @@ function RequestsTab() {
 
   return (
     <ScrollView
-      contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 32 }}
+      contentContainerClassName="px-[18px] pb-8"
       showsVerticalScrollIndicator={false}
     >
-      <Text
-        style={{
-          fontFamily: FONTS.mono.semibold,
-          fontSize: 10,
-          letterSpacing: 1.2,
-          textTransform: "uppercase",
-          color: COLORS.ink3,
-          marginBottom: 10,
-        }}
-      >
+      <Text className="mb-2.5 font-['JetBrainsMono_600SemiBold'] text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]">
         {requests.length} pending
       </Text>
-      <View style={{ gap: 10 }}>
+      <View className="gap-2.5">
         {requests.map((req, i) => {
           if (!req.sender) return null;
           const fullName = `${req.sender.firstName} ${req.sender.lastName}`;
@@ -874,85 +573,40 @@ function RequestsTab() {
               key={req.id}
               entering={FadeInUp.duration(300).delay(i * 50)}
             >
-              <View
-                style={{
-                  padding: 14,
-                  borderRadius: 18,
-                  backgroundColor: COLORS.orangeTint,
-                  borderWidth: 1,
-                  borderColor: "rgba(255,106,31,0.2)",
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 12,
-                  }}
-                >
-                  <View style={{ position: "relative" }}>
+              <View className="rounded-[18px] border border-[rgba(255,106,31,0.2)] bg-[#FFF1E2] p-3.5">
+                <View className="flex-row items-center gap-3">
+                  <View className="relative">
                     <Avatar
                       name={fullName}
                       avatarUrl={req.sender.avatarUrl}
                       size={48}
                     />
-                    <View
-                      style={{
-                        position: "absolute",
-                        bottom: -2,
-                        right: -2,
-                        width: 20,
-                        height: 20,
-                        borderRadius: 10,
-                        backgroundColor: COLORS.orange,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderWidth: 2,
-                        borderColor: COLORS.orangeTint,
-                      }}
-                    >
+                    <View className="absolute -bottom-0.5 -right-0.5 h-5 w-5 items-center justify-center rounded-full border-2 border-[#FFF1E2] bg-[#FF6A1F]">
                       <Icon name="UserPlus" size={10} color="#fff" />
                     </View>
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontFamily: FONTS.display.bold,
-                        fontSize: 15,
-                        color: COLORS.ink,
-                      }}
-                    >
+                  <View className="flex-1">
+                    <Text className="font-['BricolageGrotesque_700Bold'] text-[15px] text-[#1A1410]">
                       {fullName}
                     </Text>
-                    <Text
-                      style={{ fontSize: 12, color: COLORS.ink3, marginTop: 2 }}
-                    >
+                    <Text className="mt-0.5 text-xs text-[#8A7A6E]">
                       Wants to be your friend
                     </Text>
                   </View>
-                  <View style={{ flexDirection: "row", gap: 8 }}>
+                  <View className="flex-row gap-2">
                     <AnimatedPressable
                       scale={0.9}
                       onPress={() => handleReject(req.id)}
                       disabled={isProcessing}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 22,
-                        backgroundColor: "#fff",
-                        borderWidth: 1.5,
-                        borderColor: COLORS.line2,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
+                      className="h-11 w-11 items-center justify-center rounded-full border-[1.5px] border-[rgba(26,20,16,0.14)] bg-white"
                     >
                       {isRejecting ? (
-                        <ActivityIndicator size="small" color={COLORS.ink3} />
+                        <ActivityIndicator size="small" color="#8A7A6E" />
                       ) : (
                         <Icon
                           name="X"
                           size={18}
-                          color={COLORS.ink2}
+                          color="#4A3C32"
                           strokeWidth={2.5}
                         />
                       )}
@@ -961,14 +615,7 @@ function RequestsTab() {
                       scale={0.9}
                       onPress={() => handleAccept(req.id)}
                       disabled={isProcessing}
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 22,
-                        backgroundColor: COLORS.mint,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
+                      className="h-11 w-11 items-center justify-center rounded-full bg-[#2EBE7B]"
                     >
                       {isAccepting ? (
                         <ActivityIndicator size="small" color="#fff" />
@@ -1017,77 +664,35 @@ function SearchTab() {
   const isSearching = query.length >= 2 && searchResults === undefined;
 
   return (
-    <View style={{ flex: 1, paddingHorizontal: 18 }}>
+    <View className="flex-1 px-[18px]">
       {/* Search input */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 8,
-          backgroundColor: "#fff",
-          borderRadius: 14,
-          borderWidth: 1,
-          borderColor: COLORS.line,
-          paddingHorizontal: 12,
-          height: 46,
-          marginBottom: 16,
-        }}
-      >
-        <Icon name="Search" size={16} color={COLORS.ink3} />
+      <View className="mb-4 h-[46px] flex-row items-center gap-2 rounded-[14px] border border-[rgba(26,20,16,0.08)] bg-white px-3">
+        <Icon name="Search" size={16} color="#8A7A6E" />
         <TextInput
           value={query}
           onChangeText={setQuery}
           placeholder="Search by name or email…"
-          placeholderTextColor={COLORS.ink3}
+          placeholderTextColor="#8A7A6E"
           autoCapitalize="none"
           autoCorrect={false}
-          style={{
-            flex: 1,
-            fontFamily: FONTS.display.medium,
-            fontSize: 14,
-            letterSpacing: 0,
-            color: COLORS.ink,
-          }}
+          className="flex-1 font-['BricolageGrotesque_500Medium'] text-sm text-[#1A1410]"
         />
         {query.length > 0 && (
           <Pressable onPress={() => setQuery("")}>
-            <Icon name="X" size={14} color={COLORS.ink3} />
+            <Icon name="X" size={14} color="#8A7A6E" />
           </Pressable>
         )}
       </View>
 
       {query.length < 2 && (
-        <View style={{ alignItems: "center", paddingTop: 40 }}>
-          <View
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 20,
-              backgroundColor: COLORS.paper2,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 14,
-            }}
-          >
-            <Icon name="Search" size={28} color={COLORS.ink3} />
+        <View className="items-center pt-10">
+          <View className="mb-3.5 h-16 w-16 items-center justify-center rounded-[20px] bg-[#FCEFE0]">
+            <Icon name="Search" size={28} color="#8A7A6E" />
           </View>
-          <Text
-            style={{
-              fontFamily: FONTS.display.bold,
-              fontSize: 17,
-              color: COLORS.ink,
-            }}
-          >
+          <Text className="font-['BricolageGrotesque_700Bold'] text-[17px] text-[#1A1410]">
             Find Friends
           </Text>
-          <Text
-            style={{
-              fontSize: 13,
-              color: COLORS.ink3,
-              textAlign: "center",
-              marginTop: 6,
-            }}
-          >
+          <Text className="mt-1.5 text-center text-[13px] text-[#8A7A6E]">
             Enter at least 2 characters to search
           </Text>
         </View>
@@ -1095,7 +700,7 @@ function SearchTab() {
 
       {isSearching && (
         <Skeleton>
-          <View style={{ gap: 10 }}>
+          <View className="gap-2.5">
             {[1, 2, 3].map((i) => (
               <SkeletonBlock
                 key={i}
@@ -1109,30 +714,14 @@ function SearchTab() {
       )}
 
       {query.length >= 2 && searchResults && searchResults.length === 0 && (
-        <View style={{ alignItems: "center", paddingTop: 40 }}>
-          <View
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 20,
-              backgroundColor: COLORS.paper2,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 14,
-            }}
-          >
-            <Icon name="UserX" size={28} color={COLORS.ink3} />
+        <View className="items-center pt-10">
+          <View className="mb-3.5 h-16 w-16 items-center justify-center rounded-[20px] bg-[#FCEFE0]">
+            <Icon name="UserX" size={28} color="#8A7A6E" />
           </View>
-          <Text
-            style={{
-              fontFamily: FONTS.display.bold,
-              fontSize: 17,
-              color: COLORS.ink,
-            }}
-          >
+          <Text className="font-['BricolageGrotesque_700Bold'] text-[17px] text-[#1A1410]">
             No users found
           </Text>
-          <Text style={{ fontSize: 13, color: COLORS.ink3, marginTop: 6 }}>
+          <Text className="mt-1.5 text-[13px] text-[#8A7A6E]">
             Try a different name or email
           </Text>
         </View>
@@ -1141,7 +730,7 @@ function SearchTab() {
       {searchResults && searchResults.length > 0 && (
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingBottom: 32 }}
+          contentContainerClassName="gap-2 pb-8"
         >
           {searchResults.map((user, i) => {
             const fullName = `${user.firstName} ${user.lastName}`;
@@ -1150,35 +739,18 @@ function SearchTab() {
                 key={user.id}
                 entering={FadeInUp.duration(250).delay(i * 40)}
               >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: 12,
-                    backgroundColor: "#fff",
-                    borderRadius: 16,
-                    borderWidth: 1,
-                    borderColor: COLORS.line,
-                  }}
-                >
+                <View className="flex-row items-center gap-3 rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white p-3">
                   <Avatar
                     name={fullName}
                     avatarUrl={user.avatarUrl}
                     size={46}
                   />
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{
-                        fontFamily: FONTS.display.bold,
-                        fontSize: 15,
-                        color: COLORS.ink,
-                      }}
-                    >
+                  <View className="flex-1">
+                    <Text className="font-['BricolageGrotesque_700Bold'] text-[15px] text-[#1A1410]">
                       {fullName}
                     </Text>
                     <Text
-                      style={{ fontSize: 12, color: COLORS.ink3, marginTop: 2 }}
+                      className="mt-0.5 text-xs text-[#8A7A6E]"
                       numberOfLines={1}
                     >
                       {user.email}
@@ -1188,28 +760,14 @@ function SearchTab() {
                     onPress={() => handleAdd(user.id, fullName)}
                     disabled={sendingTo === user.id}
                     activeOpacity={0.8}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 5,
-                      paddingHorizontal: 12,
-                      paddingVertical: 8,
-                      borderRadius: 10,
-                      backgroundColor: COLORS.ink,
-                    }}
+                    className="flex-row items-center gap-[5px] rounded-[10px] bg-[#1A1410] px-3 py-2"
                   >
                     {sendingTo === user.id ? (
                       <ActivityIndicator size="small" color="#fff" />
                     ) : (
                       <>
                         <Icon name="UserPlus" size={14} color="#fff" />
-                        <Text
-                          style={{
-                            fontFamily: FONTS.display.semibold,
-                            fontSize: 13,
-                            color: "#fff",
-                          }}
-                        >
+                        <Text className="font-['BricolageGrotesque_600SemiBold'] text-[13px] text-white">
                           Add
                         </Text>
                       </>
@@ -1236,61 +794,33 @@ export default function FriendsScreen() {
   const friends = useQuery(api.friends.list) ?? [];
 
   return (
-    <SafeAreaView
-      edges={["top"]}
-      style={{ flex: 1, backgroundColor: COLORS.paper }}
-    >
+    <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
       {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: 18,
-          paddingVertical: 10,
-          position: "relative",
-        }}
-      >
+      <View className="relative flex-row items-center justify-between px-[18px] py-2.5">
         <Pressable
           onPress={() => router.back()}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: COLORS.paper2,
-            borderWidth: 1,
-            borderColor: COLORS.line,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
+          className="h-9 w-9 items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
         >
-          <Icon name="ChevronLeft" size={20} color={COLORS.ink} />
+          <Icon name="ChevronLeft" size={20} color={BR.ink} />
         </Pressable>
-        <View
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: 10,
-            bottom: 10,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          pointerEvents="none"
-        >
-          <BrText weight="bold" style={{ fontSize: 17, lineHeight: 24 }}>
+        <View className="pointer-events-none absolute inset-x-0 top-2.5 bottom-2.5 items-center justify-center">
+          <BrText
+            weight="bold"
+            className="text-[17px] leading-6"
+            style={BR_FONT_STYLE.display}
+          >
             Friends
           </BrText>
         </View>
-        <View style={{ width: 36 }} />
+        <View className="w-9" />
       </View>
 
       {/* Tab row */}
-      <View style={{ paddingHorizontal: 18, paddingBottom: 14 }}>
+      <View className="px-[18px] pb-3.5">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8 }}
+          contentContainerClassName="gap-2"
         >
           <TabPill
             label={`Friends · ${friends.length}`}
@@ -1312,7 +842,7 @@ export default function FriendsScreen() {
       </View>
 
       {/* Content */}
-      <View style={{ flex: 1 }}>
+      <View className="flex-1">
         {activeTab === "friends" && <FriendsTab pendingCount={pendingCount} />}
         {activeTab === "requests" && <RequestsTab />}
         {activeTab === "search" && <SearchTab />}

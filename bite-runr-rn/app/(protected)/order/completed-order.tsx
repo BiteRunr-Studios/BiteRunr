@@ -4,13 +4,9 @@ import {
   Text,
   ScrollView,
   Pressable,
-  StyleSheet,
   useWindowDimensions,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -18,7 +14,7 @@ import Icon from "@/components/common/icon";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { BrAvatar, BrText } from "@/components/br";
-import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme"; // BR_RADIUS used by participant cards
+import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 import { useCallback, useMemo, useState } from "react";
 
 const TOOTH_W = 9;
@@ -33,14 +29,7 @@ function TornEdge({ position }: { position: "top" | "bottom" }) {
     [count, position],
   );
   return (
-    <View
-      style={{
-        height: TOOTH_H,
-        backgroundColor: BR.paper,
-        flexDirection: "row",
-        overflow: "hidden",
-      }}
-    >
+    <View className="h-[7px] flex-row overflow-hidden bg-[#FFF7EE]">
       {teeth.map((toothKey) => (
         <View
           key={toothKey}
@@ -82,20 +71,11 @@ const SETTLEMENT_CONFIG: Record<
 };
 
 function Rule() {
-  return (
-    <View
-      style={{
-        height: 1,
-        backgroundColor: "rgba(26,20,16,0.1)",
-        marginVertical: 14,
-      }}
-    />
-  );
+  return <View className="my-3.5 h-px bg-[rgba(26,20,16,0.1)]" />;
 }
 
 export default function CompletedOrder() {
   const { orderId } = useLocalSearchParams();
-  const _insets = useSafeAreaInsets();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggleExpanded = useCallback((id: string) => {
@@ -109,23 +89,26 @@ export default function CompletedOrder() {
 
   if (!orderId || data === null) {
     return (
-      <SafeAreaView
-        edges={["top"]}
-        style={{ flex: 1, backgroundColor: BR.paper }}
-      >
-        <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+      <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
+        <View className="flex-row items-center justify-between px-[18px] pb-1 pt-2">
+          <Pressable
+            onPress={() => router.back()}
+            className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+          >
             <Icon name="ChevronLeft" size={20} color={BR.ink} />
           </Pressable>
-          <View style={styles.completedBadge}>
+          <View className="flex-row items-center gap-1.5 rounded-full bg-[#DDF5E8] px-3.5 py-2">
             <Icon name="Check" size={12} color={BR.mintInk} strokeWidth={3} />
-            <Text style={styles.completedBadgeText}>Completed</Text>
+            <Text
+              className="text-[13px] text-[#1B6B43]"
+              style={BR_FONT_STYLE.display}
+            >
+              Completed
+            </Text>
           </View>
         </View>
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
-          <BrText style={{ color: BR.ink3 }}>
+        <View className="flex-1 items-center justify-center">
+          <BrText className="text-[#8A7A6E]">
             This order is no longer available.
           </BrText>
         </View>
@@ -135,17 +118,17 @@ export default function CompletedOrder() {
 
   if (data === undefined) {
     return (
-      <SafeAreaView
-        edges={["top"]}
-        style={{ flex: 1, backgroundColor: BR.paper }}
-      >
-        <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+      <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
+        <View className="flex-row items-center justify-between px-[18px] pb-1 pt-2">
+          <Pressable
+            onPress={() => router.back()}
+            className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+          >
             <Icon name="ChevronLeft" size={20} color={BR.ink} />
           </Pressable>
         </View>
         <Skeleton>
-          <View style={{ paddingHorizontal: 18, gap: 16, marginTop: 8 }}>
+          <View className="mt-2 gap-4 px-[18px]">
             <SkeletonBlock width={200} height={48} rounded="rounded-xl" />
             <SkeletonBlock width={160} height={14} rounded="rounded-md" />
             <SkeletonBlock width="100%" height={210} rounded="rounded-3xl" />
@@ -193,42 +176,65 @@ export default function CompletedOrder() {
   const locationName = data.locations[0]?.name ?? data.order.name;
 
   return (
-    <SafeAreaView
-      edges={["top"]}
-      style={{ flex: 1, backgroundColor: BR.paper }}
-    >
+    <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
       {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+      <View className="flex-row items-center justify-between px-[18px] pb-1 pt-2">
+        <Pressable
+          onPress={() => router.back()}
+          className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+        >
           <Icon name="ChevronLeft" size={20} color={BR.ink} />
         </Pressable>
-        <View style={styles.completedBadge}>
+        <View className="flex-row items-center gap-1.5 rounded-full bg-[#DDF5E8] px-3.5 py-2">
           <Icon name="Check" size={12} color={BR.mintInk} strokeWidth={3} />
-          <Text style={styles.completedBadgeText}>Completed</Text>
+          <Text
+            className="text-[13px] text-[#1B6B43]"
+            style={BR_FONT_STYLE.display}
+          >
+            Completed
+          </Text>
         </View>
       </View>
 
       <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 60 }}
+        className="flex-1"
+        contentContainerClassName="px-[18px] pb-[60px]"
         showsVerticalScrollIndicator={false}
       >
         {/* Page title */}
         <Animated.View entering={FadeInUp.duration(300)}>
-          <Text style={styles.pageTitle}>{data.order.name}</Text>
-          <Text style={styles.pageDate}>{dateLabel}</Text>
+          <Text
+            className="mt-3.5 text-[46px] leading-[50px] text-[#1A1410]"
+            style={BR_FONT_STYLE.displayExtraBold}
+          >
+            {data.order.name}
+          </Text>
+          <Text
+            className="mt-1.5 text-[13px] tracking-[0.3px] text-[#8A7A6E]"
+            style={BR_FONT_STYLE.mono}
+          >
+            {dateLabel}
+          </Text>
         </Animated.View>
 
         {/* Receipt card */}
         <Animated.View
           entering={FadeInUp.duration(300).delay(60)}
-          style={{ marginTop: 22 }}
+          className="mt-[22px]"
         >
           <TornEdge position="top" />
-          <View style={styles.receipt}>
-            <View style={{ alignItems: "center" }}>
-              <Text style={styles.receiptTitle}>{locationName}</Text>
-              <Text style={styles.receiptSubtitle}>
+          <View className="bg-white px-[22px] py-[22px]">
+            <View className="items-center">
+              <Text
+                className="text-center text-[22px] italic text-[#E8551A]"
+                style={BR_FONT_STYLE.displayExtraBold}
+              >
+                {locationName}
+              </Text>
+              <Text
+                className="mt-1 text-center text-[10px] tracking-[1.4px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
+              >
                 {`· RUN COMPLETE · ${allSettled ? "ALL SETTLED" : "SETTLEMENT PENDING"} ·`}
               </Text>
             </View>
@@ -236,34 +242,66 @@ export default function CompletedOrder() {
             <Rule />
 
             {/* Stats row */}
-            <View style={{ flexDirection: "row" }}>
-              <View style={styles.statCell}>
-                <Text style={styles.statNumber}>{data.stats.totalItems}</Text>
-                <Text style={styles.statLabel}>LINES</Text>
+            <View className="flex-row">
+              <View className="flex-1 items-center py-1">
+                <Text
+                  className="text-[30px] leading-9 text-[#1A1410]"
+                  style={BR_FONT_STYLE.displayExtraBold}
+                >
+                  {data.stats.totalItems}
+                </Text>
+                <Text
+                  className="mt-1 text-[10px] tracking-[1.4px] text-[#8A7A6E]"
+                  style={BR_FONT_STYLE.mono}
+                >
+                  LINES
+                </Text>
               </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statCell}>
-                <Text style={styles.statNumber}>
+              <View className="my-1 w-px bg-[rgba(26,20,16,0.14)]" />
+              <View className="flex-1 items-center py-1">
+                <Text
+                  className="text-[30px] leading-9 text-[#1A1410]"
+                  style={BR_FONT_STYLE.displayExtraBold}
+                >
                   {data.stats.participantCount}
                 </Text>
-                <Text style={styles.statLabel}>PEOPLE</Text>
+                <Text
+                  className="mt-1 text-[10px] tracking-[1.4px] text-[#8A7A6E]"
+                  style={BR_FONT_STYLE.mono}
+                >
+                  PEOPLE
+                </Text>
               </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statCell}>
-                <Text style={[styles.statNumber, { color: BR.orange }]}>
+              <View className="my-1 w-px bg-[rgba(26,20,16,0.14)]" />
+              <View className="flex-1 items-center py-1">
+                <Text
+                  className="text-[30px] leading-9 text-[#FF6A1F]"
+                  style={BR_FONT_STYLE.displayExtraBold}
+                >
                   ${(data.stats.totalAmount / 100).toFixed(2)}
                 </Text>
-                <Text style={styles.statLabel}>TOTAL</Text>
+                <Text
+                  className="mt-1 text-[10px] tracking-[1.4px] text-[#8A7A6E]"
+                  style={BR_FONT_STYLE.mono}
+                >
+                  TOTAL
+                </Text>
               </View>
             </View>
 
             <Rule />
 
             {/* Receipt code + dots */}
-            <View style={{ alignItems: "center" }}>
-              <Text style={styles.receiptCode}>{receiptCode}</Text>
+            <View className="items-center">
               <Text
-                style={[styles.receiptCode, { marginTop: 6, letterSpacing: 5 }]}
+                className="text-center text-xs tracking-[2.5px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
+              >
+                {receiptCode}
+              </Text>
+              <Text
+                className="mt-1.5 text-center text-xs tracking-[5px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
               >
                 · · · · · ·
               </Text>
@@ -276,28 +314,44 @@ export default function CompletedOrder() {
         {runner && (
           <Animated.View
             entering={FadeInUp.duration(300).delay(120)}
-            style={{ marginTop: 28 }}
+            className="mt-7"
           >
-            <Text style={styles.sectionLabel}>RUNNER</Text>
-            <View style={[styles.participantCard, styles.runnerCard]}>
-              <View style={styles.participantRow}>
+            <Text
+              className="mb-2.5 text-[11px] tracking-[1.4px] text-[#8A7A6E]"
+              style={BR_FONT_STYLE.mono}
+            >
+              RUNNER
+            </Text>
+            <View className="overflow-hidden rounded-2xl border border-[rgba(255,106,31,0.18)] bg-[#FFF1E2]">
+              <View className="flex-row items-center gap-3 p-3.5">
                 <BrAvatar
                   name={`${runner.firstName} ${runner.lastName}`.trim() || "R"}
                   avatarUrl={runner.avatarUrl ?? null}
                   size={44}
                 />
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={styles.participantName}>
+                <View className="min-w-0 flex-1">
+                  <Text
+                    className="text-[15px] text-[#1A1410]"
+                    style={BR_FONT_STYLE.display}
+                  >
                     {`${runner.firstName} ${runner.lastName}`.trim()}
                   </Text>
-                  <Text style={styles.participantMeta}>
+                  <Text
+                    className="mt-0.5 text-xs text-[#8A7A6E]"
+                    style={BR_FONT_STYLE.mono}
+                  >
                     {runner.itemCount}{" "}
                     {runner.itemCount === 1 ? "line" : "lines"} · drove the run
                   </Text>
                 </View>
-                <View style={styles.runnerPill}>
-                  <View style={styles.runnerPillCircle} />
-                  <Text style={styles.runnerPillText}>RUNNER</Text>
+                <View className="flex-row items-center gap-1.5 rounded-full border border-[rgba(255,197,66,0.5)] bg-[#FFF1C4] px-[9px] py-1">
+                  <View className="h-[7px] w-[7px] rounded-full border-[1.5px] border-[#7A4A20]" />
+                  <Text
+                    className="text-[10px] tracking-[0.8px] text-[#7A4A20]"
+                    style={BR_FONT_STYLE.displayExtraBold}
+                  >
+                    RUNNER
+                  </Text>
                 </View>
               </View>
             </View>
@@ -308,13 +362,14 @@ export default function CompletedOrder() {
         {participants.length > 0 && (
           <Animated.View
             entering={FadeInUp.duration(300).delay(160)}
-            style={{ marginTop: 28 }}
+            className="mt-7"
           >
             <Text
-              style={styles.sectionLabel}
+              className="mb-2.5 text-[11px] tracking-[1.4px] text-[#8A7A6E]"
+              style={BR_FONT_STYLE.mono}
             >{`PARTICIPANTS · ${participants.length}`}</Text>
 
-            <View style={{ gap: 10, marginTop: 10 }}>
+            <View className="mt-2.5 gap-2.5">
               {participants.map((participant, idx) => {
                 const name =
                   `${participant.firstName} ${participant.lastName}`.trim();
@@ -333,19 +388,25 @@ export default function CompletedOrder() {
                   >
                     <Pressable
                       onPress={() => toggleExpanded(participant.orderUserId)}
-                      style={styles.participantCard}
+                      className="overflow-hidden rounded-2xl border border-[rgba(255,106,31,0.18)] bg-[#FFF1E2]"
                     >
-                      <View style={styles.participantRow}>
+                      <View className="flex-row items-center gap-3 p-3.5">
                         <BrAvatar
                           name={name || "U"}
                           avatarUrl={participant.avatarUrl ?? null}
                           size={44}
                         />
-                        <View style={{ flex: 1, minWidth: 0 }}>
-                          <Text style={styles.participantName}>
+                        <View className="min-w-0 flex-1">
+                          <Text
+                            className="text-[15px] text-[#1A1410]"
+                            style={BR_FONT_STYLE.display}
+                          >
                             {name || "Unknown"}
                           </Text>
-                          <Text style={styles.participantMeta}>
+                          <Text
+                            className="mt-0.5 text-xs text-[#8A7A6E]"
+                            style={BR_FONT_STYLE.mono}
+                          >
                             {participant.itemCount}{" "}
                             {participant.itemCount === 1 ? "line" : "lines"}
                             {participant.amountOwed > 0
@@ -353,28 +414,19 @@ export default function CompletedOrder() {
                               : ""}
                           </Text>
                         </View>
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 8,
-                          }}
-                        >
+                        <View className="flex-row items-center gap-2">
                           <View
-                            style={[
-                              styles.settlementChip,
-                              { backgroundColor: chipConfig.bg },
-                            ]}
+                            className="flex-row items-center gap-1.5 rounded-full px-2.5 py-1.5"
+                            style={{ backgroundColor: chipConfig.bg }}
                           >
                             <View
-                              style={[
-                                styles.settlementDot,
-                                { backgroundColor: chipConfig.dot },
-                              ]}
+                              className="h-1.5 w-1.5 rounded-full"
+                              style={{ backgroundColor: chipConfig.dot }}
                             />
                             <Text
+                              className="text-xs"
                               style={[
-                                styles.settlementChipText,
+                                BR_FONT_STYLE.display,
                                 { color: chipConfig.fg },
                               ]}
                             >
@@ -390,25 +442,39 @@ export default function CompletedOrder() {
                       </View>
 
                       {isExpanded && participant.items.length > 0 && (
-                        <View style={styles.itemsSection}>
+                        <View className="gap-2.5 border-t border-[rgba(26,20,16,0.08)] px-3.5 pb-3.5 pt-3">
                           {participant.items.map((item, iIdx) => (
                             <View
                               key={`${item.text}-${item.locationName ?? ""}-${item.priceInCents ?? "unpriced"}`}
-                              style={styles.itemRow}
+                              className="flex-row items-start gap-2.5"
                             >
-                              <Text style={styles.itemIndex}>
+                              <Text
+                                className="w-[22px] text-[13px] leading-5 text-[#8A7A6E]"
+                                style={BR_FONT_STYLE.monoBold}
+                              >
                                 {String(iIdx + 1).padStart(2, "0")}
                               </Text>
-                              <View style={{ flex: 1 }}>
-                                <Text style={styles.itemText}>{item.text}</Text>
+                              <View className="flex-1">
+                                <Text
+                                  className="text-sm leading-5 text-[#1A1410]"
+                                  style={BR_FONT_STYLE.display}
+                                >
+                                  {item.text}
+                                </Text>
                                 {item.locationName && (
-                                  <Text style={styles.itemLocation}>
+                                  <Text
+                                    className="mt-0.5 text-[10px] tracking-[0.8px] text-[#8A7A6E]"
+                                    style={BR_FONT_STYLE.mono}
+                                  >
                                     {item.locationName.toUpperCase()}
                                   </Text>
                                 )}
                               </View>
                               {item.priceInCents !== null && (
-                                <Text style={styles.itemPrice}>
+                                <Text
+                                  className="text-sm leading-5 text-[#1A1410]"
+                                  style={BR_FONT_STYLE.mono}
+                                >
                                   ${(item.priceInCents / 100).toFixed(2)}
                                 </Text>
                               )}
@@ -417,16 +483,17 @@ export default function CompletedOrder() {
 
                           {participant.amountOwed > 0 && (
                             <>
-                              <View style={styles.itemsDivider} />
-                              <View style={styles.amountRow}>
-                                <Text style={styles.amountLabel}>
+                              <View className="my-1 border-b border-dashed border-[rgba(26,20,16,0.14)]" />
+                              <View className="flex-row items-center justify-between">
+                                <Text
+                                  className="text-[11px] tracking-wide text-[#4A3C32]"
+                                  style={BR_FONT_STYLE.monoBold}
+                                >
                                   {isSettled ? "AMOUNT PAID" : "AMOUNT OWED"}
                                 </Text>
                                 <Text
-                                  style={[
-                                    styles.amountValue,
-                                    { color: isSettled ? BR.mint : BR.coral },
-                                  ]}
+                                  className={`text-[22px] ${isSettled ? "text-[#2EBE7B]" : "text-[#FF4D6D]"}`}
+                                  style={BR_FONT_STYLE.displayExtraBold}
                                 >
                                   ${(participant.amountOwed / 100).toFixed(2)}
                                 </Text>
@@ -446,251 +513,3 @@ export default function CompletedOrder() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 4,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  completedBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: BR.mintSoft,
-  },
-  completedBadgeText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: BR.mintInk,
-  },
-  pageTitle: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontSize: 46,
-    color: BR.ink,
-    marginTop: 14,
-    lineHeight: 50,
-  },
-  pageDate: {
-    fontSize: 13,
-    color: BR.ink3,
-    marginTop: 6,
-    fontFamily: BR_FONT.mono,
-    letterSpacing: 0.3,
-  },
-  receipt: {
-    backgroundColor: BR.card,
-    paddingHorizontal: 22,
-    paddingVertical: 22,
-  },
-  receiptTitle: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontStyle: "italic",
-    fontSize: 22,
-    color: BR.orangeDeep,
-    textAlign: "center",
-  },
-  receiptSubtitle: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 10,
-    color: BR.ink3,
-    textAlign: "center",
-    letterSpacing: 1.4,
-    marginTop: 4,
-  },
-  statCell: {
-    flex: 1,
-    alignItems: "center",
-    paddingVertical: 4,
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: BR.line2,
-    marginVertical: 4,
-  },
-  statNumber: {
-    fontSize: 30,
-    fontWeight: "800",
-    color: BR.ink,
-    lineHeight: 36,
-  },
-  statLabel: {
-    fontSize: 10,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-    letterSpacing: 1.4,
-    marginTop: 4,
-  },
-  receiptCode: {
-    fontSize: 12,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-    letterSpacing: 2.5,
-    textAlign: "center",
-  },
-  receiptDots: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 8,
-    marginTop: 10,
-  },
-  receiptDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 999,
-    backgroundColor: BR.line2,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-    letterSpacing: 1.4,
-    marginBottom: 10,
-  },
-  participantCard: {
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: "rgba(255,106,31,0.18)",
-    backgroundColor: BR.orangeTint,
-    overflow: "hidden",
-  },
-  runnerCard: {
-    backgroundColor: BR.orangeTint,
-    borderColor: "rgba(255,106,31,0.18)",
-  },
-  participantRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 14,
-  },
-  participantName: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: BR.ink,
-  },
-  participantMeta: {
-    fontSize: 12,
-    color: BR.ink3,
-    marginTop: 2,
-    fontFamily: BR_FONT.mono,
-  },
-  runnerPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: BR.yolkSoft,
-    borderWidth: 1,
-    borderColor: "rgba(255,197,66,0.5)",
-  },
-  runnerPillCircle: {
-    width: 7,
-    height: 7,
-    borderRadius: 999,
-    borderWidth: 1.5,
-    borderColor: "#7A4A20",
-  },
-  runnerPillText: {
-    fontSize: 10,
-    fontWeight: "800",
-    color: "#7A4A20",
-    letterSpacing: 0.8,
-  },
-  settlementChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
-  },
-  settlementDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 999,
-  },
-  settlementChipText: {
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  itemsSection: {
-    borderTopWidth: 1,
-    borderTopColor: BR.line,
-    paddingHorizontal: 14,
-    paddingTop: 12,
-    paddingBottom: 14,
-    gap: 10,
-  },
-  itemRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-  },
-  itemIndex: {
-    fontSize: 13,
-    fontFamily: BR_FONT.monoBold,
-    color: BR.ink3,
-    width: 22,
-    lineHeight: 20,
-  },
-  itemText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: BR.ink,
-    lineHeight: 20,
-  },
-  itemLocation: {
-    fontSize: 10,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-    letterSpacing: 0.8,
-    marginTop: 2,
-  },
-  itemPrice: {
-    fontSize: 14,
-    color: BR.ink,
-    fontFamily: BR_FONT.mono,
-    lineHeight: 20,
-  },
-  itemsDivider: {
-    borderBottomWidth: 1,
-    borderStyle: "dashed",
-    borderColor: BR.line2,
-    marginVertical: 4,
-  },
-  amountRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  amountLabel: {
-    fontSize: 11,
-    fontFamily: BR_FONT.monoBold,
-    color: BR.ink2,
-    letterSpacing: 1,
-  },
-  amountValue: {
-    fontSize: 22,
-    fontWeight: "800",
-    fontFamily: BR_FONT.displayExtraBold,
-  },
-});

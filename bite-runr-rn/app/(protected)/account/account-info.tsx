@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -18,7 +17,7 @@ import * as ImagePicker from "expo-image-picker";
 import type { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { BrAvatar, BrInput, BrText } from "@/components/br";
-import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 import { authClient } from "@/lib/auth-client";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
@@ -238,60 +237,62 @@ export default function AccountInfoScreen() {
   const isLoading = user === undefined;
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: BR.paper }}
-      edges={["top"]}
-    >
+    <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
       {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+      <View className="flex-row items-center justify-between px-[18px] pt-2 pb-3">
+        <Pressable
+          onPress={() => router.back()}
+          className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+        >
           <Icon name="ChevronLeft" size={20} color={BR.ink} />
         </Pressable>
-        <BrText weight="bold" style={{ fontSize: 17 }}>
+        <BrText
+          weight="bold"
+          className="text-[17px]"
+          style={BR_FONT_STYLE.display}
+        >
           Edit profile
         </BrText>
-        <View style={{ width: 38 }} />
+        <View className="w-[38px]" />
       </View>
 
       {isLoading ? (
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
+        <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={BR.orange} />
         </View>
       ) : !user ? (
-        <View style={styles.emptyState}>
+        <View className="flex-1 items-center justify-center">
           <BrText variant="h3">Not signed in</BrText>
         </View>
       ) : (
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
+          className="flex-1"
         >
           <ScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={styles.scroll}
+            className="flex-1"
+            contentContainerClassName="px-[18px] pb-12"
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
             {/* Avatar hero */}
             <Animated.View
               entering={FadeInUp.duration(300)}
-              style={styles.avatarHero}
+              className="mb-6 items-center rounded-[22px] border border-[rgba(255,106,31,0.18)] bg-[#FFF1E2] p-7"
             >
               <Pressable
                 onPress={showAvatarOptions}
                 disabled={isUploadingAvatar}
-                style={{ alignItems: "center" }}
+                className="items-center"
               >
-                <View style={{ position: "relative" }}>
+                <View className="relative">
                   <BrAvatar
                     name={fullName}
                     avatarUrl={user.avatarUrl}
                     size={100}
                     ring="#fff"
                   />
-                  <View style={styles.cameraBadge}>
+                  <View className="absolute right-0 bottom-0 h-8 w-8 items-center justify-center rounded-full border-[2.5px] border-[#FFF1E2] bg-[#FF6A1F]">
                     {isUploadingAvatar ? (
                       <ActivityIndicator size="small" color="#fff" />
                     ) : (
@@ -299,37 +300,39 @@ export default function AccountInfoScreen() {
                     )}
                   </View>
                 </View>
-                <Text style={styles.avatarHint}>Tap to change photo</Text>
+                <Text className="mt-3 font-['JetBrainsMono_500Medium'] text-xs text-[#E8551A]">
+                  Tap to change photo
+                </Text>
               </Pressable>
             </Animated.View>
 
             {/* Name fields */}
             <Animated.View
               entering={FadeInUp.duration(300).delay(30)}
-              style={{ gap: 16 }}
+              className="gap-4"
             >
               <View>
-                <BrText variant="eyebrow" style={{ marginBottom: 8 }}>
+                <BrText variant="eyebrow" className="mb-2">
                   First name
                 </BrText>
                 <BrInput
                   value={firstName}
                   onChangeText={setFirstName}
                   placeholder="First name"
-                  leftIcon="User"
+                  leftIcon="IdCard"
                   autoCapitalize="words"
                   returnKeyType="next"
                 />
               </View>
               <View>
-                <BrText variant="eyebrow" style={{ marginBottom: 8 }}>
+                <BrText variant="eyebrow" className="mb-2">
                   Last name
                 </BrText>
                 <BrInput
                   value={lastName}
                   onChangeText={setLastName}
                   placeholder="Last name"
-                  leftIcon="User"
+                  leftIcon="IdCard"
                   autoCapitalize="words"
                   returnKeyType="done"
                   onSubmitEditing={handleSave}
@@ -340,19 +343,24 @@ export default function AccountInfoScreen() {
             {/* Email (locked) */}
             <Animated.View
               entering={FadeInUp.duration(300).delay(25)}
-              style={{ marginTop: 20 }}
+              className="mt-5"
             >
-              <BrText variant="eyebrow" style={{ marginBottom: 8 }}>
+              <BrText variant="eyebrow" className="mb-2">
                 Email
               </BrText>
-              <View style={styles.emailRow}>
+              <View className="h-[54px] flex-row items-center gap-3 rounded-[16px] border border-[rgba(26,20,16,0.14)] bg-[#FCEFE0] px-4">
                 <Icon name="Mail" size={18} color={BR.ink2} />
-                <Text style={styles.emailText} numberOfLines={1}>
+                <Text
+                  className="flex-1 text-base text-[#4A3C32]"
+                  numberOfLines={1}
+                >
                   {user.email}
                 </Text>
-                <View style={styles.lockedChip}>
+                <View className="flex-row items-center gap-1 rounded-full bg-[rgba(26,20,16,0.08)] px-2 py-[3px]">
                   <Icon name="Lock" size={10} color={BR.ink3} />
-                  <Text style={styles.lockedText}>Locked</Text>
+                  <Text className="text-[11px] font-semibold text-[#8A7A6E]">
+                    Locked
+                  </Text>
                 </View>
               </View>
             </Animated.View>
@@ -360,10 +368,10 @@ export default function AccountInfoScreen() {
             {/* Member since */}
             <Animated.View
               entering={FadeInUp.duration(300).delay(65)}
-              style={styles.memberRow}
+              className="mt-5 flex-row items-center justify-center gap-1.5"
             >
               <Icon name="Calendar" size={13} color={BR.ink3} />
-              <Text style={styles.memberText}>
+              <Text className="font-['JetBrainsMono_500Medium'] text-[13px] text-[#8A7A6E]">
                 Member since{" "}
                 {new Date(user._creationTime).toLocaleDateString("en-US", {
                   month: "long",
@@ -375,12 +383,12 @@ export default function AccountInfoScreen() {
             {/* Save */}
             <Animated.View
               entering={FadeInUp.duration(300).delay(40)}
-              style={{ marginTop: 28 }}
+              className="mt-7"
             >
               <Pressable
                 onPress={handleSave}
                 disabled={!hasChanges}
-                className="flex-row gap-2 justify-center items-center p-4 w-full rounded-2xl border h-[55px] border-muted active:opacity-80 disabled:opacity-50"
+                className="h-[55px] w-full flex-row items-center justify-center gap-2 rounded-2xl border border-muted p-4 active:opacity-80 disabled:opacity-50"
                 accessibilityRole="button"
                 accessibilityLabel="Save changes"
               >
@@ -389,10 +397,7 @@ export default function AccountInfoScreen() {
                 ) : (
                   <Icon name="Check" color={BR.ink} size={22} />
                 )}
-                <Text
-                  className="text-lg font-semibold"
-                  style={{ color: BR.ink }}
-                >
+                <Text className="text-lg font-semibold text-[#1A1410]">
                   Save changes
                 </Text>
               </Pressable>
@@ -401,42 +406,35 @@ export default function AccountInfoScreen() {
             {/* Danger zone */}
             <Animated.View
               entering={FadeInUp.duration(300).delay(80)}
-              style={styles.dangerZone}
+              className="mt-9"
             >
-              <BrText
-                variant="eyebrow"
-                style={{ color: BR.coralInk, marginBottom: 14 }}
-              >
+              <BrText variant="eyebrow" className="mb-3.5 text-[#B82340]">
                 Danger zone
               </BrText>
               <Pressable
                 onPress={handleDeleteAccount}
                 disabled={isDeleting || isDeleteEligibilityLoading}
-                style={[
-                  styles.deleteBtn,
-                  (isDeleting || isDeleteEligibilityLoading) && {
-                    opacity: 0.5,
-                  },
-                ]}
+                className="h-14 overflow-hidden rounded-2xl bg-[#FFE0E6] disabled:opacity-50"
                 accessibilityRole="button"
                 accessibilityLabel="Delete account"
-                className="rounded-2xl"
               >
-                <View style={styles.deleteBtnInner}>
+                <View className="flex-1 flex-row items-center justify-center">
                   {isDeleting ? (
                     <ActivityIndicator size="small" color={BR.coralInk} />
                   ) : (
                     <Icon name="Trash2" size={18} color={BR.coralInk} />
                   )}
-                  <Text style={styles.deleteBtnText}>Delete account</Text>
+                  <Text className="ml-2.5 text-[17px] font-bold text-[#B82340]">
+                    Delete account
+                  </Text>
                 </View>
               </Pressable>
-              <Text style={styles.dangerCopy}>
+              <Text className="mt-3.5 px-3 text-center text-[13px] leading-[18px] text-[#8A7A6E]">
                 This permanently removes your profile, runs, and squad history.
                 It can't be undone.
               </Text>
               {deleteEligibility && !deleteEligibility.allowed ? (
-                <Text style={styles.dangerBlocked}>
+                <Text className="mt-2.5 text-center font-['JetBrainsMono_500Medium'] text-[13px] leading-[18px] text-[#B82340]">
                   {deleteEligibility.reason}
                 </Text>
               ) : null}
@@ -447,139 +445,3 @@ export default function AccountInfoScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 12,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  scroll: {
-    paddingHorizontal: 18,
-    paddingBottom: 48,
-  },
-  avatarHero: {
-    backgroundColor: BR.orangeTint,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: "rgba(255,106,31,0.18)",
-    padding: 28,
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  cameraBadge: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    width: 32,
-    height: 32,
-    borderRadius: 999,
-    backgroundColor: BR.orange,
-    borderWidth: 2.5,
-    borderColor: BR.orangeTint,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarHint: {
-    fontSize: 12,
-    color: BR.orangeDeep,
-    fontFamily: BR_FONT.mono,
-    marginTop: 12,
-  },
-  emailRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    height: 54,
-    paddingHorizontal: 16,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line2,
-    backgroundColor: BR.paper2,
-  },
-  emailText: {
-    flex: 1,
-    fontSize: 16,
-    color: BR.ink2,
-  },
-  lockedChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 999,
-    backgroundColor: BR.line,
-  },
-  lockedText: {
-    fontSize: 11,
-    color: BR.ink3,
-    fontWeight: "600",
-  },
-  memberRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  memberText: {
-    fontSize: 13,
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dangerZone: {
-    marginTop: 36,
-  },
-  dangerCopy: {
-    fontSize: 13,
-    lineHeight: 18,
-    color: BR.ink3,
-    textAlign: "center",
-    marginTop: 14,
-    paddingHorizontal: 12,
-  },
-  dangerBlocked: {
-    fontSize: 13,
-    lineHeight: 18,
-    color: BR.coralInk,
-    fontFamily: BR_FONT.mono,
-    textAlign: "center",
-    marginTop: 10,
-  },
-  deleteBtn: {
-    height: 56,
-    backgroundColor: BR.coralSoft,
-    overflow: "hidden",
-  },
-  deleteBtnInner: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  deleteBtnText: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: BR.coralInk,
-    marginLeft: 10,
-  },
-});

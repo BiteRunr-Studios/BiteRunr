@@ -1,5 +1,6 @@
 import type React from "react";
 import { Text, type TextProps, type TextStyle, StyleSheet } from "react-native";
+import { cssInterop } from "nativewind";
 import { BR, BR_FONT } from "@/lib/br-theme";
 
 type Variant =
@@ -20,7 +21,7 @@ interface BrTextProps extends TextProps {
   children?: React.ReactNode;
 }
 
-export function BrText({
+function BrTextInner({
   variant = "body",
   italic,
   color,
@@ -41,6 +42,8 @@ export function BrText({
     </Text>
   );
 }
+
+export const BrText = cssInterop(BrTextInner, { className: "style" });
 
 const WEIGHT_MAP = {
   regular: "400",

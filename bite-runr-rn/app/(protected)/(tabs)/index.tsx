@@ -7,7 +7,6 @@ import {
   Image,
   Pressable,
   InteractionManager,
-  StyleSheet,
 } from "react-native";
 import Animated, {
   FadeInUp,
@@ -33,7 +32,7 @@ import { PaymentSetupSplash } from "@/components/payment-setup-splash";
 import { QRScannerModal } from "@/components/qr-scanner-modal";
 import { EnterCodeModal } from "@/components/enter-code-modal";
 import { BrCard, BrChip, BrText, BrAvatar, BrSticker } from "@/components/br";
-import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
+import { BR } from "@/lib/br-theme";
 
 const SQUAD_COLOR_MAP: Record<string, string> = {
   orange: BR.orange,
@@ -76,15 +75,8 @@ function PulseDot({
   }));
   return (
     <Animated.View
-      style={[
-        {
-          width: size,
-          height: size,
-          borderRadius: 999,
-          backgroundColor: color,
-        },
-        animStyle,
-      ]}
+      className="rounded-full"
+      style={[{ width: size, height: size, backgroundColor: color }, animStyle]}
     />
   );
 }
@@ -114,11 +106,14 @@ function IconButton({
   badge?: number;
 }) {
   return (
-    <Pressable onPress={onPress} style={styles.iconBtn}>
+    <Pressable
+      onPress={onPress}
+      className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+    >
       <Icon name={name} size={18} color={BR.ink} />
       {badge && badge > 0 ? (
-        <View style={styles.iconBadge}>
-          <Text style={styles.iconBadgeText}>{badge}</Text>
+        <View className="absolute -right-0.5 -top-0.5 h-4 min-w-4 items-center justify-center rounded-lg border-[1.5px] border-[#FFF7EE] bg-[#FF4D6D] px-1">
+          <Text className="text-[9px] font-extrabold text-white">{badge}</Text>
         </View>
       ) : null}
     </Pressable>
@@ -237,564 +232,514 @@ export default function HomeTab() {
 
   return (
     <ErrorBoundary>
-      <SafeAreaView
-        edges={["top"]}
-        style={{ flex: 1, backgroundColor: BR.paper }}
-      >
+      <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
         {/* Top bar */}
-        <View style={styles.topBar}>
+        <View className="flex-row items-center justify-between px-[18px] pb-2 pt-3">
           <Image
             source={require("@/assets/images/icon-no-bg.png")}
-            style={{ width: 44, height: 44 }}
+            className="h-11 w-11"
             resizeMode="contain"
           />
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <View className="flex-row gap-2">
             <IconButton name="ScanLine" onPress={() => setShowScanner(true)} />
           </View>
         </View>
 
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            paddingBottom: 50 + insets.bottom,
-            paddingHorizontal: 18,
-          }}
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: 50 + insets.bottom }}
           showsVerticalScrollIndicator={false}
         >
-          {isLoading && <HomeSkeleton />}
+          <View className="px-[18px]">
+            {isLoading && <HomeSkeleton />}
 
-          {!isLoading && (
-            <>
-              {/* Greeting */}
-              <Animated.View
-                entering={FadeInUp.duration(300)}
-                style={styles.greetingRow}
-              >
-                <View style={{ flex: 1 }}>
-                  <BrText variant="eyebrow">{formatDateLine()}</BrText>
-                  <BrText variant="h1" style={{ marginTop: 6 }}>
-                    {getGreeting()},{"\n"}
-                    <BrText variant="h1" color={BR.orange}>
-                      {firstName}.
-                    </BrText>
-                  </BrText>
-                </View>
-                {pastOrders && pastOrders.length >= 3 && (
-                  <BrSticker
-                    rotate={5}
-                    leftSlot={<Icon name="Flame" size={14} color={BR.orange} />}
-                  >
-                    <Text>{pastOrders.length}+ runs</Text>
-                  </BrSticker>
-                )}
-              </Animated.View>
-
-              {/* Hero — active order */}
-              {activeOrder && (
+            {!isLoading && (
+              <>
+                {/* Greeting */}
                 <Animated.View
-                  entering={FadeInUp.duration(300).delay(25)}
-                  style={{ marginTop: 22 }}
+                  entering={FadeInUp.duration(300)}
+                  className="mt-2.5 flex-row items-end justify-between"
                 >
-                  <Pressable
-                    onPress={() => router.push(`/order/${activeOrder.id}`)}
-                  >
-                    <LinearGradient
-                      colors={["#FF6A1F", "#FF8A4A", "#FFA866"]}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.heroCard}
-                    >
-                      <Text style={styles.heroWatermark}>R</Text>
-
-                      <View style={styles.heroTopRow}>
-                        <View style={styles.livePill}>
-                          <PulseDot color="#fff" size={6} />
-                          <Text style={styles.livePillText}>LIVE ORDER</Text>
-                        </View>
-                      </View>
-
-                      <BrText
-                        variant="h2"
-                        color="#fff"
-                        style={{ marginTop: 14 }}
-                      >
-                        {activeOrder.name}
+                  <View className="flex-1">
+                    <BrText variant="eyebrow">{formatDateLine()}</BrText>
+                    <BrText variant="h1" className="mt-1.5">
+                      {getGreeting()},{"\n"}
+                      <BrText variant="h1" color={BR.orange}>
+                        {firstName}.
                       </BrText>
-
-                      <View style={styles.heroAvatarRow}>
-                        <View style={{ flexDirection: "row" }}>
-                          {(activeOrder.orderUsers ?? [])
-                            .slice(0, 4)
-                            .map((u, i) => (
-                              <View
-                                key={u.id}
-                                style={{
-                                  marginLeft: i ? -10 : 0,
-                                }}
-                              >
-                                <BrAvatar
-                                  name={`${u.firstName ?? ""} ${u.lastName ?? ""}`}
-                                  avatarUrl={u.avatarUrl ?? null}
-                                  size={32}
-                                  ring="#fff"
-                                />
-                              </View>
-                            ))}
-                        </View>
-                        <View style={styles.heroOpenBtn}>
-                          <Text style={styles.heroOpenBtnText}>Open run</Text>
-                          <Icon
-                            name="ArrowRight"
-                            size={14}
-                            color={BR.orangeDeep}
-                          />
-                        </View>
-                      </View>
-                    </LinearGradient>
-                  </Pressable>
-                </Animated.View>
-              )}
-
-              {/* New run CTA */}
-              <Animated.View
-                entering={FadeInUp.duration(300).delay(40)}
-                style={{ marginTop: activeOrder ? 12 : 22 }}
-              >
-                <Pressable onPress={handleCreateOrder} style={styles.newRunCta}>
-                  <View style={styles.newRunPlus}>
-                    <Icon
-                      name="Plus"
-                      size={18}
-                      color="#fff"
-                      strokeWidth={2.5}
-                    />
+                    </BrText>
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.newRunTitle}>Start a new run</Text>
-                    <Text style={styles.newRunSub}>
-                      Invite squad · pick a spot · go
-                    </Text>
-                  </View>
-                  <Icon
-                    name="ArrowRight"
-                    size={18}
-                    color="#fff"
-                    style={{ opacity: 0.7 }}
-                  />
-                </Pressable>
-              </Animated.View>
-
-              {/* Stats row */}
-              {(owedToMe > 0 ||
-                iOwe > 0 ||
-                (hasStripe && balanceAmount !== null && owedToMe === 0)) && (
-                <Animated.View
-                  entering={FadeInUp.duration(300).delay(30)}
-                  style={styles.statsRow}
-                >
-                  {owedToMe > 0 && (
-                    <Pressable
-                      onPress={() => {
-                        const first = outstandingDebts?.[0];
-                        if (first) {
-                          router.push(
-                            `/order/settlement?orderId=${first.orderId}`,
-                          );
-                        }
-                      }}
-                      style={styles.owedCard}
+                  {pastOrders && pastOrders.length >= 3 && (
+                    <BrSticker
+                      rotate={5}
+                      leftSlot={
+                        <Icon name="Flame" size={14} color={BR.orange} />
+                      }
                     >
-                      {/* Top row: label + stacked avatars */}
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "flex-start",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        <View style={styles.statHeaderRow}>
-                          <Icon
-                            name="TrendingUp"
-                            size={12}
-                            color={BR.mintInk}
-                          />
-                          <Text
-                            style={[styles.statLabel, { color: BR.mintInk }]}
-                          >
-                            YOU&apos;RE OWED
-                          </Text>
-                        </View>
-                        {outstandingDebts && outstandingDebts.length > 0 && (
-                          <View style={{ flexDirection: "row" }}>
-                            {outstandingDebts.slice(0, 3).map((d, i) => (
-                              <View
-                                key={d.userId}
-                                style={{ marginLeft: i ? -10 : 0 }}
-                              >
-                                <BrAvatar
-                                  name={`${d.firstName} ${d.lastName}`}
-                                  avatarUrl={d.avatarUrl}
-                                  size={26}
-                                  ring={BR.mintSoft}
-                                />
-                              </View>
-                            ))}
-                          </View>
-                        )}
-                      </View>
-
-                      {/* Amount */}
-                      <Text
-                        style={[
-                          styles.statValue,
-                          { color: BR.mintInk, marginTop: 8 },
-                        ]}
-                      >
-                        ${owedToMe.toFixed(2)}
-                      </Text>
-
-                      {/* Bottom row: name + collect pill */}
-                      <View style={styles.owedFooter}>
-                        <Text
-                          style={[
-                            styles.statSub,
-                            { color: BR.mintInk, opacity: 0.75, flex: 1 },
-                          ]}
-                          numberOfLines={1}
-                        >
-                          {outstandingDebts && outstandingDebts.length === 1
-                            ? `${outstandingDebts[0].firstName} owes you`
-                            : `${outstandingDebts?.length ?? 0} people owe you`}
-                        </Text>
-                        <View style={styles.collectPill}>
-                          <Text style={styles.collectPillText}>Collect</Text>
-                          <Icon
-                            name="ArrowRight"
-                            size={10}
-                            color={BR.mintInk}
-                          />
-                        </View>
-                      </View>
-                    </Pressable>
-                  )}
-                  {iOwe > 0 && (
-                    <Pressable
-                      onPress={() => {
-                        const first = outstandingPayments?.[0];
-                        if (first) {
-                          router.push(
-                            `/order/my-settlement?orderId=${first.orderId}`,
-                          );
-                        }
-                      }}
-                      style={[
-                        styles.statCard,
-                        {
-                          backgroundColor: BR.coralSoft,
-                          borderColor: "rgba(255,77,109,0.2)",
-                          flex: 1,
-                        },
-                      ]}
-                    >
-                      <View style={styles.statHeaderRow}>
-                        <Icon name="Hand" size={14} color={BR.coralInk} />
-                        <Text
-                          style={[styles.statLabel, { color: BR.coralInk }]}
-                        >
-                          YOU OWE
-                        </Text>
-                      </View>
-                      <Text style={[styles.statValue, { color: BR.coralInk }]}>
-                        ${iOwe.toFixed(2)}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.statSub,
-                          { color: BR.coralInk, opacity: 0.7 },
-                        ]}
-                      >
-                        Settle now
-                      </Text>
-                    </Pressable>
-                  )}
-                  {hasStripe && balanceAmount !== null && owedToMe === 0 && (
-                    <Pressable
-                      onPress={() => router.push("/account/payments")}
-                      style={[
-                        styles.statCard,
-                        {
-                          backgroundColor: BR.lilacSoft,
-                          borderColor: "rgba(110,91,255,0.2)",
-                          flex: 1,
-                        },
-                      ]}
-                    >
-                      <View style={styles.statHeaderRow}>
-                        <Icon name="Wallet" size={14} color={BR.lilacInk} />
-                        <Text
-                          style={[styles.statLabel, { color: BR.lilacInk }]}
-                        >
-                          BALANCE
-                        </Text>
-                      </View>
-                      <Text style={[styles.statValue, { color: BR.lilacInk }]}>
-                        ${(balanceAmount / 100).toFixed(2)}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.statSub,
-                          { color: BR.lilacInk, opacity: 0.7 },
-                        ]}
-                      >
-                        Stripe payout
-                      </Text>
-                    </Pressable>
+                      <Text>{pastOrders.length}+ runs</Text>
+                    </BrSticker>
                   )}
                 </Animated.View>
-              )}
 
-              {/* Squads */}
-              {squads && squads.length > 0 && (
-                <Animated.View
-                  entering={FadeInUp.duration(300).delay(40)}
-                  style={{ marginTop: 22 }}
-                >
-                  <View style={styles.sectionHeader}>
-                    <BrText variant="h3">Your squads</BrText>
-                    <Pressable
-                      onPress={() => router.push("/account/friends")}
-                      style={styles.smallChip}
-                    >
-                      <Text style={styles.smallChipText}>Manage</Text>
-                    </Pressable>
-                  </View>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ gap: 10, paddingRight: 18 }}
-                    style={{ marginHorizontal: -18, paddingHorizontal: 18 }}
+                {/* Hero — active order */}
+                {activeOrder && (
+                  <Animated.View
+                    entering={FadeInUp.duration(300).delay(25)}
+                    className="mt-[22px]"
                   >
-                    {squads.map((squad) => {
-                      const tileColor =
-                        SQUAD_COLOR_MAP[squad.color] ?? BR.orange;
-                      const memberIds = (squad.memberIds as string[]).join(",");
-                      return (
-                        <Pressable
-                          key={squad.id}
-                          onPress={() =>
-                            router.push(
-                              `/order/create?reorderFriendIds=${memberIds}`,
-                            )
-                          }
+                    <Pressable
+                      onPress={() => router.push(`/order/${activeOrder.id}`)}
+                    >
+                      <View className="overflow-hidden rounded-[22px] shadow-[0_8px_16px_rgba(255,106,31,0.45)]">
+                        <LinearGradient
+                          colors={["#FF6A1F", "#FF8A4A", "#FFA866"]}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
                         >
-                          <BrCard
-                            variant="outlined"
-                            background={BR.card}
-                            padding={14}
-                            style={{ width: 200 }}
-                          >
-                            {/* Icon tile */}
-                            <View
-                              style={{
-                                width: 44,
-                                height: 44,
-                                borderRadius: 14,
-                                backgroundColor: tileColor,
-                                alignItems: "center",
-                                justifyContent: "center",
-                                marginBottom: 12,
-                              }}
-                            >
-                              <Icon
-                                name={
-                                  squad.icon as React.ComponentProps<
-                                    typeof Icon
-                                  >["name"]
-                                }
-                                size={20}
-                                color="#fff"
-                              />
+                          <View className="p-[18px]">
+                            <Text className="absolute -bottom-[22px] -right-3.5 font-['BricolageGrotesque_800ExtraBold'] text-[200px] italic leading-[200px] tracking-[-16px] text-white/10">
+                              R
+                            </Text>
+
+                            <View className="flex-row items-center gap-2">
+                              <View className="flex-row items-center gap-1.5 rounded-full bg-white/20 px-[9px] py-1">
+                                <PulseDot color="#fff" size={6} />
+                                <Text className="text-[11px] font-bold tracking-[0.8px] text-white">
+                                  LIVE ORDER
+                                </Text>
+                              </View>
                             </View>
 
-                            {/* Name */}
                             <BrText
-                              weight="bold"
-                              style={{ fontSize: 15 }}
-                              numberOfLines={1}
+                              variant="h2"
+                              color="#fff"
+                              className="mt-3.5"
                             >
-                              {squad.name}
+                              {activeOrder.name}
                             </BrText>
 
-                            {/* Members row */}
-                            <View
-                              style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                                gap: 8,
-                                marginTop: 10,
-                              }}
-                            >
-                              <View style={{ flexDirection: "row" }}>
-                                {squad.members.slice(0, 4).map((m, idx) => (
-                                  <View
-                                    key={m.id}
-                                    style={{ marginLeft: idx ? -8 : 0 }}
-                                  >
-                                    <BrAvatar
-                                      name={`${m.firstName ?? ""} ${m.lastName ?? ""}`}
-                                      avatarUrl={m.avatarUrl}
-                                      size={24}
-                                      ring={BR.card}
-                                    />
-                                  </View>
-                                ))}
+                            <View className="mt-[18px] flex-row items-center gap-3.5">
+                              <View className="flex-row">
+                                {(activeOrder.orderUsers ?? [])
+                                  .slice(0, 4)
+                                  .map((u, i) => (
+                                    <View
+                                      key={u.id}
+                                      className={i ? "-ml-2.5" : ""}
+                                    >
+                                      <BrAvatar
+                                        name={`${u.firstName ?? ""} ${u.lastName ?? ""}`}
+                                        avatarUrl={u.avatarUrl ?? null}
+                                        size={32}
+                                        ring="#fff"
+                                      />
+                                    </View>
+                                  ))}
                               </View>
-                              <Text
-                                style={{
-                                  fontSize: 12,
-                                  color: BR.ink3,
-                                  fontFamily: BR_FONT.mono,
-                                }}
-                              >
-                                {squad.members.length}{" "}
-                                {squad.members.length === 1
-                                  ? "person"
-                                  : "people"}
-                              </Text>
-                            </View>
-                          </BrCard>
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
-                </Animated.View>
-              )}
-
-              {/* Recent runs */}
-              {pastOrders && pastOrders.length > 0 && (
-                <Animated.View
-                  entering={FadeInUp.duration(300).delay(25)}
-                  style={{ marginTop: 22 }}
-                >
-                  <View style={styles.sectionHeader}>
-                    <BrText variant="h3">Recent runs</BrText>
-                  </View>
-                  <View style={{ gap: 10 }}>
-                    {pastOrders.map((order) => {
-                      const colorPalette = [
-                        BR.orange,
-                        BR.lilac,
-                        BR.mint,
-                        BR.coral,
-                      ];
-                      const color =
-                        colorPalette[
-                          (order.name?.charCodeAt(0) || 0) % colorPalette.length
-                        ];
-                      return (
-                        <Pressable
-                          key={order.id}
-                          onPress={() =>
-                            router.push(
-                              `/order/completed-order?orderId=${order.id}`,
-                            )
-                          }
-                        >
-                          <BrCard padding={14} style={styles.runRow}>
-                            <View
-                              style={[
-                                styles.runIcon,
-                                { backgroundColor: color },
-                              ]}
-                            >
-                              <Icon name="ShoppingBag" size={20} color="#fff" />
-                            </View>
-                            <View style={{ flex: 1, minWidth: 0 }}>
-                              <View
-                                style={{
-                                  flexDirection: "row",
-                                  alignItems: "center",
-                                  gap: 6,
-                                }}
-                              >
-                                <BrText
-                                  weight="bold"
-                                  style={{ fontSize: 14 }}
-                                  numberOfLines={1}
-                                >
-                                  {order.name}
-                                </BrText>
-                                <Text style={styles.runDot}>·</Text>
-                                <Text style={styles.runDate}>
-                                  {new Date(order.createdAt).toLocaleDateString(
-                                    "en-US",
-                                    {
-                                      month: "short",
-                                      day: "numeric",
-                                    },
-                                  )}
+                              <View className="ml-auto flex-row items-center gap-1.5 rounded-full bg-white px-3.5 py-2.5">
+                                <Text className="text-[13px] font-bold text-[#E8551A]">
+                                  Open run
                                 </Text>
-                              </View>
-                              <View style={styles.runMetaRow}>
-                                <Text style={styles.runMeta}>
-                                  {order.itemsCount} items
-                                </Text>
-                                <Text style={styles.runMeta}>·</Text>
-                                <Text style={styles.runMeta}>
-                                  ${(Number(order.userAmount) / 100).toFixed(2)}
-                                </Text>
-                                <Text style={styles.runMeta}>·</Text>
-                                <Text style={styles.runMeta}>
-                                  {order.orderUsers.length} ppl
-                                </Text>
-                              </View>
-                            </View>
-                            <BrChip
-                              color="orange"
-                              leftSlot={
                                 <Icon
-                                  name="RotateCcw"
-                                  size={11}
+                                  name="ArrowRight"
+                                  size={14}
                                   color={BR.orangeDeep}
                                 />
-                              }
-                            >
-                              <Text>Again</Text>
-                            </BrChip>
-                          </BrCard>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </Animated.View>
-              )}
+                              </View>
+                            </View>
+                          </View>
+                        </LinearGradient>
+                      </View>
+                    </Pressable>
+                  </Animated.View>
+                )}
 
-              {/* Empty state */}
-              {!hasAnyData && (
+                {/* New run CTA */}
                 <Animated.View
-                  entering={FadeInUp.duration(300).springify()}
-                  style={styles.empty}
+                  entering={FadeInUp.duration(300).delay(40)}
+                  className={activeOrder ? "mt-3" : "mt-[22px]"}
                 >
-                  <View style={styles.emptyIcon}>
-                    <Icon name="Utensils" size={44} color={BR.orange} />
-                  </View>
-                  <BrText variant="h3" style={{ marginTop: 18 }}>
-                    Welcome to BiteRunr
-                  </BrText>
-                  <BrText
-                    style={{
-                      marginTop: 6,
-                      textAlign: "center",
-                      color: BR.ink3,
-                      fontSize: 14,
-                    }}
+                  <Pressable
+                    onPress={handleCreateOrder}
+                    className="flex-row items-center gap-3 rounded-[22px] bg-[#1A1410] px-[18px] py-4"
                   >
-                    Start your first group run to see your dashboard here.
-                  </BrText>
+                    <View className="h-9 w-9 items-center justify-center rounded-full bg-[#FF6A1F]">
+                      <Icon
+                        name="Plus"
+                        size={18}
+                        color="#fff"
+                        strokeWidth={2.5}
+                      />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-[15px] font-bold text-white">
+                        Start a new run
+                      </Text>
+                      <Text className="mt-0.5 text-xs text-white/65">
+                        Invite friends · pick a spot · go
+                      </Text>
+                    </View>
+                    <View className="opacity-70">
+                      <Icon name="ArrowRight" size={18} color="#fff" />
+                    </View>
+                  </Pressable>
                 </Animated.View>
-              )}
-            </>
-          )}
+
+                {/* Stats row */}
+                {(owedToMe > 0 ||
+                  iOwe > 0 ||
+                  (hasStripe && balanceAmount !== null && owedToMe === 0)) && (
+                  <Animated.View
+                    entering={FadeInUp.duration(300).delay(30)}
+                    className="mt-3.5 flex-row gap-2.5"
+                  >
+                    {owedToMe > 0 && (
+                      <Pressable
+                        onPress={() => {
+                          const first = outstandingDebts?.[0];
+                          if (first) {
+                            router.push(
+                              `/order/settlement?orderId=${first.orderId}`,
+                            );
+                          }
+                        }}
+                        className="flex-[1.4] rounded-[22px] border border-[rgba(46,190,123,0.2)] bg-[#DDF5E8] p-3.5"
+                      >
+                        {/* Top row: label + stacked avatars */}
+                        <View className="flex-row items-start justify-between">
+                          <View className="flex-row items-center gap-2">
+                            <Icon
+                              name="TrendingUp"
+                              size={12}
+                              color={BR.mintInk}
+                            />
+                            <Text className="text-[11px] font-bold tracking-[0.6px] text-[#1B6B43]">
+                              YOU&apos;RE OWED
+                            </Text>
+                          </View>
+                          {outstandingDebts && outstandingDebts.length > 0 && (
+                            <View className="flex-row">
+                              {outstandingDebts.slice(0, 3).map((d, i) => (
+                                <View
+                                  key={d.userId}
+                                  className={i ? "-ml-2.5" : ""}
+                                >
+                                  <BrAvatar
+                                    name={`${d.firstName} ${d.lastName}`}
+                                    avatarUrl={d.avatarUrl}
+                                    size={26}
+                                    ring={BR.mintSoft}
+                                  />
+                                </View>
+                              ))}
+                            </View>
+                          )}
+                        </View>
+
+                        {/* Amount */}
+                        <Text className="mt-2 font-['BricolageGrotesque_700Bold'] text-[30px] font-bold tracking-[-1px] text-[#1B6B43]">
+                          ${owedToMe.toFixed(2)}
+                        </Text>
+
+                        {/* Bottom row: name + collect pill */}
+                        <View className="mt-2 flex-row items-center gap-2">
+                          <Text
+                            className="flex-1 text-[11px] text-[#1B6B43]/75"
+                            numberOfLines={1}
+                          >
+                            {outstandingDebts && outstandingDebts.length === 1
+                              ? `${outstandingDebts[0].firstName} owes you`
+                              : `${outstandingDebts?.length ?? 0} people owe you`}
+                          </Text>
+                          <View className="flex-row items-center gap-1 rounded-full bg-[rgba(46,190,123,0.18)] px-[9px] py-1">
+                            <Text className="text-[11px] font-bold text-[#1B6B43]">
+                              Collect
+                            </Text>
+                            <Icon
+                              name="ArrowRight"
+                              size={10}
+                              color={BR.mintInk}
+                            />
+                          </View>
+                        </View>
+                      </Pressable>
+                    )}
+                    {iOwe > 0 && (
+                      <Pressable
+                        onPress={() => {
+                          const first = outstandingPayments?.[0];
+                          if (first) {
+                            router.push(
+                              `/order/my-settlement?orderId=${first.orderId}`,
+                            );
+                          }
+                        }}
+                        className="flex-1 rounded-[22px] border border-[rgba(255,77,109,0.2)] bg-[#FFE0E6] p-3.5"
+                      >
+                        <View className="flex-row items-center gap-2">
+                          <Icon name="Hand" size={14} color={BR.coralInk} />
+                          <Text className="text-[11px] font-bold tracking-[0.6px] text-[#B82340]">
+                            YOU OWE
+                          </Text>
+                        </View>
+                        <Text className="mt-2 font-['BricolageGrotesque_700Bold'] text-[30px] font-bold tracking-[-1px] text-[#B82340]">
+                          ${iOwe.toFixed(2)}
+                        </Text>
+                        <Text className="mt-0.5 text-[11px] text-[#B82340]/70">
+                          Settle now
+                        </Text>
+                      </Pressable>
+                    )}
+                    {hasStripe && balanceAmount !== null && owedToMe === 0 && (
+                      <Pressable
+                        onPress={() => router.push("/account/payments")}
+                        className="flex-1 rounded-[22px] border border-[rgba(110,91,255,0.2)] bg-[#E6E2FF] p-3.5"
+                      >
+                        <View className="flex-row items-center gap-2">
+                          <Icon name="Wallet" size={14} color={BR.lilacInk} />
+                          <Text className="text-[11px] font-bold tracking-[0.6px] text-[#3A2DC2]">
+                            BALANCE
+                          </Text>
+                        </View>
+                        <Text className="mt-2 font-['BricolageGrotesque_700Bold'] text-[30px] font-bold tracking-[-1px] text-[#3A2DC2]">
+                          ${(balanceAmount / 100).toFixed(2)}
+                        </Text>
+                        <Text className="mt-0.5 text-[11px] text-[#3A2DC2]/70">
+                          Stripe payout
+                        </Text>
+                      </Pressable>
+                    )}
+                  </Animated.View>
+                )}
+
+                {/* Squads */}
+                {squads && squads.length > 0 && (
+                  <Animated.View
+                    entering={FadeInUp.duration(300).delay(40)}
+                    className="mt-[22px]"
+                  >
+                    <View className="mb-2.5 flex-row items-baseline justify-between">
+                      <BrText variant="h3">Your squads</BrText>
+                      <Pressable
+                        onPress={() => router.push("/account/friends")}
+                        className="rounded-full bg-[#FCEFE0] px-2.5 py-1.5"
+                      >
+                        <Text className="text-xs font-semibold text-[#4A3C32]">
+                          Manage
+                        </Text>
+                      </Pressable>
+                    </View>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerClassName="gap-2.5 pr-[18px]"
+                      className="-mx-[18px] px-[18px]"
+                    >
+                      {squads.map((squad) => {
+                        const tileColor =
+                          SQUAD_COLOR_MAP[squad.color] ?? BR.orange;
+                        const memberIds = (squad.memberIds as string[]).join(
+                          ",",
+                        );
+                        return (
+                          <Pressable
+                            key={squad.id}
+                            onPress={() =>
+                              router.push(
+                                `/order/create?reorderFriendIds=${memberIds}`,
+                              )
+                            }
+                          >
+                            <BrCard
+                              variant="outlined"
+                              background={BR.card}
+                              padding={14}
+                              className="w-[200px]"
+                            >
+                              {/* Icon tile */}
+                              <View
+                                className="mb-3 h-11 w-11 items-center justify-center rounded-[14px]"
+                                style={{ backgroundColor: tileColor }}
+                              >
+                                <Icon
+                                  name={
+                                    squad.icon as React.ComponentProps<
+                                      typeof Icon
+                                    >["name"]
+                                  }
+                                  size={20}
+                                  color="#fff"
+                                />
+                              </View>
+
+                              {/* Name */}
+                              <BrText
+                                weight="bold"
+                                className="text-[15px]"
+                                numberOfLines={1}
+                              >
+                                {squad.name}
+                              </BrText>
+
+                              {/* Members row */}
+                              <View className="mt-2.5 flex-row items-center gap-2">
+                                <View className="flex-row">
+                                  {squad.members.slice(0, 4).map((m, idx) => (
+                                    <View
+                                      key={m.id}
+                                      className={idx ? "-ml-2" : ""}
+                                    >
+                                      <BrAvatar
+                                        name={`${m.firstName ?? ""} ${m.lastName ?? ""}`}
+                                        avatarUrl={m.avatarUrl}
+                                        size={24}
+                                        ring={BR.card}
+                                      />
+                                    </View>
+                                  ))}
+                                </View>
+                                <Text className="font-['JetBrainsMono_500Medium'] text-xs text-[#8A7A6E]">
+                                  {squad.members.length}{" "}
+                                  {squad.members.length === 1
+                                    ? "person"
+                                    : "people"}
+                                </Text>
+                              </View>
+                            </BrCard>
+                          </Pressable>
+                        );
+                      })}
+                    </ScrollView>
+                  </Animated.View>
+                )}
+
+                {/* Recent runs */}
+                {pastOrders && pastOrders.length > 0 && (
+                  <Animated.View
+                    entering={FadeInUp.duration(300).delay(25)}
+                    className="mt-[22px]"
+                  >
+                    <View className="mb-2.5 flex-row items-baseline justify-between">
+                      <BrText variant="h3">Recent runs</BrText>
+                    </View>
+                    <View className="gap-2.5">
+                      {pastOrders.map((order) => {
+                        const colorPalette = [
+                          BR.orange,
+                          BR.lilac,
+                          BR.mint,
+                          BR.coral,
+                        ];
+                        const color =
+                          colorPalette[
+                            (order.name?.charCodeAt(0) || 0) %
+                              colorPalette.length
+                          ];
+                        return (
+                          <Pressable
+                            key={order.id}
+                            onPress={() =>
+                              router.push(
+                                `/order/completed-order?orderId=${order.id}`,
+                              )
+                            }
+                          >
+                            <BrCard
+                              padding={14}
+                              className="flex-row items-center gap-3.5"
+                            >
+                              <View
+                                className="h-11 w-11 items-center justify-center rounded-[14px]"
+                                style={{ backgroundColor: color }}
+                              >
+                                <Icon
+                                  name="ShoppingBag"
+                                  size={20}
+                                  color="#fff"
+                                />
+                              </View>
+                              <View className="min-w-0 flex-1">
+                                <View className="flex-row items-center gap-1.5">
+                                  <BrText
+                                    weight="bold"
+                                    className="text-sm"
+                                    numberOfLines={1}
+                                  >
+                                    {order.name}
+                                  </BrText>
+                                  <Text className="text-[11px] text-[#8A7A6E]">
+                                    ·
+                                  </Text>
+                                  <Text className="text-[11px] text-[#8A7A6E]">
+                                    {new Date(
+                                      order.createdAt,
+                                    ).toLocaleDateString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                    })}
+                                  </Text>
+                                </View>
+                                <View className="mt-1 flex-row gap-1.5">
+                                  <Text className="font-['JetBrainsMono_500Medium'] text-xs text-[#8A7A6E]">
+                                    {order.itemsCount} items
+                                  </Text>
+                                  <Text className="font-['JetBrainsMono_500Medium'] text-xs text-[#8A7A6E]">
+                                    ·
+                                  </Text>
+                                  <Text className="font-['JetBrainsMono_500Medium'] text-xs text-[#8A7A6E]">
+                                    $
+                                    {(Number(order.userAmount) / 100).toFixed(
+                                      2,
+                                    )}
+                                  </Text>
+                                  <Text className="font-['JetBrainsMono_500Medium'] text-xs text-[#8A7A6E]">
+                                    ·
+                                  </Text>
+                                  <Text className="font-['JetBrainsMono_500Medium'] text-xs text-[#8A7A6E]">
+                                    {order.orderUsers.length} ppl
+                                  </Text>
+                                </View>
+                              </View>
+                              <BrChip
+                                color="orange"
+                                leftSlot={
+                                  <Icon
+                                    name="RotateCcw"
+                                    size={11}
+                                    color={BR.orangeDeep}
+                                  />
+                                }
+                              >
+                                <Text>Again</Text>
+                              </BrChip>
+                            </BrCard>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </Animated.View>
+                )}
+
+                {/* Empty state */}
+                {!hasAnyData && (
+                  <Animated.View
+                    entering={FadeInUp.duration(300).springify()}
+                    className="items-center px-5 py-10"
+                  >
+                    <View className="h-24 w-24 items-center justify-center rounded-3xl bg-[#FFE7D4]">
+                      <Icon name="Utensils" size={44} color={BR.orange} />
+                    </View>
+                    <BrText variant="h3" className="mt-[18px]">
+                      Welcome to BiteRunr
+                    </BrText>
+                    <BrText className="mt-1.5 text-center text-sm text-[#8A7A6E]">
+                      Start your first group run to see your dashboard here.
+                    </BrText>
+                  </Animated.View>
+                )}
+              </>
+            )}
+          </View>
         </ScrollView>
       </SafeAreaView>
 
@@ -829,18 +774,18 @@ export default function HomeTab() {
 function HomeSkeleton() {
   return (
     <Skeleton>
-      <View style={{ paddingTop: 16, gap: 22 }}>
-        <View style={{ gap: 8 }}>
+      <View className="gap-[22px] pt-4">
+        <View className="gap-2">
           <SkeletonBlock width={140} height={14} />
           <SkeletonBlock width={220} height={32} />
         </View>
         <SkeletonBlock width="100%" height={140} rounded="rounded-3xl" />
         <SkeletonBlock width="100%" height={66} rounded="rounded-2xl" />
-        <View style={{ flexDirection: "row", gap: 10 }}>
+        <View className="flex-row gap-2.5">
           <SkeletonBlock width="50%" height={92} rounded="rounded-3xl" />
           <SkeletonBlock width="46%" height={92} rounded="rounded-3xl" />
         </View>
-        <View style={{ gap: 10 }}>
+        <View className="gap-2.5">
           <SkeletonBlock width={140} height={20} />
           <SkeletonBlock width="100%" height={120} rounded="rounded-3xl" />
         </View>
@@ -848,265 +793,3 @@ function HomeSkeleton() {
     </Skeleton>
   );
 }
-
-const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 12,
-    paddingBottom: 8,
-  },
-  iconBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  iconBadge: {
-    position: "absolute",
-    top: -2,
-    right: -2,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    paddingHorizontal: 4,
-    backgroundColor: BR.coral,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1.5,
-    borderColor: BR.paper,
-  },
-  iconBadgeText: {
-    fontSize: 9,
-    fontWeight: "800",
-    color: "#fff",
-  },
-  greetingRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    marginTop: 10,
-  },
-  heroCard: {
-    borderRadius: BR_RADIUS.lg,
-    padding: 18,
-    overflow: "hidden",
-    ...BR_SHADOW.primary,
-  },
-  heroWatermark: {
-    position: "absolute",
-    right: -14,
-    bottom: -22,
-    fontFamily: BR_FONT.displayExtraBold,
-    fontStyle: "italic",
-    fontSize: 200,
-    lineHeight: 200,
-    color: "rgba(255,255,255,0.12)",
-    letterSpacing: -16,
-  },
-  heroTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  livePill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.22)",
-  },
-  livePillText: {
-    color: "#fff",
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-  },
-  heroMonoText: {
-    marginLeft: "auto",
-    fontFamily: BR_FONT.mono,
-    fontSize: 12,
-    color: "rgba(255,255,255,0.85)",
-  },
-  heroAvatarRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    marginTop: 18,
-  },
-  heroOpenBtn: {
-    marginLeft: "auto",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "#fff",
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 999,
-  },
-  heroOpenBtnText: {
-    color: BR.orangeDeep,
-    fontWeight: "700",
-    fontSize: 13,
-  },
-  newRunCta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: BR.ink,
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    borderRadius: BR_RADIUS.lg,
-  },
-  newRunPlus: {
-    width: 36,
-    height: 36,
-    borderRadius: 999,
-    backgroundColor: BR.orange,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  newRunTitle: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 15,
-  },
-  newRunSub: {
-    color: "rgba(255,255,255,0.65)",
-    fontSize: 12,
-    marginTop: 2,
-  },
-  statsRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 14,
-  },
-  statCard: {
-    padding: 14,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-  },
-  statHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  statLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.6,
-  },
-  statValue: {
-    fontFamily: BR_FONT.display,
-    fontWeight: "700",
-    fontSize: 30,
-    marginTop: 8,
-    letterSpacing: -1,
-  },
-  statSub: {
-    fontSize: 11,
-    marginTop: 2,
-  },
-  owedCard: {
-    padding: 14,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    backgroundColor: BR.mintSoft,
-    borderColor: "rgba(46,190,123,0.2)",
-    flex: 1.4,
-  },
-  owedFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 8,
-  },
-  collectPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "rgba(46,190,123,0.18)",
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  collectPillText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: BR.mintInk,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "baseline",
-    marginBottom: 10,
-  },
-  smallChip: {
-    backgroundColor: BR.paper2,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  smallChipText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: BR.ink2,
-  },
-  squadMetaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 6,
-  },
-  runRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  runIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  runDot: {
-    fontSize: 11,
-    color: BR.ink3,
-  },
-  runDate: {
-    fontSize: 11,
-    color: BR.ink3,
-  },
-  runMetaRow: {
-    flexDirection: "row",
-    gap: 6,
-    marginTop: 4,
-  },
-  runMeta: {
-    fontSize: 12,
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  empty: {
-    alignItems: "center",
-    paddingVertical: 40,
-    paddingHorizontal: 20,
-  },
-  emptyIcon: {
-    width: 96,
-    height: 96,
-    borderRadius: 24,
-    backgroundColor: BR.orangeSoft,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

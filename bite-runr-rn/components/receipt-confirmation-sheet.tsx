@@ -9,12 +9,11 @@ import {
   Pressable,
   Modal,
   Animated,
-  StyleSheet,
   ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@/components/common/icon";
-import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 import { BrText } from "@/components/br";
 import type { MatchedItem } from "@/hooks/useReceiptScanning";
 import { groupOrderItemsByParticipant } from "@/lib/order-item-grouping";
@@ -57,10 +56,22 @@ function getEffectivePrice(
 
 function confidenceConfig(confidence: number) {
   if (confidence >= 0.7)
-    return { label: "Great", bg: BR.mintSoft, fg: BR.mintInk };
+    return {
+      label: "Great",
+      badgeClass: "bg-[#DDF5E8]",
+      textClass: "text-[#1B6B43]",
+    };
   if (confidence >= 0.4)
-    return { label: "Maybe", bg: BR.yolkSoft, fg: "#7A4A20" };
-  return { label: "Review", bg: BR.coralSoft, fg: BR.coralInk };
+    return {
+      label: "Maybe",
+      badgeClass: "bg-[#FFF1C4]",
+      textClass: "text-[#7A4A20]",
+    };
+  return {
+    label: "Review",
+    badgeClass: "bg-[#FFE0E6]",
+    textClass: "text-[#B82340]",
+  };
 }
 
 // ── Unmatched receipt item card ────────────────────────────────────
@@ -79,13 +90,16 @@ function UnmatchedCard({
   return (
     <Pressable
       onPress={() => onSelect(matchedIndex)}
-      style={[styles.unmatchedCard, isSelected && styles.unmatchedCardSelected]}
+      className={`mb-2 flex-row items-center gap-2.5 rounded-2xl border p-3 ${
+        isSelected
+          ? "border-[rgba(255,106,31,0.3)] bg-[#FFF1E2]"
+          : "border-[rgba(26,20,16,0.08)] bg-white"
+      }`}
     >
       <View
-        style={[
-          styles.unmatchedIconCircle,
-          isSelected && { backgroundColor: BR.orangeSoft },
-        ]}
+        className={`h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+          isSelected ? "bg-[#FFE7D4]" : "bg-[#FCEFE0]"
+        }`}
       >
         <Icon
           name={isSelected ? "Check" : "Plus"}
@@ -94,19 +108,34 @@ function UnmatchedCard({
           strokeWidth={isSelected ? 3 : 2.5}
         />
       </View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.unmatchedName}>{item.receiptItem.name}</Text>
-        <Text style={styles.unmatchedMeta}>
+      <View className="flex-1">
+        <Text
+          className="text-[13px] text-[#1A1410]"
+          style={BR_FONT_STYLE.displaySemibold}
+        >
+          {item.receiptItem.name}
+        </Text>
+        <Text
+          className="mt-px text-[11px] text-[#8A7A6E]"
+          style={BR_FONT_STYLE.mono}
+        >
           Qty: {item.receiptItem.quantity} ·{" "}
           {formatPrice(item.receiptItem.priceInCents)}
         </Text>
         {item.receiptItem.comboName && (
-          <Text style={styles.unmatchedCombo}>
+          <Text className="mt-0.5 text-[11px] text-[#8A7A6E] italic">
             Split from {item.receiptItem.comboName}
           </Text>
         )}
       </View>
-      {isSelected && <Text style={styles.unmatchedHint}>Tap item below</Text>}
+      {isSelected && (
+        <Text
+          className="text-[11px] text-[#E8551A]"
+          style={BR_FONT_STYLE.displaySemibold}
+        >
+          Tap item below
+        </Text>
+      )}
     </Pressable>
   );
 }
@@ -153,19 +182,21 @@ function OrderItemCard({
       onPress={() => {
         if (isLinkable) onLinkSelected(orderItem.id);
       }}
-      style={[
-        styles.orderItemCard,
-        isLinkable && styles.orderItemCardLinkable,
-        linkedReceiptItem && styles.orderItemCardLinked,
-      ]}
+      className={`mb-2 rounded-2xl border p-3 ${
+        linkedReceiptItem
+          ? "border-[rgba(46,190,123,0.2)] bg-white"
+          : isLinkable
+            ? "border-dashed border-[rgba(255,106,31,0.25)] bg-[#FFF1E2]"
+            : "border-[rgba(26,20,16,0.08)] bg-white"
+      }`}
     >
-      {/* Status circle + item name */}
-      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
+      <View className="flex-row items-start gap-2.5">
         <View
-          style={[
-            styles.statusCircle,
-            linkedReceiptItem && { backgroundColor: BR.mintSoft },
-          ]}
+          className={`h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+            linkedReceiptItem
+              ? "border-transparent bg-[#DDF5E8]"
+              : "border-[rgba(26,20,16,0.14)] bg-[#FCEFE0]"
+          }`}
         >
           {linkedReceiptItem ? (
             <Icon name="Check" size={13} color={BR.mint} strokeWidth={3} />
@@ -173,32 +204,47 @@ function OrderItemCard({
             <Icon name="ArrowDown" size={12} color={BR.orange} />
           ) : null}
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.orderItemName}>{orderItem.text}</Text>
+        <View className="flex-1">
+          <Text
+            className="text-[13px] text-[#1A1410]"
+            style={BR_FONT_STYLE.displaySemibold}
+          >
+            {orderItem.text}
+          </Text>
           {!linkedReceiptItem && (
             <Text
-              style={[
-                styles.orderItemHint,
-                isLinkable && { color: BR.orangeDeep },
-              ]}
+              className={`mt-0.5 text-[11px] italic ${
+                isLinkable ? "text-[#E8551A]" : "text-[#8A7A6E]"
+              }`}
             >
               {isLinkable ? "Tap to link here" : "No receipt item linked"}
             </Text>
           )}
         </View>
         {linkedReceiptItem && effectivePrice !== null && (
-          <Text style={styles.orderItemPrice}>
+          <Text
+            className="text-sm text-[#FF6A1F]"
+            style={BR_FONT_STYLE.monoBold}
+          >
             {formatPrice(effectivePrice)}
           </Text>
         )}
       </View>
 
-      {/* Linked details */}
       {linkedReceiptItem && (
-        <View style={{ marginTop: 10, marginLeft: 28, gap: 6 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Text style={styles.receiptLabel}>Receipt:</Text>
-            <Text style={styles.receiptItemName} numberOfLines={1}>
+        <View className="mt-2.5 ml-7 gap-1.5">
+          <View className="flex-row items-center gap-1.5">
+            <Text
+              className="text-[11px] text-[#8A7A6E]"
+              style={BR_FONT_STYLE.mono}
+            >
+              Receipt:
+            </Text>
+            <Text
+              className="flex-1 text-xs text-[#1A1410]"
+              style={BR_FONT_STYLE.displaySemibold}
+              numberOfLines={1}
+            >
               {linkedReceiptItem.receiptItem.name}
             </Text>
             {linkedReceiptItem.confidence < 1 &&
@@ -206,12 +252,12 @@ function OrderItemCard({
                 const cfg = confidenceConfig(linkedReceiptItem.confidence);
                 return (
                   <View
-                    style={[
-                      styles.confidenceBadge,
-                      { backgroundColor: cfg.bg },
-                    ]}
+                    className={`rounded-full px-[7px] py-0.5 ${cfg.badgeClass}`}
                   >
-                    <Text style={[styles.confidenceText, { color: cfg.fg }]}>
+                    <Text
+                      className={`text-[10px] ${cfg.textClass}`}
+                      style={BR_FONT_STYLE.displaySemibold}
+                    >
                       {cfg.label}
                     </Text>
                   </View>
@@ -220,15 +266,18 @@ function OrderItemCard({
           </View>
 
           {linkedReceiptItem.receiptItem.comboName && (
-            <View style={styles.comboNote}>
-              <Text style={styles.comboNoteText}>
+            <View className="rounded-[10px] border border-[rgba(255,106,31,0.15)] bg-[#FFF1E2] p-2.5">
+              <Text
+                className="text-[11px] text-[#E8551A]"
+                style={BR_FONT_STYLE.displaySemibold}
+              >
                 Split from {linkedReceiptItem.receiptItem.comboName}
                 {linkedReceiptItem.receiptItem.comboTotalInCents != null
                   ? ` · ${formatPrice(linkedReceiptItem.receiptItem.comboTotalInCents)} combo`
                   : ""}
               </Text>
               {!!linkedReceiptItem.receiptItem.comboItems?.length && (
-                <Text style={styles.comboNoteSubtext}>
+                <Text className="mt-0.5 text-[11px] text-[#8A7A6E]">
                   Includes{" "}
                   {linkedReceiptItem.receiptItem.comboItems.join(" · ")}
                 </Text>
@@ -236,12 +285,17 @@ function OrderItemCard({
             </View>
           )}
 
-          {/* Price edit + unlink */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <View style={styles.priceInputRow}>
-              <Text style={styles.priceInputDollar}>$</Text>
+          <View className="flex-row items-center gap-2">
+            <View className="h-9 flex-1 flex-row items-center gap-1 rounded-[10px] border border-[rgba(26,20,16,0.14)] bg-white px-2.5">
+              <Text
+                className="text-[13px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
+              >
+                $
+              </Text>
               <TextInput
-                style={styles.priceInput}
+                className="flex-1 p-0 text-[13px] text-[#1A1410]"
+                style={BR_FONT_STYLE.displayMedium}
                 placeholder={
                   effectivePrice !== null
                     ? (effectivePrice / 100).toFixed(2)
@@ -255,9 +309,14 @@ function OrderItemCard({
             </View>
             <TouchableOpacity
               onPress={() => matchedIndex !== null && onUnlink(matchedIndex)}
-              style={styles.unlinkBtn}
+              className="h-9 items-center justify-center rounded-[10px] border border-[#FFE0E6] bg-[#FFE0E6] px-3"
             >
-              <Text style={styles.unlinkText}>Unlink</Text>
+              <Text
+                className="text-xs text-[#B82340]"
+                style={BR_FONT_STYLE.displaySemibold}
+              >
+                Unlink
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -270,14 +329,24 @@ function OrderItemCard({
 
 function SectionHeader({ title, count }: { title: string; count?: number }) {
   return (
-    <View style={styles.sectionHeader}>
-      <Text style={styles.sectionLabel}>{title}</Text>
+    <View className="mb-2.5 mt-[18px] flex-row items-center gap-2">
+      <Text
+        className="text-[10px] tracking-[1.2px] text-[#8A7A6E] uppercase"
+        style={BR_FONT_STYLE.monoBold}
+      >
+        {title}
+      </Text>
       {count !== undefined && (
-        <View style={styles.sectionBadge}>
-          <Text style={styles.sectionBadgeText}>{count}</Text>
+        <View className="h-5 min-w-5 items-center justify-center rounded-full bg-[#FCEFE0] px-1.5">
+          <Text
+            className="text-[10px] text-[#8A7A6E]"
+            style={BR_FONT_STYLE.monoBold}
+          >
+            {count}
+          </Text>
         </View>
       )}
-      <View style={styles.sectionLine} />
+      <View className="h-px flex-1 bg-[rgba(26,20,16,0.08)]" />
     </View>
   );
 }
@@ -309,14 +378,22 @@ function PersonSection({
   });
 
   return (
-    <View style={{ marginTop: 18 }}>
-      <Pressable onPress={onToggle} style={styles.personHeader}>
+    <View className="mt-[18px]">
+      <Pressable
+        onPress={onToggle}
+        className="mb-2 flex-row items-center gap-2"
+      >
         <Animated.View style={{ transform: [{ rotate }] }}>
           <Icon name="ChevronRight" size={13} color={BR.ink3} />
         </Animated.View>
-        <Text style={styles.personName}>{name}</Text>
+        <Text
+          className="text-[10px] tracking-wide text-[#8A7A6E] uppercase"
+          style={BR_FONT_STYLE.monoBold}
+        >
+          {name}
+        </Text>
         {allMatched && <Icon name="CircleCheck" size={13} color={BR.mint} />}
-        <View style={styles.sectionLine} />
+        <View className="h-px flex-1 bg-[rgba(26,20,16,0.08)]" />
       </Pressable>
       {!collapsed && children}
     </View>
@@ -419,67 +496,78 @@ export function ReceiptConfirmationSheet({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View style={[styles.root, { paddingTop: insets.top }]}>
-        {/* Header */}
-        <View style={styles.modalHeader}>
-          <View style={{ flex: 1 }}>
-            <BrText weight="bold" style={{ fontSize: 20 }}>
+      <View className="flex-1 bg-[#FFF7EE]" style={{ paddingTop: insets.top }}>
+        <View className="flex-row items-start border-b border-[rgba(26,20,16,0.08)] px-[18px] pb-3.5 pt-4">
+          <View className="flex-1">
+            <BrText weight="bold" className="text-xl">
               Review items
             </BrText>
             {receiptStoreName && (
               <Text
-                style={{
-                  fontSize: 12,
-                  color: BR.ink3,
-                  marginTop: 2,
-                  fontFamily: BR_FONT.mono,
-                }}
+                className="mt-0.5 text-xs text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
               >
                 {receiptStoreName}
               </Text>
             )}
           </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <View className="flex-row items-center gap-2.5">
             {receiptTotal !== null && (
-              <View style={styles.receiptTotalBadge}>
-                <Text style={styles.receiptTotalText}>
+              <View className="rounded-full bg-[#FFE7D4] px-3 py-1.5">
+                <Text
+                  className="text-xs text-[#E8551A]"
+                  style={BR_FONT_STYLE.monoBold}
+                >
                   Total: {formatPrice(receiptTotal)}
                 </Text>
               </View>
             )}
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <TouchableOpacity
+              onPress={onClose}
+              className="h-9 w-9 items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+            >
               <Icon name="X" size={17} color={BR.ink} />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Linking banner */}
         {hasSelectedItem && (
-          <View style={styles.linkingBanner}>
+          <View className="flex-row items-center gap-2 border-b border-[rgba(255,106,31,0.18)] bg-[#FFF1E2] px-[18px] py-2.5">
             <Icon name="Link" size={13} color={BR.orangeDeep} />
-            <Text style={styles.linkingBannerText} numberOfLines={1}>
+            <Text
+              className="flex-1 text-xs text-[#E8551A]"
+              style={BR_FONT_STYLE.displaySemibold}
+              numberOfLines={1}
+            >
               Tap an order item to link the selected receipt line
             </Text>
             <TouchableOpacity
               onPress={() => setSelectedReceiptIndex(null)}
-              style={styles.linkingCancelBtn}
+              className="rounded-full bg-[#FCEFE0] px-2.5 py-1"
             >
-              <Text style={styles.linkingCancelText}>Cancel</Text>
+              <Text
+                className="text-[11px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.displaySemibold}
+              >
+                Cancel
+              </Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* Combo note */}
         {comboSplitCount > 0 && (
-          <View style={styles.comboInfoCard}>
-            <View style={styles.comboInfoIcon}>
+          <View className="mx-[18px] mt-3 flex-row items-start gap-3 rounded-2xl border border-[rgba(255,106,31,0.18)] bg-[#FFF1E2] p-3.5">
+            <View className="h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFE7D4]">
               <Icon name="PackageOpen" size={16} color={BR.orangeDeep} />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.comboInfoTitle}>
+            <View className="flex-1">
+              <Text
+                className="text-[13px] text-[#1A1410]"
+                style={BR_FONT_STYLE.displaySemibold}
+              >
                 Combo items were split out
               </Text>
-              <Text style={styles.comboInfoBody}>
+              <Text className="mt-0.5 text-xs leading-[17px] text-[#8A7A6E]">
                 Included items were separated so you can match them one by one.
                 Prices start as an even split.
               </Text>
@@ -487,10 +575,9 @@ export function ReceiptConfirmationSheet({
           </View>
         )}
 
-        {/* Scrollable content */}
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 24 }}
+          className="flex-1"
+          contentContainerClassName="px-[18px] pb-6"
           showsVerticalScrollIndicator={false}
         >
           {unmatchedItems.length > 0 && (
@@ -504,7 +591,7 @@ export function ReceiptConfirmationSheet({
                 count={unmatchedItems.length}
               />
               {allOrderItemsPriced && (
-                <Text style={styles.unmatchedNote}>
+                <Text className="mb-2 text-xs leading-[17px] text-[#8A7A6E]">
                   These can be left unmatched if they are extras, sauces, or
                   receipt-only modifiers.
                 </Text>
@@ -558,27 +645,30 @@ export function ReceiptConfirmationSheet({
           {allOrderItemsPriced &&
             unmatchedItems.length === 0 &&
             personGroups.length > 0 && (
-              <View style={styles.allMatchedBanner}>
+              <View className="mt-3.5 items-center gap-2 rounded-2xl border border-[#DDF5E8] bg-[#DDF5E8] py-[22px]">
                 <Icon name="CircleCheck" size={26} color={BR.mint} />
-                <Text style={styles.allMatchedText}>
+                <Text
+                  className="text-sm text-[#1B6B43]"
+                  style={BR_FONT_STYLE.displaySemibold}
+                >
                   All order items priced!
                 </Text>
               </View>
             )}
         </ScrollView>
 
-        {/* Footer */}
         <View
-          style={[
-            styles.modalFooter,
-            { paddingBottom: Math.max(insets.bottom, 16) + 4 },
-          ]}
+          className="gap-3 border-t border-[rgba(26,20,16,0.08)] bg-[#FFF7EE] px-[18px] pt-3.5"
+          style={{ paddingBottom: Math.max(insets.bottom, 16) + 4 }}
         >
-          <View style={styles.footerStats}>
-            <Text style={styles.footerStatsText}>
-              {pricedOrderItemCount} of {totalOrderItems} lines priced
+          <View className="flex-row items-center justify-between">
+            <Text className="text-xs text-[#8A7A6E]" style={BR_FONT_STYLE.mono}>
+              {pricedOrderItemCount} of {totalOrderItems} items priced
             </Text>
-            <Text style={styles.footerTotalText}>
+            <Text
+              className="text-sm text-[#1A1410]"
+              style={BR_FONT_STYLE.monoBold}
+            >
               Saving: {formatPrice(totalToSave)}
             </Text>
           </View>
@@ -586,17 +676,16 @@ export function ReceiptConfirmationSheet({
             onPress={onConfirm}
             disabled={isSaving || pricedOrderItemCount === 0}
             activeOpacity={0.85}
-            style={[
-              styles.saveBtn,
-              (isSaving || pricedOrderItemCount === 0) && { opacity: 0.55 },
-            ]}
+            className={`flex-row items-center justify-center gap-2 rounded-2xl bg-[#FF6A1F] py-4 ${
+              isSaving || pricedOrderItemCount === 0 ? "opacity-55" : ""
+            }`}
           >
             {isSaving ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <Icon name="Check" size={18} color="#fff" strokeWidth={3} />
             )}
-            <Text style={styles.saveBtnText}>
+            <Text className="text-base font-bold text-white">
               {isSaving
                 ? "Saving…"
                 : totalOrderItems > 0 &&
@@ -610,395 +699,3 @@ export function ReceiptConfirmationSheet({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: BR.paper,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    paddingHorizontal: 18,
-    paddingTop: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: BR.line,
-  },
-  receiptTotalBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: BR.orangeSoft,
-  },
-  receiptTotalText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: BR.orangeDeep,
-    fontFamily: BR_FONT.mono,
-  },
-  closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  linkingBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    backgroundColor: BR.orangeTint,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,106,31,0.18)",
-  },
-  linkingBannerText: {
-    flex: 1,
-    fontSize: 12,
-    fontWeight: "600",
-    color: BR.orangeDeep,
-  },
-  linkingCancelBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-  },
-  linkingCancelText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: BR.ink3,
-  },
-  comboInfoCard: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 12,
-    marginHorizontal: 18,
-    marginTop: 12,
-    padding: 14,
-    backgroundColor: BR.orangeTint,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: "rgba(255,106,31,0.18)",
-  },
-  comboInfoIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: BR.orangeSoft,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  comboInfoTitle: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: BR.ink,
-  },
-  comboInfoBody: {
-    fontSize: 12,
-    color: BR.ink3,
-    marginTop: 3,
-    lineHeight: 17,
-  },
-  // Section headers
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 18,
-    marginBottom: 10,
-  },
-  sectionLabel: {
-    fontSize: 10,
-    fontFamily: BR_FONT.monoBold,
-    color: BR.ink3,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-  },
-  sectionBadge: {
-    minWidth: 20,
-    height: 20,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 6,
-  },
-  sectionBadgeText: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  sectionLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: BR.line,
-  },
-  // Person section
-  personHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 8,
-  },
-  personName: {
-    fontSize: 10,
-    fontFamily: BR_FONT.monoBold,
-    color: BR.ink3,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
-  personBadge: {
-    minWidth: 20,
-    height: 20,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 6,
-  },
-  personBadgeText: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  // Unmatched card
-  unmatchedCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    padding: 12,
-    marginBottom: 8,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-  },
-  unmatchedCardSelected: {
-    backgroundColor: BR.orangeTint,
-    borderColor: "rgba(255,106,31,0.3)",
-  },
-  unmatchedIconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  unmatchedName: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: BR.ink,
-  },
-  unmatchedMeta: {
-    fontSize: 11,
-    color: BR.ink3,
-    marginTop: 1,
-    fontFamily: BR_FONT.mono,
-  },
-  unmatchedCombo: {
-    fontSize: 11,
-    color: BR.ink3,
-    marginTop: 2,
-    fontStyle: "italic",
-  },
-  unmatchedHint: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: BR.orangeDeep,
-  },
-  unmatchedNote: {
-    fontSize: 12,
-    color: BR.ink3,
-    lineHeight: 17,
-    marginBottom: 8,
-  },
-  // Order item card
-  orderItemCard: {
-    padding: 12,
-    marginBottom: 8,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-  },
-  orderItemCardLinkable: {
-    backgroundColor: BR.orangeTint,
-    borderColor: "rgba(255,106,31,0.25)",
-    borderStyle: "dashed",
-  },
-  orderItemCardLinked: {
-    borderColor: "rgba(46,190,123,0.2)",
-  },
-  statusCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line2,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  orderItemName: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: BR.ink,
-  },
-  orderItemHint: {
-    fontSize: 11,
-    color: BR.ink3,
-    marginTop: 2,
-    fontStyle: "italic",
-  },
-  orderItemPrice: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: BR.orange,
-    fontFamily: BR_FONT.monoBold,
-  },
-  receiptLabel: {
-    fontSize: 11,
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  receiptItemName: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: BR.ink,
-    flex: 1,
-  },
-  confidenceBadge: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 999,
-  },
-  confidenceText: {
-    fontSize: 10,
-    fontWeight: "700",
-  },
-  comboNote: {
-    padding: 10,
-    borderRadius: 10,
-    backgroundColor: BR.orangeTint,
-    borderWidth: 1,
-    borderColor: "rgba(255,106,31,0.15)",
-  },
-  comboNoteText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: BR.orangeDeep,
-  },
-  comboNoteSubtext: {
-    fontSize: 11,
-    color: BR.ink3,
-    marginTop: 2,
-  },
-  priceInputRow: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    height: 36,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: BR.line2,
-    backgroundColor: BR.card,
-    gap: 4,
-  },
-  priceInputDollar: {
-    fontSize: 13,
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  priceInput: {
-    flex: 1,
-    fontSize: 13,
-    color: BR.ink,
-    fontFamily: BR_FONT.displayMedium,
-    letterSpacing: 0,
-    padding: 0,
-    includeFontPadding: false,
-  },
-  unlinkBtn: {
-    height: 36,
-    paddingHorizontal: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: BR.coralSoft,
-    backgroundColor: BR.coralSoft,
-  },
-  unlinkText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: BR.coralInk,
-  },
-  // All matched banner
-  allMatchedBanner: {
-    alignItems: "center",
-    paddingVertical: 22,
-    marginTop: 14,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.mintSoft,
-    backgroundColor: BR.mintSoft,
-    gap: 8,
-  },
-  allMatchedText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: BR.mintInk,
-  },
-  // Footer
-  modalFooter: {
-    paddingHorizontal: 18,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderTopColor: BR.line,
-    gap: 12,
-    backgroundColor: BR.paper,
-  },
-  footerStats: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  footerStatsText: {
-    fontSize: 12,
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  footerTotalText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: BR.ink,
-    fontFamily: BR_FONT.monoBold,
-  },
-  saveBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.orange,
-  },
-  saveBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-  },
-});
