@@ -4,7 +4,10 @@ import { Redirect, Stack } from "expo-router";
 import { View } from "react-native";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { consumePendingAppleName } from "@/lib/apple-auth-helpers";
+import {
+  clearPendingAppleName,
+  getPendingAppleName,
+} from "@/lib/apple-auth-helpers";
 import { usePushNotifications } from "@/lib/hooks/use-push-notifications";
 import { NotificationPermissionModal } from "@/components/notifications/notification-permission-modal";
 
@@ -32,7 +35,7 @@ export default function ProtectedLayout() {
         try {
           // Refresh session to ensure Convex has the latest auth token
           await refreshSession();
-          const pendingAppleName = await consumePendingAppleName();
+          const pendingAppleName = await getPendingAppleName();
           // Sync user to app's users table (creates if doesn't exist)
           await syncUser({
             ...(pendingAppleName?.firstName && {
@@ -42,6 +45,9 @@ export default function ProtectedLayout() {
               lastName: pendingAppleName.lastName,
             }),
           });
+          if (pendingAppleName) {
+            await clearPendingAppleName();
+          }
         } catch (error) {
           console.error("Error syncing user on protected entry:", error);
           // Reset flag so we can retry

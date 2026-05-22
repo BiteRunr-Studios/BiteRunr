@@ -24,10 +24,9 @@ export async function stashPendingAppleName(
   await SecureStore.setItemAsync(PENDING_APPLE_NAME_KEY, JSON.stringify(name));
 }
 
-export async function consumePendingAppleName(): Promise<PendingAppleName | null> {
+export async function getPendingAppleName(): Promise<PendingAppleName | null> {
   const raw = await SecureStore.getItemAsync(PENDING_APPLE_NAME_KEY);
   if (!raw) return null;
-  await SecureStore.deleteItemAsync(PENDING_APPLE_NAME_KEY);
   try {
     const parsed = JSON.parse(raw) as PendingAppleName;
     if (!parsed.firstName && !parsed.lastName) return null;
@@ -35,4 +34,8 @@ export async function consumePendingAppleName(): Promise<PendingAppleName | null
   } catch {
     return null;
   }
+}
+
+export async function clearPendingAppleName(): Promise<void> {
+  await SecureStore.deleteItemAsync(PENDING_APPLE_NAME_KEY);
 }

@@ -51,6 +51,53 @@ async function getUnsettledBalances(
   return { owedToMe, iOwe };
 }
 
+async function deleteOrderAndRelatedData(
+  ctx: MutationCtx,
+  orderId: Id<"orders">,
+) {
+  const invites = await ctx.db
+    .query("orderInvites")
+    .withIndex("by_orderId", (q) => q.eq("orderId", orderId))
+    .collect();
+  for (const invite of invites) {
+    await ctx.db.delete(invite._id);
+  }
+
+  const orderUsers = await ctx.db
+    .query("orderUsers")
+    .withIndex("by_orderId", (q) => q.eq("orderId", orderId))
+    .collect();
+  for (const orderUser of orderUsers) {
+    const payments = await ctx.db
+      .query("stripePayments")
+      .withIndex("by_orderUserId", (q) => q.eq("orderUserId", orderUser._id))
+      .collect();
+    for (const payment of payments) {
+      await ctx.db.delete(payment._id);
+    }
+
+    const orderItems = await ctx.db
+      .query("orderItems")
+      .withIndex("by_orderUserId", (q) => q.eq("orderUserId", orderUser._id))
+      .collect();
+    for (const item of orderItems) {
+      await ctx.db.delete(item._id);
+    }
+
+    await ctx.db.delete(orderUser._id);
+  }
+
+  const orderLocations = await ctx.db
+    .query("orderLocations")
+    .withIndex("by_orderId", (q) => q.eq("orderId", orderId))
+    .collect();
+  for (const location of orderLocations) {
+    await ctx.db.delete(location._id);
+  }
+
+  await ctx.db.delete(orderId);
+}
+
 export async function purgeAppUserByEmail(ctx: MutationCtx, email: string) {
   const appUser = await ctx.db
     .query("users")
@@ -149,12 +196,28 @@ export async function purgeAppUserByEmail(ctx: MutationCtx, email: string) {
     await ctx.db.delete(invite._id);
   }
 
+  const createdOrders = await ctx.db
+    .query("orders")
+    .withIndex("by_creatorId", (q) => q.eq("creatorId", userId))
+    .collect();
+  for (const order of createdOrders) {
+    await deleteOrderAndRelatedData(ctx, order._id);
+  }
+
   const orderUsers = await ctx.db
     .query("orderUsers")
     .withIndex("by_userId", (q) => q.eq("userId", userId))
     .collect();
 
   for (const orderUser of orderUsers) {
+    const payments = await ctx.db
+      .query("stripePayments")
+      .withIndex("by_orderUserId", (q) => q.eq("orderUserId", orderUser._id))
+      .collect();
+    for (const payment of payments) {
+      await ctx.db.delete(payment._id);
+    }
+
     const orderItems = await ctx.db
       .query("orderItems")
       .withIndex("by_orderUserId", (q) => q.eq("orderUserId", orderUser._id))

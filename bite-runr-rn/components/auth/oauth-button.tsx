@@ -8,6 +8,7 @@ import { api } from "@/convex/_generated/api";
 import { authClient } from "@/lib/auth-client";
 import {
   appleCredentialNames,
+  clearPendingAppleName,
   stashPendingAppleName,
 } from "@/lib/apple-auth-helpers";
 import { useAuth } from "@/lib/convex-auth-context";
@@ -118,6 +119,7 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
                 firstName: appleName.firstName,
                 lastName: appleName.lastName,
               });
+              await clearPendingAppleName();
               break;
             } catch (syncError) {
               if (attempt === 4) throw syncError;

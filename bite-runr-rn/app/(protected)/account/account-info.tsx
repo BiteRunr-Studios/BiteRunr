@@ -137,8 +137,13 @@ export default function AccountInfoScreen() {
     ]);
   };
 
+  const isDeleteEligibilityLoading = deleteEligibility === undefined;
+
   const performDeleteAccount = async () => {
-    if (deleteEligibility && !deleteEligibility.allowed) {
+    if (isDeleteEligibilityLoading) {
+      return;
+    }
+    if (!deleteEligibility.allowed) {
       Alert.alert(
         "Cannot delete account",
         deleteEligibility.reason ?? "Your account cannot be deleted right now.",
@@ -185,7 +190,10 @@ export default function AccountInfoScreen() {
   };
 
   const handleDeleteAccount = () => {
-    if (deleteEligibility && !deleteEligibility.allowed) {
+    if (isDeleteEligibilityLoading) {
+      return;
+    }
+    if (!deleteEligibility.allowed) {
       Alert.alert(
         "Cannot delete account",
         deleteEligibility.reason ?? "Your account cannot be deleted right now.",
@@ -403,8 +411,13 @@ export default function AccountInfoScreen() {
               </BrText>
               <Pressable
                 onPress={handleDeleteAccount}
-                disabled={isDeleting}
-                style={[styles.deleteBtn, isDeleting && { opacity: 0.5 }]}
+                disabled={isDeleting || isDeleteEligibilityLoading}
+                style={[
+                  styles.deleteBtn,
+                  (isDeleting || isDeleteEligibilityLoading) && {
+                    opacity: 0.5,
+                  },
+                ]}
                 accessibilityRole="button"
                 accessibilityLabel="Delete account"
                 className="rounded-2xl"

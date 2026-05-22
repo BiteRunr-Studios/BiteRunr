@@ -86,7 +86,7 @@ export default defineSchema({
     status: orderStatusValidator,
     paused: v.boolean(),
     pausedAiSummary: v.optional(pausedAiSummaryValidator),
-  }),
+  }).index("by_creatorId", ["creatorId"]),
 
   // Order users (participants in an order)
   orderUsers: defineTable({

@@ -52,7 +52,7 @@ export const syncUser = mutation({
     ) {
       const updates: { firstName?: string; lastName?: string } = {};
       if (oauthFirstName) updates.firstName = oauthFirstName;
-      if (oauthLastName || oauthFirstName) updates.lastName = oauthLastName;
+      if (oauthLastName) updates.lastName = oauthLastName;
       if (Object.keys(updates).length > 0) {
         await ctx.db.patch(userId, updates);
         user = (await ctx.db.get(userId)) ?? user;
