@@ -71,15 +71,16 @@ function TabPill({
       }`}
     >
       <Text
-        className={`font-['BricolageGrotesque_700Bold'] text-[13px] ${
+        className={`text-[13px] ${
           active ? "text-white" : "text-[#4A3C32]"
         }`}
+        style={BR_FONT_STYLE.display}
       >
         {label}
       </Text>
       {!!badge && badge > 0 && (
         <View className="min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#FF4D6D] px-1">
-          <Text className="font-['JetBrainsMono_700Bold'] text-[10px] text-white">
+          <Text className="text-[10px] text-white" style={BR_FONT_STYLE.monoBold}>
             {badge > 9 ? "9+" : badge}
           </Text>
         </View>
@@ -178,7 +179,10 @@ function CreateSquadSheet({
               <Icon name={colorDef.icon} size={20} color="#fff" />
             </View>
             <View className="flex-1">
-              <Text className="font-['BricolageGrotesque_700Bold'] text-[22px] tracking-[-0.4px] text-[#1A1410]">
+              <Text
+                className="text-[22px] tracking-[-0.4px] text-[#1A1410]"
+                style={BR_FONT_STYLE.display}
+              >
                 Create a <Text className="italic text-[#FF6A1F]">squad</Text>
               </Text>
               <Text className="mt-px text-xs text-[#8A7A6E]">
@@ -198,7 +202,10 @@ function CreateSquadSheet({
             keyboardShouldPersistTaps="handled"
           >
             {/* Name */}
-            <Text className="mb-2 font-['JetBrainsMono_600SemiBold'] text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]">
+            <Text
+              className="mb-2 text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]"
+              style={BR_FONT_STYLE.monoSemibold}
+            >
               Squad name
             </Text>
             <TextInput
@@ -206,11 +213,15 @@ function CreateSquadSheet({
               onChangeText={setName}
               placeholder="e.g. Lunch crew, Roomies…"
               placeholderTextColor="#8A7A6E"
-              className="mb-5 rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white px-4 py-3.5 font-['BricolageGrotesque_500Medium'] text-lg text-[#1A1410]"
+              className="mb-5 rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white px-4 py-3.5 text-lg text-[#1A1410]"
+              style={BR_FONT_STYLE.displayMedium}
             />
 
             {/* Color picker */}
-            <Text className="mb-2.5 font-['JetBrainsMono_600SemiBold'] text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]">
+            <Text
+              className="mb-2.5 text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]"
+              style={BR_FONT_STYLE.monoSemibold}
+            >
               Pick a vibe
             </Text>
             <View className="mb-[22px] flex-row gap-2.5">
@@ -233,7 +244,10 @@ function CreateSquadSheet({
             </View>
 
             {/* Friend selector */}
-            <Text className="mb-2.5 font-['JetBrainsMono_600SemiBold'] text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]">
+            <Text
+              className="mb-2.5 text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]"
+              style={BR_FONT_STYLE.monoSemibold}
+            >
               Add friends
             </Text>
             {friends.length === 0 ? (
@@ -261,9 +275,10 @@ function CreateSquadSheet({
                         size={24}
                       />
                       <Text
-                        className={`font-['BricolageGrotesque_600SemiBold'] text-[13px] ${
+                        className={`text-[13px] ${
                           isSelected ? "text-white" : "text-[#1A1410]"
                         }`}
+                        style={BR_FONT_STYLE.displaySemibold}
                       >
                         {f.firstName}
                       </Text>
@@ -288,7 +303,10 @@ function CreateSquadSheet({
               ) : (
                 <>
                   <Icon name="Sparkles" size={16} color="#fff" />
-                  <Text className="font-['BricolageGrotesque_700Bold'] text-base text-white">
+                  <Text
+                    className="text-base text-white"
+                    style={BR_FONT_STYLE.display}
+                  >
                     Create squad
                   </Text>
                 </>
@@ -382,7 +400,10 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
                 </View>
               ))}
             </View>
-            <Text className="flex-1 font-['BricolageGrotesque_600SemiBold'] text-[13px] text-[#E8551A]">
+            <Text
+              className="flex-1 text-[13px] text-[#E8551A]"
+              style={BR_FONT_STYLE.displaySemibold}
+            >
               {pendingCount} new friend{" "}
               {pendingCount === 1 ? "request" : "requests"}
             </Text>
@@ -400,7 +421,13 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
             onChangeText={setSearch}
             placeholder="Search friends…"
             placeholderTextColor="#8A7A6E"
-            className="flex-1 font-['BricolageGrotesque_500Medium'] text-sm text-[#1A1410]"
+            className="flex-1 self-stretch py-0 text-sm text-[#1A1410]"
+            style={{
+              ...BR_FONT_STYLE.displayMedium,
+              paddingVertical: 0,
+              includeFontPadding: false,
+              textAlignVertical: "center",
+            }}
           />
           {search.length > 0 && (
             <Pressable onPress={() => setSearch("")}>
@@ -415,7 +442,10 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
           <View className="mb-3.5 h-16 w-16 items-center justify-center rounded-[20px] bg-[#FCEFE0]">
             <Icon name="Users" size={28} color="#8A7A6E" />
           </View>
-          <Text className="font-['BricolageGrotesque_700Bold'] text-[17px] text-[#1A1410]">
+          <Text
+            className="text-[17px] text-[#1A1410]"
+            style={BR_FONT_STYLE.display}
+          >
             No friends yet
           </Text>
           <Text className="mt-1.5 text-center text-[13px] leading-5 text-[#8A7A6E]">
@@ -453,12 +483,18 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
                     size={46}
                   />
                   <View className="flex-1">
-                    <Text className="font-['BricolageGrotesque_700Bold'] text-[15px] text-[#1A1410]">
+                    <Text
+                      className="text-[15px] text-[#1A1410]"
+                      style={BR_FONT_STYLE.display}
+                    >
                       {fullName}
                     </Text>
                     <View className="mt-0.5 flex-row items-center gap-1">
                       <Icon name="UserCheck" size={11} color="#2EBE7B" />
-                      <Text className="font-['BricolageGrotesque_600SemiBold'] text-xs text-[#2EBE7B]">
+                      <Text
+                        className="text-xs text-[#2EBE7B]"
+                        style={BR_FONT_STYLE.displaySemibold}
+                      >
                         Friends
                       </Text>
                     </View>
@@ -541,7 +577,10 @@ function RequestsTab() {
         <View className="mb-3.5 h-16 w-16 items-center justify-center rounded-[20px] bg-[#FCEFE0]">
           <Icon name="Bell" size={28} color="#8A7A6E" />
         </View>
-        <Text className="font-['BricolageGrotesque_700Bold'] text-[17px] text-[#1A1410]">
+        <Text
+          className="text-[17px] text-[#1A1410]"
+          style={BR_FONT_STYLE.display}
+        >
           No pending requests
         </Text>
         <Text className="mt-1.5 text-center text-[13px] leading-5 text-[#8A7A6E]">
@@ -556,7 +595,10 @@ function RequestsTab() {
       contentContainerClassName="px-[18px] pb-8"
       showsVerticalScrollIndicator={false}
     >
-      <Text className="mb-2.5 font-['JetBrainsMono_600SemiBold'] text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]">
+      <Text
+        className="mb-2.5 text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]"
+        style={BR_FONT_STYLE.monoSemibold}
+      >
         {requests.length} pending
       </Text>
       <View className="gap-2.5">
@@ -586,7 +628,10 @@ function RequestsTab() {
                     </View>
                   </View>
                   <View className="flex-1">
-                    <Text className="font-['BricolageGrotesque_700Bold'] text-[15px] text-[#1A1410]">
+                    <Text
+                      className="text-[15px] text-[#1A1410]"
+                      style={BR_FONT_STYLE.display}
+                    >
                       {fullName}
                     </Text>
                     <Text className="mt-0.5 text-xs text-[#8A7A6E]">
@@ -675,7 +720,13 @@ function SearchTab() {
           placeholderTextColor="#8A7A6E"
           autoCapitalize="none"
           autoCorrect={false}
-          className="flex-1 font-['BricolageGrotesque_500Medium'] text-sm text-[#1A1410]"
+          className="flex-1 self-stretch py-0 text-sm text-[#1A1410]"
+          style={{
+            ...BR_FONT_STYLE.displayMedium,
+            paddingVertical: 0,
+            includeFontPadding: false,
+            textAlignVertical: "center",
+          }}
         />
         {query.length > 0 && (
           <Pressable onPress={() => setQuery("")}>
@@ -689,7 +740,10 @@ function SearchTab() {
           <View className="mb-3.5 h-16 w-16 items-center justify-center rounded-[20px] bg-[#FCEFE0]">
             <Icon name="Search" size={28} color="#8A7A6E" />
           </View>
-          <Text className="font-['BricolageGrotesque_700Bold'] text-[17px] text-[#1A1410]">
+          <Text
+            className="text-[17px] text-[#1A1410]"
+            style={BR_FONT_STYLE.display}
+          >
             Find Friends
           </Text>
           <Text className="mt-1.5 text-center text-[13px] text-[#8A7A6E]">
@@ -718,7 +772,10 @@ function SearchTab() {
           <View className="mb-3.5 h-16 w-16 items-center justify-center rounded-[20px] bg-[#FCEFE0]">
             <Icon name="UserX" size={28} color="#8A7A6E" />
           </View>
-          <Text className="font-['BricolageGrotesque_700Bold'] text-[17px] text-[#1A1410]">
+          <Text
+            className="text-[17px] text-[#1A1410]"
+            style={BR_FONT_STYLE.display}
+          >
             No users found
           </Text>
           <Text className="mt-1.5 text-[13px] text-[#8A7A6E]">
@@ -746,7 +803,10 @@ function SearchTab() {
                     size={46}
                   />
                   <View className="flex-1">
-                    <Text className="font-['BricolageGrotesque_700Bold'] text-[15px] text-[#1A1410]">
+                    <Text
+                      className="text-[15px] text-[#1A1410]"
+                      style={BR_FONT_STYLE.display}
+                    >
                       {fullName}
                     </Text>
                     <Text
@@ -767,7 +827,10 @@ function SearchTab() {
                     ) : (
                       <>
                         <Icon name="UserPlus" size={14} color="#fff" />
-                        <Text className="font-['BricolageGrotesque_600SemiBold'] text-[13px] text-white">
+                        <Text
+                          className="text-[13px] text-white"
+                          style={BR_FONT_STYLE.displaySemibold}
+                        >
                           Add
                         </Text>
                       </>
