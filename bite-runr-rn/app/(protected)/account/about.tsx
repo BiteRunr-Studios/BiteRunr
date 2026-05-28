@@ -1,16 +1,9 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  ScrollView,
-  Image,
-  StyleSheet,
-} from "react-native";
+import { View, Text, Pressable, ScrollView, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import Icon, { type IconName } from "@/components/common/icon";
-import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 import { BrText } from "@/components/br";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import Constants from "expo-constants";
@@ -31,13 +24,18 @@ function FeatureItem({
   description,
 }: FeatureItemProps) {
   return (
-    <View style={styles.featureRow}>
-      <View style={[styles.featureIcon, { backgroundColor: iconBg }]}>
+    <View className="flex-row items-start gap-3.5 p-3.5">
+      <View
+        className="h-11 w-11 shrink-0 items-center justify-center rounded-[14px]"
+        style={{ backgroundColor: iconBg }}
+      >
         <Icon name={icon} size={20} color={iconColor} />
       </View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.featureTitle}>{title}</Text>
-        <Text style={styles.featureSub}>{description}</Text>
+      <View className="flex-1">
+        <Text className="mb-0.5 text-sm font-bold text-[#1A1410]">{title}</Text>
+        <Text className="text-xs leading-[18px] text-[#8A7A6E]">
+          {description}
+        </Text>
       </View>
     </View>
   );
@@ -90,52 +88,58 @@ export default function AboutScreen() {
   const appVersion = Constants.expoConfig?.version ?? "1.0.0";
 
   return (
-    <SafeAreaView
-      edges={["top"]}
-      style={{ flex: 1, backgroundColor: BR.paper }}
-    >
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+    <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
+      <View className="flex-row items-center justify-between px-[18px] pt-2 pb-3">
+        <Pressable
+          onPress={() => router.back()}
+          className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+        >
           <Icon name="ChevronLeft" size={20} color={BR.ink} />
         </Pressable>
-        <BrText weight="bold" style={{ fontSize: 17, lineHeight: 24 }}>
+        <BrText
+          weight="bold"
+          className="text-[17px] leading-6"
+          style={BR_FONT_STYLE.display}
+        >
           About
         </BrText>
-        <View style={{ width: 38 }} />
+        <View className="w-[38px]" />
       </View>
 
       <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 48 }}
+        className="flex-1"
+        contentContainerClassName="px-[18px] pb-12"
         showsVerticalScrollIndicator={false}
       >
         {/* Hero */}
-        <Animated.View entering={FadeInUp.duration(300)} style={styles.hero}>
+        <Animated.View
+          entering={FadeInUp.duration(300)}
+          className="items-center py-7"
+        >
           <Image
             source={require("@/assets/images/icon.png")}
-            style={styles.appIcon}
+            className="h-20 w-20 rounded-[22px]"
           />
           <BrText
             weight="bold"
-            style={{
-              fontSize: 28,
-              lineHeight: 36,
-              marginTop: 14,
-              textAlign: "center",
-            }}
+            className="mt-3.5 text-center text-[28px] leading-9"
           >
             BiteRunr
           </BrText>
-          <Text style={styles.versionBadge}>v{appVersion}</Text>
-          <Text style={styles.heroSub}>Group food ordering, made simple</Text>
+          <Text className="mt-1.5 font-['JetBrainsMono_500Medium'] text-[11px] uppercase tracking-[0.8px] text-[#8A7A6E]">
+            v{appVersion}
+          </Text>
+          <Text className="mt-1.5 text-center text-sm leading-5 text-[#8A7A6E]">
+            Group food ordering, made simple
+          </Text>
         </Animated.View>
 
         {/* Description */}
         <Animated.View
           entering={FadeInUp.duration(300).delay(60)}
-          style={styles.descCard}
+          className="rounded-[16px] border border-[rgba(26,20,16,0.08)] bg-white p-4"
         >
-          <Text style={styles.descText}>
+          <Text className="text-center text-sm leading-[22px] text-[#4A3C32]">
             BiteRunr makes group food runs effortless. Coordinate meals with
             friends, split orders across multiple restaurants, and keep track of
             who owes what — all in one place.
@@ -145,14 +149,18 @@ export default function AboutScreen() {
         {/* Features */}
         <Animated.View
           entering={FadeInUp.duration(300).delay(120)}
-          style={{ marginTop: 28 }}
+          className="mt-7"
         >
-          <Text style={styles.sectionLabel}>Features</Text>
-          <View style={styles.featuresCard}>
+          <Text className="mb-2.5 font-['JetBrainsMono_500Medium'] text-[11px] uppercase tracking-[1.2px] text-[#8A7A6E]">
+            Features
+          </Text>
+          <View className="overflow-hidden rounded-[16px] border border-[rgba(26,20,16,0.08)] bg-white">
             {FEATURES.map((f, i) => (
               <React.Fragment key={f.title}>
                 <FeatureItem {...f} />
-                {i < FEATURES.length - 1 && <View style={styles.divider} />}
+                {i < FEATURES.length - 1 && (
+                  <View className="ml-[72px] h-px bg-[rgba(26,20,16,0.08)]" />
+                )}
               </React.Fragment>
             ))}
           </View>
@@ -161,13 +169,10 @@ export default function AboutScreen() {
         {/* Footer */}
         <Animated.View
           entering={FadeInUp.duration(300).delay(180)}
-          style={styles.footer}
+          className="mt-8 items-center gap-0.5 rounded-[16px] border border-[rgba(26,20,16,0.08)] bg-white p-5"
         >
-          <Text style={styles.footerLabel}>Made with love by</Text>
-          <BrText
-            weight="bold"
-            style={{ fontSize: 15, color: BR.ink, marginTop: 2 }}
-          >
+          <Text className="text-[13px] text-[#8A7A6E]">Made with love by</Text>
+          <BrText weight="bold" className="mt-0.5 text-[15px] text-[#1A1410]">
             Runr Studios
           </BrText>
         </Animated.View>
@@ -175,120 +180,3 @@ export default function AboutScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 12,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  hero: {
-    alignItems: "center",
-    paddingVertical: 28,
-  },
-  appIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 22,
-  },
-  versionBadge: {
-    marginTop: 6,
-    fontSize: 11,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-  },
-  heroSub: {
-    fontSize: 14,
-    color: BR.ink3,
-    marginTop: 6,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  descCard: {
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-    padding: 16,
-  },
-  descText: {
-    fontSize: 14,
-    color: BR.ink2,
-    lineHeight: 22,
-    textAlign: "center",
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    marginBottom: 10,
-  },
-  featuresCard: {
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-    overflow: "hidden",
-  },
-  featureRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 14,
-    padding: 14,
-  },
-  featureIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  featureTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: BR.ink,
-    marginBottom: 2,
-  },
-  featureSub: {
-    fontSize: 12,
-    color: BR.ink3,
-    lineHeight: 18,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: BR.line,
-    marginLeft: 72,
-  },
-  footer: {
-    alignItems: "center",
-    marginTop: 32,
-    padding: 20,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-    gap: 2,
-  },
-  footerLabel: {
-    fontSize: 13,
-    color: BR.ink3,
-  },
-});

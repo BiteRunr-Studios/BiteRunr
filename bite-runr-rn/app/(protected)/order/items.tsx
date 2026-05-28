@@ -9,7 +9,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -43,7 +42,7 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { BrText } from "@/components/br";
-import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { BR, BR_FONT_STYLE, BR_SHADOW } from "@/lib/br-theme";
 
 // ─── utilities ────────────────────────────────────────────────────
 
@@ -248,12 +247,24 @@ function VoiceRippleOrb({
   }));
 
   return (
-    <View style={voiceStyles.rippleContainer}>
-      <Animated.View style={[voiceStyles.rippleRing, r3Style]} />
-      <Animated.View style={[voiceStyles.rippleRing, r2Style]} />
-      <Animated.View style={[voiceStyles.rippleRing, r1Style]} />
+    <View className="h-60 w-60 items-center justify-center">
+      <Animated.View
+        className="absolute h-60 w-60 rounded-full bg-[#FF6A1F]"
+        style={r3Style}
+      />
+      <Animated.View
+        className="absolute h-60 w-60 rounded-full bg-[#FF6A1F]"
+        style={r2Style}
+      />
+      <Animated.View
+        className="absolute h-60 w-60 rounded-full bg-[#FF6A1F]"
+        style={r1Style}
+      />
       <Animated.View style={coreStyle}>
-        <View style={voiceStyles.rippleCore}>
+        <View
+          className="h-[130px] w-[130px] items-center justify-center rounded-full bg-[#FF6A1F]"
+          style={BR_SHADOW.primary}
+        >
           <Icon
             name={isProcessingVoice ? "Sparkles" : "Mic"}
             size={44}
@@ -282,12 +293,8 @@ function TornEdge({ position }: { position: "top" | "bottom" }) {
   );
   return (
     <View
-      style={{
-        height: TOOTH_H,
-        backgroundColor: BR.paper,
-        flexDirection: "row",
-        overflow: "hidden",
-      }}
+      className="flex-row overflow-hidden bg-[#FFF7EE]"
+      style={{ height: TOOTH_H }}
     >
       {teeth.map((toothKey) => (
         <View
@@ -802,14 +809,7 @@ export default function WriteOrder() {
 
   if (orderLocations === undefined) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: BR.paper,
-        }}
-      >
+      <View className="flex-1 items-center justify-center bg-[#FFF7EE]">
         <ActivityIndicator size="large" color={BR.orange} />
       </View>
     );
@@ -822,39 +822,48 @@ export default function WriteOrder() {
 
   return (
     <>
-      <SafeAreaView edges={["top"]} style={{ backgroundColor: BR.paper }} />
+      <SafeAreaView edges={["top"]} className="bg-[#FFF7EE]" />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View className="flex-row items-center justify-between bg-[#FFF7EE] px-[18px] pb-3 pt-2">
         <Pressable
           onPress={() => {
             if (isCompletingOrder) return;
             router.back();
           }}
-          style={styles.backBtn}
+          className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
         >
           <Icon name="ChevronLeft" size={20} color={BR.ink} />
         </Pressable>
-        <BrText weight="bold" style={{ fontSize: 17 }}>
+        <BrText
+          weight="bold"
+          className="text-[17px]"
+          style={BR_FONT_STYLE.display}
+        >
           Your order
         </BrText>
         {totalItems > 0 ? (
-          <View style={styles.itemCountPill}>
-            <Text style={styles.itemCountText}>
+          <View className="rounded-full bg-[#FF6A1F] px-2.5 py-[5px]">
+            <Text
+              className="text-[11px] text-white"
+              style={BR_FONT_STYLE.monoBold}
+            >
               {totalItems} {totalItems === 1 ? "item" : "items"}
             </Text>
           </View>
         ) : (
-          <View style={{ width: 72 }} />
+          <View className="w-[72px]" />
         )}
       </View>
 
-      <View style={{ flex: 1, backgroundColor: BR.paper }}>
+      <View className="flex-1 bg-[#FFF7EE]">
         {/* Save error banner */}
         {saveError && (
-          <View style={styles.errorBanner}>
+          <View className="mx-[18px] mt-2.5 flex-row items-center gap-2.5 rounded-2xl bg-[#FFE0E6] p-3">
             <Icon name="CircleAlert" size={16} color={BR.coralInk} />
-            <Text style={styles.errorText}>{saveError}</Text>
+            <Text className="flex-1 text-[13px] text-[#B82340]">
+              {saveError}
+            </Text>
             <Pressable onPress={() => setSaveError(null)} hitSlop={8}>
               <Icon name="X" size={14} color={BR.coralInk} />
             </Pressable>
@@ -863,25 +872,33 @@ export default function WriteOrder() {
 
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={{ flex: 1 }}
+          className="flex-1"
         >
           <ScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={styles.scroll}
+            className="flex-1"
+            contentContainerClassName="px-[18px] pb-12 pt-1"
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
             {/* Title */}
-            <Animated.View
-              entering={FadeInUp.duration(300)}
-              style={{ paddingHorizontal: 2 }}
-            >
-              <Text style={styles.titleText}>
+            <Animated.View entering={FadeInUp.duration(300)} className="px-0.5">
+              <Text
+                className="text-[30px] leading-9 text-[#1A1410]"
+                style={BR_FONT_STYLE.displayExtraBold}
+              >
                 {"What can "}
-                <Text style={styles.titleRunner}>the runner</Text>
+                <Text
+                  className="italic text-[#FF6A1F]"
+                  style={BR_FONT_STYLE.displayExtraBold}
+                >
+                  the runner
+                </Text>
                 {"\ngrab you?"}
               </Text>
-              <Text style={styles.titleSub}>
+              <Text
+                className="mt-1.5 text-[13px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
+              >
                 {totalLocations === 1
                   ? `From ${selectedLocationName}`
                   : `${totalLocations} stops on this run`}
@@ -892,16 +909,12 @@ export default function WriteOrder() {
             {orderLocations.length > 1 && (
               <Animated.View
                 entering={FadeInUp.duration(300).delay(30)}
-                style={{ marginTop: 16 }}
+                className="mt-4"
               >
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{
-                    gap: 8,
-                    paddingVertical: 2,
-                    paddingHorizontal: 2,
-                  }}
+                  contentContainerClassName="gap-2 px-0.5 py-0.5"
                 >
                   {orderLocations.map((location) => {
                     const isSelected = selectedLocation?.id === location.id;
@@ -909,16 +922,16 @@ export default function WriteOrder() {
                       <Pressable
                         key={location.id}
                         onPress={() => void handleLocationPress(location.id)}
-                        style={[
-                          styles.locationTab,
-                          isSelected && styles.locationTabActive,
-                        ]}
+                        className={`flex-row items-center rounded-full border px-4 py-[9px] ${
+                          isSelected
+                            ? "border-[#1A1410] bg-[#1A1410]"
+                            : "border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+                        }`}
                       >
                         <Text
-                          style={[
-                            styles.locationTabText,
-                            isSelected && styles.locationTabTextActive,
-                          ]}
+                          className={`text-[13px] font-semibold ${
+                            isSelected ? "text-white" : "text-[#1A1410]"
+                          }`}
                         >
                           {location.name}
                         </Text>
@@ -932,14 +945,14 @@ export default function WriteOrder() {
             {/* Add card */}
             <Animated.View
               entering={FadeInUp.duration(300).delay(50)}
-              style={styles.addCard}
+              className="mt-4 rounded-[22px] border border-[rgba(26,20,16,0.08)] bg-white p-3.5"
             >
-              <BrText variant="eyebrow" style={{ marginBottom: 8 }}>
+              <BrText variant="eyebrow" className="mb-2">
                 Add an item
               </BrText>
 
               {/* Input + add button */}
-              <View style={styles.inputRow}>
+              <View className="flex-row items-center gap-2 rounded-2xl bg-[#FCEFE0] py-1 pl-3 pr-1">
                 <TextInput
                   value={itemInput}
                   onChangeText={(text) => {
@@ -948,7 +961,11 @@ export default function WriteOrder() {
                   }}
                   placeholder="e.g. rotisserie chicken"
                   placeholderTextColor={BR.ink3}
-                  style={styles.textInput}
+                  className="min-h-9 flex-1 px-0 py-2 text-[15px] leading-5 text-[#1A1410]"
+                  style={[
+                    BR_FONT_STYLE.displayMedium,
+                    { textAlignVertical: "center", includeFontPadding: false },
+                  ]}
                   autoCapitalize="none"
                   returnKeyType="done"
                   blurOnSubmit={true}
@@ -961,49 +978,47 @@ export default function WriteOrder() {
                 <TouchableOpacity
                   onPress={addItem}
                   disabled={!itemInput.trim() || isSaving || isCompletingOrder}
-                  style={[styles.addBtn, !itemInput.trim() && { opacity: 0.4 }]}
+                  className={`h-9 flex-row items-center gap-[5px] rounded-[10px] bg-[#FF6A1F] px-3.5 ${!itemInput.trim() ? "opacity-40" : ""}`}
                 >
                   <Icon name="Plus" size={14} color="#fff" />
-                  <Text style={styles.addBtnText}>Add</Text>
+                  <Text className="text-[13px] font-bold text-white">Add</Text>
                 </TouchableOpacity>
               </View>
 
               {/* Or divider */}
-              <View style={styles.orRow}>
-                <View style={styles.orLine} />
-                <BrText
-                  variant="eyebrow"
-                  style={{ paddingHorizontal: 10, color: BR.ink3 }}
-                >
+              <View className="my-3 flex-row items-center">
+                <View className="h-px flex-1 bg-[rgba(26,20,16,0.08)]" />
+                <BrText variant="eyebrow" className="px-2.5 text-[#8A7A6E]">
                   or
                 </BrText>
-                <View style={styles.orLine} />
+                <View className="h-px flex-1 bg-[rgba(26,20,16,0.08)]" />
               </View>
 
               {/* Dictate */}
               <TouchableOpacity
                 onPress={() => void startVoiceOrdering()}
                 disabled={isSaving || isCompletingOrder || isProcessingVoice}
-                style={[
-                  styles.dictateBtn,
-                  (isSaving || isCompletingOrder || isProcessingVoice) && {
-                    opacity: 0.5,
-                  },
-                ]}
+                className={`flex-row items-center justify-center gap-2.5 rounded-2xl border border-dashed border-[rgba(255,106,31,0.35)] bg-[#FFF1E2] p-[13px] ${
+                  isSaving || isCompletingOrder || isProcessingVoice
+                    ? "opacity-50"
+                    : ""
+                }`}
               >
-                <View style={styles.micOrb}>
+                <View className="h-7 w-7 items-center justify-center rounded-full bg-[#FF6A1F]">
                   <Icon name="Mic" size={14} color="#fff" />
                 </View>
-                <Text style={styles.dictateBtnText}>Dictate your order</Text>
+                <Text className="text-sm font-bold text-[#E8551A]">
+                  Dictate your order
+                </Text>
               </TouchableOpacity>
             </Animated.View>
 
             {/* Items list */}
             <Animated.View
               entering={FadeInUp.duration(300).delay(80)}
-              style={{ marginTop: 22 }}
+              className="mt-[22px]"
             >
-              <View style={styles.listHeader}>
+              <View className="mb-2.5 flex-row items-center justify-between">
                 <BrText variant="eyebrow">
                   Your list · {selectedLocationName}
                 </BrText>
@@ -1015,68 +1030,90 @@ export default function WriteOrder() {
                     }}
                     hitSlop={8}
                   >
-                    <Text style={styles.clearBtn}>CLEAR</Text>
+                    <Text
+                      className="text-[11px] tracking-[0.5px] text-[#8A7A6E]"
+                      style={BR_FONT_STYLE.monoBold}
+                    >
+                      CLEAR
+                    </Text>
                   </Pressable>
                 )}
               </View>
 
               {locationEntries === undefined && selectedLocation ? (
-                <View style={styles.listLoading}>
+                <View className="items-center justify-center py-12">
                   <ActivityIndicator size="large" color={BR.orange} />
                 </View>
               ) : currentItems.length === 0 ? (
-                <View style={styles.receiptOuter}>
+                <View className="overflow-hidden rounded-[10px] bg-white">
                   <TornEdge position="top" />
-                  <View style={styles.emptyCardInner}>
-                    <View style={styles.emptyIconWrap}>
+                  <View className="items-center px-7 py-6">
+                    <View className="mb-3 h-[60px] w-[60px] items-center justify-center rounded-2xl bg-[#FFF1E2]">
                       <Icon
                         name="UtensilsCrossed"
                         size={28}
                         color={BR.orangeDeep}
                       />
                     </View>
-                    <Text style={styles.emptyTitle}>
+                    <Text
+                      className="text-center text-lg italic text-[#E8551A]"
+                      style={BR_FONT_STYLE.displayExtraBold}
+                    >
                       Nothing on the list yet
                     </Text>
-                    <Text style={styles.emptyMono}>
+                    <Text
+                      className="mt-1.5 text-center text-[10px] tracking-[1.2px] text-[#8A7A6E]"
+                      style={BR_FONT_STYLE.mono}
+                    >
                       · TYPE OR DICTATE TO BEGIN ·
                     </Text>
                   </View>
                   <TornEdge position="bottom" />
                 </View>
               ) : (
-                <View style={styles.receiptOuter}>
+                <View className="overflow-hidden rounded-[10px] bg-white">
                   <TornEdge position="top" />
-                  <View style={styles.receiptInner}>
-                    <View style={{ alignItems: "center", paddingBottom: 12 }}>
-                      <Text style={styles.receiptStoreName}>
+                  <View className="px-4 pb-4 pt-3">
+                    <View className="items-center pb-3">
+                      <Text
+                        className="text-base italic text-[#E8551A]"
+                        style={BR_FONT_STYLE.displayExtraBold}
+                      >
                         {selectedLocationName}
                       </Text>
-                      <Text style={styles.receiptSubtitle}>
+                      <Text
+                        className="mt-0.5 text-[10px] tracking-wide text-[#8A7A6E]"
+                        style={BR_FONT_STYLE.mono}
+                      >
                         · {totalItems} ITEM{totalItems === 1 ? "" : "S"} ·
                         RUNNER WILL GRAB ·
                       </Text>
                     </View>
-                    <View style={styles.receiptDivider} />
-                    <View style={{ gap: 8, paddingTop: 4 }}>
+                    <View className="my-3 h-px self-stretch bg-[rgba(26,20,16,0.1)]" />
+                    <View className="gap-2 pt-1">
                       {currentItems.map((item, index) => {
                         const occurrence = itemKeyCounts.get(item) ?? 0;
                         itemKeyCounts.set(item, occurrence + 1);
                         return (
                           <View
                             key={`${selectedLocation?.id ?? "loc"}-${item}-${occurrence}`}
-                            style={styles.receiptItem}
+                            className="flex-row items-center gap-2.5"
                           >
-                            <Text style={styles.receiptIndex}>
+                            <Text
+                              className="w-[18px] text-[10px] text-[#8A7A6E]"
+                              style={BR_FONT_STYLE.mono}
+                            >
                               {String(index + 1).padStart(2, "0")}
                             </Text>
-                            <Text style={styles.receiptItemText}>{item}</Text>
+                            <Text className="flex-1 text-sm font-semibold text-[#1A1410]">
+                              {item}
+                            </Text>
                             <Pressable
                               onPress={() => removeItem(index)}
                               hitSlop={10}
                               accessibilityRole="button"
                               accessibilityLabel="Remove item"
-                              style={styles.removeItemBtn}
+                              className="h-6 w-6 items-center justify-center rounded-full bg-[#FCEFE0]"
                             >
                               <Icon name="X" size={11} color={BR.ink2} />
                             </Pressable>
@@ -1084,15 +1121,20 @@ export default function WriteOrder() {
                         );
                       })}
                     </View>
-                    <View
-                      style={[
-                        styles.receiptDivider,
-                        { marginTop: 14, marginBottom: 6 },
-                      ]}
-                    />
-                    <View style={styles.subtotalRow}>
-                      <Text style={styles.subtotalLabel}>ITEMS</Text>
-                      <Text style={styles.subtotalValue}>{totalItems}</Text>
+                    <View className="mb-1.5 mt-3.5 h-px self-stretch bg-[rgba(26,20,16,0.1)]" />
+                    <View className="flex-row items-center justify-between">
+                      <Text
+                        className="text-[11px] text-[#4A3C32]"
+                        style={BR_FONT_STYLE.mono}
+                      >
+                        ITEMS
+                      </Text>
+                      <Text
+                        className="text-[11px] text-[#4A3C32]"
+                        style={BR_FONT_STYLE.monoBold}
+                      >
+                        {totalItems}
+                      </Text>
                     </View>
                   </View>
                   <TornEdge position="bottom" />
@@ -1104,19 +1146,17 @@ export default function WriteOrder() {
 
         {/* Footer */}
         <View
-          style={[
-            styles.footer,
-            { paddingBottom: Math.max(insets.bottom, 16) },
-          ]}
+          className="border-t border-[rgba(26,20,16,0.08)] bg-[#FFF7EE] px-[18px] pt-3"
+          style={{ paddingBottom: Math.max(insets.bottom, 16) }}
         >
           <TouchableOpacity
             onPress={finishOrderingAndLeave}
             disabled={isCompletingOrder}
-            style={[
-              styles.doneBtn,
-              totalItems === 0 && styles.doneBtnEmpty,
-              isCompletingOrder && { opacity: 0.6 },
-            ]}
+            className={`h-[54px] w-full flex-row items-center justify-center gap-2 rounded-2xl ${
+              totalItems === 0
+                ? "border border-[rgba(26,20,16,0.14)] bg-[#FCEFE0]"
+                : "bg-[#FF6A1F]"
+            } ${isCompletingOrder ? "opacity-60" : ""}`}
           >
             {isCompletingOrder ? (
               <ActivityIndicator size="small" color="#fff" />
@@ -1128,10 +1168,9 @@ export default function WriteOrder() {
               />
             )}
             <Text
-              style={[
-                styles.doneBtnText,
-                totalItems === 0 && { color: BR.ink2 },
-              ]}
+              className={`text-base font-bold ${
+                totalItems === 0 ? "text-[#4A3C32]" : "text-white"
+              }`}
             >
               {isCompletingOrder
                 ? "Finishing..."
@@ -1150,23 +1189,24 @@ export default function WriteOrder() {
         animationType="slide"
         onRequestClose={() => void closeVoiceModal()}
       >
-        <View style={voiceStyles.screen}>
+        <View className="flex-1 bg-[#1A1410]">
           {/* Header */}
           <View
-            style={[
-              voiceStyles.vHeader,
-              { paddingTop: Math.max(insets.top, 12) + 8 },
-            ]}
+            className="flex-row items-center justify-between px-[18px] pb-1"
+            style={{ paddingTop: Math.max(insets.top, 12) + 8 }}
           >
             <Pressable
               onPress={() => void closeVoiceModal()}
-              style={voiceStyles.vCloseBtn}
+              className="h-9 w-9 items-center justify-center rounded-full bg-[rgba(255,255,255,0.1)]"
               accessibilityRole="button"
               accessibilityLabel="Close voice ordering"
             >
               <Icon name="X" size={18} color="#fff" />
             </Pressable>
-            <Text style={voiceStyles.vStatusLabel}>
+            <Text
+              className="text-[11px] tracking-[1.5px] text-[rgba(255,255,255,0.6)]"
+              style={BR_FONT_STYLE.mono}
+            >
               {parsedItems.length > 0
                 ? "Got it"
                 : isListening
@@ -1175,27 +1215,28 @@ export default function WriteOrder() {
                     ? "Thinking"
                     : "Voice"}
             </Text>
-            <View style={{ width: 36 }} />
+            <View className="w-9" />
           </View>
 
           {parsedItems.length === 0 ? (
             /* ── Listening / Processing phase ── */
-            <View style={voiceStyles.listeningPhase}>
+            <View className="flex-1 items-center px-6 pt-12">
               <VoiceRippleOrb
                 isListening={isListening}
                 isProcessingVoice={isProcessingVoice}
               />
 
-              <View style={voiceStyles.vTranscriptWrap}>
+              <View className="mt-11 min-h-[88px] w-full items-center">
                 {displayedVoiceTranscript ? (
-                  <Text style={voiceStyles.vTranscriptText}>
+                  <Text
+                    className="text-center text-2xl italic leading-8 text-white"
+                    style={BR_FONT_STYLE.displayExtraBold}
+                  >
                     {`"${displayedVoiceTranscript}`}
                     {isListening && (
                       <Text
-                        style={{
-                          opacity: cursorVisible ? 1 : 0,
-                          color: BR.orange,
-                        }}
+                        className="text-[#FF6A1F]"
+                        style={{ opacity: cursorVisible ? 1 : 0 }}
                       >
                         |
                       </Text>
@@ -1203,22 +1244,30 @@ export default function WriteOrder() {
                     {`"`}
                   </Text>
                 ) : (
-                  <Text style={voiceStyles.vTranscriptHint}>
+                  <Text
+                    className="text-center text-2xl italic leading-8 text-[rgba(255,255,255,0.28)]"
+                    style={BR_FONT_STYLE.displayExtraBold}
+                  >
                     {isProcessingVoice
                       ? "Processing your order..."
                       : "Speak naturally..."}
                   </Text>
                 )}
                 {voiceError ? (
-                  <Text style={voiceStyles.vErrorText}>{voiceError}</Text>
+                  <Text
+                    className="mt-3.5 text-center text-[13px] leading-[19px] text-[#FF4D6D]"
+                    style={BR_FONT_STYLE.mono}
+                  >
+                    {voiceError}
+                  </Text>
                 ) : null}
               </View>
 
-              <View style={voiceStyles.vBottomRow}>
+              <View className="absolute bottom-12 left-6 right-6 items-center gap-3">
                 {isListening ? (
                   <TouchableOpacity
                     onPress={() => void stopVoiceOrdering()}
-                    style={voiceStyles.vActionBtn}
+                    className="flex-row items-center gap-2 rounded-full bg-[rgba(255,255,255,0.12)] px-[22px] py-[13px]"
                   >
                     <Icon
                       name="Square"
@@ -1226,28 +1275,36 @@ export default function WriteOrder() {
                       color="#fff"
                       strokeWidth={2}
                     />
-                    <Text style={voiceStyles.vActionBtnText}>Tap to stop</Text>
+                    <Text className="text-sm font-semibold tracking-[0.2px] text-white">
+                      Tap to stop
+                    </Text>
                   </TouchableOpacity>
                 ) : isProcessingVoice ? (
-                  <View style={{ alignItems: "center", gap: 10 }}>
+                  <View className="items-center gap-2.5">
                     <Flow size={28} color={BR.orange} />
-                    <Text style={voiceStyles.vProcessingText}>
+                    <Text
+                      className="text-[13px] text-[rgba(255,255,255,0.5)]"
+                      style={BR_FONT_STYLE.mono}
+                    >
                       AI is parsing your order
                     </Text>
                   </View>
                 ) : (
                   <TouchableOpacity
                     onPress={() => void startVoiceOrdering()}
-                    style={voiceStyles.vActionBtn}
+                    className="flex-row items-center gap-2 rounded-full bg-[rgba(255,255,255,0.12)] px-[22px] py-[13px]"
                   >
                     <Icon name="Mic" size={16} color="#fff" />
-                    <Text style={voiceStyles.vActionBtnText}>
+                    <Text className="text-sm font-semibold tracking-[0.2px] text-white">
                       {voiceError ? "Try again" : "Start listening"}
                     </Text>
                   </TouchableOpacity>
                 )}
                 {!isListening && !isProcessingVoice && !voiceError && (
-                  <Text style={voiceStyles.vHintText}>
+                  <Text
+                    className="text-center text-xs text-[rgba(255,255,255,0.38)]"
+                    style={BR_FONT_STYLE.mono}
+                  >
                     Speak naturally · one item at a time
                   </Text>
                 )}
@@ -1257,17 +1314,26 @@ export default function WriteOrder() {
             /* ── Parsed phase ── */
             <Animated.View
               entering={FadeInUp.duration(350)}
-              style={voiceStyles.parsedPhase}
+              className="flex-1 px-[18px] pb-6 pt-5"
             >
-              <Text style={voiceStyles.parsedEyebrow}>✨ I heard</Text>
-              <Text style={voiceStyles.parsedQuote} numberOfLines={4}>
+              <Text
+                className="mb-2 text-[11px] tracking-wide text-[#FF6A1F]"
+                style={BR_FONT_STYLE.monoBold}
+              >
+                ✨ I heard
+              </Text>
+              <Text
+                className="mb-[22px] text-xl italic leading-[27px] text-white"
+                style={BR_FONT_STYLE.displayExtraBold}
+                numberOfLines={4}
+              >
                 {`"${displayedVoiceTranscript}"`}
               </Text>
 
               <ScrollView
-                style={{ flex: 1 }}
+                className="flex-1"
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ gap: 10 }}
+                contentContainerClassName="gap-2.5"
               >
                 {parsedItems.map((item, i) => {
                   const parsedItemKey = `${item}-${i}`;
@@ -1275,590 +1341,52 @@ export default function WriteOrder() {
                     <Animated.View
                       key={parsedItemKey}
                       entering={FadeInUp.duration(280).delay(i * 70)}
-                      style={voiceStyles.parsedItemCard}
+                      className="flex-row items-center gap-3.5 rounded-[18px] bg-[rgba(255,255,255,0.06)] p-3.5"
                     >
-                      <View style={voiceStyles.parsedItemBadge}>
-                        <Text style={voiceStyles.parsedItemBadgeText}>
+                      <View className="h-[38px] w-[38px] items-center justify-center rounded-xl bg-[#FF6A1F]">
+                        <Text
+                          className="text-[13px] text-white"
+                          style={BR_FONT_STYLE.monoBold}
+                        >
                           {String(i + 1).padStart(2, "0")}
                         </Text>
                       </View>
-                      <Text style={voiceStyles.parsedItemText}>{item}</Text>
+                      <Text className="flex-1 text-[15px] font-semibold text-white">
+                        {item}
+                      </Text>
                     </Animated.View>
                   );
                 })}
               </ScrollView>
 
-              <View style={voiceStyles.parsedButtons}>
+              <View className="mt-[18px] gap-2.5">
                 <TouchableOpacity
                   onPress={confirmVoiceItems}
-                  style={voiceStyles.confirmBtn}
+                  className="h-[54px] w-full flex-row items-center justify-center gap-2 rounded-2xl bg-[#FF6A1F]"
+                  style={BR_SHADOW.primary}
                 >
                   <Icon name="Check" size={16} color="#fff" strokeWidth={2.5} />
-                  <Text style={voiceStyles.confirmBtnText}>
+                  <Text className="text-base font-bold text-white">
                     Add {parsedItems.length}{" "}
                     {parsedItems.length === 1 ? "item" : "items"}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => void resetVoice()}
-                  style={voiceStyles.tryAgainBtn}
+                  className="h-[50px] flex-row items-center justify-center gap-2 rounded-2xl bg-[rgba(255,255,255,0.08)]"
                 >
                   <Icon name="RotateCcw" size={14} color="#fff" />
-                  <Text style={voiceStyles.tryAgainText}>Try again</Text>
+                  <Text className="text-sm font-semibold text-white">
+                    Try again
+                  </Text>
                 </TouchableOpacity>
               </View>
             </Animated.View>
           )}
 
-          <SafeAreaView
-            edges={["bottom"]}
-            style={{ backgroundColor: "transparent" }}
-          />
+          <SafeAreaView edges={["bottom"]} className="bg-transparent" />
         </View>
       </Modal>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 12,
-    backgroundColor: BR.paper,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  itemCountPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
-    backgroundColor: BR.orange,
-  },
-  itemCountText: {
-    fontSize: 11,
-    fontFamily: BR_FONT.monoBold,
-    color: "#fff",
-  },
-  scroll: {
-    paddingHorizontal: 18,
-    paddingBottom: 48,
-    paddingTop: 4,
-  },
-  titleText: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontSize: 30,
-    color: BR.ink,
-    lineHeight: 36,
-  },
-  titleRunner: {
-    color: BR.orange,
-    fontStyle: "italic",
-    fontFamily: BR_FONT.displayExtraBold,
-  },
-  titleSub: {
-    marginTop: 6,
-    fontSize: 13,
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  locationTab: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-  },
-  locationTabActive: {
-    backgroundColor: BR.ink,
-    borderColor: BR.ink,
-  },
-  locationTabText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: BR.ink,
-  },
-  locationTabTextActive: {
-    color: "#fff",
-  },
-  addCard: {
-    marginTop: 16,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: BR.line,
-    padding: 14,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: BR.paper2,
-    borderRadius: BR_RADIUS.md,
-    paddingLeft: 12,
-    paddingRight: 4,
-    paddingVertical: 4,
-    gap: 8,
-  },
-  textInput: {
-    flex: 1,
-    minHeight: 36,
-    fontFamily: BR_FONT.displayMedium,
-    fontSize: 15,
-    lineHeight: 20,
-    color: BR.ink,
-    letterSpacing: 0,
-    paddingVertical: 8,
-    paddingHorizontal: 0,
-    textAlignVertical: "center",
-    includeFontPadding: false,
-  },
-  addBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    backgroundColor: BR.orange,
-    borderRadius: BR_RADIUS.sm,
-    height: 36,
-    paddingHorizontal: 14,
-  },
-  addBtnText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#fff",
-  },
-  orRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 12,
-  },
-  orLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: BR.line,
-  },
-  dictateBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    padding: 13,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.orangeTint,
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: "rgba(255,106,31,0.35)",
-  },
-  micOrb: {
-    width: 28,
-    height: 28,
-    borderRadius: 999,
-    backgroundColor: BR.orange,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dictateBtnText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: BR.orangeDeep,
-  },
-  hintRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 10,
-  },
-  hintText: {
-    fontSize: 11,
-    color: BR.ink3,
-    flex: 1,
-  },
-  listHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  clearBtn: {
-    fontSize: 11,
-    fontFamily: BR_FONT.monoBold,
-    color: BR.ink3,
-    letterSpacing: 0.5,
-  },
-  listLoading: {
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 48,
-  },
-  receiptOuter: {
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.sm,
-    overflow: "hidden",
-  },
-  emptyCardInner: {
-    paddingHorizontal: 28,
-    paddingVertical: 24,
-    alignItems: "center",
-  },
-  emptyIconWrap: {
-    width: 60,
-    height: 60,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.orangeTint,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  emptyTitle: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontSize: 18,
-    fontStyle: "italic",
-    color: BR.orangeDeep,
-    textAlign: "center",
-  },
-  emptyMono: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 10,
-    color: BR.ink3,
-    letterSpacing: 1.2,
-    marginTop: 6,
-  },
-  receiptDivider: {
-    height: 1,
-    backgroundColor: "rgba(26,20,16,0.1)",
-    marginVertical: 12,
-    alignSelf: "stretch",
-  },
-  emptyHint: {
-    fontSize: 12,
-    color: BR.ink3,
-    textAlign: "center",
-    fontFamily: BR_FONT.mono,
-    lineHeight: 18,
-  },
-  receiptInner: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    paddingTop: 12,
-  },
-  receiptStoreName: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontSize: 16,
-    fontStyle: "italic",
-    color: BR.orangeDeep,
-  },
-  receiptSubtitle: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 10,
-    color: BR.ink3,
-    letterSpacing: 1,
-    marginTop: 2,
-  },
-  receiptItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  receiptIndex: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 10,
-    color: BR.ink3,
-    width: 18,
-  },
-  receiptItemText: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: "600",
-    color: BR.ink,
-  },
-  removeItemBtn: {
-    width: 24,
-    height: 24,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  subtotalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  subtotalLabel: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 11,
-    color: BR.ink2,
-  },
-  subtotalValue: {
-    fontFamily: BR_FONT.monoBold,
-    fontSize: 11,
-    color: BR.ink2,
-  },
-  errorBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginHorizontal: 18,
-    marginTop: 10,
-    padding: 12,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.coralSoft,
-  },
-  errorText: {
-    flex: 1,
-    fontSize: 13,
-    color: BR.coralInk,
-  },
-  footer: {
-    paddingHorizontal: 18,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: BR.line,
-    backgroundColor: BR.paper,
-  },
-  doneBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    height: 54,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.orange,
-    width: "100%",
-  },
-  doneBtnEmpty: {
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line2,
-  },
-  doneBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-  },
-});
-
-const voiceStyles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: BR.ink,
-  },
-  vHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 4,
-  },
-  vCloseBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  vStatusLabel: {
-    fontSize: 11,
-    fontFamily: BR_FONT.mono,
-    letterSpacing: 1.5,
-    color: "rgba(255,255,255,0.6)",
-  },
-  // ── Listening phase
-  listeningPhase: {
-    flex: 1,
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingTop: 48,
-  },
-  rippleContainer: {
-    width: 240,
-    height: 240,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  rippleRing: {
-    position: "absolute",
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: BR.orange,
-  },
-  rippleCore: {
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    backgroundColor: BR.orange,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: BR.orange,
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.55,
-    shadowRadius: 32,
-    elevation: 16,
-  },
-  vTranscriptWrap: {
-    marginTop: 44,
-    width: "100%",
-    minHeight: 88,
-    alignItems: "center",
-  },
-  vTranscriptText: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontStyle: "italic",
-    fontSize: 24,
-    lineHeight: 32,
-    color: "#fff",
-    textAlign: "center",
-  },
-  vTranscriptHint: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontStyle: "italic",
-    fontSize: 24,
-    lineHeight: 32,
-    color: "rgba(255,255,255,0.28)",
-    textAlign: "center",
-  },
-  vErrorText: {
-    marginTop: 14,
-    fontSize: 13,
-    color: BR.coral,
-    textAlign: "center",
-    fontFamily: BR_FONT.mono,
-    lineHeight: 19,
-  },
-  vBottomRow: {
-    position: "absolute",
-    bottom: 48,
-    left: 24,
-    right: 24,
-    alignItems: "center",
-    gap: 12,
-  },
-  vActionBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 22,
-    paddingVertical: 13,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.12)",
-  },
-  vActionBtnText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#fff",
-    letterSpacing: 0.2,
-  },
-  vProcessingText: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.5)",
-    fontFamily: BR_FONT.mono,
-  },
-  vHintText: {
-    fontSize: 12,
-    color: "rgba(255,255,255,0.38)",
-    fontFamily: BR_FONT.mono,
-    textAlign: "center",
-  },
-  // ── Parsed phase
-  parsedPhase: {
-    flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: 20,
-    paddingBottom: 24,
-  },
-  parsedEyebrow: {
-    fontSize: 11,
-    fontFamily: BR_FONT.monoBold,
-    letterSpacing: 1,
-    color: BR.orange,
-    marginBottom: 8,
-  },
-  parsedQuote: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontStyle: "italic",
-    fontSize: 20,
-    lineHeight: 27,
-    color: "#fff",
-    marginBottom: 22,
-  },
-  parsedItemCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderRadius: 18,
-    padding: 14,
-  },
-  parsedItemBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: BR.orange,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  parsedItemBadgeText: {
-    fontFamily: BR_FONT.monoBold,
-    fontSize: 13,
-    color: "#fff",
-  },
-  parsedItemText: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#fff",
-  },
-  parsedButtons: {
-    marginTop: 18,
-    gap: 10,
-  },
-  confirmBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    height: 54,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.orange,
-    shadowColor: BR.orange,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.45,
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  confirmBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-  },
-  tryAgainBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    height: 50,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: "rgba(255,255,255,0.08)",
-  },
-  tryAgainText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#fff",
-  },
-});

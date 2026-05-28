@@ -6,7 +6,6 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -22,7 +21,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
-import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 import { BrText } from "@/components/br";
 import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
 import { useReceiptScanning } from "@/hooks/useReceiptScanning";
@@ -34,6 +33,7 @@ import {
 import { ReceiptConfirmationSheet } from "@/components/receipt-confirmation-sheet";
 import { ManualPriceEntrySheet } from "@/components/manual-price-entry-sheet";
 import Animated, {
+  cancelAnimation,
   FadeInUp,
   useSharedValue,
   useAnimatedStyle,
@@ -61,17 +61,18 @@ function SummaryShell({
 }) {
   const insets = useSafeAreaInsets();
   return (
-    <View
-      style={{ flex: 1, backgroundColor: BR.paper, paddingTop: insets.top }}
-    >
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+    <View className="flex-1 bg-[#FFF7EE]" style={{ paddingTop: insets.top }}>
+      <View className="flex-row items-center gap-2 px-[18px] pb-3 pt-2">
+        <Pressable
+          onPress={() => router.back()}
+          className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+        >
           <Icon name="ChevronLeft" size={20} color={BR.ink} />
         </Pressable>
-        <BrText weight="bold" style={{ fontSize: 17 }}>
+        <BrText weight="bold" className="text-[17px]">
           {title}
         </BrText>
-        <View style={{ width: 38 }} />
+        <View className="w-[38px]" />
       </View>
       {children}
     </View>
@@ -83,37 +84,23 @@ function SummaryShell({
 function SummaryAiLoadingScreen() {
   return (
     <SummaryShell title="Order Summary">
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 24,
-        }}
-      >
-        <View style={styles.loadingCard}>
-          <View style={styles.loadingIconTile}>
+      <View className="flex-1 items-center justify-center p-6">
+        <View className="w-full items-center rounded-[28px] border border-[rgba(26,20,16,0.08)] bg-white p-7">
+          <View className="h-16 w-16 items-center justify-center rounded-[20px] bg-[#FFF1E2]">
             <Icon name="ClipboardList" size={28} color={BR.orange} />
           </View>
-          <BrText
-            weight="bold"
-            style={{ fontSize: 22, marginTop: 16, textAlign: "center" }}
-          >
+          <BrText weight="bold" className="mt-4 text-center text-[22px]">
             Summarizing order
           </BrText>
-          <Text style={styles.loadingSubtitle}>
+          <Text className="mt-2 text-center text-[13px] leading-[19px] text-[#8A7A6E]">
             Grouping similar items across all pickup spots…
           </Text>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 8,
-              marginTop: 18,
-            }}
-          >
+          <View className="mt-[18px] flex-row items-center gap-2">
             <ActivityIndicator size="small" color={BR.orange} />
-            <Text style={{ fontSize: 13, fontWeight: "600", color: BR.orange }}>
+            <Text
+              className="text-[13px] text-[#FF6A1F]"
+              style={BR_FONT_STYLE.displaySemibold}
+            >
               This only takes a moment
             </Text>
           </View>
@@ -129,9 +116,9 @@ function SummaryDataLoadingScreen() {
   return (
     <SummaryShell title="Order Summary">
       <Skeleton>
-        <View style={{ padding: 18, gap: 14 }}>
+        <View className="gap-3.5 p-[18px]">
           <SkeletonBlock width="100%" height={44} rounded="rounded-2xl" />
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <View className="flex-row gap-2">
             <SkeletonBlock width={90} height={32} rounded="rounded-full" />
             <SkeletonBlock width={110} height={32} rounded="rounded-full" />
           </View>
@@ -151,9 +138,6 @@ function SummaryDataLoadingScreen() {
 
 // ── Scanning overlay ──────────────────────────────────────────────
 
-const BRACKET_SIZE = 72;
-const BRACKET_THICKNESS = 3;
-
 function CornerBracket({
   corner,
   color,
@@ -165,38 +149,17 @@ function CornerBracket({
   const isLeft = corner[1] === "l";
   return (
     <View
-      style={{
-        position: "absolute",
-        width: BRACKET_SIZE,
-        height: BRACKET_SIZE,
-        top: isTop ? 0 : undefined,
-        bottom: !isTop ? 0 : undefined,
-        left: isLeft ? 0 : undefined,
-        right: !isLeft ? 0 : undefined,
-      }}
+      className={`absolute h-[72px] w-[72px] ${isTop ? "top-0" : "bottom-0"} ${isLeft ? "left-0" : "right-0"}`}
     >
       {/* Horizontal arm */}
       <View
-        style={{
-          position: "absolute",
-          width: BRACKET_SIZE,
-          height: BRACKET_THICKNESS,
-          backgroundColor: color,
-          top: isTop ? 0 : undefined,
-          bottom: !isTop ? 0 : undefined,
-        }}
+        className={`absolute h-[3px] w-[72px] ${isTop ? "top-0" : "bottom-0"}`}
+        style={{ backgroundColor: color }}
       />
       {/* Vertical arm */}
       <View
-        style={{
-          position: "absolute",
-          width: BRACKET_THICKNESS,
-          height: BRACKET_SIZE,
-          backgroundColor: color,
-          left: isLeft ? 0 : undefined,
-          right: !isLeft ? 0 : undefined,
-          top: 0,
-        }}
+        className={`absolute top-0 h-[72px] w-[3px] ${isLeft ? "left-0" : "right-0"}`}
+        style={{ backgroundColor: color }}
       />
     </View>
   );
@@ -216,20 +179,29 @@ function ScanningOverlay({
   onDismiss: () => void;
 }) {
   const insets = useSafeAreaInsets();
-  const [viewportHeight, setViewportHeight] = useState(0);
+  const viewportHeight = useSharedValue(0);
   const scanY = useSharedValue(0);
 
   useEffect(() => {
-    if (viewportHeight <= 0) return;
+    return () => {
+      cancelAnimation(scanY);
+    };
+  }, [scanY]);
+
+  const startScanBeam = (height: number) => {
+    if (height <= 0 || viewportHeight.value === height) return;
+    viewportHeight.value = height;
+    cancelAnimation(scanY);
+    scanY.value = 0;
     scanY.value = withRepeat(
       withTiming(1, { duration: 1800, easing: Easing.inOut(Easing.ease) }),
       -1,
       true,
     );
-  }, [viewportHeight, scanY]);
+  };
 
   const beamStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: scanY.value * viewportHeight }],
+    transform: [{ translateY: scanY.value * viewportHeight.value }],
   }));
 
   const isUploading = scanState === "uploading";
@@ -244,17 +216,16 @@ function ScanningOverlay({
       statusBarTranslucent
     >
       <View
-        style={[
-          scanStyles.root,
-          { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 16 },
-        ]}
+        className="flex-1 items-center gap-5 bg-[#111] px-5"
+        style={{
+          paddingTop: insets.top + 12,
+          paddingBottom: insets.bottom + 16,
+        }}
       >
         {/* Status pill */}
         <View
-          style={[
-            scanStyles.statusPill,
-            { backgroundColor: isError ? BR.coral : BR.orange },
-          ]}
+          className="flex-row items-center gap-2 rounded-full px-4 py-2.5"
+          style={{ backgroundColor: isError ? BR.coral : BR.orange }}
         >
           {isError ? (
             <Icon name="CircleAlert" size={13} color="#fff" />
@@ -265,7 +236,10 @@ function ScanningOverlay({
               style={{ transform: [{ scale: 0.75 }] }}
             />
           )}
-          <Text style={scanStyles.statusPillText}>
+          <Text
+            className="text-[13px] tracking-[0.3px] text-white"
+            style={BR_FONT_STYLE.display}
+          >
             {isError
               ? "Scan failed"
               : isUploading
@@ -276,24 +250,21 @@ function ScanningOverlay({
 
         {/* Viewport — brackets + photo + beam */}
         <View
-          style={scanStyles.viewport}
-          onLayout={(e) => setViewportHeight(e.nativeEvent.layout.height)}
+          className="relative w-full flex-1"
+          onLayout={(e) => startScanBeam(e.nativeEvent.layout.height)}
         >
           {/* Photo (inner, clipped) */}
-          <View style={[scanStyles.photoInner, isError && { opacity: 0.5 }]}>
+          <View
+            className={`absolute inset-[3px] overflow-hidden rounded bg-[rgba(255,255,255,0.04)] ${isError ? "opacity-50" : ""}`}
+          >
             {photoUri ? (
               <Image
                 source={{ uri: photoUri }}
-                style={StyleSheet.absoluteFill}
+                className="absolute inset-0 h-full w-full"
                 resizeMode="cover"
               />
             ) : (
-              <View
-                style={[
-                  StyleSheet.absoluteFill,
-                  { alignItems: "center", justifyContent: "center" },
-                ]}
-              >
+              <View className="absolute inset-0 items-center justify-center">
                 <Icon
                   name="ScanLine"
                   size={48}
@@ -302,7 +273,7 @@ function ScanningOverlay({
               </View>
             )}
             {/* Subtle dark overlay */}
-            <View style={scanStyles.photoOverlay} />
+            <View className="absolute inset-0 bg-[rgba(0,0,0,0.28)]" />
           </View>
 
           {/* Corner brackets sit on top, outside the photo's clip */}
@@ -314,24 +285,28 @@ function ScanningOverlay({
           {/* Scanning beam */}
           {!isUploading && !isError && (
             <Animated.View
-              style={[scanStyles.beamWrapper, beamStyle]}
+              className="absolute left-0 right-0 top-0 h-[3px]"
+              style={beamStyle}
               pointerEvents="none"
             >
-              <View style={[scanStyles.beam, { shadowColor: BR.orange }]} />
+              <View
+                className="h-[3px] bg-[#FF6A1F]"
+                style={{
+                  shadowColor: BR.orange,
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 1,
+                  shadowRadius: 10,
+                  elevation: 4,
+                }}
+              />
             </Animated.View>
           )}
 
           {/* Error X */}
           {isError && (
-            <View style={StyleSheet.absoluteFill} pointerEvents="none">
-              <View
-                style={{
-                  flex: 1,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <View style={scanStyles.errorCircle}>
+            <View className="absolute inset-0" pointerEvents="none">
+              <View className="flex-1 items-center justify-center">
+                <View className="h-20 w-20 items-center justify-center rounded-full bg-[rgba(255,77,109,0.9)]">
                   <Icon name="X" size={34} color="#fff" strokeWidth={2.5} />
                 </View>
               </View>
@@ -340,45 +315,42 @@ function ScanningOverlay({
         </View>
 
         {/* Bottom card */}
-        <View style={scanStyles.bottomCard}>
+        <View className="w-full rounded-2xl bg-[rgba(255,255,255,0.07)] p-[18px]">
           {isError ? (
             <>
-              <Text style={scanStyles.errorMessage}>
+              <Text className="text-center text-[13px] leading-[19px] text-[rgba(255,255,255,0.75)]">
                 {error ?? "Something went wrong reading the receipt."}
               </Text>
-              <View style={{ flexDirection: "row", gap: 10, marginTop: 14 }}>
+              <View className="mt-3.5 flex-row gap-2.5">
                 <TouchableOpacity
                   onPress={onRetry}
-                  style={[
-                    scanStyles.actionBtn,
-                    { backgroundColor: BR.orange, flex: 1 },
-                  ]}
+                  className="flex-1 flex-row items-center justify-center gap-[7px] rounded-xl bg-[#FF6A1F] py-3.5"
                   activeOpacity={0.85}
                 >
                   <Icon name="RotateCcw" size={15} color="#fff" />
-                  <Text style={scanStyles.actionBtnText}>Try again</Text>
+                  <Text
+                    className="text-sm text-white"
+                    style={BR_FONT_STYLE.display}
+                  >
+                    Try again
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={onDismiss}
-                  style={[
-                    scanStyles.actionBtn,
-                    { backgroundColor: "rgba(255,255,255,0.1)", flex: 1 },
-                  ]}
+                  className="flex-1 flex-row items-center justify-center gap-[7px] rounded-xl bg-[rgba(255,255,255,0.1)] py-3.5"
                   activeOpacity={0.85}
                 >
-                  <Text
-                    style={[
-                      scanStyles.actionBtnText,
-                      { color: "rgba(255,255,255,0.6)" },
-                    ]}
-                  >
+                  <Text className="text-sm text-[rgba(255,255,255,0.6)]">
                     Cancel
                   </Text>
                 </TouchableOpacity>
               </View>
             </>
           ) : (
-            <Text style={scanStyles.bottomHint}>
+            <Text
+              className="text-center text-[13px] leading-[19px] text-[rgba(255,255,255,0.5)]"
+              style={BR_FONT_STYLE.mono}
+            >
               {isUploading
                 ? "Compressing and sending to our servers…"
                 : "Matching receipt lines to your run's items…"}
@@ -529,15 +501,8 @@ export default function OrderSummary() {
   }
   if (summary === null) {
     return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: BR.paper,
-        }}
-      >
-        <BrText style={{ color: BR.coralInk }}>
+      <View className="flex-1 items-center justify-center bg-[#FFF7EE]">
+        <BrText className="text-[#B82340]">
           Not authorized to view this summary
         </BrText>
       </View>
@@ -575,35 +540,49 @@ export default function OrderSummary() {
           onDismiss={resetScan}
         />
       )}
-      <SafeAreaView edges={["top"]} style={{ backgroundColor: BR.paper }} />
-      <View style={{ flex: 1, backgroundColor: BR.paper }}>
+      <SafeAreaView edges={["top"]} className="bg-[#FFF7EE]" />
+      <View className="flex-1 bg-[#FFF7EE]">
         {/* Header */}
-        <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <View className="flex-row items-center gap-2 px-[18px] pb-3 pt-2">
+          <Pressable
+            onPress={() => router.back()}
+            className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+          >
             <Icon name="ChevronLeft" size={20} color={BR.ink} />
           </Pressable>
           <BrText
             weight="bold"
-            style={{ fontSize: 17, flex: 1, marginHorizontal: 8 }}
+            className="mx-2 flex-1 text-[17px]"
             numberOfLines={1}
+            style={BR_FONT_STYLE.display}
           >
             {summary.order.name || "Order Summary"}
           </BrText>
           {/* Group mode toggle */}
-          <View style={styles.segmentControl}>
+          <View className="flex-row gap-0.5 rounded-full bg-[#FCEFE0] p-[3px]">
             {(["items", "people"] as GroupMode[]).map((mode) => {
               const active = groupMode === mode;
               return (
                 <Pressable
                   key={mode}
                   onPress={() => setGroupMode(mode)}
-                  style={[styles.segmentBtn, active && styles.segmentBtnActive]}
+                  className="rounded-full px-3 py-1.5"
+                  style={
+                    active
+                      ? {
+                          backgroundColor: BR.card,
+                          shadowColor: BR.ink,
+                          shadowOffset: { width: 0, height: 1 },
+                          shadowOpacity: 0.08,
+                          shadowRadius: 2,
+                          elevation: 1,
+                        }
+                      : undefined
+                  }
                 >
                   <Text
-                    style={[
-                      styles.segmentText,
-                      active && styles.segmentTextActive,
-                    ]}
+                    className={`text-xs ${active ? "text-[#1A1410]" : "text-[#8A7A6E]"}`}
+                    style={BR_FONT_STYLE.displaySemibold}
                   >
                     {mode.charAt(0).toUpperCase() + mode.slice(1)}
                   </Text>
@@ -614,15 +593,11 @@ export default function OrderSummary() {
         </View>
 
         {/* Stats + location chips */}
-        <View
-          style={{
-            paddingHorizontal: 18,
-            paddingBottom: 12,
-            borderBottomWidth: 1,
-            borderBottomColor: BR.line,
-          }}
-        >
-          <Text style={styles.statsLine}>
+        <View className="border-b border-[rgba(26,20,16,0.08)] px-[18px] pb-3">
+          <Text
+            className="text-xs tracking-[0.3px] text-[#8A7A6E]"
+            style={BR_FONT_STYLE.mono}
+          >
             {summary.totalPeople}{" "}
             {summary.totalPeople === 1 ? "person" : "people"} ·{" "}
             {summary.totalItems} {summary.totalItems === 1 ? "item" : "items"}
@@ -630,7 +605,7 @@ export default function OrderSummary() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8, paddingTop: 10 }}
+            contentContainerClassName="gap-2 pt-2.5"
           >
             {summary.locations.map((location: SummaryLocation) => {
               const locationSummary = summary.locationSummaries.find(
@@ -645,10 +620,11 @@ export default function OrderSummary() {
                   onPress={() =>
                     setSelectedLocationId(location.orderLocationId)
                   }
-                  style={[
-                    styles.locationChip,
-                    isSelected && styles.locationChipActive,
-                  ]}
+                  className={`flex-row items-center gap-[5px] rounded-full border px-3.5 py-2 ${
+                    isSelected
+                      ? "border-[#1A1410] bg-[#1A1410]"
+                      : "border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+                  }`}
                 >
                   {hasPrices && (
                     <Icon
@@ -658,10 +634,8 @@ export default function OrderSummary() {
                     />
                   )}
                   <Text
-                    style={[
-                      styles.locationChipText,
-                      isSelected && styles.locationChipTextActive,
-                    ]}
+                    className={`text-[13px] ${isSelected ? "text-white" : "text-[#4A3C32]"}`}
+                    style={BR_FONT_STYLE.display}
                   >
                     {location.name}
                   </Text>
@@ -673,9 +647,9 @@ export default function OrderSummary() {
 
         {/* Error + warning banners */}
         {manualState === "error" && manualError && (
-          <View style={[styles.banner, { backgroundColor: BR.coralSoft }]}>
+          <View className="mx-[18px] mt-3 flex-row items-center gap-2.5 rounded-[10px] bg-[#FFE0E6] px-3.5 py-2.5">
             <Icon name="CircleAlert" size={16} color={BR.coralInk} />
-            <Text style={[styles.bannerText, { color: BR.coralInk, flex: 1 }]}>
+            <Text className="flex-1 text-[13px] leading-[18px] text-[#B82340]">
               {manualError}
             </Text>
             <Pressable onPress={resetManual}>
@@ -685,22 +659,20 @@ export default function OrderSummary() {
         )}
 
         {isUsingLocalSummaryFallback && (
-          <View style={[styles.banner, { backgroundColor: BR.yolkSoft }]}>
+          <View className="mx-[18px] mt-3 flex-row items-center gap-2.5 rounded-[10px] bg-[#FFF1C4] px-3.5 py-2.5">
             <Icon name="CircleAlert" size={16} color="#7A4A20" />
-            <Text style={[styles.bannerText, { color: "#7A4A20", flex: 1 }]}>
+            <Text className="flex-1 text-[13px] leading-[18px] text-[#7A4A20]">
               {aiSummaryError ??
                 "AI grouping is unavailable. Showing a local summary."}
             </Text>
             <Pressable
               onPress={retryAiSummary}
-              style={{
-                paddingHorizontal: 10,
-                paddingVertical: 4,
-                borderRadius: 999,
-                backgroundColor: BR.yolk,
-              }}
+              className="rounded-full bg-[#FFC542] px-2.5 py-1"
             >
-              <Text style={{ fontSize: 11, fontWeight: "700", color: "#fff" }}>
+              <Text
+                className="text-[11px] text-white"
+                style={BR_FONT_STYLE.display}
+              >
                 Retry
               </Text>
             </Pressable>
@@ -718,10 +690,10 @@ export default function OrderSummary() {
               if (nextUnpriced)
                 setSelectedLocationId(nextUnpriced.orderLocationId);
             }}
-            style={[styles.banner, { backgroundColor: BR.yolkSoft }]}
+            className="mx-[18px] mt-3 flex-row items-center gap-2.5 rounded-[10px] bg-[#FFF1C4] px-3.5 py-2.5"
           >
             <Icon name="CircleAlert" size={16} color="#7A4A20" />
-            <Text style={[styles.bannerText, { color: "#7A4A20", flex: 1 }]}>
+            <Text className="flex-1 text-[13px] leading-[18px] text-[#7A4A20]">
               {locationsMissingPrices.length === 1
                 ? `Still need prices for ${summary.locations.find((l) => l.orderLocationId === locationsMissingPrices[0].orderLocationId)?.name ?? "1 location"}`
                 : `Still need prices for ${locationsMissingPrices.length} locations`}
@@ -732,16 +704,24 @@ export default function OrderSummary() {
 
         {/* Items list */}
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ padding: 18, gap: 10, paddingBottom: 32 }}
+          className="flex-1"
+          contentContainerClassName="gap-2.5 p-[18px] pb-8"
           showsVerticalScrollIndicator={false}
         >
           {currentLocationSummary && currentLocationLines.length > 0 ? (
             <>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionLabel}>Order items</Text>
-                <View style={styles.countBadge}>
-                  <Text style={styles.countBadgeText}>
+              <View className="mb-1 flex-row items-center gap-2">
+                <Text
+                  className="text-[11px] uppercase tracking-[1.2px] text-[#8A7A6E]"
+                  style={BR_FONT_STYLE.mono}
+                >
+                  Order items
+                </Text>
+                <View className="rounded-full bg-[#FCEFE0] px-2 py-0.5">
+                  <Text
+                    className="text-[11px] text-[#8A7A6E]"
+                    style={BR_FONT_STYLE.monoBold}
+                  >
                     {currentLocationSummary.itemCount}
                   </Text>
                 </View>
@@ -753,10 +733,18 @@ export default function OrderSummary() {
                       key={group.key}
                       entering={FadeInUp.duration(200).delay(i * 30)}
                     >
-                      <View style={styles.itemCard}>
-                        <Text style={styles.itemName}>{group.displayName}</Text>
-                        <View style={styles.itemCountBadge}>
-                          <Text style={styles.itemCountText}>
+                      <View className="flex-row items-center justify-between rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white p-3.5">
+                        <Text
+                          className="mr-2.5 flex-1 text-sm text-[#1A1410]"
+                          style={BR_FONT_STYLE.displaySemibold}
+                        >
+                          {group.displayName}
+                        </Text>
+                        <View className="rounded-full bg-[#FFE7D4] px-2.5 py-1">
+                          <Text
+                            className="text-xs text-[#E8551A]"
+                            style={BR_FONT_STYLE.monoBold}
+                          >
                             {group.lineCount}
                           </Text>
                         </View>
@@ -768,16 +756,27 @@ export default function OrderSummary() {
                       key={group.key}
                       entering={FadeInUp.duration(200).delay(gi * 30)}
                     >
-                      <View style={styles.personCard}>
-                        <Text style={styles.personName}>{group.baseName}</Text>
-                        <View style={{ gap: 6, marginTop: 10 }}>
+                      <View className="rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white p-3.5">
+                        <Text
+                          className="text-sm text-[#1A1410]"
+                          style={BR_FONT_STYLE.display}
+                        >
+                          {group.baseName}
+                        </Text>
+                        <View className="mt-2.5 gap-1.5">
                           {group.items.map((line) => (
-                            <View key={line.id} style={styles.personItemRow}>
-                              <Text style={styles.personItemText}>
+                            <View
+                              key={line.id}
+                              className="flex-row items-start justify-between"
+                            >
+                              <Text className="mr-2 flex-1 text-[13px] text-[#4A3C32]">
                                 {line.text}
                               </Text>
                               {line.priceInCents !== null && (
-                                <Text style={styles.personItemPrice}>
+                                <Text
+                                  className="text-[13px] text-[#8A7A6E]"
+                                  style={BR_FONT_STYLE.mono}
+                                >
                                   ${(line.priceInCents / 100).toFixed(2)}
                                 </Text>
                               )}
@@ -791,13 +790,24 @@ export default function OrderSummary() {
               {/* Price summary */}
               {currentLocationSummary.subtotalInCents !== null && (
                 <>
-                  <Text style={[styles.sectionLabel, { marginTop: 8 }]}>
+                  <Text
+                    className="mt-2 text-[11px] uppercase tracking-[1.2px] text-[#8A7A6E]"
+                    style={BR_FONT_STYLE.mono}
+                  >
                     Price summary
                   </Text>
-                  <View style={styles.priceSummaryCard}>
-                    <View style={styles.priceRow}>
-                      <Text style={styles.priceLabel}>Subtotal</Text>
-                      <Text style={styles.priceValue}>
+                  <View className="gap-2 rounded-2xl border border-[rgba(255,106,31,0.18)] bg-[#FFF1E2] p-3.5">
+                    <View className="flex-row justify-between">
+                      <Text
+                        className="text-[13px] text-[#8A7A6E]"
+                        style={BR_FONT_STYLE.mono}
+                      >
+                        Subtotal
+                      </Text>
+                      <Text
+                        className="text-[13px] text-[#1A1410]"
+                        style={BR_FONT_STYLE.mono}
+                      >
                         $
                         {(currentLocationSummary.subtotalInCents / 100).toFixed(
                           2,
@@ -805,18 +815,34 @@ export default function OrderSummary() {
                       </Text>
                     </View>
                     {currentLocationSummary.taxInCents !== null && (
-                      <View style={styles.priceRow}>
-                        <Text style={styles.priceLabel}>Tax</Text>
-                        <Text style={styles.priceValue}>
+                      <View className="flex-row justify-between">
+                        <Text
+                          className="text-[13px] text-[#8A7A6E]"
+                          style={BR_FONT_STYLE.mono}
+                        >
+                          Tax
+                        </Text>
+                        <Text
+                          className="text-[13px] text-[#1A1410]"
+                          style={BR_FONT_STYLE.mono}
+                        >
                           $
                           {(currentLocationSummary.taxInCents / 100).toFixed(2)}
                         </Text>
                       </View>
                     )}
                     {currentLocationSummary.totalInCents !== null && (
-                      <View style={[styles.priceRow, styles.priceTotalRow]}>
-                        <Text style={styles.priceTotalLabel}>Total</Text>
-                        <Text style={styles.priceTotalValue}>
+                      <View className="mt-1 flex-row justify-between border-t border-[rgba(255,106,31,0.2)] pt-2.5">
+                        <Text
+                          className="text-[15px] text-[#1A1410]"
+                          style={BR_FONT_STYLE.display}
+                        >
+                          Total
+                        </Text>
+                        <Text
+                          className="text-[17px] text-[#FF6A1F]"
+                          style={BR_FONT_STYLE.monoBold}
+                        >
                           $
                           {(currentLocationSummary.totalInCents / 100).toFixed(
                             2,
@@ -829,11 +855,11 @@ export default function OrderSummary() {
               )}
             </>
           ) : (
-            <View style={{ alignItems: "center", paddingTop: 48 }}>
-              <View style={styles.emptyIconTile}>
+            <View className="items-center pt-12">
+              <View className="h-14 w-14 items-center justify-center rounded-[18px] bg-[#FCEFE0]">
                 <Icon name="ShoppingBag" size={26} color={BR.ink3} />
               </View>
-              <Text style={{ fontSize: 14, color: BR.ink3, marginTop: 12 }}>
+              <Text className="mt-3 text-sm text-[#8A7A6E]">
                 No items from this location yet
               </Text>
             </View>
@@ -842,24 +868,16 @@ export default function OrderSummary() {
 
         {/* Footer CTA */}
         <View
-          style={[
-            styles.footer,
-            { paddingBottom: Math.max(insets.bottom, 16) + 8 },
-          ]}
+          className="border-t border-[rgba(26,20,16,0.08)] bg-[#FFF7EE] px-[18px] pt-3.5"
+          style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }}
         >
           {isScanning ? (
-            <View
-              style={[
-                styles.footerBtn,
-                {
-                  backgroundColor: BR.orangeSoft,
-                  borderWidth: 1,
-                  borderColor: "rgba(255,106,31,0.25)",
-                },
-              ]}
-            >
+            <View className="flex-row items-center justify-center gap-2 rounded-2xl border border-[rgba(255,106,31,0.25)] bg-[#FFE7D4] py-4">
               <ActivityIndicator size="small" color={BR.orange} />
-              <Text style={[styles.footerBtnText, { color: BR.orangeDeep }]}>
+              <Text
+                className="text-base text-[#E8551A]"
+                style={BR_FONT_STYLE.display}
+              >
                 {scanState === "uploading"
                   ? "Sending your photo…"
                   : "Reading your receipt…"}
@@ -868,34 +886,41 @@ export default function OrderSummary() {
           ) : hasScanDraft ? (
             <TouchableOpacity
               onPress={resumeDraft}
-              style={[styles.footerBtn, { backgroundColor: BR.orange }]}
+              className="flex-row items-center justify-center gap-2 rounded-2xl bg-[#FF6A1F] py-4"
               activeOpacity={0.85}
             >
               <Icon name="ScanLine" size={18} color="#fff" />
-              <Text style={styles.footerBtnText}>Continue receipt review</Text>
+              <Text
+                className="text-base text-white"
+                style={BR_FONT_STYLE.display}
+              >
+                Continue receipt review
+              </Text>
             </TouchableOpacity>
           ) : allLocationsPriced ? (
-            <View style={{ gap: 10 }}>
+            <View className="gap-2.5">
               <TouchableOpacity
                 onPress={() =>
                   router.push(`/order/settlement?orderId=${orderId}` as never)
                 }
-                style={[styles.footerBtn, { backgroundColor: BR.mint }]}
+                className="flex-row items-center justify-center gap-2 rounded-2xl bg-[#2EBE7B] py-4"
                 activeOpacity={0.85}
               >
                 <Icon name="Receipt" size={18} color="#fff" />
-                <Text style={styles.footerBtnText}>View settlement</Text>
+                <Text
+                  className="text-base text-white"
+                  style={BR_FONT_STYLE.display}
+                >
+                  View settlement
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => sourceActionSheetRef.current?.show()}
-                style={{ alignItems: "center", paddingVertical: 8 }}
+                className="items-center py-2"
               >
                 <Text
-                  style={{
-                    fontSize: 13,
-                    fontWeight: "600",
-                    color: BR.orangeDeep,
-                  }}
+                  className="text-[13px] text-[#E8551A]"
+                  style={BR_FONT_STYLE.displaySemibold}
                 >
                   Edit prices
                 </Text>
@@ -904,11 +929,16 @@ export default function OrderSummary() {
           ) : (
             <TouchableOpacity
               onPress={() => sourceActionSheetRef.current?.show()}
-              style={[styles.footerBtn, { backgroundColor: BR.orange }]}
+              className="flex-row items-center justify-center gap-2 rounded-2xl bg-[#FF6A1F] py-4"
               activeOpacity={0.85}
             >
               <Icon name="ScanLine" size={18} color="#fff" />
-              <Text style={styles.footerBtnText}>Add prices</Text>
+              <Text
+                className="text-base text-white"
+                style={BR_FONT_STYLE.display}
+              >
+                Add prices
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -926,19 +956,11 @@ export default function OrderSummary() {
           paddingBottom: 24,
         }}
       >
-        <View style={{ paddingHorizontal: 18, paddingTop: 8 }}>
-          <BrText weight="bold" style={{ fontSize: 20, textAlign: "center" }}>
+        <View className="px-[18px] pt-2">
+          <BrText weight="bold" className="text-center text-[20px]">
             Add prices
           </BrText>
-          <Text
-            style={{
-              fontSize: 13,
-              color: BR.ink3,
-              textAlign: "center",
-              marginTop: 4,
-              marginBottom: 18,
-            }}
-          >
+          <Text className="mb-[18px] mt-1 text-center text-[13px] text-[#8A7A6E]">
             Scan a receipt or enter prices by hand
           </Text>
 
@@ -974,15 +996,22 @@ export default function OrderSummary() {
             <TouchableOpacity
               key={item.title}
               onPress={item.onPress}
-              style={styles.sheetOption}
+              className="mb-2.5 flex-row items-center gap-3.5 rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white p-3.5"
               activeOpacity={0.8}
             >
-              <View style={styles.sheetOptionIcon}>
+              <View className="h-11 w-11 items-center justify-center rounded-[14px] bg-[#FFF1E2]">
                 <Icon name={item.icon} size={20} color={BR.orangeDeep} />
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.sheetOptionTitle}>{item.title}</Text>
-                <Text style={styles.sheetOptionSub}>{item.sub}</Text>
+              <View className="flex-1">
+                <Text
+                  className="text-[15px] text-[#1A1410]"
+                  style={BR_FONT_STYLE.display}
+                >
+                  {item.title}
+                </Text>
+                <Text className="mt-0.5 text-xs text-[#8A7A6E]">
+                  {item.sub}
+                </Text>
               </View>
               <Icon name="ChevronRight" size={16} color={BR.ink3} />
             </TouchableOpacity>
@@ -990,18 +1019,13 @@ export default function OrderSummary() {
 
           <TouchableOpacity
             onPress={() => sourceActionSheetRef.current?.hide()}
-            style={[
-              styles.footerBtn,
-              {
-                marginTop: 8,
-                backgroundColor: BR.paper2,
-                borderWidth: 1,
-                borderColor: BR.line2,
-              },
-            ]}
+            className="mt-2 flex-row items-center justify-center rounded-2xl border border-[rgba(26,20,16,0.14)] bg-[#FCEFE0] py-4"
             activeOpacity={0.85}
           >
-            <Text style={[styles.footerBtnText, { color: BR.ink }]}>
+            <Text
+              className="text-base text-[#1A1410]"
+              style={BR_FONT_STYLE.display}
+            >
               Cancel
             </Text>
           </TouchableOpacity>
@@ -1033,398 +1057,3 @@ export default function OrderSummary() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 12,
-    gap: 8,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  segmentControl: {
-    flexDirection: "row",
-    backgroundColor: BR.paper2,
-    borderRadius: 999,
-    padding: 3,
-    gap: 2,
-  },
-  segmentBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  segmentBtnActive: {
-    backgroundColor: BR.card,
-    shadowColor: BR.ink,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  segmentText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: BR.ink3,
-  },
-  segmentTextActive: {
-    color: BR.ink,
-  },
-  statsLine: {
-    fontSize: 12,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-    letterSpacing: 0.3,
-  },
-  locationChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-  },
-  locationChipActive: {
-    backgroundColor: BR.ink,
-    borderColor: BR.ink,
-  },
-  locationChipText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: BR.ink2,
-  },
-  locationChipTextActive: {
-    color: "#fff",
-  },
-  banner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginHorizontal: 18,
-    marginTop: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: BR_RADIUS.sm,
-  },
-  bannerText: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 4,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-  },
-  countBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-  },
-  countBadgeText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  itemCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 14,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-  },
-  itemName: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: BR.ink,
-    flex: 1,
-    marginRight: 10,
-  },
-  itemCountBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: BR.orangeSoft,
-  },
-  itemCountText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: BR.orangeDeep,
-    fontFamily: BR_FONT.mono,
-  },
-  personCard: {
-    padding: 14,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-  },
-  personName: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: BR.ink,
-  },
-  personItemRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  personItemText: {
-    fontSize: 13,
-    color: BR.ink2,
-    flex: 1,
-    marginRight: 8,
-  },
-  personItemPrice: {
-    fontSize: 13,
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  priceSummaryCard: {
-    padding: 14,
-    backgroundColor: BR.orangeTint,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: "rgba(255,106,31,0.18)",
-    gap: 8,
-  },
-  priceRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  priceLabel: {
-    fontSize: 13,
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  priceValue: {
-    fontSize: 13,
-    color: BR.ink,
-    fontFamily: BR_FONT.mono,
-  },
-  priceTotalRow: {
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255,106,31,0.2)",
-    marginTop: 4,
-  },
-  priceTotalLabel: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: BR.ink,
-  },
-  priceTotalValue: {
-    fontSize: 17,
-    fontWeight: "800",
-    color: BR.orange,
-    fontFamily: BR_FONT.monoBold,
-  },
-  emptyIconTile: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  footer: {
-    paddingHorizontal: 18,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderTopColor: BR.line,
-    backgroundColor: BR.paper,
-  },
-  footerBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: BR_RADIUS.md,
-  },
-  footerBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-  },
-  sheetOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    padding: 14,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-    marginBottom: 10,
-  },
-  sheetOptionIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: BR.orangeTint,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  sheetOptionTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: BR.ink,
-  },
-  sheetOptionSub: {
-    fontSize: 12,
-    color: BR.ink3,
-    marginTop: 2,
-  },
-  // Loading screens
-  loadingCard: {
-    width: "100%",
-    padding: 28,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.xl,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-  },
-  loadingIconTile: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    backgroundColor: BR.orangeTint,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  loadingSubtitle: {
-    fontSize: 13,
-    color: BR.ink3,
-    textAlign: "center",
-    marginTop: 8,
-    lineHeight: 19,
-  },
-});
-
-const scanStyles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: "#111",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    gap: 20,
-  },
-  statusPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 999,
-  },
-  statusPillText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#fff",
-    letterSpacing: 0.3,
-  },
-  // Viewport: takes up the bulk of the screen, NO overflow:hidden so brackets sit on top
-  viewport: {
-    flex: 1,
-    width: "100%",
-    position: "relative",
-  },
-  // Photo sits inside the viewport, fills it, clipped to its own bounds
-  photoInner: {
-    position: "absolute",
-    top: BRACKET_THICKNESS,
-    left: BRACKET_THICKNESS,
-    right: BRACKET_THICKNESS,
-    bottom: BRACKET_THICKNESS,
-    borderRadius: 4,
-    overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.04)",
-  },
-  photoOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.28)",
-  },
-  beamWrapper: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 0,
-    height: 3,
-  },
-  beam: {
-    height: 3,
-    backgroundColor: BR.orange,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  errorCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "rgba(255,77,109,0.9)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  bottomCard: {
-    width: "100%",
-    backgroundColor: "rgba(255,255,255,0.07)",
-    borderRadius: 16,
-    padding: 18,
-  },
-  bottomHint: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.5)",
-    fontFamily: BR_FONT.mono,
-    textAlign: "center",
-    lineHeight: 19,
-  },
-  errorMessage: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.75)",
-    lineHeight: 19,
-    textAlign: "center",
-  },
-  actionBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
-    paddingVertical: 14,
-    borderRadius: 12,
-  },
-  actionBtnText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#fff",
-  },
-});

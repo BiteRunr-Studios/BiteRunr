@@ -9,8 +9,8 @@ import {
   Text,
   type TextInput,
   ScrollView,
-  StyleSheet,
 } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
@@ -159,49 +159,45 @@ export default function SignUpScreen() {
   }, [form, setIsSigningUp]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: BR.paper }}>
-      <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
+    <View className="flex-1 bg-[#FFF7EE]">
+      <StatusBar style="dark" />
+      <SafeAreaView className="flex-1" edges={["top", "bottom"]}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
+          className="flex-1"
         >
           <ScrollView
-            contentContainerStyle={styles.scroll}
+            contentContainerClassName="px-[22px] pt-2 pb-8"
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <Pressable onPress={() => router.back()} style={styles.backBtn}>
+            <Pressable
+              onPress={() => router.back()}
+              className="h-[38px] w-[38px] items-center justify-center rounded-full bg-[#FCEFE0]"
+            >
               <Icon name="ChevronLeft" size={20} color={BR.ink} />
             </Pressable>
 
-            <View style={{ marginTop: 18 }}>
+            <View className="mt-[18px]">
               <BrText variant="eyebrow">Create your account</BrText>
-              <BrText variant="h1" style={{ marginTop: 8, fontSize: 36 }}>
+              <BrText variant="h1" className="mt-2 text-[36px]">
                 Hey,{" "}
                 <BrText
                   variant="h1"
                   italic
-                  color={BR.orange}
-                  style={{ fontSize: 36 }}
+                  className="text-[36px] text-[#FF6A1F]"
                 >
                   hi.
                 </BrText>
               </BrText>
-              <BrText
-                style={{
-                  fontSize: 14,
-                  color: BR.ink2,
-                  marginTop: 8,
-                  lineHeight: 21,
-                }}
-              >
+              <BrText className="mt-2 text-sm leading-[21px] text-[#4A3C32]">
                 One run for the whole crew. Order, scan, settle.
               </BrText>
             </View>
 
-            <View style={{ marginTop: 24, gap: 12 }}>
-              <View style={{ flexDirection: "row", gap: 10 }}>
-                <View style={{ flex: 1 }}>
+            <View className="mt-6 gap-3">
+              <View className="flex-row gap-2.5">
+                <View className="flex-1">
                   <BrInput
                     value={form.firstName?.value}
                     placeholder="First name"
@@ -214,7 +210,7 @@ export default function SignUpScreen() {
                     onSubmitEditing={() => lastNameRef.current?.focus()}
                   />
                 </View>
-                <View style={{ flex: 1 }}>
+                <View className="flex-1">
                   <BrInput
                     ref={lastNameRef}
                     value={form.lastName?.value}
@@ -258,11 +254,11 @@ export default function SignUpScreen() {
               />
             </View>
 
-            <View style={{ marginTop: 18 }}>
+            <View className="mt-[18px]">
               <Pressable
                 onPress={handleSignUp}
                 disabled={loading}
-                className={`flex-row gap-2 justify-center items-center p-4 w-full rounded-2xl h-[55px] bg-primary active:opacity-80 ${
+                className={`h-[55px] w-full flex-row items-center justify-center gap-2 rounded-2xl bg-primary p-4 active:opacity-80 ${
                   loading ? "opacity-50" : ""
                 }`}
                 accessibilityRole="button"
@@ -275,21 +271,20 @@ export default function SignUpScreen() {
                     <Text className="text-lg font-semibold text-white">
                       Continue
                     </Text>
-                    <Icon name="ArrowRight" size={16} color="#fff" />
                   </>
                 )}
               </Pressable>
             </View>
 
-            <View style={styles.signinRow}>
-              <BrText style={{ color: BR.ink3 }}>
+            <View className="mt-[18px] flex-row items-center justify-center gap-2">
+              <BrText className="text-[#8A7A6E]">
                 Already have an account?
               </BrText>
               <Pressable
                 onPress={() => router.back()}
-                style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+                className="flex-row items-center gap-1"
               >
-                <BrText weight="semibold" color={BR.orangeDeep}>
+                <BrText weight="semibold" className="text-[#E8551A]">
                   Sign in
                 </BrText>
               </Pressable>
@@ -300,36 +295,3 @@ export default function SignUpScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  scroll: {
-    paddingHorizontal: 22,
-    paddingTop: 8,
-    paddingBottom: 32,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dividerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 22,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: BR.line,
-  },
-  signinRow: {
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 18,
-  },
-});

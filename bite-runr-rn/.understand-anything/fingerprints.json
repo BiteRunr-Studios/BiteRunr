@@ -1,0 +1,6700 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "785c01fef1b9bd40e6c5219f89fd7cbb566e6c93",
+  "generatedAt": "2026-05-21T14:46:10.000Z",
+  "files": {
+    ".claude/skills/convex/SKILL.md": {
+      "filePath": ".claude/skills/convex/SKILL.md",
+      "contentHash": "e4e337722018439fe5b01be4445d546439d59ea261f667119ca973d3703a7a78",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 345,
+      "hasStructuralAnalysis": true
+    },
+    ".claude/skills/frontend-design/SKILL.md": {
+      "filePath": ".claude/skills/frontend-design/SKILL.md",
+      "contentHash": "ac760865eb29777ebcc788e23e0c488be2fdd56420ce63c8a766e08cdc3c3e0e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 46,
+      "hasStructuralAnalysis": true
+    },
+    ".env.example": {
+      "filePath": ".env.example",
+      "contentHash": "1196682a99ffd011843e11df5b25a1799b4f0747b61ca97204240393e13b0a85",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 15,
+      "hasStructuralAnalysis": true
+    },
+    ".github/workflows/checks.yml": {
+      "filePath": ".github/workflows/checks.yml",
+      "contentHash": "c99a3114cbe9c3e4aa470cf4b33beb34f5040b46532067f02b94be3fbca57634",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 30,
+      "hasStructuralAnalysis": true
+    },
+    ".prettierignore": {
+      "filePath": ".prettierignore",
+      "contentHash": "ee57523cbd2662baf7413115c73d0ae7d3566028ce962b2c74ecdef425c2cadd",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 14,
+      "hasStructuralAnalysis": false
+    },
+    "admin/.cta.json": {
+      "filePath": "admin/.cta.json",
+      "contentHash": "1f671cf795bc181574da44cd098a1f4bc5e6f6133aadb16a009e6ffb5ded397e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 16,
+      "hasStructuralAnalysis": true
+    },
+    "admin/.dockerignore": {
+      "filePath": "admin/.dockerignore",
+      "contentHash": "c3331374578bbba2f2bb20d0ec09a4f4940edf1684bf5e822a8ebc2f7770ba88",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 6,
+      "hasStructuralAnalysis": false
+    },
+    "admin/.prettierignore": {
+      "filePath": "admin/.prettierignore",
+      "contentHash": "c4e2f836fd703f436aca13b3ecc5d125b4b661d2cb92c67c4ecb6869b0c2d395",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 3,
+      "hasStructuralAnalysis": false
+    },
+    "admin/components.json": {
+      "filePath": "admin/components.json",
+      "contentHash": "dfb1efeb890c3cf2b20e1112ec4ee1ff698a382359bd2ac1e273f6655eeec261",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 25,
+      "hasStructuralAnalysis": true
+    },
+    "admin/Dockerfile": {
+      "filePath": "admin/Dockerfile",
+      "contentHash": "acd47e4953406b18fbf0afe6d7ce889ead144f8f54c2f6325c5f69814dd037ea",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 31,
+      "hasStructuralAnalysis": true
+    },
+    "admin/eslint.config.js": {
+      "filePath": "admin/eslint.config.js",
+      "contentHash": "48c957cfda16d58f95ffc6e68f4aa3c118700256a067137b9a2c8aa5097ad85f",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@tanstack/eslint-config",
+          "specifiers": ["tanstackConfig"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 6,
+      "hasStructuralAnalysis": true
+    },
+    "admin/package.json": {
+      "filePath": "admin/package.json",
+      "contentHash": "9ec63f86a73a5e7e182dc6578457693433b1879a230d958e435a813d3ece6ee5",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 57,
+      "hasStructuralAnalysis": true
+    },
+    "admin/prettier.config.js": {
+      "filePath": "admin/prettier.config.js",
+      "contentHash": "f9271afc8a995c4fcc3a66f0564163d1311903f36a32f589a2cfd0538affa5c3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 11,
+      "hasStructuralAnalysis": true
+    },
+    "admin/public/manifest.json": {
+      "filePath": "admin/public/manifest.json",
+      "contentHash": "13b73a709f53bfa200f8d373ff93cb7bf99dbc945662ceb8ca8372629ba164ba",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 26,
+      "hasStructuralAnalysis": true
+    },
+    "admin/public/robots.txt": {
+      "filePath": "admin/public/robots.txt",
+      "contentHash": "90d24bc3bf698ac1e173739502298ccca72adf1f564fab05f484b8c48d1cadd2",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 4,
+      "hasStructuralAnalysis": false
+    },
+    "admin/README.md": {
+      "filePath": "admin/README.md",
+      "contentHash": "cb0a7d6ecd7347c6cd9cf18b6ad423a5946d8d9e6586701845a67a291b70fff7",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 4,
+      "hasStructuralAnalysis": true
+    },
+    "admin/src/router.tsx": {
+      "filePath": "admin/src/router.tsx",
+      "contentHash": "190dccec92a854f875092b131c548e7b88826d902b5a6db4b913f43179fa227b",
+      "functions": [
+        {
+          "name": "getRouter",
+          "params": [],
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@tanstack/react-router",
+          "specifiers": ["createRouter"]
+        },
+        {
+          "source": "./routeTree.gen",
+          "specifiers": ["routeTree"]
+        }
+      ],
+      "exports": ["getRouter"],
+      "totalLines": 16,
+      "hasStructuralAnalysis": true
+    },
+    "admin/src/routes/__root.tsx": {
+      "filePath": "admin/src/routes/__root.tsx",
+      "contentHash": "2b73d7db65d73c83fa65bfe3a785b5637452c05bab17dac29e731bd108087415",
+      "functions": [
+        {
+          "name": "RootComponent",
+          "params": [],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "RootDocument",
+          "params": ["{ children }"],
+          "exported": false,
+          "lineCount": 26
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@tanstack/react-router",
+          "specifiers": ["HeadContent", "Outlet", "Scripts", "createRootRoute"]
+        },
+        {
+          "source": "@tanstack/react-router-devtools",
+          "specifiers": ["TanStackRouterDevtoolsPanel"]
+        },
+        {
+          "source": "@tanstack/react-devtools",
+          "specifiers": ["TanStackDevtools"]
+        },
+        {
+          "source": "../styles.css?url",
+          "specifiers": ["appCss"]
+        }
+      ],
+      "exports": ["Route"],
+      "totalLines": 63,
+      "hasStructuralAnalysis": true
+    },
+    "admin/src/routes/index.tsx": {
+      "filePath": "admin/src/routes/index.tsx",
+      "contentHash": "567e0043d738622b5884195ffb4c89722a65932585b29f3e1f778a225bfbb192",
+      "functions": [
+        {
+          "name": "IndexPage",
+          "params": [],
+          "exported": false,
+          "lineCount": 53
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@tanstack/react-router",
+          "specifiers": ["Link", "createFileRoute"]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": ["ArrowRight", "FileText", "ShieldCheck"]
+        }
+      ],
+      "exports": ["Route"],
+      "totalLines": 61,
+      "hasStructuralAnalysis": true
+    },
+    "admin/src/routes/privacy.tsx": {
+      "filePath": "admin/src/routes/privacy.tsx",
+      "contentHash": "f110c106a44f8bf846ad7f00cf3b6d236e4c10f7d7e60566ea3d3332adc6ea4a",
+      "functions": [
+        {
+          "name": "PrivacyPolicy",
+          "params": [],
+          "exported": false,
+          "lineCount": 221
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@tanstack/react-router",
+          "specifiers": ["createFileRoute"]
+        }
+      ],
+      "exports": ["Route"],
+      "totalLines": 228,
+      "hasStructuralAnalysis": true
+    },
+    "admin/src/routeTree.gen.ts": {
+      "filePath": "admin/src/routeTree.gen.ts",
+      "contentHash": "cc9c75f7bfde2f5c22d676240c54aebde6ee999bad1911a7b544aabb8472c537",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "./routes/__root",
+          "specifiers": ["rootRouteImport"]
+        },
+        {
+          "source": "./routes/privacy",
+          "specifiers": ["PrivacyRouteImport"]
+        },
+        {
+          "source": "./routes/index",
+          "specifiers": ["IndexRouteImport"]
+        },
+        {
+          "source": "./router.tsx",
+          "specifiers": ["getRouter"]
+        },
+        {
+          "source": "@tanstack/react-start",
+          "specifiers": ["createStart"]
+        }
+      ],
+      "exports": ["routeTree"],
+      "totalLines": 87,
+      "hasStructuralAnalysis": true
+    },
+    "admin/src/styles.css": {
+      "filePath": "admin/src/styles.css",
+      "contentHash": "cbef3300a0102723e22e884734427e4b8475ea15f0dbbb267b887e3ee43c151e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 129,
+      "hasStructuralAnalysis": false
+    },
+    "admin/tsconfig.json": {
+      "filePath": "admin/tsconfig.json",
+      "contentHash": "44434c61f7c02bd0e81a2072ae1e9280edf8bf0b34d6820a40ba930678cf8c70",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 31,
+      "hasStructuralAnalysis": true
+    },
+    "admin/vite.config.ts": {
+      "filePath": "admin/vite.config.ts",
+      "contentHash": "6f68eb16760e792930d655be993845ebb8c640e6524b799de0ddc8853ed909ae",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "vite",
+          "specifiers": ["defineConfig"]
+        },
+        {
+          "source": "@tanstack/devtools-vite",
+          "specifiers": ["devtools"]
+        },
+        {
+          "source": "@tanstack/react-start/plugin/vite",
+          "specifiers": ["tanstackStart"]
+        },
+        {
+          "source": "@vitejs/plugin-react",
+          "specifiers": ["viteReact"]
+        },
+        {
+          "source": "vite-tsconfig-paths",
+          "specifiers": ["viteTsConfigPaths"]
+        },
+        {
+          "source": "@tailwindcss/vite",
+          "specifiers": ["tailwindcss"]
+        },
+        {
+          "source": "nitro/vite",
+          "specifiers": ["nitro"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 24,
+      "hasStructuralAnalysis": true
+    },
+    "AGENTS.md": {
+      "filePath": "AGENTS.md",
+      "contentHash": "f1ecd477b3ff0c359a825c625d249bb0c8fe879349c026188657ae0771439558",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 111,
+      "hasStructuralAnalysis": true
+    },
+    "app.config.ts": {
+      "filePath": "app.config.ts",
+      "contentHash": "ba038cf2e7b18ed704adbe4f02931b7e95f7954430a36b8ea2bce2d6dbfda888",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "node:path",
+          "specifiers": ["path"]
+        },
+        {
+          "source": "dotenv",
+          "specifiers": ["loadDotenv"]
+        },
+        {
+          "source": "expo/config",
+          "specifiers": ["ExpoConfig"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 148,
+      "hasStructuralAnalysis": true
+    },
+    "app/_layout.tsx": {
+      "filePath": "app/_layout.tsx",
+      "contentHash": "7891f57dc615969d9401e7fc7927e980c7d1515f58e08eae257d3a5d1368ad15",
+      "functions": [
+        {
+          "name": "requireEnv",
+          "params": ["name", "value"],
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "useToastConfig",
+          "params": [],
+          "exported": false,
+          "lineCount": 98
+        },
+        {
+          "name": "RootAppShell",
+          "params": ["{ fontsLoaded }"],
+          "exported": false,
+          "lineCount": 60
+        },
+        {
+          "name": "RootLayout",
+          "params": [],
+          "exported": true,
+          "lineCount": 45
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["Platform", "View", "Text"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["Stack"]
+        },
+        {
+          "source": "expo-status-bar",
+          "specifiers": ["StatusBar"]
+        },
+        {
+          "source": "react-native-gesture-handler",
+          "specifiers": ["GestureHandlerRootView"]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaProvider"]
+        },
+        {
+          "source": "@stripe/stripe-react-native",
+          "specifiers": ["StripeProvider"]
+        },
+        {
+          "source": "@react-navigation/native",
+          "specifiers": ["ThemeProvider", "DarkTheme", "DefaultTheme", "Theme"]
+        },
+        {
+          "source": "react-native-toast-message",
+          "specifiers": ["Toast", "BaseToastProps"]
+        },
+        {
+          "source": "expo-splash-screen",
+          "specifiers": ["* as SplashScreen"]
+        },
+        {
+          "source": "@expo-google-fonts/bricolage-grotesque",
+          "specifiers": [
+            "useBricolage",
+            "BricolageGrotesque_400Regular",
+            "BricolageGrotesque_500Medium",
+            "BricolageGrotesque_600SemiBold",
+            "BricolageGrotesque_700Bold",
+            "BricolageGrotesque_800ExtraBold"
+          ]
+        },
+        {
+          "source": "@expo-google-fonts/jetbrains-mono",
+          "specifiers": [
+            "JetBrainsMono_400Regular",
+            "JetBrainsMono_500Medium",
+            "JetBrainsMono_600SemiBold",
+            "JetBrainsMono_700Bold"
+          ]
+        },
+        {
+          "source": "@/lib/constants",
+          "specifiers": ["NAV_THEME"]
+        },
+        {
+          "source": "@/lib/use-color-scheme",
+          "specifiers": ["useColorScheme"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["ConvexReactClient"]
+        },
+        {
+          "source": "@convex-dev/better-auth/react",
+          "specifiers": ["ConvexBetterAuthProvider"]
+        },
+        {
+          "source": "@/lib/convex-auth-context",
+          "specifiers": ["AuthProvider", "useAuth"]
+        },
+        {
+          "source": "@/lib/auth-client",
+          "specifiers": ["authClient"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/animated-splash-screen",
+          "specifiers": ["AnimatedSplashScreen"]
+        },
+        {
+          "source": "../global.css",
+          "specifiers": []
+        }
+      ],
+      "exports": ["RootLayout"],
+      "totalLines": 301,
+      "hasStructuralAnalysis": true
+    },
+    "app/(auth)/_layout.tsx": {
+      "filePath": "app/(auth)/_layout.tsx",
+      "contentHash": "f5457ef5d55321bb473d63773e3a62412d117fcd76c9078c7a7ea3527dcb5ebb",
+      "functions": [
+        {
+          "name": "AuthLayout",
+          "params": [],
+          "exported": true,
+          "lineCount": 45
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "expo-router",
+          "specifiers": ["Redirect", "Stack"]
+        },
+        {
+          "source": "@/lib/convex-auth-context",
+          "specifiers": ["useAuth"]
+        }
+      ],
+      "exports": ["AuthLayout"],
+      "totalLines": 49,
+      "hasStructuralAnalysis": true
+    },
+    "app/(auth)/email-sign-in.tsx": {
+      "filePath": "app/(auth)/email-sign-in.tsx",
+      "contentHash": "c4150cc4e5f4e6be8bb5ed44567088e8f9826ce4dae1da54154d0a68bce3c557",
+      "functions": [
+        {
+          "name": "EmailSignInScreen",
+          "params": [],
+          "exported": true,
+          "lineCount": 179
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useCallback", "useRef", "useState"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "Alert",
+            "ActivityIndicator",
+            "KeyboardAvoidingView",
+            "Platform",
+            "Pressable",
+            "ScrollView",
+            "StyleSheet",
+            "Text",
+            "TextInput",
+            "View"
+          ]
+        },
+        {
+          "source": "expo-status-bar",
+          "specifiers": ["StatusBar"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router"]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrInput", "BrText"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/lib/auth-helpers",
+          "specifiers": [
+            "createFormHandlers",
+            "FormState",
+            "getAuthErrorMessage",
+            "validateEmail"
+          ]
+        },
+        {
+          "source": "@/lib/auth-client",
+          "specifiers": ["authClient"]
+        },
+        {
+          "source": "@/lib/convex-auth-context",
+          "specifiers": ["useAuth"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR"]
+        }
+      ],
+      "exports": ["EmailSignInScreen"],
+      "totalLines": 232,
+      "hasStructuralAnalysis": true
+    },
+    "app/(auth)/sign-in.tsx": {
+      "filePath": "app/(auth)/sign-in.tsx",
+      "contentHash": "d9656cd21a85aa0ebf9d4263e87cec8ff016e5a8dbaae75bf6eddd12868cca43",
+      "functions": [
+        {
+          "name": "FloatCard",
+          "params": ["{\n  delay = 0,\n  rotate,\n  children,\n  style,\n}"],
+          "exported": false,
+          "lineCount": 34
+        },
+        {
+          "name": "Twinkle",
+          "params": ["{\n  left,\n  top,\n  size,\n  delay = 0,\n}"],
+          "exported": false,
+          "lineCount": 47
+        },
+        {
+          "name": "HeroBackdrop",
+          "params": [],
+          "exported": false,
+          "lineCount": 106
+        },
+        {
+          "name": "SignInScreen",
+          "params": [],
+          "exported": true,
+          "lineCount": 85
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useEffect"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Text",
+            "Pressable",
+            "StyleSheet",
+            "Dimensions"
+          ]
+        },
+        {
+          "source": "expo-status-bar",
+          "specifiers": ["StatusBar"]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": [
+            "Animated",
+            "FadeInUp",
+            "useSharedValue",
+            "useAnimatedStyle",
+            "withRepeat",
+            "withSequence",
+            "withTiming",
+            "Easing"
+          ]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText", "BrSticker"]
+        },
+        {
+          "source": "@/components/auth/oauth-button",
+          "specifiers": ["OAuthButton"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT"]
+        },
+        {
+          "source": "expo-linking",
+          "specifiers": ["openURL"]
+        }
+      ],
+      "exports": ["SignInScreen"],
+      "totalLines": 440,
+      "hasStructuralAnalysis": true
+    },
+    "app/(auth)/sign-up.tsx": {
+      "filePath": "app/(auth)/sign-up.tsx",
+      "contentHash": "10b8ff7f776f9a257ab175e77f1ae7b346b28c9bec959da531b95835444f7fe8",
+      "functions": [
+        {
+          "name": "SignUpScreen",
+          "params": [],
+          "exported": true,
+          "lineCount": 274
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useState", "useCallback", "useRef"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Pressable",
+            "Alert",
+            "ActivityIndicator",
+            "KeyboardAvoidingView",
+            "Platform",
+            "Text",
+            "TextInput",
+            "ScrollView",
+            "StyleSheet"
+          ]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrInput", "BrText"]
+        },
+        {
+          "source": "@/lib/auth-helpers",
+          "specifiers": [
+            "createFormHandlers",
+            "FormState",
+            "validateEmail",
+            "getAuthErrorMessage"
+          ]
+        },
+        {
+          "source": "@/lib/convex-auth-context",
+          "specifiers": ["useAuth"]
+        },
+        {
+          "source": "@/lib/auth-client",
+          "specifiers": ["authClient"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR"]
+        }
+      ],
+      "exports": ["SignUpScreen"],
+      "totalLines": 336,
+      "hasStructuralAnalysis": true
+    },
+    "app/(auth)/verify-otp.tsx": {
+      "filePath": "app/(auth)/verify-otp.tsx",
+      "contentHash": "2095b6cef16dd9c3d64ac9718998e8ab4c1f7fa219abd141b1c937257c6867d2",
+      "functions": [
+        {
+          "name": "VerifyOtpScreen",
+          "params": [],
+          "exported": true,
+          "lineCount": 212
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/lib/convex-auth-context",
+          "specifiers": ["useAuth"]
+        },
+        {
+          "source": "@/lib/auth-client",
+          "specifiers": ["authClient"]
+        },
+        {
+          "source": "@/lib/auth-helpers",
+          "specifiers": ["getAuthErrorMessage"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router", "useLocalSearchParams"]
+        },
+        {
+          "source": "react",
+          "specifiers": ["useState", "useCallback", "useRef", "useEffect"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Text",
+            "Pressable",
+            "Alert",
+            "TextInput",
+            "KeyboardAvoidingView",
+            "Platform",
+            "Keyboard",
+            "TouchableWithoutFeedback",
+            "StyleSheet",
+            "ActivityIndicator"
+          ]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText"]
+        }
+      ],
+      "exports": ["VerifyOtpScreen"],
+      "totalLines": 363,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/_layout.tsx": {
+      "filePath": "app/(protected)/_layout.tsx",
+      "contentHash": "269d51fe6ee48ee94e2849206d10638c9b346ea0ba4107513deef56241de9d7f",
+      "functions": [
+        {
+          "name": "ProtectedLayout",
+          "params": [],
+          "exported": true,
+          "lineCount": 68
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useEffect", "useRef"]
+        },
+        {
+          "source": "@/lib/convex-auth-context",
+          "specifiers": ["useAuth"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["Redirect", "Stack"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["View"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useMutation"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/lib/hooks/use-push-notifications",
+          "specifiers": ["usePushNotifications"]
+        },
+        {
+          "source": "@/components/notifications/notification-permission-modal",
+          "specifiers": ["NotificationPermissionModal"]
+        }
+      ],
+      "exports": ["unstable_settings", "ProtectedLayout"],
+      "totalLines": 82,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/(tabs)/_layout.tsx": {
+      "filePath": "app/(protected)/(tabs)/_layout.tsx",
+      "contentHash": "c9c1fdd71494ce96972cba62e879844dab68ac0718b33eff527385d1288b38ad",
+      "functions": [
+        {
+          "name": "TabLayout",
+          "params": [],
+          "exported": true,
+          "lineCount": 33
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "expo-router/unstable-native-tabs",
+          "specifiers": ["NativeTabs", "Label", "Icon", "VectorIcon"]
+        },
+        {
+          "source": "@expo/vector-icons/Ionicons",
+          "specifiers": ["Ionicons"]
+        }
+      ],
+      "exports": ["TabLayout"],
+      "totalLines": 42,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/(tabs)/account.tsx": {
+      "filePath": "app/(protected)/(tabs)/account.tsx",
+      "contentHash": "6eef02b87ca8442e0c2aa104a979721e398d520c73ade5905a9bf3d04f6c33e1",
+      "functions": [
+        {
+          "name": "runnerLevel",
+          "params": ["runs"],
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "AccountTab",
+          "params": [],
+          "exported": true,
+          "lineCount": 275
+        },
+        {
+          "name": "StatCard",
+          "params": ["{ label, value }"],
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "ProfileSkeleton",
+          "params": [],
+          "exported": false,
+          "lineCount": 45
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useContext"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "ScrollView",
+            "Text",
+            "View",
+            "Alert",
+            "Pressable",
+            "Image",
+            "StyleSheet"
+          ]
+        },
+        {
+          "source": "@/components/common/error-boundary",
+          "specifiers": ["ErrorBoundary"]
+        },
+        {
+          "source": "@/lib/convex-auth-context",
+          "specifiers": ["AuthContext"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useQuery"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/common/skeleton",
+          "specifiers": ["Skeleton", "SkeletonBlock"]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrAvatar", "BrSticker", "BrText"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": ["Animated", "FadeInUp"]
+        },
+        {
+          "source": "lucide-react-native",
+          "specifiers": ["icons"]
+        }
+      ],
+      "exports": ["AccountTab"],
+      "totalLines": 506,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/(tabs)/groups.tsx": {
+      "filePath": "app/(protected)/(tabs)/groups.tsx",
+      "contentHash": "86164b22d3b8684fe2dab9d88d0ec9e6268ba5a0a524f8de9da8c54c53450e8d",
+      "functions": [
+        {
+          "name": "groupByTime",
+          "params": ["items"],
+          "returnType": "{ title: TimeSection; data: T[] }[]",
+          "exported": false,
+          "lineCount": 27
+        },
+        {
+          "name": "PulseDot",
+          "params": ["{ active, color }"],
+          "exported": false,
+          "lineCount": 61
+        },
+        {
+          "name": "RunCard",
+          "params": ["{\n  item,\n  onReorder,\n}"],
+          "exported": false,
+          "lineCount": 163
+        },
+        {
+          "name": "GroupsTab",
+          "params": [],
+          "exported": true,
+          "lineCount": 394
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useState", "useCallback", "useEffect"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "Pressable",
+            "ScrollView",
+            "Text",
+            "View",
+            "Image",
+            "TouchableOpacity",
+            "InteractionManager",
+            "StyleSheet"
+          ]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": [
+            "Animated",
+            "FadeInUp",
+            "useSharedValue",
+            "useAnimatedStyle",
+            "withRepeat",
+            "withSequence",
+            "withTiming",
+            "cancelAnimation"
+          ]
+        },
+        {
+          "source": "expo-linear-gradient",
+          "specifiers": ["LinearGradient"]
+        },
+        {
+          "source": "@/components/common/animated-pressable",
+          "specifiers": ["AnimatedPressable"]
+        },
+        {
+          "source": "@/components/common/error-boundary",
+          "specifiers": ["ErrorBoundary"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["Link", "router", "useLocalSearchParams"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useQuery"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/common/skeleton",
+          "specifiers": ["Skeleton", "SkeletonBlock"]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
+        },
+        {
+          "source": "@/components/payment-setup-splash",
+          "specifiers": ["PaymentSetupSplash"]
+        },
+        {
+          "source": "@/components/qr-scanner-modal",
+          "specifiers": ["QRScannerModal"]
+        },
+        {
+          "source": "@/components/enter-code-modal",
+          "specifiers": ["EnterCodeModal"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrAvatar", "BrText"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
+        }
+      ],
+      "exports": ["GroupsTab"],
+      "totalLines": 937,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/(tabs)/index.tsx": {
+      "filePath": "app/(protected)/(tabs)/index.tsx",
+      "contentHash": "6855da2f4487e92e07ebca9f03fe79dfa0a1fe3311bb091d5305a4ffd3bd33a9",
+      "functions": [
+        {
+          "name": "PulseDot",
+          "params": ["{\n  color = \"#fff\",\n  size = 8,\n}"],
+          "exported": false,
+          "lineCount": 45
+        },
+        {
+          "name": "getGreeting",
+          "params": [],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "formatDateLine",
+          "params": [],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "IconButton",
+          "params": ["{\n  name,\n  onPress,\n  badge,\n}"],
+          "exported": false,
+          "lineCount": 20
+        },
+        {
+          "name": "HomeTab",
+          "params": [],
+          "exported": true,
+          "lineCount": 703
+        },
+        {
+          "name": "HomeSkeleton",
+          "params": [],
+          "exported": false,
+          "lineCount": 22
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react",
+          "specifiers": ["useState", "useEffect", "useCallback"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "ScrollView",
+            "Text",
+            "View",
+            "Image",
+            "Pressable",
+            "InteractionManager",
+            "StyleSheet"
+          ]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": [
+            "Animated",
+            "FadeInUp",
+            "useSharedValue",
+            "useAnimatedStyle",
+            "withRepeat",
+            "withSequence",
+            "withTiming"
+          ]
+        },
+        {
+          "source": "expo-linear-gradient",
+          "specifiers": ["LinearGradient"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useQuery", "useAction"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["useRouter"]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/common/error-boundary",
+          "specifiers": ["ErrorBoundary"]
+        },
+        {
+          "source": "@/components/common/skeleton",
+          "specifiers": ["Skeleton", "SkeletonBlock"]
+        },
+        {
+          "source": "@/components/payment-setup-splash",
+          "specifiers": ["PaymentSetupSplash"]
+        },
+        {
+          "source": "@/components/qr-scanner-modal",
+          "specifiers": ["QRScannerModal"]
+        },
+        {
+          "source": "@/components/enter-code-modal",
+          "specifiers": ["EnterCodeModal"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrCard", "BrChip", "BrText", "BrAvatar", "BrSticker"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
+        }
+      ],
+      "exports": ["HomeTab"],
+      "totalLines": 1116,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/account/_layout.tsx": {
+      "filePath": "app/(protected)/account/_layout.tsx",
+      "contentHash": "0a649123028afd6226969161325a0ebdf1d59c5adcf57dddafbca347fbcc9df3",
+      "functions": [
+        {
+          "name": "AccountLayout",
+          "params": [],
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "expo-router",
+          "specifiers": ["Stack"]
+        }
+      ],
+      "exports": ["AccountLayout"],
+      "totalLines": 13,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/account/about.tsx": {
+      "filePath": "app/(protected)/account/about.tsx",
+      "contentHash": "a163c06b7fc99b4b06d89a60f97c422c4dea8e7f7a83803c867c2da4e1763092",
+      "functions": [
+        {
+          "name": "FeatureItem",
+          "params": [
+            "{\n  icon,\n  iconColor,\n  iconBg,\n  title,\n  description,\n}"
+          ],
+          "exported": false,
+          "lineCount": 19
+        },
+        {
+          "name": "AboutScreen",
+          "params": [],
+          "exported": true,
+          "lineCount": 89
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Text",
+            "Pressable",
+            "ScrollView",
+            "Image",
+            "StyleSheet"
+          ]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon", "IconName"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": ["Animated", "FadeInUp"]
+        },
+        {
+          "source": "expo-constants",
+          "specifiers": ["Constants"]
+        }
+      ],
+      "exports": ["AboutScreen"],
+      "totalLines": 295,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/account/account-info.tsx": {
+      "filePath": "app/(protected)/account/account-info.tsx",
+      "contentHash": "0106042534cccecd1bb1721b7a7ca26fdfbed9faffe5a458ba57756dc2834da9",
+      "functions": [
+        {
+          "name": "AccountInfoScreen",
+          "params": [],
+          "exported": true,
+          "lineCount": 294
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useState", "useEffect"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Text",
+            "ScrollView",
+            "Pressable",
+            "Alert",
+            "ActivityIndicator",
+            "KeyboardAvoidingView",
+            "Platform",
+            "StyleSheet"
+          ]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useQuery", "useMutation"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "expo-image-picker",
+          "specifiers": ["* as ImagePicker"]
+        },
+        {
+          "source": "@/convex/_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrAvatar", "BrInput", "BrText"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": ["Animated", "FadeInUp"]
+        }
+      ],
+      "exports": ["AccountInfoScreen"],
+      "totalLines": 418,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/account/friends.tsx": {
+      "filePath": "app/(protected)/account/friends.tsx",
+      "contentHash": "fe2489371c5dac6b44671400cc15ae31306b2f08ad799c446e7050a9f8f2a971",
+      "functions": [
+        {
+          "name": "TabPill",
+          "params": ["{\n  label,\n  active,\n  badge,\n  onPress,\n}"],
+          "exported": false,
+          "lineCount": 58
+        },
+        {
+          "name": "CreateSquadSheet",
+          "params": ["{\n  visible,\n  onClose,\n  friends,\n}"],
+          "exported": false,
+          "lineCount": 340
+        },
+        {
+          "name": "FriendsTab",
+          "params": ["{ pendingCount }"],
+          "exported": false,
+          "lineCount": 295
+        },
+        {
+          "name": "RequestsTab",
+          "params": [],
+          "exported": false,
+          "lineCount": 246
+        },
+        {
+          "name": "SearchTab",
+          "params": [],
+          "exported": false,
+          "lineCount": 231
+        },
+        {
+          "name": "FriendsScreen",
+          "params": [],
+          "exported": true,
+          "lineCount": 100
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useState"]
+        },
+        {
+          "source": "expo-haptics",
+          "specifiers": ["* as Haptics"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Text",
+            "ScrollView",
+            "Pressable",
+            "Alert",
+            "ActivityIndicator",
+            "TouchableOpacity",
+            "TextInput",
+            "Modal",
+            "KeyboardAvoidingView",
+            "Platform"
+          ]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router", "useLocalSearchParams"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useQuery", "useMutation"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/convex/_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText"]
+        },
+        {
+          "source": "@/components/common/animated-pressable",
+          "specifiers": ["AnimatedPressable"]
+        },
+        {
+          "source": "@/components/common/avatar",
+          "specifiers": ["Avatar"]
+        },
+        {
+          "source": "@/components/common/skeleton",
+          "specifiers": ["Skeleton", "SkeletonBlock"]
+        },
+        {
+          "source": "@/lib/fonts",
+          "specifiers": ["FONTS", "COLORS"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": ["Animated", "FadeInUp", "FadeIn"]
+        },
+        {
+          "source": "lucide-react-native",
+          "specifiers": ["icons"]
+        }
+      ],
+      "exports": ["FriendsScreen"],
+      "totalLines": 1329,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/account/payments.tsx": {
+      "filePath": "app/(protected)/account/payments.tsx",
+      "contentHash": "80c17a8b6df6d3be46765b5596b5eed5c5b7d349428baf10278647e4d1a3003c",
+      "functions": [
+        {
+          "name": "sanitizeCurrencyAmount",
+          "params": ["value"],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "formatCurrency",
+          "params": ["amount"],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "PaymentsScreen",
+          "params": [],
+          "exported": true,
+          "lineCount": 746
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState",
+            "useEffect",
+            "useCallback",
+            "ComponentType"
+          ]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Text",
+            "Pressable",
+            "ScrollView",
+            "Alert",
+            "ActivityIndicator",
+            "StyleSheet",
+            "TouchableOpacity",
+            "TextInput",
+            "TextInputProps"
+          ]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router"]
+        },
+        {
+          "source": "expo-web-browser",
+          "specifiers": ["* as WebBrowser"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useQuery", "useAction"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": [
+            "Animated",
+            "FadeInUp",
+            "useSharedValue",
+            "useAnimatedProps",
+            "withTiming",
+            "Easing"
+          ]
+        },
+        {
+          "source": "expo-linking",
+          "specifiers": ["openURL"]
+        }
+      ],
+      "exports": ["PaymentsScreen"],
+      "totalLines": 1270,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/account/support.tsx": {
+      "filePath": "app/(protected)/account/support.tsx",
+      "contentHash": "72945228ee3fb15fac2f7f76cd872ab8ef23066269c83463656db6bd1599af4d",
+      "functions": [
+        {
+          "name": "FAQItem",
+          "params": ["{ question, answer }"],
+          "exported": false,
+          "lineCount": 18
+        },
+        {
+          "name": "SupportScreen",
+          "params": [],
+          "exported": true,
+          "lineCount": 101
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useState"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Text",
+            "Pressable",
+            "Linking",
+            "ScrollView",
+            "StyleSheet",
+            "TouchableOpacity"
+          ]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": ["Animated", "FadeInUp"]
+        }
+      ],
+      "exports": ["SupportScreen"],
+      "totalLines": 314,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/order/_layout.tsx": {
+      "filePath": "app/(protected)/order/_layout.tsx",
+      "contentHash": "db2cd1c862e35567921751ad42abeeacf90604db396139a67a9b69a5bf7dda12",
+      "functions": [
+        {
+          "name": "OrderLayout",
+          "params": [],
+          "exported": true,
+          "lineCount": 11
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "expo-router",
+          "specifiers": ["Stack"]
+        }
+      ],
+      "exports": ["OrderLayout"],
+      "totalLines": 14,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/order/[orderId].tsx": {
+      "filePath": "app/(protected)/order/[orderId].tsx",
+      "contentHash": "544731205d8e0ff96e2e5ab9817e7976185e05ecb86ea6dee18d6149c459663a",
+      "functions": [
+        {
+          "name": "UserItemsList",
+          "params": ["{ orderUserId }"],
+          "exported": false,
+          "lineCount": 53
+        },
+        {
+          "name": "RemoveRightAction",
+          "params": [
+            "{\n  progress,\n  targetUserId,\n  memberName,\n  swipeable,\n  onConfirmRemove,\n}"
+          ],
+          "exported": false,
+          "lineCount": 49
+        },
+        {
+          "name": "SpecificOrder",
+          "params": [],
+          "exported": true,
+          "lineCount": 974
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react-native",
+          "specifiers": [
+            "ScrollView",
+            "Text",
+            "View",
+            "Alert",
+            "Pressable",
+            "TouchableOpacity",
+            "StyleSheet",
+            "InteractionManager"
+          ]
+        },
+        {
+          "source": "react-native-animated-spinkit",
+          "specifiers": ["Flow"]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router", "useLocalSearchParams"]
+        },
+        {
+          "source": "react",
+          "specifiers": ["useCallback", "useEffect", "useRef", "useState"]
+        },
+        {
+          "source": "react-native-actions-sheet",
+          "specifiers": ["ActionSheet", "ActionSheetRef"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": [
+            "ReAnimated",
+            "useSharedValue",
+            "useAnimatedStyle",
+            "withRepeat",
+            "withSequence",
+            "withTiming",
+            "SharedValue",
+            "interpolate",
+            "Extrapolation",
+            "FadeInUp",
+            "FadeOutRight",
+            "LinearTransition"
+          ]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useAction", "useQuery", "useMutation"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/convex/_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "@/components/qr-code-modal",
+          "specifiers": ["QRCodeModal"]
+        },
+        {
+          "source": "react-native-gesture-handler/ReanimatedSwipeable",
+          "specifiers": ["Swipeable"]
+        },
+        {
+          "source": "@/components/common/skeleton",
+          "specifiers": ["Skeleton", "SkeletonBlock"]
+        },
+        {
+          "source": "@/hooks/useAiOrderSummary",
+          "specifiers": ["primeAiOrderSummaryRequest"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrAvatar", "BrButton", "BrText"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
+        }
+      ],
+      "exports": ["SpecificOrder"],
+      "totalLines": 1421,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/order/completed-order.tsx": {
+      "filePath": "app/(protected)/order/completed-order.tsx",
+      "contentHash": "5708dc1ee94dd25fdca7aed3ef979bcdecd4236f246b8e67c87c380e1ba31b97",
+      "functions": [
+        {
+          "name": "TornEdge",
+          "params": ["{ position }"],
+          "exported": false,
+          "lineCount": 36
+        },
+        {
+          "name": "Rule",
+          "params": [],
+          "exported": false,
+          "lineCount": 11
+        },
+        {
+          "name": "CompletedOrder",
+          "params": [],
+          "exported": true,
+          "lineCount": 353
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "expo-router",
+          "specifiers": ["useLocalSearchParams", "router"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Text",
+            "ScrollView",
+            "Pressable",
+            "StyleSheet",
+            "useWindowDimensions"
+          ]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useQuery"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/convex/_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/common/skeleton",
+          "specifiers": ["Skeleton", "SkeletonBlock"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": ["Animated", "FadeInUp"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrAvatar", "BrText"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
+        },
+        {
+          "source": "react",
+          "specifiers": ["useCallback", "useMemo", "useState"]
+        }
+      ],
+      "exports": ["CompletedOrder"],
+      "totalLines": 697,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/order/create.tsx": {
+      "filePath": "app/(protected)/order/create.tsx",
+      "contentHash": "5fb1d8ecd1c0fb1ac54780e2f4d8cee798614c43a215b1b2129ad589f97ed5cc",
+      "functions": [
+        {
+          "name": "parseReorderLocationNames",
+          "params": ["raw"],
+          "exported": false,
+          "lineCount": 14
+        },
+        {
+          "name": "fireFriendHaptic",
+          "params": [],
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "CreateOrder",
+          "params": [],
+          "exported": true,
+          "lineCount": 553
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["memo", "useCallback", "useMemo", "useState"]
+        },
+        {
+          "source": "expo-haptics",
+          "specifiers": ["* as Haptics"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "ActivityIndicator",
+            "Alert",
+            "InputAccessoryView",
+            "Keyboard",
+            "KeyboardAvoidingView",
+            "Platform",
+            "Pressable",
+            "ScrollView",
+            "StyleSheet",
+            "Text",
+            "TextInput",
+            "View"
+          ]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": ["Animated", "FadeInDown", "FadeInUp", "ZoomIn"]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router", "useLocalSearchParams"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useQuery"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/lib/hooks/use-order-api",
+          "specifiers": ["useFriends", "useCreateOrder"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/common/animated-pressable",
+          "specifiers": ["AnimatedPressable"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText", "BrAvatar"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
+        }
+      ],
+      "exports": ["CreateOrder"],
+      "totalLines": 1097,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/order/items.tsx": {
+      "filePath": "app/(protected)/order/items.tsx",
+      "contentHash": "67ece58778d2ef5abf0783dbbe5797199715929dcb8fe3016ab3930829de9dd3",
+      "functions": [
+        {
+          "name": "normalizeOrderItems",
+          "params": ["items"],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "areOrderItemsEqual",
+          "params": ["left", "right"],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "normalizeVoiceTranscript",
+          "params": ["text"],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "mergeVoiceTranscriptSegments",
+          "params": ["committed", "incoming"],
+          "exported": false,
+          "lineCount": 14
+        },
+        {
+          "name": "extractSpeechTranscript",
+          "params": ["event"],
+          "exported": false,
+          "lineCount": 27
+        },
+        {
+          "name": "getSpeechErrorMessage",
+          "params": ["error"],
+          "exported": false,
+          "lineCount": 23
+        },
+        {
+          "name": "VoiceRippleOrb",
+          "params": ["{\n  isListening,\n  isProcessingVoice,\n}"],
+          "exported": false,
+          "lineCount": 136
+        },
+        {
+          "name": "TornEdge",
+          "params": ["{ position }"],
+          "exported": false,
+          "lineCount": 36
+        },
+        {
+          "name": "WriteOrder",
+          "params": [],
+          "exported": true,
+          "lineCount": 1008
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "expo-router",
+          "specifiers": ["router", "useLocalSearchParams"]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useCallback",
+            "useEffect",
+            "useMemo",
+            "useRef",
+            "useState"
+          ]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "ActivityIndicator",
+            "Alert",
+            "Keyboard",
+            "KeyboardAvoidingView",
+            "Modal",
+            "Platform",
+            "Pressable",
+            "ScrollView",
+            "StyleSheet",
+            "Text",
+            "TextInput",
+            "TouchableOpacity",
+            "View",
+            "useWindowDimensions"
+          ]
+        },
+        {
+          "source": "expo-speech-recognition",
+          "specifiers": [
+            "ExpoSpeechRecognitionModule",
+            "useSpeechRecognitionEvent"
+          ]
+        },
+        {
+          "source": "react-native-toast-message",
+          "specifiers": ["Toast"]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
+        },
+        {
+          "source": "@react-navigation/native",
+          "specifiers": ["useNavigation"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useAction", "useMutation", "useQuery"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": [
+            "Animated",
+            "Easing",
+            "FadeInUp",
+            "cancelAnimation",
+            "useAnimatedStyle",
+            "useSharedValue",
+            "withRepeat",
+            "withSequence",
+            "withTiming",
+            "withDelay"
+          ]
+        },
+        {
+          "source": "react-native-animated-spinkit",
+          "specifiers": ["Flow"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/convex/_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
+        }
+      ],
+      "exports": ["WriteOrder"],
+      "totalLines": 1865,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/order/my-settlement.tsx": {
+      "filePath": "app/(protected)/order/my-settlement.tsx",
+      "contentHash": "cc3ddef06dbc742587d7497dcc7a4010a4ef6725a26266e5bb5a7356cea5be9e",
+      "functions": [
+        {
+          "name": "formatCents",
+          "params": ["cents"],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "getCurrentStep",
+          "params": ["settlementStatus", "stripePayment"],
+          "returnType": "0 | 1 | 2",
+          "exported": false,
+          "lineCount": 12
+        },
+        {
+          "name": "TornEdge",
+          "params": ["{ position }"],
+          "exported": false,
+          "lineCount": 35
+        },
+        {
+          "name": "StatusStepper",
+          "params": ["{ currentStep }"],
+          "exported": false,
+          "lineCount": 37
+        },
+        {
+          "name": "MySettlement",
+          "params": [],
+          "exported": true,
+          "lineCount": 340
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "expo-router",
+          "specifiers": ["router", "useLocalSearchParams"]
+        },
+        {
+          "source": "react",
+          "specifiers": ["useState"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "ActivityIndicator",
+            "Alert",
+            "Pressable",
+            "ScrollView",
+            "StyleSheet",
+            "Text",
+            "TouchableOpacity",
+            "View",
+            "useWindowDimensions"
+          ]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": ["Animated", "FadeInUp"]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
+        },
+        {
+          "source": "@stripe/stripe-react-native",
+          "specifiers": ["useStripe"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useQuery", "useMutation", "useAction"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/convex/_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText", "BrChip", "BrAvatar"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
+        }
+      ],
+      "exports": ["MySettlement"],
+      "totalLines": 685,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/order/settlement.tsx": {
+      "filePath": "app/(protected)/order/settlement.tsx",
+      "contentHash": "d7a58b7829cb7d6ef9d4ee6057f3f31f52c5d03e3b476078503a2aafb7f913b5",
+      "functions": [
+        {
+          "name": "formatCents",
+          "params": ["cents"],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "getMemberVisualStatus",
+          "params": ["m"],
+          "returnType": "\"paid\" | \"sent\" | \"outstanding\"",
+          "exported": false,
+          "lineCount": 9
+        },
+        {
+          "name": "TornEdge",
+          "params": ["{ position }"],
+          "exported": false,
+          "lineCount": 35
+        },
+        {
+          "name": "MemberRow",
+          "params": ["{\n  m,\n  idx,\n  onMarkCash,\n}"],
+          "exported": false,
+          "lineCount": 89
+        },
+        {
+          "name": "Settlement",
+          "params": [],
+          "exported": true,
+          "lineCount": 370
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "expo-router",
+          "specifiers": ["router", "useLocalSearchParams"]
+        },
+        {
+          "source": "react",
+          "specifiers": ["useState"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "ActivityIndicator",
+            "Alert",
+            "Pressable",
+            "ScrollView",
+            "StyleSheet",
+            "Text",
+            "TouchableOpacity",
+            "View",
+            "useWindowDimensions"
+          ]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": ["Animated", "FadeInUp"]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useQuery", "useMutation"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/convex/_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText", "BrChip", "BrAvatar"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
+        }
+      ],
+      "exports": ["Settlement"],
+      "totalLines": 786,
+      "hasStructuralAnalysis": true
+    },
+    "app/(protected)/order/summary.tsx": {
+      "filePath": "app/(protected)/order/summary.tsx",
+      "contentHash": "155afb3c1fb3309c2860f6bb49480362854b1075f1a94bebdb89c34906292023",
+      "functions": [
+        {
+          "name": "SummaryShell",
+          "params": ["{\n  title,\n  children,\n}"],
+          "exported": false,
+          "lineCount": 25
+        },
+        {
+          "name": "SummaryAiLoadingScreen",
+          "params": [],
+          "exported": false,
+          "lineCount": 42
+        },
+        {
+          "name": "SummaryDataLoadingScreen",
+          "params": [],
+          "exported": false,
+          "lineCount": 23
+        },
+        {
+          "name": "CornerBracket",
+          "params": ["{\n  corner,\n  color,\n}"],
+          "exported": false,
+          "lineCount": 47
+        },
+        {
+          "name": "ScanningOverlay",
+          "params": [
+            "{\n  photoUri,\n  scanState,\n  error,\n  onRetry,\n  onDismiss,\n}"
+          ],
+          "exported": false,
+          "lineCount": 187
+        },
+        {
+          "name": "OrderSummary",
+          "params": [],
+          "exported": true,
+          "lineCount": 641
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "expo-router",
+          "specifiers": ["router", "useLocalSearchParams"]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "ReactNode",
+            "useEffect",
+            "useMemo",
+            "useRef",
+            "useState"
+          ]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "ActivityIndicator",
+            "Image",
+            "Modal",
+            "Pressable",
+            "ScrollView",
+            "StyleSheet",
+            "Text",
+            "TouchableOpacity",
+            "View"
+          ]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView", "useSafeAreaInsets"]
+        },
+        {
+          "source": "react-native-actions-sheet",
+          "specifiers": ["ActionSheet", "ActionSheetRef"]
+        },
+        {
+          "source": "expo-haptics",
+          "specifiers": ["* as Haptics"]
+        },
+        {
+          "source": "react-native-toast-message",
+          "specifiers": ["Toast"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useQuery"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/convex/_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText"]
+        },
+        {
+          "source": "@/components/common/skeleton",
+          "specifiers": ["Skeleton", "SkeletonBlock"]
+        },
+        {
+          "source": "@/hooks/useReceiptScanning",
+          "specifiers": ["useReceiptScanning"]
+        },
+        {
+          "source": "@/hooks/useManualPriceEntry",
+          "specifiers": ["useManualPriceEntry"]
+        },
+        {
+          "source": "@/hooks/useAiOrderSummary",
+          "specifiers": ["RawOrderSummaryData", "useAiOrderSummary"]
+        },
+        {
+          "source": "@/components/receipt-confirmation-sheet",
+          "specifiers": ["ReceiptConfirmationSheet"]
+        },
+        {
+          "source": "@/components/manual-price-entry-sheet",
+          "specifiers": ["ManualPriceEntrySheet"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": [
+            "Animated",
+            "FadeInUp",
+            "useSharedValue",
+            "useAnimatedStyle",
+            "withRepeat",
+            "withTiming",
+            "Easing"
+          ]
+        },
+        {
+          "source": "@/lib/order-item-grouping",
+          "specifiers": [
+            "groupOrderItemsByParticipant",
+            "materializeResolvedOrderItemTextGroups"
+          ]
+        }
+      ],
+      "exports": ["OrderSummary"],
+      "totalLines": 1431,
+      "hasStructuralAnalysis": true
+    },
+    "app/+not-found.tsx": {
+      "filePath": "app/+not-found.tsx",
+      "contentHash": "bf771d9930c6d6b80e30dad52480134c2ee780130bbc72e5e97b87ebeccc2c90",
+      "functions": [
+        {
+          "name": "NotFoundScreen",
+          "params": [],
+          "exported": true,
+          "lineCount": 25
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react-native",
+          "specifiers": ["Text", "View"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["Link", "Stack"]
+        },
+        {
+          "source": "@/components/common/container",
+          "specifiers": ["Container"]
+        }
+      ],
+      "exports": ["NotFoundScreen"],
+      "totalLines": 30,
+      "hasStructuralAnalysis": true
+    },
+    "app/join/[code].tsx": {
+      "filePath": "app/join/[code].tsx",
+      "contentHash": "0411040b56fa356be4f70e44f2512f58b3bb66e9aedede99e1d409354a29e4cc",
+      "functions": [
+        {
+          "name": "JoinOrderPage",
+          "params": [],
+          "exported": true,
+          "lineCount": 257
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useState"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Pressable",
+            "ActivityIndicator",
+            "StyleSheet",
+            "TouchableOpacity",
+            "Text"
+          ]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router", "useLocalSearchParams"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useQuery", "useMutation"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/lib/convex-auth-context",
+          "specifiers": ["useAuth"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrAvatar", "BrCard", "BrChip", "BrText"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
+        },
+        {
+          "source": "@/lib/fonts",
+          "specifiers": ["COLORS"]
+        }
+      ],
+      "exports": ["JoinOrderPage"],
+      "totalLines": 459,
+      "hasStructuralAnalysis": true
+    },
+    "babel.config.js": {
+      "filePath": "babel.config.js",
+      "contentHash": "6d5df63814d0b7b69e41c5b171db383fecc4ad4f90cf7ad801d29b9729a88042",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 15,
+      "hasStructuralAnalysis": true
+    },
+    "biome.json": {
+      "filePath": "biome.json",
+      "contentHash": "f011e41bc9c267ee33b67f0fdded41f021aae3e537637bcae65538f48d220f52",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 47,
+      "hasStructuralAnalysis": true
+    },
+    "CLAUDE.md": {
+      "filePath": "CLAUDE.md",
+      "contentHash": "954ec5dad7eaf581ad4bfa090369b244ac0120b43722ef2efff5ba89fc52046f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": true
+    },
+    "components/animated-splash-screen.tsx": {
+      "filePath": "components/animated-splash-screen.tsx",
+      "contentHash": "6615c02c9e93649955cf8ff1c1a0c4db7753cea91fab2b4cc87bd6be04b46994",
+      "functions": [
+        {
+          "name": "useSplashAnimations",
+          "params": ["onHidden"],
+          "exported": false,
+          "lineCount": 84
+        },
+        {
+          "name": "AnimatedSplashScreen",
+          "params": ["{\n  ready,\n  onHidden,\n  onFirstFrame,\n}"],
+          "exported": true,
+          "lineCount": 156
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "AccessibilityInfo",
+            "Image",
+            "LayoutChangeEvent",
+            "StyleSheet",
+            "useWindowDimensions"
+          ]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": [
+            "Animated",
+            "Easing",
+            "makeMutable",
+            "runOnJS",
+            "useAnimatedStyle",
+            "withTiming"
+          ]
+        },
+        {
+          "source": "@/lib/use-color-scheme",
+          "specifiers": ["useColorScheme"]
+        }
+      ],
+      "exports": ["AnimatedSplashScreen"],
+      "totalLines": 288,
+      "hasStructuralAnalysis": true
+    },
+    "components/auth/oauth-button.tsx": {
+      "filePath": "components/auth/oauth-button.tsx",
+      "contentHash": "997f16449fca03f9f625246c08ec90b96ba6a221d0a509ecf851b20a24b6aa11",
+      "functions": [
+        {
+          "name": "OAuthButton",
+          "params": [
+            "{\n  provider,\n  label,\n  disabled,\n  className,\n  onError,\n}"
+          ],
+          "exported": true,
+          "lineCount": 127
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useMemo",
+            "useState",
+            "useEffect",
+            "useRef",
+            "useCallback"
+          ]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["Pressable", "Text", "Animated", "Alert", "Platform"]
+        },
+        {
+          "source": "react-native-animated-spinkit",
+          "specifiers": ["Flow"]
+        },
+        {
+          "source": "@expo/vector-icons",
+          "specifiers": ["Ionicons"]
+        },
+        {
+          "source": "@/lib/auth-client",
+          "specifiers": ["authClient"]
+        },
+        {
+          "source": "expo-apple-authentication",
+          "specifiers": ["* as AppleAuthentication"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR"]
+        }
+      ],
+      "exports": ["OAuthButton"],
+      "totalLines": 150,
+      "hasStructuralAnalysis": true
+    },
+    "components/br/avatar.tsx": {
+      "filePath": "components/br/avatar.tsx",
+      "contentHash": "b50a74c0d5de32028c8135020ebd2dfa445985d1d17c254724147f073a081487",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["View", "Text"]
+        },
+        {
+          "source": "expo-image",
+          "specifiers": ["Image"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["avatarColors"]
+        }
+      ],
+      "exports": ["BrAvatar"],
+      "totalLines": 81,
+      "hasStructuralAnalysis": true
+    },
+    "components/br/button.tsx": {
+      "filePath": "components/br/button.tsx",
+      "contentHash": "d8f76585bd301e50a5a64dc3faed24e522257b2085148d0807010cdb9074e9a5",
+      "functions": [
+        {
+          "name": "BrButton",
+          "params": [
+            "{\n  variant = \"primary\",\n  label,\n  loading,\n  pill,\n  leftSlot,\n  rightSlot,\n  fullWidth = true,\n  size = \"md\",\n  style,\n  disabled,\n  ...rest\n}"
+          ],
+          "exported": true,
+          "lineCount": 53
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "Pressable",
+            "PressableProps",
+            "ActivityIndicator",
+            "View",
+            "ViewStyle",
+            "StyleSheet"
+          ]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_RADIUS", "BR_SHADOW"]
+        },
+        {
+          "source": "./text",
+          "specifiers": ["BrText"]
+        }
+      ],
+      "exports": ["BrButton"],
+      "totalLines": 107,
+      "hasStructuralAnalysis": true
+    },
+    "components/br/card.tsx": {
+      "filePath": "components/br/card.tsx",
+      "contentHash": "e468b6f3b0032db1eb50a09ebea075ed01a58e42cf3b7582abf218e57bbe7b2b",
+      "functions": [
+        {
+          "name": "BrCard",
+          "params": [
+            "{\n  variant = \"shadowed\",\n  padding = 16,\n  radius = \"lg\",\n  background,\n  borderColor,\n  style,\n  children,\n  ...rest\n}"
+          ],
+          "exported": true,
+          "lineCount": 35
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["View", "ViewProps", "ViewStyle", "StyleSheet"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_RADIUS", "BR_SHADOW"]
+        }
+      ],
+      "exports": ["BrCard"],
+      "totalLines": 55,
+      "hasStructuralAnalysis": true
+    },
+    "components/br/chip.tsx": {
+      "filePath": "components/br/chip.tsx",
+      "contentHash": "069dc074dfa2f38725643a0b8177471613043a15e4dc40000846cdb34e882b3d",
+      "functions": [
+        {
+          "name": "BrChip",
+          "params": [
+            "{\n  color = \"neutral\",\n  size = \"md\",\n  leftSlot,\n  style,\n  children,\n  ...rest\n}"
+          ],
+          "exported": true,
+          "lineCount": 34
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["View", "ViewProps", "StyleSheet"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR"]
+        },
+        {
+          "source": "./text",
+          "specifiers": ["BrText"]
+        }
+      ],
+      "exports": ["BrChip"],
+      "totalLines": 68,
+      "hasStructuralAnalysis": true
+    },
+    "components/br/index.ts": {
+      "filePath": "components/br/index.ts",
+      "contentHash": "b02234ff94ce00cd589c6c90fd3b84a46788bed25659173e329af45bb1377690",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "BrText",
+        "BrCard",
+        "BrButton",
+        "BrChip",
+        "BrAvatar",
+        "BrSticker",
+        "BrInput"
+      ],
+      "totalLines": 8,
+      "hasStructuralAnalysis": true
+    },
+    "components/br/input.tsx": {
+      "filePath": "components/br/input.tsx",
+      "contentHash": "5296a46d3ed7a6bfc39f7748f5fe14dadfe4743b291d203e4dcf871b7b9ffca6",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["forwardRef"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "TextInput",
+            "TextInputProps",
+            "StyleSheet",
+            "Pressable"
+          ]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon", "IconName"]
+        },
+        {
+          "source": "./text",
+          "specifiers": ["BrText"]
+        }
+      ],
+      "exports": ["BrInput"],
+      "totalLines": 97,
+      "hasStructuralAnalysis": true
+    },
+    "components/br/sticker.tsx": {
+      "filePath": "components/br/sticker.tsx",
+      "contentHash": "83e19d5b53a47e157001a4cee2a85be547e22b91d8288b27155c9863705dc954",
+      "functions": [
+        {
+          "name": "BrSticker",
+          "params": [
+            "{\n  rotate = -2,\n  background = \"#fff\",\n  style,\n  leftSlot,\n  children,\n}"
+          ],
+          "exported": true,
+          "lineCount": 38
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["View", "ViewStyle"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR"]
+        },
+        {
+          "source": "./text",
+          "specifiers": ["BrText"]
+        }
+      ],
+      "exports": ["BrSticker"],
+      "totalLines": 52,
+      "hasStructuralAnalysis": true
+    },
+    "components/br/text.tsx": {
+      "filePath": "components/br/text.tsx",
+      "contentHash": "dc1f6cbd8a7c1f9e5152eb2427727d65542b83a41ac86918da1012c723243afa",
+      "functions": [
+        {
+          "name": "BrText",
+          "params": [
+            "{\n  variant = \"body\",\n  italic,\n  color,\n  weight,\n  style,\n  children,\n  ...rest\n}"
+          ],
+          "exported": true,
+          "lineCount": 21
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["Text", "TextProps", "TextStyle", "StyleSheet"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT"]
+        }
+      ],
+      "exports": ["BrText"],
+      "totalLines": 104,
+      "hasStructuralAnalysis": true
+    },
+    "components/common/animated-pressable.tsx": {
+      "filePath": "components/common/animated-pressable.tsx",
+      "contentHash": "a713ade9eea0f51f34b250bc888973f21b662c555e92a12f9eafbbbc2822156d",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React", "useCallback"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["Pressable"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": [
+            "Animated",
+            "useSharedValue",
+            "useAnimatedStyle",
+            "withTiming",
+            "withSpring",
+            "Easing"
+          ]
+        }
+      ],
+      "exports": ["AnimatedPressable"],
+      "totalLines": 74,
+      "hasStructuralAnalysis": true
+    },
+    "components/common/avatar.tsx": {
+      "filePath": "components/common/avatar.tsx",
+      "contentHash": "0c680178602987f81e154dd068fb529ce29c43b9766ea0375044da8b3fe2468a",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["View", "Text"]
+        },
+        {
+          "source": "expo-image",
+          "specifiers": ["Image"]
+        }
+      ],
+      "exports": ["Avatar"],
+      "totalLines": 54,
+      "hasStructuralAnalysis": true
+    },
+    "components/common/button.tsx": {
+      "filePath": "components/common/button.tsx",
+      "contentHash": "da0b6e7f0eed14c8ca655c3c34ee2239b9c96a3eecddd0c200185e84e9b0b3ea",
+      "functions": [
+        {
+          "name": "Button",
+          "params": [
+            "{\n  label,\n  loading = false,\n  disabled = false,\n  onPress,\n  icon,\n  variant = \"full\",\n  color = NAV_THEME.light.primary,\n}"
+          ],
+          "exported": true,
+          "lineCount": 78
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/lib/constants",
+          "specifiers": ["NAV_THEME"]
+        },
+        {
+          "source": "react",
+          "specifiers": ["useEffect", "useRef"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon", "IconName"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["Animated", "Pressable", "Text"]
+        },
+        {
+          "source": "react-native-animated-spinkit",
+          "specifiers": ["Flow"]
+        }
+      ],
+      "exports": ["Button"],
+      "totalLines": 97,
+      "hasStructuralAnalysis": true
+    },
+    "components/common/container.tsx": {
+      "filePath": "components/common/container.tsx",
+      "contentHash": "79048e4e2268e2e99005cc639c39fea26e636e3520aa4625e887c5be5978bcb0",
+      "functions": [
+        {
+          "name": "Container",
+          "params": ["{ children }"],
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView"]
+        }
+      ],
+      "exports": ["Container"],
+      "totalLines": 9,
+      "hasStructuralAnalysis": true
+    },
+    "components/common/error-boundary.tsx": {
+      "filePath": "components/common/error-boundary.tsx",
+      "contentHash": "1b4f44a5ef3f3f0674ebee433c429ae93d157d07feefc3175fd3b3f7a2f6c4e8",
+      "functions": [],
+      "classes": [
+        {
+          "name": "ErrorBoundary",
+          "methods": [
+            "constructor",
+            "componentDidMount",
+            "componentWillUnmount",
+            "getDerivedStateFromError",
+            "componentDidCatch",
+            "render"
+          ],
+          "properties": ["_mounted", "handleRetry"],
+          "exported": true,
+          "lineCount": 59
+        }
+      ],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["Component", "ErrorInfo", "ReactNode"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["Text", "View", "Pressable"]
+        }
+      ],
+      "exports": ["ErrorBoundary"],
+      "totalLines": 73,
+      "hasStructuralAnalysis": true
+    },
+    "components/common/icon.tsx": {
+      "filePath": "components/common/icon.tsx",
+      "contentHash": "ecac1aa6490b5133ac59b0bfe9f978029ad9771a1d69481bab618592f8abadf8",
+      "functions": [
+        {
+          "name": "Icon",
+          "params": ["{ name, color, size, ...svgProps }"],
+          "exported": false,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "lucide-react-native",
+          "specifiers": ["icons"]
+        },
+        {
+          "source": "react-native-svg",
+          "specifiers": ["SvgProps"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 22,
+      "hasStructuralAnalysis": true
+    },
+    "components/common/input.tsx": {
+      "filePath": "components/common/input.tsx",
+      "contentHash": "07a1bbd9da9cb5f53e8269ca8a4d40fa51dc24ec73adde0d848ac5f73ce1c2c7",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["forwardRef"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "TextInput",
+            "Text",
+            "View",
+            "TextInputProps",
+            "Pressable"
+          ]
+        },
+        {
+          "source": "@/lib/constants",
+          "specifiers": ["NAV_THEME"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon", "IconName"]
+        },
+        {
+          "source": "@/lib/use-color-scheme",
+          "specifiers": ["useColorScheme"]
+        }
+      ],
+      "exports": ["Input"],
+      "totalLines": 114,
+      "hasStructuralAnalysis": true
+    },
+    "components/common/skeleton.tsx": {
+      "filePath": "components/common/skeleton.tsx",
+      "contentHash": "481fbe84ddafe5c900e096b2b9248e0f2debcf4907f9bfbd66d021fa0a654669",
+      "functions": [
+        {
+          "name": "Skeleton",
+          "params": ["{ children }"],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "SkeletonBlock",
+          "params": [
+            "{\n  width,\n  height,\n  rounded = \"rounded-lg\",\n  className = \"\",\n  style,\n}"
+          ],
+          "exported": true,
+          "lineCount": 50
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React", "useEffect"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["View", "ViewStyle"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": [
+            "Animated",
+            "useSharedValue",
+            "useAnimatedStyle",
+            "withRepeat",
+            "withTiming",
+            "Easing",
+            "SharedValue"
+          ]
+        }
+      ],
+      "exports": ["Skeleton", "SkeletonBlock"],
+      "totalLines": 105,
+      "hasStructuralAnalysis": true
+    },
+    "components/enter-code-modal.tsx": {
+      "filePath": "components/enter-code-modal.tsx",
+      "contentHash": "d22a330aee50dc0343ac0819f710f536f5fd98bfe83779c371b87594d27a145a",
+      "functions": [
+        {
+          "name": "EnterCodeModal",
+          "params": ["{\n  visible,\n  onSubmit,\n  onClose,\n}"],
+          "exported": true,
+          "lineCount": 111
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useState"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Modal",
+            "Pressable",
+            "TextInput",
+            "StyleSheet",
+            "TouchableOpacity",
+            "Text"
+          ]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["useSafeAreaInsets"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
+        },
+        {
+          "source": "@/lib/fonts",
+          "specifiers": ["COLORS"]
+        }
+      ],
+      "exports": ["EnterCodeModal"],
+      "totalLines": 240,
+      "hasStructuralAnalysis": true
+    },
+    "components/layout/header-bar.tsx": {
+      "filePath": "components/layout/header-bar.tsx",
+      "contentHash": "827a6174b89c69190ff6cab184c266c7886071edd04cd355b23f95992ee68f04",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React", "useState"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["View", "Image", "Pressable"]
+        },
+        {
+          "source": "@/components/layout/tabbar-icon",
+          "specifiers": ["TabBarIcon"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router"]
+        },
+        {
+          "source": "@/components/qr-scanner-modal",
+          "specifiers": ["QRScannerModal"]
+        },
+        {
+          "source": "@/components/enter-code-modal",
+          "specifiers": ["EnterCodeModal"]
+        }
+      ],
+      "exports": ["HeaderBar"],
+      "totalLines": 67,
+      "hasStructuralAnalysis": true
+    },
+    "components/layout/page-with-header.tsx": {
+      "filePath": "components/layout/page-with-header.tsx",
+      "contentHash": "e83383f19fbb24055000b1ae18a00bb8c9783dda15769cf346f2582fe50af61a",
+      "functions": [
+        {
+          "name": "PageWithHeader",
+          "params": ["{ children }"],
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react-native",
+          "specifiers": ["View"]
+        },
+        {
+          "source": "./header-bar",
+          "specifiers": ["HeaderBar"]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["SafeAreaView"]
+        }
+      ],
+      "exports": ["PageWithHeader"],
+      "totalLines": 15,
+      "hasStructuralAnalysis": true
+    },
+    "components/layout/tabbar-icon.tsx": {
+      "filePath": "components/layout/tabbar-icon.tsx",
+      "contentHash": "31de49fcd0ae1d13261a3486043c50cbfd9e5e6b5aa40bc77c3c48ccd909dd53",
+      "functions": [
+        {
+          "name": "TabBarIcon",
+          "params": ["props"],
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../common/icon",
+          "specifiers": ["Icon", "IconName"]
+        }
+      ],
+      "exports": ["TabBarIcon"],
+      "totalLines": 6,
+      "hasStructuralAnalysis": true
+    },
+    "components/manual-price-entry-sheet.tsx": {
+      "filePath": "components/manual-price-entry-sheet.tsx",
+      "contentHash": "2558c02da021bfbcf3a8f51631bd1268f9ce8a1f9afb561023d0c77675f6df3c",
+      "functions": [
+        {
+          "name": "formatPrice",
+          "params": ["cents"],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "PriceItemCard",
+          "params": ["{\n  orderItem,\n  priceInCents,\n  onUpdatePrice,\n}"],
+          "exported": false,
+          "lineCount": 75
+        },
+        {
+          "name": "SectionHeader",
+          "params": ["{\n  title,\n  pricedCount,\n  totalCount,\n}"],
+          "exported": false,
+          "lineCount": 21
+        },
+        {
+          "name": "ManualPriceEntrySheet",
+          "params": [
+            "{\n  visible,\n  onDismiss,\n  onSave,\n  orderItems,\n  prices,\n  onUpdatePrice,\n  locationName,\n  isSaving,\n}"
+          ],
+          "exported": true,
+          "lineCount": 129
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React", "useState", "useMemo"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Text",
+            "TouchableOpacity",
+            "ScrollView",
+            "TextInput",
+            "Modal",
+            "StyleSheet",
+            "ActivityIndicator"
+          ]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["useSafeAreaInsets"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText"]
+        },
+        {
+          "source": "@/lib/order-item-grouping",
+          "specifiers": ["groupOrderItemsByParticipant"]
+        }
+      ],
+      "exports": ["ManualPriceEntrySheet"],
+      "totalLines": 425,
+      "hasStructuralAnalysis": true
+    },
+    "components/multi-select-sheet.tsx": {
+      "filePath": "components/multi-select-sheet.tsx",
+      "contentHash": "523977fa8a0fd45330e3e32afbf4a970040d6e1ccc3abee2faa14f513ad27f90",
+      "functions": [
+        {
+          "name": "MultiSelectSheet",
+          "params": [
+            "{\n  visible,\n  onClose,\n  onConfirm,\n  items,\n  selectedIds,\n  title,\n  isLoading = false,\n}"
+          ],
+          "exported": true,
+          "lineCount": 147
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/lib/use-color-scheme",
+          "specifiers": ["useColorScheme"]
+        },
+        {
+          "source": "react",
+          "specifiers": ["useState", "useRef", "useEffect"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Text",
+            "TextInput",
+            "Pressable",
+            "FlatList",
+            "ActivityIndicator"
+          ]
+        },
+        {
+          "source": "react-native-actions-sheet",
+          "specifiers": ["ActionSheet", "ActionSheetRef"]
+        },
+        {
+          "source": "@/components/common/button",
+          "specifiers": ["Button"]
+        },
+        {
+          "source": "@/components/common/avatar",
+          "specifiers": ["Avatar"]
+        }
+      ],
+      "exports": ["MultiSelectSheet"],
+      "totalLines": 178,
+      "hasStructuralAnalysis": true
+    },
+    "components/notifications/notification-permission-modal.tsx": {
+      "filePath": "components/notifications/notification-permission-modal.tsx",
+      "contentHash": "48e80bfedc2883fa7f588120d276b19ceb755edb09af4141283afde1aa22d9a8",
+      "functions": [
+        {
+          "name": "NotificationPermissionModal",
+          "params": ["{\n  visible,\n  onAllow,\n  onDeny,\n}"],
+          "exported": true,
+          "lineCount": 57
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react-native",
+          "specifiers": ["View", "Text", "Modal", "Pressable", "StyleSheet"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText"]
+        }
+      ],
+      "exports": ["NotificationPermissionModal"],
+      "totalLines": 190,
+      "hasStructuralAnalysis": true
+    },
+    "components/order-card.tsx": {
+      "filePath": "components/order-card.tsx",
+      "contentHash": "f52c8c63f6257455539aed2a490a1ce7029a4ce0a1af49ccf877db838dd8144d",
+      "functions": [
+        {
+          "name": "OrderCardSkeleton",
+          "params": [],
+          "exported": true,
+          "lineCount": 33
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "@/lib/constants",
+          "specifiers": ["NAV_THEME"]
+        },
+        {
+          "source": "@/lib/use-color-scheme",
+          "specifiers": ["useColorScheme"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["View", "Text", "TouchableOpacity"]
+        },
+        {
+          "source": "./common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "./common/avatar",
+          "specifiers": ["Avatar"]
+        },
+        {
+          "source": "react-native-reanimated",
+          "specifiers": [
+            "ReAnimated",
+            "useSharedValue",
+            "useAnimatedStyle",
+            "withRepeat",
+            "withSequence",
+            "withTiming",
+            "Easing",
+            "cancelAnimation"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": ["useEffect"]
+        },
+        {
+          "source": "./common/skeleton",
+          "specifiers": ["Skeleton", "SkeletonBlock"]
+        }
+      ],
+      "exports": ["OrderCard", "OrderCardSkeleton"],
+      "totalLines": 295,
+      "hasStructuralAnalysis": true
+    },
+    "components/payment-setup-splash.tsx": {
+      "filePath": "components/payment-setup-splash.tsx",
+      "contentHash": "9abc78cf49019bdb4233f8063657802b80ec73b5d211c68cccea93efaf6a49c8",
+      "functions": [
+        {
+          "name": "PaymentSetupSplash",
+          "params": ["{\n  visible,\n  onSetUp,\n  onSkip,\n}"],
+          "exported": true,
+          "lineCount": 84
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react-native",
+          "specifiers": ["View", "Text", "Modal", "Pressable"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/components/common/button",
+          "specifiers": ["Button"]
+        },
+        {
+          "source": "@/lib/use-color-scheme",
+          "specifiers": ["useColorScheme"]
+        },
+        {
+          "source": "@/lib/constants",
+          "specifiers": ["NAV_THEME"]
+        }
+      ],
+      "exports": ["PaymentSetupSplash"],
+      "totalLines": 118,
+      "hasStructuralAnalysis": true
+    },
+    "components/profile/list-item.tsx": {
+      "filePath": "components/profile/list-item.tsx",
+      "contentHash": "5625755a1e06f73b0cb0cf92df4990868a62a8202bffe9d7f27af77f99418ab6",
+      "functions": [
+        {
+          "name": "ListItem",
+          "params": [
+            "{\n  iconName,\n  iconColor,\n  title,\n  subtitle,\n  onPress,\n  testID,\n}"
+          ],
+          "exported": true,
+          "lineCount": 32
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["Pressable", "View", "Text"]
+        },
+        {
+          "source": "../common/icon",
+          "specifiers": ["Icon", "IconName"]
+        },
+        {
+          "source": "@/lib/constants",
+          "specifiers": ["NAV_THEME"]
+        },
+        {
+          "source": "@/lib/use-color-scheme",
+          "specifiers": ["useColorScheme"]
+        }
+      ],
+      "exports": ["ListItem"],
+      "totalLines": 48,
+      "hasStructuralAnalysis": true
+    },
+    "components/qr-code-modal.tsx": {
+      "filePath": "components/qr-code-modal.tsx",
+      "contentHash": "9908a656a09c5287c6b6d6688f88c618f7c1585f2e181186c2c756b67deaa2ae",
+      "functions": [
+        {
+          "name": "QRCodeModal",
+          "params": ["{\n  visible,\n  orderId,\n  orderName,\n  onClose,\n}"],
+          "exported": true,
+          "lineCount": 191
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React", "useEffect"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Text",
+            "Modal",
+            "Pressable",
+            "Share",
+            "ActivityIndicator",
+            "StyleSheet",
+            "TouchableOpacity"
+          ]
+        },
+        {
+          "source": "expo-clipboard",
+          "specifiers": ["* as Clipboard"]
+        },
+        {
+          "source": "expo-haptics",
+          "specifiers": ["* as Haptics"]
+        },
+        {
+          "source": "react-native-qrcode-svg",
+          "specifiers": ["QRCode"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS", "BR_SHADOW"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useMutation", "useQuery"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/convex/_generated/dataModel",
+          "specifiers": ["Id"]
+        }
+      ],
+      "exports": ["QRCodeModal"],
+      "totalLines": 376,
+      "hasStructuralAnalysis": true
+    },
+    "components/qr-scanner-modal.tsx": {
+      "filePath": "components/qr-scanner-modal.tsx",
+      "contentHash": "e206f2e5a808b2f0aeb56511111375fc02f8dcc0cda4ded50c194c7738005fb0",
+      "functions": [
+        {
+          "name": "QRScannerModal",
+          "params": ["{\n  visible,\n  onScan,\n  onClose,\n  onEnterCode,\n}"],
+          "exported": true,
+          "lineCount": 145
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useState", "useEffect", "useRef"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["View", "Text", "Modal", "Pressable", "StyleSheet"]
+        },
+        {
+          "source": "expo-camera",
+          "specifiers": ["CameraView", "useCameraPermissions"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        }
+      ],
+      "exports": ["QRScannerModal"],
+      "totalLines": 158,
+      "hasStructuralAnalysis": true
+    },
+    "components/receipt-confirmation-sheet.tsx": {
+      "filePath": "components/receipt-confirmation-sheet.tsx",
+      "contentHash": "8fafa513da1908c6c30fe639b76e860a461c003cc99159f997d8f60d9724ffd0",
+      "functions": [
+        {
+          "name": "formatPrice",
+          "params": ["cents"],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "getEffectivePrice",
+          "params": ["item"],
+          "returnType": "number | null",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "confidenceConfig",
+          "params": ["confidence"],
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "UnmatchedCard",
+          "params": [
+            "{\n  item,\n  matchedIndex,\n  isSelected,\n  onSelect,\n}"
+          ],
+          "exported": false,
+          "lineCount": 45
+        },
+        {
+          "name": "OrderItemCard",
+          "params": [
+            "{\n  orderItem,\n  linkedReceiptItem,\n  matchedIndex,\n  onUnlink,\n  onLinkSelected,\n  hasSelectedItem,\n  onUpdatePrice,\n}"
+          ],
+          "exported": false,
+          "lineCount": 152
+        },
+        {
+          "name": "SectionHeader",
+          "params": ["{ title, count }"],
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "PersonSection",
+          "params": [
+            "{\n  name,\n  allMatched,\n  collapsed,\n  onToggle,\n  children,\n}"
+          ],
+          "exported": false,
+          "lineCount": 40
+        },
+        {
+          "name": "ReceiptConfirmationSheet",
+          "params": [
+            "{\n  visible,\n  onClose,\n  onConfirm,\n  matchedItems,\n  orderItems,\n  onUpdateMatch,\n  receiptStoreName,\n  receiptTotal,\n  isSaving,\n}"
+          ],
+          "exported": true,
+          "lineCount": 285
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["React"]
+        },
+        {
+          "source": "react",
+          "specifiers": ["useState", "useMemo", "useEffect", "useCallback"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": [
+            "View",
+            "Text",
+            "TouchableOpacity",
+            "ScrollView",
+            "TextInput",
+            "Pressable",
+            "Modal",
+            "Animated",
+            "StyleSheet",
+            "ActivityIndicator"
+          ]
+        },
+        {
+          "source": "react-native-safe-area-context",
+          "specifiers": ["useSafeAreaInsets"]
+        },
+        {
+          "source": "@/components/common/icon",
+          "specifiers": ["Icon"]
+        },
+        {
+          "source": "@/lib/br-theme",
+          "specifiers": ["BR", "BR_FONT", "BR_RADIUS"]
+        },
+        {
+          "source": "@/components/br",
+          "specifiers": ["BrText"]
+        },
+        {
+          "source": "@/hooks/useReceiptScanning",
+          "specifiers": ["MatchedItem"]
+        },
+        {
+          "source": "@/lib/order-item-grouping",
+          "specifiers": ["groupOrderItemsByParticipant"]
+        }
+      ],
+      "exports": ["ReceiptConfirmationSheet"],
+      "totalLines": 1005,
+      "hasStructuralAnalysis": true
+    },
+    "convex/_generated/api.d.ts": {
+      "filePath": "convex/_generated/api.d.ts",
+      "contentHash": "65eccd3aadf9013911daa96a4b242ca7d59cd2adf557ef03bd7d5488695ec72d",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../auth.js",
+          "specifiers": ["* as auth"]
+        },
+        {
+          "source": "../authHelper.js",
+          "specifiers": ["* as authHelper"]
+        },
+        {
+          "source": "../fees.js",
+          "specifiers": ["* as fees"]
+        },
+        {
+          "source": "../friends.js",
+          "specifiers": ["* as friends"]
+        },
+        {
+          "source": "../http.js",
+          "specifiers": ["* as http"]
+        },
+        {
+          "source": "../lib/utils.js",
+          "specifiers": ["* as lib_utils"]
+        },
+        {
+          "source": "../orderInvites.js",
+          "specifiers": ["* as orderInvites"]
+        },
+        {
+          "source": "../orderItems.js",
+          "specifiers": ["* as orderItems"]
+        },
+        {
+          "source": "../orderLocations.js",
+          "specifiers": ["* as orderLocations"]
+        },
+        {
+          "source": "../orderUsers.js",
+          "specifiers": ["* as orderUsers"]
+        },
+        {
+          "source": "../orders.js",
+          "specifiers": ["* as orders"]
+        },
+        {
+          "source": "../payments.js",
+          "specifiers": ["* as payments"]
+        },
+        {
+          "source": "../pushNotifications.js",
+          "specifiers": ["* as pushNotifications"]
+        },
+        {
+          "source": "../receiptScanning.js",
+          "specifiers": ["* as receiptScanning"]
+        },
+        {
+          "source": "../squads.js",
+          "specifiers": ["* as squads"]
+        },
+        {
+          "source": "../stripeConnect.js",
+          "specifiers": ["* as stripeConnect"]
+        },
+        {
+          "source": "../users.js",
+          "specifiers": ["* as users"]
+        },
+        {
+          "source": "../waitlist.js",
+          "specifiers": ["* as waitlist"]
+        },
+        {
+          "source": "convex/server",
+          "specifiers": ["ApiFromModules", "FilterApi", "FunctionReference"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 2255,
+      "hasStructuralAnalysis": true
+    },
+    "convex/_generated/api.js": {
+      "filePath": "convex/_generated/api.js",
+      "contentHash": "f513058549831e85376f8d19cafaf2a4a770b6eb1b859fb371141f2c9dec0d70",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/server",
+          "specifiers": ["anyApi", "componentsGeneric"]
+        }
+      ],
+      "exports": ["api", "internal", "components"],
+      "totalLines": 24,
+      "hasStructuralAnalysis": true
+    },
+    "convex/_generated/dataModel.d.ts": {
+      "filePath": "convex/_generated/dataModel.d.ts",
+      "contentHash": "db177073d16a4393c7a96bcdc3a2a904e88c2432d54d138ca7715cc431982c17",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/server",
+          "specifiers": [
+            "DataModelFromSchemaDefinition",
+            "DocumentByName",
+            "TableNamesInDataModel",
+            "SystemTableNames"
+          ]
+        },
+        {
+          "source": "convex/values",
+          "specifiers": ["GenericId"]
+        },
+        {
+          "source": "../schema.js",
+          "specifiers": ["schema"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 61,
+      "hasStructuralAnalysis": true
+    },
+    "convex/_generated/server.d.ts": {
+      "filePath": "convex/_generated/server.d.ts",
+      "contentHash": "b0c8d708aaa165b10633bb6181dea1af4b9976a71ad001d75f42785ddfbca458",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/server",
+          "specifiers": [
+            "ActionBuilder",
+            "HttpActionBuilder",
+            "MutationBuilder",
+            "QueryBuilder",
+            "GenericActionCtx",
+            "GenericMutationCtx",
+            "GenericQueryCtx",
+            "GenericDatabaseReader",
+            "GenericDatabaseWriter"
+          ]
+        },
+        {
+          "source": "./dataModel.js",
+          "specifiers": ["DataModel"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 144,
+      "hasStructuralAnalysis": true
+    },
+    "convex/_generated/server.js": {
+      "filePath": "convex/_generated/server.js",
+      "contentHash": "aea87b3ee367e0e870f3da81ffce8babd8ea1aea695a1e38689841aebc09a1e8",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/server",
+          "specifiers": [
+            "actionGeneric",
+            "httpActionGeneric",
+            "queryGeneric",
+            "mutationGeneric",
+            "internalActionGeneric",
+            "internalMutationGeneric",
+            "internalQueryGeneric"
+          ]
+        }
+      ],
+      "exports": [
+        "query",
+        "internalQuery",
+        "mutation",
+        "internalMutation",
+        "action",
+        "internalAction",
+        "httpAction"
+      ],
+      "totalLines": 94,
+      "hasStructuralAnalysis": true
+    },
+    "convex/auth.config.ts": {
+      "filePath": "convex/auth.config.ts",
+      "contentHash": "a090a0a16acd95cc75245b29e0de1f2afe6a7c72b962dc9547800af46148a812",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@convex-dev/better-auth/auth-config",
+          "specifiers": ["getAuthConfigProvider"]
+        },
+        {
+          "source": "convex/server",
+          "specifiers": ["AuthConfig"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 7,
+      "hasStructuralAnalysis": true
+    },
+    "convex/auth.ts": {
+      "filePath": "convex/auth.ts",
+      "contentHash": "43b925ad78047959de13b78385d0803a539b37c4018960c9d3012273ae4ebc98",
+      "functions": [
+        {
+          "name": "createAuth",
+          "params": ["ctx"],
+          "exported": true,
+          "lineCount": 90
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "better-auth",
+          "specifiers": ["betterAuth"]
+        },
+        {
+          "source": "better-auth/plugins",
+          "specifiers": ["emailOTP"]
+        },
+        {
+          "source": "@better-auth/expo",
+          "specifiers": ["expo"]
+        },
+        {
+          "source": "@convex-dev/better-auth",
+          "specifiers": ["createClient"]
+        },
+        {
+          "source": "@convex-dev/better-auth/plugins",
+          "specifiers": ["convex"]
+        },
+        {
+          "source": "resend",
+          "specifiers": ["Resend"]
+        },
+        {
+          "source": "./_generated/api",
+          "specifiers": ["components"]
+        },
+        {
+          "source": "./auth.config",
+          "specifiers": ["authConfig"]
+        }
+      ],
+      "exports": ["authComponent", "createAuth"],
+      "totalLines": 150,
+      "hasStructuralAnalysis": true
+    },
+    "convex/authHelper.ts": {
+      "filePath": "convex/authHelper.ts",
+      "contentHash": "66bc5447277e8428b7d06a43057e804437d68e6fe17836ae42acd1c6fde24fd0",
+      "functions": [
+        {
+          "name": "getUserId",
+          "params": ["ctx"],
+          "returnType": "Promise<Id<\"users\"> | null>",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "ensureUser",
+          "params": ["ctx"],
+          "returnType": "Promise<Id<\"users\"> | null>",
+          "exported": true,
+          "lineCount": 42
+        },
+        {
+          "name": "requireUserId",
+          "params": ["ctx"],
+          "returnType": "Promise<Id<\"users\">>",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "requireUserIdWithSync",
+          "params": ["ctx"],
+          "returnType": "Promise<Id<\"users\">>",
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "./_generated/server",
+          "specifiers": ["QueryCtx", "MutationCtx"]
+        },
+        {
+          "source": "./_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "./auth",
+          "specifiers": ["authComponent"]
+        },
+        {
+          "source": "./lib/utils",
+          "specifiers": ["splitName"]
+        }
+      ],
+      "exports": [
+        "getUserId",
+        "ensureUser",
+        "requireUserId",
+        "requireUserIdWithSync"
+      ],
+      "totalLines": 104,
+      "hasStructuralAnalysis": true
+    },
+    "convex/convex.config.ts": {
+      "filePath": "convex/convex.config.ts",
+      "contentHash": "7eb6f67bad92af108bf1bddcc8579ccfac682673b858ba9f7d5c8e8b4b973568",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/server",
+          "specifiers": ["defineApp"]
+        },
+        {
+          "source": "@convex-dev/better-auth/convex.config",
+          "specifiers": ["betterAuth"]
+        },
+        {
+          "source": "@convex-dev/expo-push-notifications/convex.config",
+          "specifiers": ["pushNotifications"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 9,
+      "hasStructuralAnalysis": true
+    },
+    "convex/fees.ts": {
+      "filePath": "convex/fees.ts",
+      "contentHash": "2f1bdfab8c4936fb487182cb01d50576b3195a875334eb054c49de6593431e05",
+      "functions": [
+        {
+          "name": "calculatePlatformFee",
+          "params": ["amountCents"],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "APPLICATION_FEE_PERCENT",
+        "MINIMUM_APPLICATION_FEE",
+        "calculatePlatformFee"
+      ],
+      "totalLines": 14,
+      "hasStructuralAnalysis": true
+    },
+    "convex/friends.ts": {
+      "filePath": "convex/friends.ts",
+      "contentHash": "36ba382d5e889967b54e033683474f185e5790d987b0437001b3a601ab8fc4e9",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": ["query", "mutation"]
+        },
+        {
+          "source": "./_generated/api",
+          "specifiers": ["internal"]
+        },
+        {
+          "source": "./authHelper",
+          "specifiers": ["getUserId"]
+        }
+      ],
+      "exports": [
+        "list",
+        "listPendingRequests",
+        "sendRequest",
+        "acceptRequest",
+        "rejectRequest",
+        "searchUsers",
+        "removeFriend",
+        "pendingRequestCount"
+      ],
+      "totalLines": 352,
+      "hasStructuralAnalysis": true
+    },
+    "convex/http.ts": {
+      "filePath": "convex/http.ts",
+      "contentHash": "0f60ffe180bcac3e3a79402f31fa74ae24e1a88a9c5c1d24eb3126134e9ff4f8",
+      "functions": [
+        {
+          "name": "stripeRedirectHtml",
+          "params": ["deepLink", "title"],
+          "exported": false,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/server",
+          "specifiers": ["httpRouter"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": ["httpAction"]
+        },
+        {
+          "source": "./_generated/api",
+          "specifiers": ["internal"]
+        },
+        {
+          "source": "./auth",
+          "specifiers": ["authComponent", "createAuth"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 390,
+      "hasStructuralAnalysis": true
+    },
+    "convex/lib/utils.ts": {
+      "filePath": "convex/lib/utils.ts",
+      "contentHash": "da1289d3d0bcb06615575c1cdb5523cc548aa8911d7c1ac5b7f1b2d9f6d4cf54",
+      "functions": [
+        {
+          "name": "splitName",
+          "params": ["fullName"],
+          "returnType": "{\n  firstName: string | null;\n  lastName: string | null;\n}",
+          "exported": true,
+          "lineCount": 46
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": ["splitName"],
+      "totalLines": 51,
+      "hasStructuralAnalysis": true
+    },
+    "convex/orderInvites.ts": {
+      "filePath": "convex/orderInvites.ts",
+      "contentHash": "f0cc872f8a7e1569233183551053d477ebeb6637984b2afde0bf18a4bfcee268",
+      "functions": [
+        {
+          "name": "generateInviteCode",
+          "params": [],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 11
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": ["query", "mutation"]
+        },
+        {
+          "source": "./_generated/api",
+          "specifiers": ["internal"]
+        },
+        {
+          "source": "./authHelper",
+          "specifiers": ["getUserId", "requireUserIdWithSync"]
+        }
+      ],
+      "exports": [
+        "createInvite",
+        "getActiveInvite",
+        "validateInvite",
+        "joinOrder"
+      ],
+      "totalLines": 324,
+      "hasStructuralAnalysis": true
+    },
+    "convex/orderItems.ts": {
+      "filePath": "convex/orderItems.ts",
+      "contentHash": "3f1f4185615c0bf020bbbff56ac85ef2a585fb4771f4d4c25e543572eb055d5b",
+      "functions": [
+        {
+          "name": "normalizeEntryLines",
+          "params": ["text"],
+          "returnType": "string[]",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "buildParticipantName",
+          "params": ["firstName", "lastName"],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "normalizeLabel",
+          "params": ["text"],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "normalizeVoiceOrderItems",
+          "params": ["items"],
+          "returnType": "string[]",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "parseQuantityPrefixedItem",
+          "params": ["item"],
+          "returnType": "{\n  quantity: number;\n  baseLabel: string;\n  displayLabel: string;\n  hasExplicitQuantity: boolean;\n}",
+          "exported": false,
+          "lineCount": 28
+        },
+        {
+          "name": "reconcileVoiceOrderItems",
+          "params": ["items"],
+          "returnType": "string[]",
+          "exported": false,
+          "lineCount": 47
+        },
+        {
+          "name": "extractJsonObject",
+          "params": ["text"],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 19
+        },
+        {
+          "name": "buildOrderSummary",
+          "params": ["orderId", "rawSummary"],
+          "returnType": "Promise<OrderSummaryData | null>",
+          "exported": false,
+          "lineCount": 10
+        },
+        {
+          "name": "buildSummarySignature",
+          "params": ["summary"],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "buildAiSeedGroupsForLocation",
+          "params": ["locationSummary"],
+          "returnType": "AiLocationSeedSummary",
+          "exported": false,
+          "lineCount": 20
+        },
+        {
+          "name": "validateAiGroupsForLocation",
+          "params": ["locationSummary", "groups"],
+          "returnType": "ResolvedOrderItemTextGroup[]",
+          "exported": false,
+          "lineCount": 63
+        },
+        {
+          "name": "toPersistedAiSummaryLocations",
+          "params": ["locations"],
+          "returnType": "PersistedAiSummaryLocation[]",
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "generateAiSummaryForLocation",
+          "params": ["locationSummary"],
+          "returnType": "Promise<AiOrderSummary[\"locations\"][number]>",
+          "exported": false,
+          "lineCount": 94
+        },
+        {
+          "name": "generateAiOrderSummaryResult",
+          "params": ["seedSummaries"],
+          "returnType": "Promise<AiOrderSummary[\"locations\"]>",
+          "exported": false,
+          "lineCount": 9
+        },
+        {
+          "name": "parseVoiceOrderItemsWithAi",
+          "params": ["args"],
+          "returnType": "Promise<string[]>",
+          "exported": false,
+          "lineCount": 49
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        },
+        {
+          "source": "ai",
+          "specifiers": ["generateObject", "generateText"]
+        },
+        {
+          "source": "@openrouter/ai-sdk-provider",
+          "specifiers": ["createOpenRouter"]
+        },
+        {
+          "source": "zod",
+          "specifiers": ["z"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": [
+            "action",
+            "internalMutation",
+            "internalQuery",
+            "query",
+            "mutation"
+          ]
+        },
+        {
+          "source": "./_generated/api",
+          "specifiers": ["api", "internal"]
+        },
+        {
+          "source": "./_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "./authHelper",
+          "specifiers": ["getUserId"]
+        },
+        {
+          "source": "../lib/order-item-grouping",
+          "specifiers": [
+            "analyzeOrderItemTextGroups",
+            "buildOrderSummaryTextSignature",
+            "ResolvedOrderItemTextGroup"
+          ]
+        }
+      ],
+      "exports": [
+        "getForUserLocation",
+        "replaceForUserLocation",
+        "getOrderVoiceParseState",
+        "parseVoiceOrderItems",
+        "listForOrderUser",
+        "generateAiOrderSummary",
+        "savePausedAiOrderSummary",
+        "getOrderSummary"
+      ],
+      "totalLines": 1056,
+      "hasStructuralAnalysis": true
+    },
+    "convex/orderLocations.ts": {
+      "filePath": "convex/orderLocations.ts",
+      "contentHash": "489b289de89a150791734d24c5d73e2179a6357788a63a9ad68b6968117b2ac8",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": ["query"]
+        },
+        {
+          "source": "./authHelper",
+          "specifiers": ["getUserId"]
+        }
+      ],
+      "exports": ["listForOrder", "get"],
+      "totalLines": 56,
+      "hasStructuralAnalysis": true
+    },
+    "convex/orders.ts": {
+      "filePath": "convex/orders.ts",
+      "contentHash": "aed86e4caec496ef4a3e26cf7c06f591a44a71874fd0109e5ba0f0a413073cee",
+      "functions": [
+        {
+          "name": "buildUserName",
+          "params": ["firstName", "lastName", "email"],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "normalizeLocationNames",
+          "params": ["locationNames"],
+          "exported": false,
+          "lineCount": 21
+        },
+        {
+          "name": "getOrderLocationsForOrder",
+          "params": ["ctx", "orderId"],
+          "exported": false,
+          "lineCount": 10
+        },
+        {
+          "name": "countLinesForLocation",
+          "params": ["ctx", "orderLocationId"],
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "countLinesForOrder",
+          "params": ["ctx", "orderId"],
+          "exported": false,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": ["mutation", "query"]
+        },
+        {
+          "source": "./_generated/api",
+          "specifiers": ["internal"]
+        },
+        {
+          "source": "./_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "./authHelper",
+          "specifiers": ["getUserId"]
+        },
+        {
+          "source": "./schema",
+          "specifiers": ["orderStatusValidator"]
+        }
+      ],
+      "exports": [
+        "getWithDetails",
+        "get",
+        "transferRunner",
+        "hasCurrentUserCreatedOrder",
+        "create",
+        "update",
+        "getActiveOrders",
+        "getPastOrders",
+        "getSettlementSummary",
+        "getOutstandingDebts",
+        "getOutstandingPayments",
+        "getCompletedOrderDetails",
+        "getFrequentGroups"
+      ],
+      "totalLines": 975,
+      "hasStructuralAnalysis": true
+    },
+    "convex/orderUsers.ts": {
+      "filePath": "convex/orderUsers.ts",
+      "contentHash": "b6dfd7dfa7dae2d2a004d2960f3077c54c11f775ff5a34037bb565c258c9504e",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": ["query", "mutation"]
+        },
+        {
+          "source": "./_generated/api",
+          "specifiers": ["internal"]
+        },
+        {
+          "source": "./authHelper",
+          "specifiers": ["getUserId"]
+        },
+        {
+          "source": "./schema",
+          "specifiers": ["orderUserStatusValidator"]
+        }
+      ],
+      "exports": ["getForOrder", "setStatus", "leaveOrder", "removeFromOrder"],
+      "totalLines": 172,
+      "hasStructuralAnalysis": true
+    },
+    "convex/payments.ts": {
+      "filePath": "convex/payments.ts",
+      "contentHash": "538d158588910c34c8d565943ddd715d4ad8e7e9067890cc480dae9b23b36db0",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": [
+            "query",
+            "mutation",
+            "internalMutation",
+            "internalQuery"
+          ]
+        },
+        {
+          "source": "./_generated/api",
+          "specifiers": ["internal"]
+        },
+        {
+          "source": "./authHelper",
+          "specifiers": ["getUserId"]
+        },
+        {
+          "source": "./schema",
+          "specifiers": ["stripePaymentStatusValidator"]
+        },
+        {
+          "source": "./fees",
+          "specifiers": ["calculatePlatformFee"]
+        }
+      ],
+      "exports": [
+        "getMyConnectedAccount",
+        "getRunnerStripeStatus",
+        "getConnectedAccountInternal",
+        "upsertConnectedAccount",
+        "updateConnectedAccountByStripeId",
+        "getRunnerByStripeAccountId",
+        "getSettlementCheckoutData",
+        "markSettlementClaimed",
+        "expirePendingPayments",
+        "getUserStripeCustomerId",
+        "updateUserStripeCustomerId",
+        "createStripePaymentRecord",
+        "updateStripePaymentBySessionId",
+        "updateStripePaymentByPaymentIntentId",
+        "getOrderPaymentStatus",
+        "getMySettlementStatus",
+        "markSettledInPerson",
+        "nudgeUnsettledMembers",
+        "getStripePaymentForOrderUser"
+      ],
+      "totalLines": 626,
+      "hasStructuralAnalysis": true
+    },
+    "convex/pushNotifications.ts": {
+      "filePath": "convex/pushNotifications.ts",
+      "contentHash": "07a7868aac873937b384892cf8a3b1c9a3eee05f724a6abf2983e62e5807a00b",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": ["query", "mutation", "internalMutation"]
+        },
+        {
+          "source": "./_generated/api",
+          "specifiers": ["components"]
+        },
+        {
+          "source": "./authHelper",
+          "specifiers": ["getUserId"]
+        },
+        {
+          "source": "@convex-dev/expo-push-notifications",
+          "specifiers": ["PushNotifications"]
+        }
+      ],
+      "exports": [
+        "pushNotifications",
+        "hasToken",
+        "registerPushToken",
+        "unregisterPushToken",
+        "sendToUser",
+        "sendToUsers"
+      ],
+      "totalLines": 146,
+      "hasStructuralAnalysis": true
+    },
+    "convex/receiptScanning.ts": {
+      "filePath": "convex/receiptScanning.ts",
+      "contentHash": "29d882b31c8f2e9d13c03d202f95a4e31ea9b4a543b2fa531dab51e934260ebe",
+      "functions": [
+        {
+          "name": "sanitizeQuantity",
+          "params": ["quantity"],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "normalizeReceiptName",
+          "params": ["name"],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 11
+        },
+        {
+          "name": "looksLikeComboHeader",
+          "params": ["name"],
+          "returnType": "boolean",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "namesLookSimilar",
+          "params": ["left", "right"],
+          "returnType": "boolean",
+          "exported": false,
+          "lineCount": 26
+        },
+        {
+          "name": "allocatePerUnitPrices",
+          "params": ["comboUnitPriceInCents", "componentQuantities"],
+          "returnType": "number[]",
+          "exported": false,
+          "lineCount": 94
+        },
+        {
+          "name": "normalizeParsedReceiptItems",
+          "params": ["parsedItems"],
+          "returnType": "NormalizedReceiptItem[]",
+          "exported": false,
+          "lineCount": 132
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": ["mutation", "action", "internalMutation", "query"]
+        },
+        {
+          "source": "./_generated/api",
+          "specifiers": ["internal", "api"]
+        },
+        {
+          "source": "./authHelper",
+          "specifiers": ["getUserId"]
+        },
+        {
+          "source": "ai",
+          "specifiers": ["generateObject"]
+        },
+        {
+          "source": "@openrouter/ai-sdk-provider",
+          "specifiers": ["createOpenRouter"]
+        },
+        {
+          "source": "zod",
+          "specifiers": ["z"]
+        }
+      ],
+      "exports": [
+        "parsedReceiptItemValidator",
+        "receiptMatchValidator",
+        "generateReceiptUploadUrl",
+        "getOrderItemsForLocation",
+        "parseReceipt",
+        "confirmReceiptMatches",
+        "recalculateAmountsOwed",
+        "clearLocationPrices"
+      ],
+      "totalLines": 845,
+      "hasStructuralAnalysis": true
+    },
+    "convex/schema.ts": {
+      "filePath": "convex/schema.ts",
+      "contentHash": "602314bafb016c67666ef36e26d080cbd737fe2cb200ff1ff5ebe364c7243235",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/server",
+          "specifiers": ["defineSchema", "defineTable"]
+        },
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        }
+      ],
+      "exports": [
+        "orderStatusValidator",
+        "orderUserStatusValidator",
+        "settlementStatusValidator",
+        "stripePaymentStatusValidator"
+      ],
+      "totalLines": 194,
+      "hasStructuralAnalysis": true
+    },
+    "convex/squads.ts": {
+      "filePath": "convex/squads.ts",
+      "contentHash": "28a221ffc40e6cebeac5eb4f7384e80fb5c9fc8b9252d3ffcb5b62d29105570d",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": ["query", "mutation"]
+        },
+        {
+          "source": "./authHelper",
+          "specifiers": ["getUserId"]
+        },
+        {
+          "source": "./_generated/dataModel",
+          "specifiers": ["Id"]
+        }
+      ],
+      "exports": ["list", "create", "update", "remove"],
+      "totalLines": 149,
+      "hasStructuralAnalysis": true
+    },
+    "convex/stripeConnect.ts": {
+      "filePath": "convex/stripeConnect.ts",
+      "contentHash": "74895d7bfa54b5e6119f9a05e090a60806a0fb84b21e1078a773e84ba65705a6",
+      "functions": [
+        {
+          "name": "getStripe",
+          "params": [],
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "calculateInstantPayoutFee",
+          "params": ["amountCents"],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "calculateMaxInstantPayout",
+          "params": ["amountAvailableCents"],
+          "returnType": "{\n  amount: number;\n  fee: number;\n}",
+          "exported": false,
+          "lineCount": 34
+        },
+        {
+          "name": "getPayoutDestinationAvailability",
+          "params": ["stripe", "stripeAccountId"],
+          "returnType": "Promise<{\n  hasInstantPayoutCard: boolean;\n  hasBankPayoutAccount: boolean;\n}>",
+          "exported": false,
+          "lineCount": 26
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": ["action"]
+        },
+        {
+          "source": "./_generated/api",
+          "specifiers": ["api", "internal"]
+        },
+        {
+          "source": "stripe",
+          "specifiers": ["Stripe"]
+        },
+        {
+          "source": "./fees",
+          "specifiers": ["calculatePlatformFee"]
+        }
+      ],
+      "exports": [
+        "createConnectAccount",
+        "checkOnboardingStatus",
+        "createPaymentSheetParams",
+        "getPayoutBalance",
+        "requestInstantPayout",
+        "requestStandardPayout",
+        "createDashboardLink"
+      ],
+      "totalLines": 626,
+      "hasStructuralAnalysis": true
+    },
+    "convex/tsconfig.json": {
+      "filePath": "convex/tsconfig.json",
+      "contentHash": "e98dd88ccdabf4a2e0c6627aeccdbb805af5547e43a55ca9c8ce17c64a839fb3",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 26,
+      "hasStructuralAnalysis": true
+    },
+    "convex/users.ts": {
+      "filePath": "convex/users.ts",
+      "contentHash": "b3204a6ef9516c37aac828a21526cee8b30aa4695b860b94ec3ae03c0251ba4c",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": ["query", "mutation"]
+        },
+        {
+          "source": "./authHelper",
+          "specifiers": ["getUserId", "ensureUser"]
+        }
+      ],
+      "exports": [
+        "syncUser",
+        "getCurrentUser",
+        "updateProfile",
+        "generateAvatarUploadUrl",
+        "updateAvatar",
+        "removeAvatar"
+      ],
+      "totalLines": 161,
+      "hasStructuralAnalysis": true
+    },
+    "convex/waitlist.ts": {
+      "filePath": "convex/waitlist.ts",
+      "contentHash": "923079fcd306cbbe0f02ab1f0992be79b68df602d4c70d62e462a47d699c0d49",
+      "functions": [
+        {
+          "name": "getWaitlistAdminEmails",
+          "params": [],
+          "returnType": "Set<string>",
+          "exported": false,
+          "lineCount": 17
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/values",
+          "specifiers": ["v"]
+        },
+        {
+          "source": "resend",
+          "specifiers": ["Resend"]
+        },
+        {
+          "source": "./_generated/server",
+          "specifiers": ["query", "action", "internalMutation", "internalQuery"]
+        },
+        {
+          "source": "./_generated/api",
+          "specifiers": ["api", "internal"]
+        }
+      ],
+      "exports": [
+        "insertEntry",
+        "join",
+        "getCount",
+        "listEntries",
+        "sendLaunchEmail"
+      ],
+      "totalLines": 150,
+      "hasStructuralAnalysis": true
+    },
+    "eas.json": {
+      "filePath": "eas.json",
+      "contentHash": "e7020585eb3d1b799580975b29ed831aecef256fec65775abcb337e75150bbb2",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 30,
+      "hasStructuralAnalysis": true
+    },
+    "global.css": {
+      "filePath": "global.css",
+      "contentHash": "da965623e111ed93e9b67f78cc006b131e210e3d67468e86614c0c0cbe46228c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 51,
+      "hasStructuralAnalysis": false
+    },
+    "hooks/useAiOrderSummary.ts": {
+      "filePath": "hooks/useAiOrderSummary.ts",
+      "contentHash": "1e910ede4b736b33f458755bc73f26091ee590ac7bdbfab116f3d8dbf3c796b4",
+      "functions": [
+        {
+          "name": "getFreshAiSummaryResult",
+          "params": ["orderId"],
+          "returnType": "AiOrderSummary | null",
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "clearAiOrderSummaryRequestCache",
+          "params": ["orderId"],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "primeAiOrderSummaryRequest",
+          "params": ["generateAiOrderSummary", "orderId"],
+          "returnType": "Promise<AiOrderSummary>",
+          "exported": true,
+          "lineCount": 31
+        },
+        {
+          "name": "getErrorMessage",
+          "params": ["error"],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 16
+        },
+        {
+          "name": "useAiOrderSummary",
+          "params": ["orderId", "rawSummary"],
+          "returnType": "UseAiOrderSummaryResult",
+          "exported": true,
+          "lineCount": 128
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/react",
+          "specifiers": ["useAction"]
+        },
+        {
+          "source": "react",
+          "specifiers": ["useEffect", "useMemo", "useRef", "useState"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/convex/_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "@/lib/order-item-grouping",
+          "specifiers": ["buildOrderSummaryTextSignature"]
+        }
+      ],
+      "exports": ["primeAiOrderSummaryRequest", "useAiOrderSummary"],
+      "totalLines": 276,
+      "hasStructuralAnalysis": true
+    },
+    "hooks/useManualPriceEntry.ts": {
+      "filePath": "hooks/useManualPriceEntry.ts",
+      "contentHash": "0964dea70c79e7271cf8e37501668473c1045a8ab0e61608673fd7c0fd29ee9b",
+      "functions": [
+        {
+          "name": "useManualPriceEntry",
+          "params": ["orderLocationId", "orderId"],
+          "returnType": "UseManualPriceEntryResult",
+          "exported": true,
+          "lineCount": 191
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useState", "useCallback", "useEffect"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useMutation", "useQuery"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/convex/_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "@react-native-async-storage/async-storage",
+          "specifiers": ["AsyncStorage"]
+        }
+      ],
+      "exports": ["useManualPriceEntry"],
+      "totalLines": 232,
+      "hasStructuralAnalysis": true
+    },
+    "hooks/useReceiptScanning.ts": {
+      "filePath": "hooks/useReceiptScanning.ts",
+      "contentHash": "acb64476cf1eda7ba3946cf6b0068f089cfcce00d35a363010d0e55566ecabad",
+      "functions": [
+        {
+          "name": "useReceiptScanning",
+          "params": ["orderLocationId", "orderId"],
+          "returnType": "UseReceiptScanningResult",
+          "exported": true,
+          "lineCount": 440
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useState", "useCallback", "useEffect"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useMutation", "useAction", "useQuery"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/convex/_generated/dataModel",
+          "specifiers": ["Id"]
+        },
+        {
+          "source": "expo-image-picker",
+          "specifiers": ["* as ImagePicker"]
+        },
+        {
+          "source": "expo-image-manipulator",
+          "specifiers": ["* as ImageManipulator"]
+        },
+        {
+          "source": "@react-native-async-storage/async-storage",
+          "specifiers": ["AsyncStorage"]
+        },
+        {
+          "source": "@/lib/fuzzy-match",
+          "specifiers": ["autoMatchReceiptItems"]
+        }
+      ],
+      "exports": ["useReceiptScanning"],
+      "totalLines": 513,
+      "hasStructuralAnalysis": true
+    },
+    "landing/.dockerignore": {
+      "filePath": "landing/.dockerignore",
+      "contentHash": "ad78a402b1bcea43971259cbd05e2cf0b218ba0e743ea51793462c90a96a72e5",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 6,
+      "hasStructuralAnalysis": false
+    },
+    "landing/Caddyfile": {
+      "filePath": "landing/Caddyfile",
+      "contentHash": "81625fa1f96d3fa61f0fee782039b8528127e31d6651b2a2bcbfae6f15b8ec87",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 6,
+      "hasStructuralAnalysis": false
+    },
+    "landing/convex/_generated/api.d.ts": {
+      "filePath": "landing/convex/_generated/api.d.ts",
+      "contentHash": "d988ae1a40b1db1416ade763f91497c47eff02775c2cdc9add3db73a7b05487f",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/server",
+          "specifiers": ["ApiFromModules", "FilterApi", "FunctionReference"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 46,
+      "hasStructuralAnalysis": true
+    },
+    "landing/convex/_generated/api.js": {
+      "filePath": "landing/convex/_generated/api.js",
+      "contentHash": "f513058549831e85376f8d19cafaf2a4a770b6eb1b859fb371141f2c9dec0d70",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/server",
+          "specifiers": ["anyApi", "componentsGeneric"]
+        }
+      ],
+      "exports": ["api", "internal", "components"],
+      "totalLines": 24,
+      "hasStructuralAnalysis": true
+    },
+    "landing/convex/_generated/dataModel.d.ts": {
+      "filePath": "landing/convex/_generated/dataModel.d.ts",
+      "contentHash": "0ffcf4dcc0735f6895844032f64bc2ca7b0099160566fb8bffd68fd89f003329",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/server",
+          "specifiers": ["AnyDataModel"]
+        },
+        {
+          "source": "convex/values",
+          "specifiers": ["GenericId"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 59,
+      "hasStructuralAnalysis": true
+    },
+    "landing/convex/_generated/server.d.ts": {
+      "filePath": "landing/convex/_generated/server.d.ts",
+      "contentHash": "b0c8d708aaa165b10633bb6181dea1af4b9976a71ad001d75f42785ddfbca458",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/server",
+          "specifiers": [
+            "ActionBuilder",
+            "HttpActionBuilder",
+            "MutationBuilder",
+            "QueryBuilder",
+            "GenericActionCtx",
+            "GenericMutationCtx",
+            "GenericQueryCtx",
+            "GenericDatabaseReader",
+            "GenericDatabaseWriter"
+          ]
+        },
+        {
+          "source": "./dataModel.js",
+          "specifiers": ["DataModel"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 144,
+      "hasStructuralAnalysis": true
+    },
+    "landing/convex/_generated/server.js": {
+      "filePath": "landing/convex/_generated/server.js",
+      "contentHash": "aea87b3ee367e0e870f3da81ffce8babd8ea1aea695a1e38689841aebc09a1e8",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "convex/server",
+          "specifiers": [
+            "actionGeneric",
+            "httpActionGeneric",
+            "queryGeneric",
+            "mutationGeneric",
+            "internalActionGeneric",
+            "internalMutationGeneric",
+            "internalQueryGeneric"
+          ]
+        }
+      ],
+      "exports": [
+        "query",
+        "internalQuery",
+        "mutation",
+        "internalMutation",
+        "action",
+        "internalAction",
+        "httpAction"
+      ],
+      "totalLines": 94,
+      "hasStructuralAnalysis": true
+    },
+    "landing/Dockerfile": {
+      "filePath": "landing/Dockerfile",
+      "contentHash": "347c653637d8a0c748a4c2139e1f2c97d43800c709bd94265dfef3508116884c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 19,
+      "hasStructuralAnalysis": true
+    },
+    "landing/eslint.config.js": {
+      "filePath": "landing/eslint.config.js",
+      "contentHash": "089e9e47080c41e5acc35526641ecdf5c466b3091314329af561d6094f5d19d3",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@eslint/js",
+          "specifiers": ["js"]
+        },
+        {
+          "source": "globals",
+          "specifiers": ["globals"]
+        },
+        {
+          "source": "eslint-plugin-react-hooks",
+          "specifiers": ["reactHooks"]
+        },
+        {
+          "source": "eslint-plugin-react-refresh",
+          "specifiers": ["reactRefresh"]
+        },
+        {
+          "source": "typescript-eslint",
+          "specifiers": ["tseslint"]
+        },
+        {
+          "source": "eslint/config",
+          "specifiers": ["defineConfig", "globalIgnores"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 24,
+      "hasStructuralAnalysis": true
+    },
+    "landing/index.html": {
+      "filePath": "landing/index.html",
+      "contentHash": "e9044056d527acdb0e99c1d562ad26d80028707db475930d924b08d8b7fb61c7",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 17,
+      "hasStructuralAnalysis": false
+    },
+    "landing/package.json": {
+      "filePath": "landing/package.json",
+      "contentHash": "de2d9ff615a22d1f8e09e2ccf53f67807de829bb4996f16df7acd354a22c5f2c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 37,
+      "hasStructuralAnalysis": true
+    },
+    "landing/railway.toml": {
+      "filePath": "landing/railway.toml",
+      "contentHash": "f01100a3316079d54339b119e4d2747c9e489fc880c36f64f7de753f720159ac",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 8,
+      "hasStructuralAnalysis": true
+    },
+    "landing/README.md": {
+      "filePath": "landing/README.md",
+      "contentHash": "e7891c600c17c2dfa69d260066efb8c5a27ed52f7f7601a367ff6fde39ff8593",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 21,
+      "hasStructuralAnalysis": true
+    },
+    "landing/src/App.tsx": {
+      "filePath": "landing/src/App.tsx",
+      "contentHash": "f0d824ad5a152a790945a6a97459b996907a14da9189cf0c908f0069aa640e2b",
+      "functions": [
+        {
+          "name": "App",
+          "params": ["{ waitlistEnabled }"],
+          "exported": false,
+          "lineCount": 14
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useState"]
+        },
+        {
+          "source": "./components/SplashIntro",
+          "specifiers": ["SplashIntro"]
+        },
+        {
+          "source": "./components/Hero",
+          "specifiers": ["Hero"]
+        },
+        {
+          "source": "./components/HowItWorks",
+          "specifiers": ["HowItWorks"]
+        },
+        {
+          "source": "./components/Features",
+          "specifiers": ["Features"]
+        },
+        {
+          "source": "./components/Payments",
+          "specifiers": ["Payments"]
+        },
+        {
+          "source": "./components/Footer",
+          "specifiers": ["Footer"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 29,
+      "hasStructuralAnalysis": true
+    },
+    "landing/src/components/Features.tsx": {
+      "filePath": "landing/src/components/Features.tsx",
+      "contentHash": "b9ef973bc575a6c089495466f9374f616394fa770ef762f37d786a32f4f9fb76",
+      "functions": [
+        {
+          "name": "Features",
+          "params": [],
+          "exported": true,
+          "lineCount": 85
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "framer-motion",
+          "specifiers": ["motion"]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": ["QrCode", "ScanLine", "Radio", "CheckCircle"]
+        }
+      ],
+      "exports": ["Features"],
+      "totalLines": 132,
+      "hasStructuralAnalysis": true
+    },
+    "landing/src/components/Footer.tsx": {
+      "filePath": "landing/src/components/Footer.tsx",
+      "contentHash": "d47be99d5ac38312724d5c06b10fdcf0a2b5c5381fa2cc411d86c968b56b1487",
+      "functions": [
+        {
+          "name": "Footer",
+          "params": ["{ waitlistEnabled }"],
+          "exported": true,
+          "lineCount": 52
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "framer-motion",
+          "specifiers": ["motion"]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": ["Sparkles"]
+        },
+        {
+          "source": "./Logo",
+          "specifiers": ["Logo"]
+        },
+        {
+          "source": "./WaitlistForm",
+          "specifiers": ["WaitlistForm"]
+        }
+      ],
+      "exports": ["Footer"],
+      "totalLines": 62,
+      "hasStructuralAnalysis": true
+    },
+    "landing/src/components/Hero.tsx": {
+      "filePath": "landing/src/components/Hero.tsx",
+      "contentHash": "ba464f924d89a52da1384c5b3aaf43d8d26f5b243b455ea3fd4824cbd9095a24",
+      "functions": [
+        {
+          "name": "Hero",
+          "params": ["{ waitlistEnabled }"],
+          "exported": true,
+          "lineCount": 151
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "framer-motion",
+          "specifiers": ["motion"]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": ["Users", "Receipt", "CreditCard"]
+        },
+        {
+          "source": "./WaitlistForm",
+          "specifiers": ["WaitlistForm"]
+        }
+      ],
+      "exports": ["Hero"],
+      "totalLines": 162,
+      "hasStructuralAnalysis": true
+    },
+    "landing/src/components/HowItWorks.tsx": {
+      "filePath": "landing/src/components/HowItWorks.tsx",
+      "contentHash": "07f127db525b754fc7664fbd02f54224ce3c8d7fa92ee4a6bd68136a16573e7f",
+      "functions": [
+        {
+          "name": "HowItWorks",
+          "params": [],
+          "exported": true,
+          "lineCount": 73
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "framer-motion",
+          "specifiers": ["motion"]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": ["QrCode", "ShoppingBag", "ScanLine", "ChevronRight"]
+        }
+      ],
+      "exports": ["HowItWorks"],
+      "totalLines": 107,
+      "hasStructuralAnalysis": true
+    },
+    "landing/src/components/Logo.tsx": {
+      "filePath": "landing/src/components/Logo.tsx",
+      "contentHash": "6dc0520c308de34cb82dd947385139f847cc2ed1cf9c90f1a98f14b875d7420e",
+      "functions": [
+        {
+          "name": "Logo",
+          "params": ["{ className = \"\" }"],
+          "exported": true,
+          "lineCount": 54
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": ["Logo"],
+      "totalLines": 55,
+      "hasStructuralAnalysis": true
+    },
+    "landing/src/components/Payments.tsx": {
+      "filePath": "landing/src/components/Payments.tsx",
+      "contentHash": "65ca5d8203074d2b0137ea7decc44e31e2ebfee308dc51c15106057585e95400",
+      "functions": [
+        {
+          "name": "Payments",
+          "params": [],
+          "exported": true,
+          "lineCount": 80
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "framer-motion",
+          "specifiers": ["motion"]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": ["Lock", "ShieldCheck", "CreditCard"]
+        }
+      ],
+      "exports": ["Payments"],
+      "totalLines": 102,
+      "hasStructuralAnalysis": true
+    },
+    "landing/src/components/SocialProof.tsx": {
+      "filePath": "landing/src/components/SocialProof.tsx",
+      "contentHash": "2f7c24d2a2388dd54481849787b056c69b6b4b1cf7bfeac6a6cc213b82200df7",
+      "functions": [
+        {
+          "name": "SocialProof",
+          "params": [],
+          "exported": true,
+          "lineCount": 53
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "framer-motion",
+          "specifiers": ["motion"]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": ["MessageCircle"]
+        }
+      ],
+      "exports": ["SocialProof"],
+      "totalLines": 57,
+      "hasStructuralAnalysis": true
+    },
+    "landing/src/components/SplashIntro.tsx": {
+      "filePath": "landing/src/components/SplashIntro.tsx",
+      "contentHash": "f51fbb42107da9aaf4b1a0f644b84b451a082cd16e2a13a31677e8bc275333be",
+      "functions": [
+        {
+          "name": "SplashIntro",
+          "params": ["{ onComplete }"],
+          "exported": true,
+          "lineCount": 23
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "framer-motion",
+          "specifiers": ["motion"]
+        }
+      ],
+      "exports": ["SplashIntro"],
+      "totalLines": 30,
+      "hasStructuralAnalysis": true
+    },
+    "landing/src/components/WaitlistForm.tsx": {
+      "filePath": "landing/src/components/WaitlistForm.tsx",
+      "contentHash": "005dfe5d8dd573f40d893de48ab3efb93cbd4ed9449ab61e1abf45e703947ea1",
+      "functions": [
+        {
+          "name": "WaitlistForm",
+          "params": ["{ enabled }"],
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "ConfiguredWaitlistForm",
+          "params": [],
+          "exported": false,
+          "lineCount": 82
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useState", "FormEvent"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useAction"]
+        },
+        {
+          "source": "convex/server",
+          "specifiers": ["makeFunctionReference"]
+        },
+        {
+          "source": "framer-motion",
+          "specifiers": ["motion", "AnimatePresence"]
+        },
+        {
+          "source": "lucide-react",
+          "specifiers": ["CheckCircle", "Loader2"]
+        }
+      ],
+      "exports": ["WaitlistForm"],
+      "totalLines": 117,
+      "hasStructuralAnalysis": true
+    },
+    "landing/src/index.css": {
+      "filePath": "landing/src/index.css",
+      "contentHash": "cc5970e4ee5358b04180ea448795e5e70c9110e9d4824455cef39749301a8df1",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 18,
+      "hasStructuralAnalysis": false
+    },
+    "landing/src/main.tsx": {
+      "filePath": "landing/src/main.tsx",
+      "contentHash": "08bfdf20c7f497116e41878706f597e6fe26b8d6f90fa313bfbe8f4874634a3d",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["StrictMode"]
+        },
+        {
+          "source": "react-dom/client",
+          "specifiers": ["createRoot"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["ConvexProvider", "ConvexReactClient"]
+        },
+        {
+          "source": "./index.css",
+          "specifiers": []
+        },
+        {
+          "source": "./App.tsx",
+          "specifiers": ["App"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 28,
+      "hasStructuralAnalysis": true
+    },
+    "landing/tsconfig.app.json": {
+      "filePath": "landing/tsconfig.app.json",
+      "contentHash": "922bc5bfb41bdc0768023b2487d54b3ae23c587d999024d4f32cde879ae6f4d8",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 29,
+      "hasStructuralAnalysis": true
+    },
+    "landing/tsconfig.json": {
+      "filePath": "landing/tsconfig.json",
+      "contentHash": "770b4140bbb581e2dfd9ea9946ffc9c75a1d86ba7d2db5f77c83e37cbdf9d808",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 8,
+      "hasStructuralAnalysis": true
+    },
+    "landing/tsconfig.node.json": {
+      "filePath": "landing/tsconfig.node.json",
+      "contentHash": "c3dd0fb522feba3596713f51b95bd53d781d845d24aedbfa2ac093d8b39c5120",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 27,
+      "hasStructuralAnalysis": true
+    },
+    "landing/vite.config.ts": {
+      "filePath": "landing/vite.config.ts",
+      "contentHash": "7b2f3df3a3c90bec9f60a7eeb43d316fda4646976376bba81a90e9ba340292c0",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "vite",
+          "specifiers": ["defineConfig"]
+        },
+        {
+          "source": "@vitejs/plugin-react",
+          "specifiers": ["react"]
+        },
+        {
+          "source": "@tailwindcss/vite",
+          "specifiers": ["tailwindcss"]
+        }
+      ],
+      "exports": [],
+      "totalLines": 8,
+      "hasStructuralAnalysis": true
+    },
+    "lib/auth-client.ts": {
+      "filePath": "lib/auth-client.ts",
+      "contentHash": "3b5f8a4450fd984c3b3eb367658aca240e458889330f0ae02bced42f62a42366",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "better-auth/react",
+          "specifiers": ["createAuthClient"]
+        },
+        {
+          "source": "better-auth/client/plugins",
+          "specifiers": ["emailOTPClient"]
+        },
+        {
+          "source": "@better-auth/expo/client",
+          "specifiers": ["expoClient"]
+        },
+        {
+          "source": "@convex-dev/better-auth/client/plugins",
+          "specifiers": ["convexClient"]
+        },
+        {
+          "source": "expo-secure-store",
+          "specifiers": ["* as SecureStore"]
+        }
+      ],
+      "exports": ["authClient"],
+      "totalLines": 33,
+      "hasStructuralAnalysis": true
+    },
+    "lib/auth-helpers.ts": {
+      "filePath": "lib/auth-helpers.ts",
+      "contentHash": "61a1591d92e3f0c93b4e6079a6f3ece997eb44aa9125f9853c6fa80cd1dde23d",
+      "functions": [
+        {
+          "name": "createFormHandlers",
+          "params": ["_form", "setForm"],
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "validateField",
+          "params": ["key", "value", "form"],
+          "returnType": "string | null",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "validateEmail",
+          "params": ["email"],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "getAuthErrorMessage",
+          "params": ["error", "context"],
+          "returnType": "AuthErrorResult",
+          "exported": true,
+          "lineCount": 180
+        },
+        {
+          "name": "splitName",
+          "params": ["fullName"],
+          "returnType": "{\n  firstName: string | null;\n  lastName: string | null;\n}",
+          "exported": true,
+          "lineCount": 43
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "expo-auth-session",
+          "specifiers": ["makeRedirectUri"]
+        }
+      ],
+      "exports": [
+        "createFormHandlers",
+        "validateField",
+        "validateEmail",
+        "redirectTo",
+        "getAuthErrorMessage",
+        "splitName"
+      ],
+      "totalLines": 317,
+      "hasStructuralAnalysis": true
+    },
+    "lib/br-theme.ts": {
+      "filePath": "lib/br-theme.ts",
+      "contentHash": "86386670016017a50de5eb27aea67603f23641c6b7cc823da293e630f16960fc",
+      "functions": [
+        {
+          "name": "avatarColors",
+          "params": ["name"],
+          "returnType": "{ bg: string; fg: string }",
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": ["BR", "BR_RADIUS", "BR_FONT", "BR_SHADOW", "avatarColors"],
+      "totalLines": 88,
+      "hasStructuralAnalysis": true
+    },
+    "lib/constants.ts": {
+      "filePath": "lib/constants.ts",
+      "contentHash": "a73df3b633ec8b9e20d63fc54ef547de15677ae6138ab4f9d4fcc7db517c6c05",
+      "functions": [
+        {
+          "name": "hsl",
+          "params": ["value"],
+          "exported": false,
+          "lineCount": 1
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/tokens.json",
+          "specifiers": ["tokens"]
+        }
+      ],
+      "exports": ["NAV_THEME"],
+      "totalLines": 23,
+      "hasStructuralAnalysis": true
+    },
+    "lib/convex-auth-context.tsx": {
+      "filePath": "lib/convex-auth-context.tsx",
+      "contentHash": "f17d5f4cdcfa26c442f308c228aa71e7e15519f1744ea6ee89e9d1d5daa66939",
+      "functions": [
+        {
+          "name": "useAuth",
+          "params": [],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "AuthProvider",
+          "params": ["{ children }"],
+          "exported": true,
+          "lineCount": 60
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "createContext",
+            "useContext",
+            "useEffect",
+            "useState",
+            "useCallback",
+            "useMemo",
+            "useRef",
+            "ReactNode"
+          ]
+        },
+        {
+          "source": "./auth-client",
+          "specifiers": ["authClient"]
+        },
+        {
+          "source": "./auth-client",
+          "specifiers": ["Session", "User"]
+        }
+      ],
+      "exports": ["AuthContext", "useAuth", "AuthProvider"],
+      "totalLines": 111,
+      "hasStructuralAnalysis": true
+    },
+    "lib/fonts.ts": {
+      "filePath": "lib/fonts.ts",
+      "contentHash": "628a799dd13cb8c001d4aed8b3a74a6d613fd507dbb00a5c0fa8e21af16b2f86",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": ["FONTS", "COLORS"],
+      "totalLines": 39,
+      "hasStructuralAnalysis": true
+    },
+    "lib/fuzzy-match.ts": {
+      "filePath": "lib/fuzzy-match.ts",
+      "contentHash": "c19b745aa730b5eb7d4706bd10d77e9ba947e1bf7d24517ef8605607bea85cdf",
+      "functions": [
+        {
+          "name": "levenshteinDistance",
+          "params": ["str1", "str2"],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 30
+        },
+        {
+          "name": "calculateSimilarity",
+          "params": ["str1", "str2"],
+          "returnType": "number",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "containsSubstantialMatch",
+          "params": ["str1", "str2"],
+          "returnType": "boolean",
+          "exported": false,
+          "lineCount": 18
+        },
+        {
+          "name": "findBestMatch",
+          "params": ["receiptItemName", "candidates"],
+          "returnType": "MatchResult | null",
+          "exported": true,
+          "lineCount": 35
+        },
+        {
+          "name": "autoMatchReceiptItems",
+          "params": ["receiptItems", "orderItems"],
+          "returnType": "Array<{\n  id: string;\n  receiptItem: {\n    name: string;\n    quantity: number;\n    priceInCents: number | null;\n  };\n  matchedOrderItemId: string | null;\n  matchedItemName: string | null;\n  matchedUserName: string | null;\n  confidence: number;\n}>",
+          "exported": true,
+          "lineCount": 64
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "calculateSimilarity",
+        "findBestMatch",
+        "autoMatchReceiptItems"
+      ],
+      "totalLines": 191,
+      "hasStructuralAnalysis": true
+    },
+    "lib/hooks/use-order-api.ts": {
+      "filePath": "lib/hooks/use-order-api.ts",
+      "contentHash": "cce611b8c6a5475959aa4fd2013248d3b6a2def0ed7b0ed3f45aa1f58204d21e",
+      "functions": [
+        {
+          "name": "useFriends",
+          "params": [],
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "useCreateOrder",
+          "params": [],
+          "exported": true,
+          "lineCount": 26
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useState"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useQuery", "useMutation"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/convex/_generated/dataModel",
+          "specifiers": ["Id"]
+        }
+      ],
+      "exports": ["useFriends", "useCreateOrder"],
+      "totalLines": 46,
+      "hasStructuralAnalysis": true
+    },
+    "lib/hooks/use-push-notifications.ts": {
+      "filePath": "lib/hooks/use-push-notifications.ts",
+      "contentHash": "631695f079bc2417057e817f3f6b6afe1b4e6f24490563f0d3c4d3c653e8b3aa",
+      "functions": [
+        {
+          "name": "usePushNotifications",
+          "params": [],
+          "exported": true,
+          "lineCount": 151
+        },
+        {
+          "name": "registerForPushNotificationsAsync",
+          "params": [],
+          "returnType": "Promise<string | null>",
+          "exported": false,
+          "lineCount": 39
+        },
+        {
+          "name": "getExistingPushToken",
+          "params": [],
+          "returnType": "Promise<string | null>",
+          "exported": false,
+          "lineCount": 16
+        },
+        {
+          "name": "handleNotificationTap",
+          "params": ["data"],
+          "exported": false,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": ["useEffect", "useRef", "useState", "useCallback"]
+        },
+        {
+          "source": "react-native",
+          "specifiers": ["Platform"]
+        },
+        {
+          "source": "expo-router",
+          "specifiers": ["router"]
+        },
+        {
+          "source": "expo-notifications",
+          "specifiers": ["* as Notifications"]
+        },
+        {
+          "source": "expo-device",
+          "specifiers": ["* as Device"]
+        },
+        {
+          "source": "expo-constants",
+          "specifiers": ["Constants"]
+        },
+        {
+          "source": "@react-native-async-storage/async-storage",
+          "specifiers": ["AsyncStorage"]
+        },
+        {
+          "source": "convex/react",
+          "specifiers": ["useMutation", "useQuery"]
+        },
+        {
+          "source": "@/convex/_generated/api",
+          "specifiers": ["api"]
+        },
+        {
+          "source": "@/lib/convex-auth-context",
+          "specifiers": ["useAuth"]
+        }
+      ],
+      "exports": ["usePushNotifications"],
+      "totalLines": 245,
+      "hasStructuralAnalysis": true
+    },
+    "lib/order-item-grouping.ts": {
+      "filePath": "lib/order-item-grouping.ts",
+      "contentHash": "e9a132e9ad3985a18e1147f2dddf11b6f1b31f68c380df482956978f09643dda",
+      "functions": [
+        {
+          "name": "normalizeDisplayText",
+          "params": ["text"],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "normalizeSizeTokens",
+          "params": ["text"],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "normalizeOrderItemText",
+          "params": ["text"],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "tokenizeNormalizedText",
+          "params": ["text"],
+          "returnType": "string[]",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "getNumericTokens",
+          "params": ["text"],
+          "returnType": "string[]",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "getTokenSet",
+          "params": ["text"],
+          "returnType": "Set<string>",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "tokenSetsOverlap",
+          "params": ["left", "right"],
+          "returnType": "boolean",
+          "exported": false,
+          "lineCount": 15
+        },
+        {
+          "name": "tokenSetsMatch",
+          "params": ["left", "right"],
+          "returnType": "boolean",
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "numericTokensMatch",
+          "params": ["left", "right"],
+          "returnType": "boolean",
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "chooseDisplayName",
+          "params": ["texts"],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 23
+        },
+        {
+          "name": "sortParticipantGroups",
+          "params": ["groups"],
+          "returnType": "OrderItemGroup<T>[]",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "buildParticipantGroups",
+          "params": ["orderItems"],
+          "returnType": "OrderItemGroup<T>[]",
+          "exported": false,
+          "lineCount": 68
+        },
+        {
+          "name": "buildTextGroup",
+          "params": [
+            "items",
+            "inputOrderById",
+            "normalizedText",
+            "displayNameOverride"
+          ],
+          "returnType": "OrderItemTextGroup<T>",
+          "exported": false,
+          "lineCount": 41
+        },
+        {
+          "name": "sortTextGroups",
+          "params": ["groups"],
+          "returnType": "OrderItemTextGroup<T>[]",
+          "exported": false,
+          "lineCount": 17
+        },
+        {
+          "name": "buildAmbiguousClusters",
+          "params": ["groups"],
+          "returnType": "AmbiguousOrderItemTextCluster<T>[]",
+          "exported": false,
+          "lineCount": 120
+        },
+        {
+          "name": "buildOrderItemTextGroupingSignature",
+          "params": ["orderItems"],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "buildOrderSummaryTextSignature",
+          "params": ["locations"],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "analyzeOrderItemTextGroups",
+          "params": ["orderItems"],
+          "returnType": "OrderItemTextGroupingAnalysis<T>",
+          "exported": true,
+          "lineCount": 31
+        },
+        {
+          "name": "groupOrderItemsByParticipant",
+          "params": ["orderItems"],
+          "returnType": "OrderItemGroup<T>[]",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "groupOrderItemsByItemText",
+          "params": ["orderItems"],
+          "returnType": "OrderItemTextGroup<T>[]",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "materializeResolvedOrderItemTextGroups",
+          "params": ["orderItems", "resolvedGroups"],
+          "returnType": "OrderItemTextGroup<T>[]",
+          "exported": true,
+          "lineCount": 52
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "./fuzzy-match",
+          "specifiers": ["calculateSimilarity"]
+        }
+      ],
+      "exports": [
+        "normalizeOrderItemText",
+        "buildOrderItemTextGroupingSignature",
+        "buildOrderSummaryTextSignature",
+        "analyzeOrderItemTextGroups",
+        "groupOrderItemsByParticipant",
+        "groupOrderItemsByItemText",
+        "materializeResolvedOrderItemTextGroups"
+      ],
+      "totalLines": 551,
+      "hasStructuralAnalysis": true
+    },
+    "lib/types.ts": {
+      "filePath": "lib/types.ts",
+      "contentHash": "903da57d2e4ba1de80ef1408bbd821e2a17a4a6256d41a55963db756a3e9d394",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 222,
+      "hasStructuralAnalysis": true
+    },
+    "lib/use-color-scheme.ts": {
+      "filePath": "lib/use-color-scheme.ts",
+      "contentHash": "619b3e19bd80e4617db94009fcf2dcaccd18a994cc7be53114fc7065e8e03866",
+      "functions": [
+        {
+          "name": "useColorScheme",
+          "params": [],
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "nativewind",
+          "specifiers": ["useNativewindColorScheme"]
+        }
+      ],
+      "exports": ["useColorScheme"],
+      "totalLines": 13,
+      "hasStructuralAnalysis": true
+    },
+    "metro.config.js": {
+      "filePath": "metro.config.js",
+      "contentHash": "7605e65ae60c16921d64b09694f1064b421420be9ec7516068009dc75b2d47c6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 13,
+      "hasStructuralAnalysis": true
+    },
+    "nativewind-env.d.ts": {
+      "filePath": "nativewind-env.d.ts",
+      "contentHash": "55aac385854e5e97d7154e3fc842937d7eff06fd2ca577657eceb21d5faeff1c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 4,
+      "hasStructuralAnalysis": true
+    },
+    "package.json": {
+      "filePath": "package.json",
+      "contentHash": "3a108d327622b48c7da725b430e3782796eedcf301b40c6aafb3268dcb569c89",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 131,
+      "hasStructuralAnalysis": true
+    },
+    "prettier.config.cjs": {
+      "filePath": "prettier.config.cjs",
+      "contentHash": "4e7642cbeffa701529549724df32edc6d4cd99803d7fbdb8ea206efc49ceabf2",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 15,
+      "hasStructuralAnalysis": true
+    },
+    "railway.toml": {
+      "filePath": "railway.toml",
+      "contentHash": "7612e3a022079eb2fa5c38a7df21478a5bb5e68740765e5db36cd3804bda53ca",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 8,
+      "hasStructuralAnalysis": true
+    },
+    "README.html": {
+      "filePath": "README.html",
+      "contentHash": "ea4cc9879deb794b3f9d3776b0c2f031f8d6baaa74203872e362ca50e53fcac9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 313,
+      "hasStructuralAnalysis": false
+    },
+    "README.md": {
+      "filePath": "README.md",
+      "contentHash": "ca3f063da2fe2143e3399810ccef73f8529ea43e8d95e4d1fee86395ad92f474",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 205,
+      "hasStructuralAnalysis": true
+    },
+    "scripts/sync-style-tokens.cjs": {
+      "filePath": "scripts/sync-style-tokens.cjs",
+      "contentHash": "9372d1ef8f04c95f09c8787dc58aa85d0e347f7958f561f40b5dcda3c4f41acc",
+      "functions": [
+        {
+          "name": "parseVarsFromCss",
+          "params": ["css"],
+          "exported": false,
+          "lineCount": 27
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 35,
+      "hasStructuralAnalysis": true
+    },
+    "tailwind.config.js": {
+      "filePath": "tailwind.config.js",
+      "contentHash": "4ebefc6810a02f311103462425f8e27e3be1a236bb72f8378039b66184031e41",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "nativewind/theme",
+          "specifiers": ["hairlineWidth"]
+        }
+      ],
+      "exports": ["darkMode", "content", "presets", "theme", "plugins"],
+      "totalLines": 60,
+      "hasStructuralAnalysis": true
+    },
+    "tokens.json": {
+      "filePath": "tokens.json",
+      "contentHash": "576a701efdfbe4d18853db05ea9cf4d407e4dc177569d0d3c55ba614554ad76a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 46,
+      "hasStructuralAnalysis": true
+    },
+    "tsconfig.json": {
+      "filePath": "tsconfig.json",
+      "contentHash": "d62ee0bfa0efdc226360cc8bf84ac690a274111aad42a606a0643b609eaec03f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 19,
+      "hasStructuralAnalysis": true
+    }
+  }
+}

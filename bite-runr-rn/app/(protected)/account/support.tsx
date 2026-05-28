@@ -5,13 +5,12 @@ import {
   Pressable,
   Linking,
   ScrollView,
-  StyleSheet,
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import Icon from "@/components/common/icon";
-import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 import { BrText } from "@/components/br";
 import Animated, { FadeInUp } from "react-native-reanimated";
 
@@ -20,9 +19,12 @@ const SUPPORT_EMAIL = "biterunr@gmail.com";
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <Pressable onPress={() => setOpen((v) => !v)} style={styles.faqCard}>
-      <View style={styles.faqRow}>
-        <Text style={[styles.faqQuestion, { flex: 1, marginRight: 12 }]}>
+    <Pressable
+      onPress={() => setOpen((v) => !v)}
+      className="rounded-[16px] border border-[rgba(26,20,16,0.08)] bg-white p-3.5"
+    >
+      <View className="flex-row items-center">
+        <Text className="mr-3 flex-1 text-sm font-semibold leading-5 text-[#1A1410]">
           {question}
         </Text>
         <Icon
@@ -31,7 +33,11 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
           color={BR.ink3}
         />
       </View>
-      {open && <Text style={styles.faqAnswer}>{answer}</Text>}
+      {open && (
+        <Text className="mt-2.5 text-[13px] leading-[19px] text-[#8A7A6E]">
+          {answer}
+        </Text>
+      )}
     </Pressable>
   );
 }
@@ -93,63 +99,74 @@ const FAQS = [
 
 export default function SupportScreen() {
   return (
-    <SafeAreaView
-      edges={["top"]}
-      style={{ flex: 1, backgroundColor: BR.paper }}
-    >
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+    <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
+      <View className="flex-row items-center justify-between px-[18px] pt-2 pb-3">
+        <Pressable
+          onPress={() => router.back()}
+          className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+        >
           <Icon name="ChevronLeft" size={20} color={BR.ink} />
         </Pressable>
-        <BrText weight="bold" style={{ fontSize: 17, lineHeight: 24 }}>
+        <BrText
+          weight="bold"
+          className="text-[17px] leading-6"
+          style={BR_FONT_STYLE.display}
+        >
           Support
         </BrText>
-        <View style={{ width: 38 }} />
+        <View className="w-[38px]" />
       </View>
 
       <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 48 }}
+        className="flex-1"
+        contentContainerClassName="px-[18px] pb-12"
         showsVerticalScrollIndicator={false}
       >
         {/* Hero */}
-        <Animated.View entering={FadeInUp.duration(300)} style={styles.hero}>
-          <View style={styles.heroIcon}>
+        <Animated.View
+          entering={FadeInUp.duration(300)}
+          className="items-center py-7"
+        >
+          <View className="h-[72px] w-[72px] items-center justify-center rounded-[22px] border border-[rgba(255,106,31,0.18)] bg-[#FFF1E2]">
             <Icon name="Headset" size={32} color={BR.orangeDeep} />
           </View>
           <BrText
             weight="bold"
-            style={{
-              fontSize: 26,
-              lineHeight: 34,
-              marginTop: 14,
-              textAlign: "center",
-            }}
+            className="mt-3.5 text-center text-[26px] leading-[34px]"
           >
             How can we help?
           </BrText>
-          <Text style={styles.heroSub}>
+          <Text className="mt-1.5 text-center text-sm leading-5 text-[#8A7A6E]">
             Find answers below or reach out to our team
           </Text>
         </Animated.View>
 
         {/* Contact options */}
         <Animated.View entering={FadeInUp.duration(300).delay(60)}>
-          <Text style={styles.sectionLabel}>Contact us</Text>
-          <View style={{ gap: 10, marginTop: 10 }}>
+          <Text className="font-['JetBrainsMono_500Medium'] text-[11px] uppercase tracking-[1.2px] text-[#8A7A6E]">
+            Contact us
+          </Text>
+          <View className="mt-2.5 gap-2.5">
             {CONTACT_OPTIONS.map((opt) => (
               <TouchableOpacity
                 key={opt.title}
                 onPress={() => Linking.openURL(opt.url)}
-                style={styles.contactRow}
+                className="flex-row items-center gap-3.5 rounded-[16px] border border-[rgba(26,20,16,0.08)] bg-white p-3.5"
                 activeOpacity={0.85}
               >
-                <View style={[styles.contactIcon, { backgroundColor: opt.bg }]}>
+                <View
+                  className="h-11 w-11 shrink-0 items-center justify-center rounded-[14px]"
+                  style={{ backgroundColor: opt.bg }}
+                >
                   <Icon name={opt.icon} size={20} color={opt.color} />
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.contactTitle}>{opt.title}</Text>
-                  <Text style={styles.contactSub}>{opt.sub}</Text>
+                <View className="flex-1">
+                  <Text className="text-[15px] font-bold text-[#1A1410]">
+                    {opt.title}
+                  </Text>
+                  <Text className="mt-0.5 text-xs text-[#8A7A6E]">
+                    {opt.sub}
+                  </Text>
                 </View>
                 <Icon name="ChevronRight" size={16} color={BR.ink3} />
               </TouchableOpacity>
@@ -160,10 +177,12 @@ export default function SupportScreen() {
         {/* FAQs */}
         <Animated.View
           entering={FadeInUp.duration(300).delay(120)}
-          style={{ marginTop: 28 }}
+          className="mt-7"
         >
-          <Text style={styles.sectionLabel}>Frequently asked questions</Text>
-          <View style={{ gap: 8, marginTop: 10 }}>
+          <Text className="font-['JetBrainsMono_500Medium'] text-[11px] uppercase tracking-[1.2px] text-[#8A7A6E]">
+            Frequently asked questions
+          </Text>
+          <View className="mt-2.5 gap-2">
             {FAQS.map((faq) => (
               <FAQItem
                 key={faq.question}
@@ -177,137 +196,20 @@ export default function SupportScreen() {
         {/* Email footer */}
         <Animated.View
           entering={FadeInUp.duration(300).delay(160)}
-          style={styles.emailFooter}
+          className="mt-8 items-center gap-1 rounded-[16px] border border-[rgba(26,20,16,0.08)] bg-white p-5"
         >
-          <Text style={styles.emailFooterLabel}>
+          <Text className="text-[13px] text-[#8A7A6E]">
             You can also reach us directly at
           </Text>
           <TouchableOpacity
             onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}`)}
           >
-            <Text style={styles.emailFooterAddress}>{SUPPORT_EMAIL}</Text>
+            <Text className="text-sm font-bold text-[#E8551A]">
+              {SUPPORT_EMAIL}
+            </Text>
           </TouchableOpacity>
         </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 12,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  hero: {
-    alignItems: "center",
-    paddingVertical: 28,
-  },
-  heroIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 22,
-    backgroundColor: BR.orangeTint,
-    borderWidth: 1,
-    borderColor: "rgba(255,106,31,0.18)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  heroSub: {
-    fontSize: 14,
-    color: BR.ink3,
-    marginTop: 6,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-  },
-  contactRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    padding: 14,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-  },
-  contactIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  contactTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: BR.ink,
-  },
-  contactSub: {
-    fontSize: 12,
-    color: BR.ink3,
-    marginTop: 2,
-  },
-  faqCard: {
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-    padding: 14,
-  },
-  faqRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  faqQuestion: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: BR.ink,
-    lineHeight: 20,
-  },
-  faqAnswer: {
-    fontSize: 13,
-    color: BR.ink3,
-    lineHeight: 19,
-    marginTop: 10,
-  },
-  emailFooter: {
-    alignItems: "center",
-    marginTop: 32,
-    padding: 20,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-    gap: 4,
-  },
-  emailFooterLabel: {
-    fontSize: 13,
-    color: BR.ink3,
-  },
-  emailFooterAddress: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: BR.orangeDeep,
-  },
-});

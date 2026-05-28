@@ -6,12 +6,11 @@ import {
   ScrollView,
   TextInput,
   Modal,
-  StyleSheet,
   ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@/components/common/icon";
-import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 import { BrText } from "@/components/br";
 import { groupOrderItemsByParticipant } from "@/lib/order-item-grouping";
 
@@ -74,31 +73,46 @@ function PriceItemCard({
   const hasPrice = priceInCents !== null && priceInCents > 0;
 
   return (
-    <View style={[styles.itemCard, hasPrice && styles.itemCardPriced]}>
-      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
+    <View
+      className={`mb-2 rounded-2xl border bg-white p-3 ${
+        hasPrice
+          ? "border-[rgba(46,190,123,0.2)]"
+          : "border-[rgba(26,20,16,0.08)]"
+      }`}
+    >
+      <View className="flex-row items-start gap-2.5">
         <View
-          style={[
-            styles.statusCircle,
-            hasPrice && {
-              backgroundColor: BR.mintSoft,
-              borderColor: "transparent",
-            },
-          ]}
+          className={`h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+            hasPrice
+              ? "border-transparent bg-[#DDF5E8]"
+              : "border border-[rgba(26,20,16,0.14)] bg-[#FCEFE0]"
+          }`}
         >
           {hasPrice ? (
             <Icon name="Check" size={13} color={BR.mint} strokeWidth={3} />
           ) : null}
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.itemName}>{orderItem.text}</Text>
+        <View className="flex-1">
+          <Text
+            className="text-[13px] text-[#1A1410]"
+            style={BR_FONT_STYLE.displaySemibold}
+          >
+            {orderItem.text}
+          </Text>
         </View>
       </View>
 
-      <View style={{ marginTop: 10, marginLeft: 34 }}>
-        <View style={styles.priceInputRow}>
-          <Text style={styles.priceInputDollar}>$</Text>
+      <View className="ml-[34px] mt-2.5">
+        <View className="h-9 flex-row items-center gap-1 rounded-[10px] border border-[rgba(26,20,16,0.14)] bg-white px-2.5">
+          <Text
+            className="text-[13px] text-[#8A7A6E]"
+            style={BR_FONT_STYLE.mono}
+          >
+            $
+          </Text>
           <TextInput
-            style={styles.priceInput}
+            className="flex-1 p-0 text-[13px] text-[#1A1410]"
+            style={BR_FONT_STYLE.displayMedium}
             placeholder={
               orderItem.priceInCents !== null
                 ? formatPrice(orderItem.priceInCents)
@@ -125,14 +139,22 @@ function SectionHeader({
   totalCount: number;
 }) {
   return (
-    <View style={styles.sectionHeader}>
-      <Text style={styles.sectionLabel}>{title}</Text>
-      <View style={styles.sectionBadge}>
-        <Text style={styles.sectionBadgeText}>
+    <View className="mb-2.5 mt-[18px] flex-row items-center gap-2">
+      <Text
+        className="text-[10px] tracking-[1.2px] text-[#8A7A6E] uppercase"
+        style={BR_FONT_STYLE.monoBold}
+      >
+        {title}
+      </Text>
+      <View className="h-5 min-w-5 items-center justify-center rounded-full bg-[#FCEFE0] px-1.5">
+        <Text
+          className="text-[10px] text-[#8A7A6E]"
+          style={BR_FONT_STYLE.monoBold}
+        >
           {pricedCount}/{totalCount}
         </Text>
       </View>
-      <View style={styles.sectionLine} />
+      <View className="h-px flex-1 bg-[rgba(26,20,16,0.08)]" />
     </View>
   );
 }
@@ -177,24 +199,34 @@ export function ManualPriceEntrySheet({
       statusBarTranslucent
       onRequestClose={onDismiss}
     >
-      <View style={[styles.root, { paddingTop: insets.top }]}>
-        {/* Header */}
-        <View style={styles.modalHeader}>
-          <View style={{ flex: 1 }}>
-            <BrText weight="bold" style={{ fontSize: 20 }}>
+      <View className="flex-1 bg-[#FFF7EE]" style={{ paddingTop: insets.top }}>
+        <View className="flex-row items-start border-b border-[rgba(26,20,16,0.08)] px-[18px] pb-3.5 pt-4">
+          <View className="flex-1">
+            <BrText
+              weight="bold"
+              className="text-xl"
+              style={BR_FONT_STYLE.display}
+            >
               Enter prices
             </BrText>
-            <Text style={styles.headerSubtitle}>{locationName}</Text>
+            <Text
+              className="mt-0.5 text-xs text-[#8A7A6E]"
+              style={BR_FONT_STYLE.mono}
+            >
+              {locationName}
+            </Text>
           </View>
-          <TouchableOpacity onPress={onDismiss} style={styles.closeBtn}>
+          <TouchableOpacity
+            onPress={onDismiss}
+            className="h-9 w-9 items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+          >
             <Icon name="X" size={17} color={BR.ink} />
           </TouchableOpacity>
         </View>
 
-        {/* Body */}
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 24 }}
+          className="flex-1"
+          contentContainerClassName="px-[18px] pb-6"
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -224,18 +256,18 @@ export function ManualPriceEntrySheet({
           })}
         </ScrollView>
 
-        {/* Footer */}
         <View
-          style={[
-            styles.modalFooter,
-            { paddingBottom: Math.max(insets.bottom, 16) + 4 },
-          ]}
+          className="gap-3 border-t border-[rgba(26,20,16,0.08)] bg-[#FFF7EE] px-[18px] pt-3.5"
+          style={{ paddingBottom: Math.max(insets.bottom, 16) + 4 }}
         >
-          <View style={styles.footerStats}>
-            <Text style={styles.footerStatsText}>
+          <View className="flex-row items-center justify-between">
+            <Text className="text-xs text-[#8A7A6E]" style={BR_FONT_STYLE.mono}>
               {pricedCount} of {totalItems} priced
             </Text>
-            <Text style={styles.footerTotalText}>
+            <Text
+              className="text-sm text-[#1A1410]"
+              style={BR_FONT_STYLE.monoBold}
+            >
               Saving: ${(totalToSave / 100).toFixed(2)}
             </Text>
           </View>
@@ -243,17 +275,16 @@ export function ManualPriceEntrySheet({
             onPress={onSave}
             disabled={isSaving || pricedCount === 0}
             activeOpacity={0.85}
-            style={[
-              styles.saveBtn,
-              (isSaving || pricedCount === 0) && { opacity: 0.55 },
-            ]}
+            className={`flex-row items-center justify-center gap-2 rounded-2xl bg-[#FF6A1F] py-4 ${
+              isSaving || pricedCount === 0 ? "opacity-55" : ""
+            }`}
           >
             {isSaving ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <Icon name="Check" size={18} color="#fff" strokeWidth={3} />
             )}
-            <Text style={styles.saveBtnText}>
+            <Text className="text-base font-bold text-white">
               {isSaving
                 ? "Saving…"
                 : totalItems > 0 && pricedCount === totalItems
@@ -266,159 +297,3 @@ export function ManualPriceEntrySheet({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: BR.paper,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    paddingHorizontal: 18,
-    paddingTop: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: BR.line,
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: BR.ink3,
-    marginTop: 2,
-    fontFamily: BR_FONT.mono,
-  },
-  closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 18,
-    marginBottom: 10,
-  },
-  sectionLabel: {
-    fontSize: 10,
-    fontFamily: BR_FONT.monoBold,
-    color: BR.ink3,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-  },
-  sectionBadge: {
-    minWidth: 20,
-    height: 20,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 6,
-  },
-  sectionBadgeText: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  sectionLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: BR.line,
-  },
-  itemCard: {
-    padding: 12,
-    marginBottom: 8,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-  },
-  itemCardPriced: {
-    borderColor: "rgba(46,190,123,0.2)",
-  },
-  statusCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line2,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  itemName: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: BR.ink,
-  },
-  priceInputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    height: 36,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: BR.line2,
-    backgroundColor: BR.card,
-    gap: 4,
-  },
-  priceInputDollar: {
-    fontSize: 13,
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  priceInput: {
-    flex: 1,
-    fontSize: 13,
-    color: BR.ink,
-    fontFamily: BR_FONT.displayMedium,
-    letterSpacing: 0,
-    padding: 0,
-    includeFontPadding: false,
-  },
-  modalFooter: {
-    paddingHorizontal: 18,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderTopColor: BR.line,
-    gap: 12,
-    backgroundColor: BR.paper,
-  },
-  footerStats: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  footerStatsText: {
-    fontSize: 12,
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  footerTotalText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: BR.ink,
-    fontFamily: BR_FONT.monoBold,
-  },
-  saveBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.orange,
-  },
-  saveBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-  },
-});

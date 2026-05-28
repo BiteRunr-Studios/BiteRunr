@@ -5,7 +5,6 @@ import {
   AccessibilityInfo,
   Image,
   type LayoutChangeEvent,
-  StyleSheet,
   useWindowDimensions,
 } from "react-native";
 import Animated, {
@@ -15,11 +14,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from "react-native-reanimated";
-import { useColorScheme } from "@/lib/use-color-scheme";
-
 const MINIMUM_VISIBLE_MS = 900;
-const LIGHT_SPLASH_BACKGROUND = "#FFFFFF";
-const DARK_SPLASH_BACKGROUND = "#000000";
 
 interface AnimatedSplashScreenProps {
   ready: boolean;
@@ -120,9 +115,6 @@ export default function AnimatedSplashScreen({
   "use no memo";
 
   const { width } = useWindowDimensions();
-  const { colorScheme } = useColorScheme();
-  const backgroundColor =
-    colorScheme === "dark" ? DARK_SPLASH_BACKGROUND : LIGHT_SPLASH_BACKGROUND;
   const iconSize = Math.min(Math.max(width * 0.34, 140), 180);
   const [reduceMotionEnabled, setReduceMotionEnabled] = React.useState<
     boolean | null
@@ -247,41 +239,19 @@ export default function AnimatedSplashScreen({
   return (
     <Animated.View
       onLayout={handleLayout}
-      style={[styles.container, { backgroundColor }, screenAnimatedStyle]}
+      className="absolute inset-0 z-[999] items-center justify-center bg-background"
+      style={screenAnimatedStyle}
     >
       <Animated.View
-        style={[
-          styles.iconContainer,
-          {
-            width: iconSize,
-            height: iconSize,
-          },
-          iconAnimatedStyle,
-        ]}
+        className="items-center justify-center"
+        style={[{ width: iconSize, height: iconSize }, iconAnimatedStyle]}
       >
         <Image
           source={require("@/assets/images/icon-no-bg.png")}
-          style={styles.icon}
+          className="h-full w-full"
           resizeMode="contain"
         />
       </Animated.View>
     </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 999,
-  },
-  iconContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  icon: {
-    width: "100%",
-    height: "100%",
-  },
-});

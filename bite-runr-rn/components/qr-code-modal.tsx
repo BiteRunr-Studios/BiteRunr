@@ -6,14 +6,13 @@ import {
   Pressable,
   Share,
   ActivityIndicator,
-  StyleSheet,
   TouchableOpacity,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import QRCode from "react-native-qrcode-svg";
 import Icon from "@/components/common/icon";
-import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
+import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 import { BrText } from "@/components/br";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -122,38 +121,49 @@ export function QRCodeModal({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.card} onPress={(e) => e.stopPropagation()}>
-          {/* Close button */}
+      <Pressable
+        className="flex-1 items-center justify-center bg-[rgba(26,20,16,0.55)] px-6"
+        onPress={onClose}
+      >
+        <Pressable
+          className="w-full items-center rounded-[28px] border border-[rgba(26,20,16,0.08)] bg-[#FFF7EE] px-6 py-7 shadow-[0_12px_30px_rgba(26,20,16,0.25)]"
+          onPress={(e) => e.stopPropagation()}
+        >
           <TouchableOpacity
             onPress={onClose}
-            style={styles.closeBtn}
+            className="absolute right-3.5 top-3.5 h-[34px] w-[34px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
             activeOpacity={0.7}
           >
             <Icon name="X" size={17} color={BR.ink} />
           </TouchableOpacity>
 
-          {/* Header icon */}
-          <View style={styles.headerIcon}>
+          <View className="mb-3.5 h-[60px] w-[60px] items-center justify-center rounded-full bg-[#FFE7D4]">
             <Icon name="QrCode" size={30} color={BR.orange} />
           </View>
 
-          <BrText variant="h3" style={styles.title}>
+          <BrText variant="h3" className="mb-1 text-center">
             Invite to Order
           </BrText>
-          <Text style={styles.subtitle}>
+          <Text
+            className="mb-[22px] text-center text-[13px] text-[#8A7A6E]"
+            style={BR_FONT_STYLE.mono}
+          >
             Scan QR code or share the link to join
           </Text>
 
           {isLoading ? (
-            <View style={styles.loadingArea}>
+            <View className="h-48 w-48 items-center justify-center">
               <ActivityIndicator size="large" color={BR.orange} />
-              <Text style={styles.loadingText}>Generating invite…</Text>
+              <Text
+                className="mt-3.5 text-[13px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
+              >
+                Generating invite…
+              </Text>
             </View>
           ) : deepLink ? (
             <>
-              {/* QR Code */}
-              <View style={styles.qrFrame}>
+              <View className="mb-4 rounded-[22px] border border-[rgba(26,20,16,0.14)] bg-white p-4">
                 <QRCode
                   value={deepLink}
                   size={180}
@@ -162,52 +172,70 @@ export function QRCodeModal({
                 />
               </View>
 
-              {/* Invite Code Display */}
               <TouchableOpacity
                 onPress={handleCopyInviteCode}
                 activeOpacity={0.82}
-                style={styles.codeBox}
+                className="mb-3.5 w-full rounded-2xl border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0] px-4 py-3.5"
                 accessibilityRole="button"
                 accessibilityLabel={`Copy invite code ${inviteCode}`}
               >
-                <View style={styles.codeLabelRow}>
-                  <Text style={styles.codeLabel}>INVITE CODE</Text>
+                <View className="mb-1 flex-row items-center justify-center gap-1.5">
+                  <Text
+                    className="text-center text-[10px] tracking-[1.4px] text-[#8A7A6E]"
+                    style={BR_FONT_STYLE.monoBold}
+                  >
+                    INVITE CODE
+                  </Text>
                   <Icon
                     name={copied ? "Check" : "Copy"}
                     size={13}
                     color={copied ? BR.mint : BR.ink3}
                   />
                 </View>
-                <Text style={styles.codeValue}>{inviteCode}</Text>
                 <Text
-                  style={[styles.copyHint, copied && styles.copyHintActive]}
+                  className="text-center text-2xl tracking-[4px] text-[#1A1410]"
+                  style={BR_FONT_STYLE.monoBold}
+                >
+                  {inviteCode}
+                </Text>
+                <Text
+                  className={`mt-1.5 text-center text-[11px] ${copied ? "text-[#2EBE7B]" : "text-[#8A7A6E]"}`}
+                  style={BR_FONT_STYLE.mono}
                 >
                   {copied ? "Copied" : "Tap to copy"}
                 </Text>
               </TouchableOpacity>
 
-              {/* Expiry info */}
               {getTimeRemaining() && (
-                <View style={styles.expiryRow}>
+                <View className="mb-[18px] flex-row items-center gap-1.5">
                   <Icon name="Clock" size={13} color={BR.ink3} />
-                  <Text style={styles.expiryText}>{getTimeRemaining()}</Text>
+                  <Text
+                    className="text-xs text-[#8A7A6E]"
+                    style={BR_FONT_STYLE.mono}
+                  >
+                    {getTimeRemaining()}
+                  </Text>
                 </View>
               )}
 
-              {/* Share button */}
               <TouchableOpacity
                 onPress={handleShare}
                 activeOpacity={0.85}
-                style={styles.shareBtn}
+                className="w-full flex-row items-center justify-center gap-2 rounded-2xl bg-[#FF6A1F] py-4 shadow-[0_8px_16px_rgba(255,106,31,0.45)]"
               >
                 <Icon name="Share" size={18} color="#fff" />
-                <Text style={styles.shareBtnText}>Share Invite</Text>
+                <Text className="text-[15px] font-bold tracking-[-0.2px] text-white">
+                  Share Invite
+                </Text>
               </TouchableOpacity>
             </>
           ) : (
-            <View style={styles.errorArea}>
+            <View className="w-48 items-center justify-center py-4">
               <Icon name="CircleAlert" size={44} color={BR.coral} />
-              <Text style={styles.errorText}>
+              <Text
+                className="mt-3 text-center text-[13px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
+              >
                 Failed to create invite. Please try again.
               </Text>
             </View>
@@ -217,159 +245,3 @@ export function QRCodeModal({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(26, 20, 16, 0.55)",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 24,
-  },
-  card: {
-    width: "100%",
-    backgroundColor: BR.paper,
-    borderRadius: BR_RADIUS.xl,
-    paddingVertical: 28,
-    paddingHorizontal: 24,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: BR.line,
-    ...BR_SHADOW.pop,
-  },
-  closeBtn: {
-    position: "absolute",
-    top: 14,
-    right: 14,
-    width: 34,
-    height: 34,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 999,
-    backgroundColor: BR.orangeSoft,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 14,
-  },
-  title: {
-    textAlign: "center",
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: BR.ink3,
-    textAlign: "center",
-    marginBottom: 22,
-    fontFamily: BR_FONT.mono,
-  },
-  loadingArea: {
-    width: 192,
-    height: 192,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  loadingText: {
-    marginTop: 14,
-    color: BR.ink3,
-    fontSize: 13,
-    fontFamily: BR_FONT.mono,
-  },
-  qrFrame: {
-    padding: 16,
-    backgroundColor: "#FFFFFF",
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: BR.line2,
-    marginBottom: 16,
-  },
-  codeBox: {
-    width: "100%",
-    backgroundColor: BR.paper2,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginBottom: 14,
-  },
-  codeLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    marginBottom: 4,
-  },
-  codeLabel: {
-    fontSize: 10,
-    fontFamily: BR_FONT.monoBold,
-    color: BR.ink3,
-    letterSpacing: 1.4,
-    textAlign: "center",
-  },
-  codeValue: {
-    fontSize: 24,
-    fontFamily: BR_FONT.monoBold,
-    color: BR.ink,
-    textAlign: "center",
-    letterSpacing: 4,
-  },
-  copyHint: {
-    marginTop: 6,
-    fontSize: 11,
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-    textAlign: "center",
-  },
-  copyHintActive: {
-    color: BR.mint,
-  },
-  expiryRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 18,
-  },
-  expiryText: {
-    fontSize: 12,
-    color: BR.ink3,
-    fontFamily: BR_FONT.mono,
-  },
-  shareBtn: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.orange,
-    ...BR_SHADOW.primary,
-  },
-  shareBtnText: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#fff",
-    letterSpacing: -0.2,
-  },
-  errorArea: {
-    width: 192,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-  },
-  errorText: {
-    color: BR.ink3,
-    textAlign: "center",
-    marginTop: 12,
-    fontSize: 13,
-    fontFamily: BR_FONT.mono,
-  },
-});

@@ -1,12 +1,6 @@
 import { forwardRef } from "react";
-import {
-  View,
-  TextInput,
-  type TextInputProps,
-  StyleSheet,
-  Pressable,
-} from "react-native";
-import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { View, TextInput, type TextInputProps, Pressable } from "react-native";
+import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 import Icon, { type IconName } from "@/components/common/icon";
 import { BrText } from "./text";
 
@@ -25,20 +19,28 @@ export const BrInput = forwardRef<TextInput, BrInputProps>(function BrInput(
   return (
     <View>
       <View
-        style={[
-          styles.box,
-          {
-            borderColor: hasError ? BR.coral : BR.line2,
-            backgroundColor: BR.card,
-          },
-          style as object,
-        ]}
+        className={`flex-row items-center gap-3 h-[54px] px-4 rounded-2xl border bg-white ${
+          hasError ? "border-[#FF4D6D]" : "border-[rgba(26,20,16,0.14)]"
+        }`}
       >
         {leftIcon ? <Icon name={leftIcon} size={18} color={BR.ink2} /> : null}
         <TextInput
           ref={ref}
           placeholderTextColor={BR.ink3}
-          style={styles.input}
+          className="flex-1 self-stretch py-0"
+          style={[
+            BR_FONT_STYLE.displayMedium,
+            {
+              fontSize: 16,
+              lineHeight: 22,
+              color: BR.ink,
+              letterSpacing: 0,
+              paddingVertical: 0,
+              includeFontPadding: false,
+              textAlignVertical: "center",
+            },
+            style,
+          ]}
           {...rest}
         />
         {rightIcon ? (
@@ -52,45 +54,13 @@ export const BrInput = forwardRef<TextInput, BrInputProps>(function BrInput(
         ) : null}
       </View>
       {hasError ? (
-        <View style={styles.errRow}>
+        <View className="flex-row items-center gap-1 mt-1.5 px-1">
           <Icon name="CircleAlert" size={14} color={BR.coral} />
-          <BrText
-            style={{ fontSize: 12, color: BR.coralInk, fontWeight: "500" }}
-          >
+          <BrText className="text-xs font-medium text-[#B82340]">
             {errorMessage}
           </BrText>
         </View>
       ) : null}
     </View>
   );
-});
-
-const styles = StyleSheet.create({
-  box: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    height: 54,
-    paddingHorizontal: 16,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-  },
-  input: {
-    flex: 1,
-    fontFamily: BR_FONT.displayMedium,
-    fontSize: 16,
-    lineHeight: 22,
-    color: BR.ink,
-    letterSpacing: 0,
-    paddingVertical: 0,
-    includeFontPadding: false,
-    textAlignVertical: "center",
-  },
-  errRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 6,
-    paddingHorizontal: 4,
-  },
 });

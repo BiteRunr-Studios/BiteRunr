@@ -14,11 +14,10 @@ import {
   Platform,
   Keyboard,
   TouchableWithoutFeedback,
-  StyleSheet,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
+import { BR } from "@/lib/br-theme";
 import { BrText } from "@/components/br";
 
 const OTP_LENGTH = 6;
@@ -135,228 +134,116 @@ export default function VerifyOtpScreen() {
   }, [email, resendCooldown, resending]);
 
   const filledCount = otp.filter(Boolean).length;
+  const verifyDisabled = loading || filledCount < OTP_LENGTH;
+  const resendDisabled = resendCooldown > 0 || resending;
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView edges={["top"]} style={styles.root}>
-        {/* Back button */}
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Icon name="ChevronLeft" size={20} color={BR.ink} />
-        </Pressable>
-
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.body}
-        >
-          {/* Icon */}
-          <View style={styles.iconTile}>
-            <Icon name="Mail" size={28} color={BR.orangeDeep} />
-          </View>
-
-          {/* Heading */}
-          <BrText weight="bold" style={styles.heading}>
-            Check your email
-          </BrText>
-          <Text style={styles.subText}>We sent a 6-digit code to</Text>
-          <Text style={styles.emailText}>{email}</Text>
-
-          {/* OTP inputs */}
-          <View style={styles.otpRow}>
-            {OTP_INPUT_KEYS.map((inputKey, index) => {
-              const digit = otp[index] ?? "";
-              return (
-                <TextInput
-                  key={inputKey}
-                  ref={(ref) => {
-                    inputRefs.current[index] = ref;
-                  }}
-                  value={digit}
-                  onChangeText={(v) => handleOtpChange(index, v)}
-                  onKeyPress={({ nativeEvent }) =>
-                    handleKeyPress(index, nativeEvent.key)
-                  }
-                  keyboardType="number-pad"
-                  maxLength={1}
-                  selectTextOnFocus
-                  style={[
-                    styles.otpBox,
-                    digit ? styles.otpBoxFilled : null,
-                    error ? styles.otpBoxError : null,
-                  ]}
-                />
-              );
-            })}
-          </View>
-
-          {/* Error */}
-          {error && (
-            <View style={styles.errorRow}>
-              <Icon name="CircleAlert" size={13} color={BR.coralInk} />
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          )}
-
-          {/* Verify button */}
+      <View className="flex-1 bg-[#FFF7EE]">
+        <SafeAreaView className="flex-1 px-6" edges={["top"]}>
           <Pressable
-            onPress={handleVerify}
-            disabled={loading || filledCount < OTP_LENGTH}
-            style={[
-              styles.verifyBtn,
-              (loading || filledCount < OTP_LENGTH) && styles.verifyBtnDisabled,
-            ]}
+            onPress={() => router.back()}
+            className="mt-2 h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
           >
-            {loading ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.verifyBtnText}>Verify email</Text>
-            )}
+            <Icon name="ChevronLeft" size={20} color={BR.ink} />
           </Pressable>
 
-          {/* Resend */}
-          <View style={styles.resendRow}>
-            <Text style={styles.resendLabel}>Didn't get the code? </Text>
-            <Pressable
-              onPress={handleResend}
-              disabled={resendCooldown > 0 || resending}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className="flex-1 justify-center pb-10"
+          >
+            <View className="mb-5 h-16 w-16 items-center justify-center rounded-[20px] border border-[rgba(255,106,31,0.18)] bg-[#FFF1E2]">
+              <Icon name="Mail" size={28} color={BR.orangeDeep} />
+            </View>
+
+            <BrText
+              weight="bold"
+              className="mb-1.5 text-[28px] leading-[34px] text-[#1A1410]"
             >
-              <Text
-                style={[
-                  styles.resendBtn,
-                  (resendCooldown > 0 || resending) && { opacity: 0.45 },
-                ]}
-              >
-                {resendCooldown > 0
-                  ? `Resend in ${resendCooldown}s`
-                  : resending
-                    ? "Sending…"
-                    : "Resend"}
-              </Text>
+              Check your email
+            </BrText>
+            <Text className="text-[15px] leading-[22px] text-[#8A7A6E]">
+              We sent a 6-digit code to
+            </Text>
+            <Text className="mb-8 text-[15px] font-bold text-[#E8551A]">
+              {email}
+            </Text>
+
+            <View className="mb-4 flex-row gap-2.5">
+              {OTP_INPUT_KEYS.map((inputKey, index) => {
+                const digit = otp[index] ?? "";
+                return (
+                  <TextInput
+                    key={inputKey}
+                    ref={(ref) => {
+                      inputRefs.current[index] = ref;
+                    }}
+                    value={digit}
+                    onChangeText={(v) => handleOtpChange(index, v)}
+                    onKeyPress={({ nativeEvent }) =>
+                      handleKeyPress(index, nativeEvent.key)
+                    }
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    selectTextOnFocus
+                    className={`h-14 flex-1 rounded-2xl border-[1.5px] text-center text-[22px] font-bold ${
+                      error
+                        ? "border-[#FF4D6D] bg-[#FFE0E6] text-[#1A1410]"
+                        : digit
+                          ? "border-[#FF6A1F] bg-[#FFF1E2] text-[#E8551A]"
+                          : "border-[rgba(26,20,16,0.08)] bg-white text-[#1A1410]"
+                    }`}
+                  />
+                );
+              })}
+            </View>
+
+            {error && (
+              <View className="mb-4 flex-row items-center gap-1.5">
+                <Icon name="CircleAlert" size={13} color={BR.coralInk} />
+                <Text className="text-[13px] text-[#B82340]">{error}</Text>
+              </View>
+            )}
+
+            <Pressable
+              onPress={handleVerify}
+              disabled={verifyDisabled}
+              className={`mb-5 h-[54px] w-full items-center justify-center rounded-2xl bg-primary active:opacity-80 ${
+                verifyDisabled ? "opacity-50" : ""
+              }`}
+              accessibilityRole="button"
+              accessibilityLabel="Verify email"
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text className="text-base font-bold text-white">
+                  Verify email
+                </Text>
+              )}
             </Pressable>
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+
+            <View className="flex-row items-center justify-center">
+              <Text className="text-sm text-[#8A7A6E]">
+                Didn't get the code?{" "}
+              </Text>
+              <Pressable onPress={handleResend} disabled={resendDisabled}>
+                <Text
+                  className={`text-sm font-bold text-[#E8551A] ${
+                    resendDisabled ? "opacity-45" : ""
+                  }`}
+                >
+                  {resendCooldown > 0
+                    ? `Resend in ${resendCooldown}s`
+                    : resending
+                      ? "Sending…"
+                      : "Resend"}
+                </Text>
+              </Pressable>
+            </View>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </View>
     </TouchableWithoutFeedback>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: BR.paper,
-    paddingHorizontal: 24,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 8,
-  },
-  body: {
-    flex: 1,
-    justifyContent: "center",
-    paddingBottom: 40,
-  },
-  iconTile: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    backgroundColor: BR.orangeTint,
-    borderWidth: 1,
-    borderColor: "rgba(255,106,31,0.18)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 20,
-  },
-  heading: {
-    fontSize: 28,
-    lineHeight: 34,
-    color: BR.ink,
-    marginBottom: 6,
-  },
-  subText: {
-    fontSize: 15,
-    color: BR.ink3,
-    lineHeight: 22,
-  },
-  emailText: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: BR.orangeDeep,
-    marginBottom: 32,
-  },
-  otpRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 16,
-  },
-  otpBox: {
-    flex: 1,
-    height: 56,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1.5,
-    borderColor: BR.line,
-    backgroundColor: BR.card,
-    textAlign: "center",
-    fontSize: 22,
-    fontWeight: "700",
-    color: BR.ink,
-  },
-  otpBoxFilled: {
-    borderColor: BR.orange,
-    backgroundColor: BR.orangeTint,
-    color: BR.orangeDeep,
-  },
-  otpBoxError: {
-    borderColor: BR.coral,
-    backgroundColor: BR.coralSoft,
-  },
-  errorRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 16,
-  },
-  errorText: {
-    fontSize: 13,
-    color: BR.coralInk,
-  },
-  verifyBtn: {
-    height: 54,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.orange,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 20,
-    ...BR_SHADOW.primary,
-  },
-  verifyBtnDisabled: {
-    opacity: 0.5,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  verifyBtnText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-    fontFamily: BR_FONT.display,
-  },
-  resendRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  resendLabel: {
-    fontSize: 14,
-    color: BR.ink3,
-  },
-  resendBtn: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: BR.orangeDeep,
-  },
-});

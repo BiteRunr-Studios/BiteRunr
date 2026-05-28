@@ -5,7 +5,6 @@ import {
   Alert,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -22,7 +21,7 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import Icon from "@/components/common/icon";
 import { BrText, BrChip, BrAvatar } from "@/components/br";
-import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
+import { BR, BR_FONT_STYLE, BR_SHADOW } from "@/lib/br-theme";
 
 // ── Stripe appearance ─────────────────────────────────────────────
 
@@ -76,12 +75,8 @@ function TornEdge({ position }: { position: "top" | "bottom" }) {
   );
   return (
     <View
-      style={{
-        height: TOOTH_H,
-        backgroundColor: BR.paper,
-        flexDirection: "row",
-        overflow: "hidden",
-      }}
+      className="flex-row overflow-hidden bg-[#FFF7EE]"
+      style={{ height: TOOTH_H }}
     >
       {teeth.map((toothKey) => (
         <View
@@ -113,21 +108,19 @@ const STEPS = [
 
 function StatusStepper({ currentStep }: { currentStep: 0 | 1 | 2 }) {
   return (
-    <View style={{ flexDirection: "row", gap: 8 }}>
+    <View className="flex-row gap-2">
       {STEPS.map((step, i) => {
         const isCurrent = i === currentStep;
         const isActive = i <= currentStep;
         return (
           <View
             key={step.label}
-            style={[
-              styles.stepCard,
-              isCurrent && {
-                backgroundColor: BR.orangeTint,
-                borderColor: "rgba(255,106,31,0.3)",
-              },
-              !isActive && { opacity: 0.4 },
-            ]}
+            className={`flex-1 items-center gap-1.5 rounded-2xl border px-2.5 py-3.5 ${
+              isCurrent
+                ? "border-[rgba(255,106,31,0.3)] bg-[#FFF1E2]"
+                : "border-[rgba(26,20,16,0.08)] bg-white"
+            } ${!isActive ? "opacity-40" : ""}`}
+            style={BR_SHADOW.card}
           >
             <Icon
               name={step.icon}
@@ -135,10 +128,8 @@ function StatusStepper({ currentStep }: { currentStep: 0 | 1 | 2 }) {
               color={isCurrent ? BR.orangeDeep : BR.ink3}
             />
             <Text
-              style={[
-                styles.stepLabel,
-                { color: isCurrent ? BR.orangeDeep : BR.ink2 },
-              ]}
+              className={`text-xs ${isCurrent ? "text-[#E8551A]" : "text-[#4A3C32]"}`}
+              style={BR_FONT_STYLE.displaySemibold}
             >
               {step.label}
             </Text>
@@ -239,14 +230,7 @@ export default function MySettlement() {
 
   if (settlement === undefined) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: BR.paper,
-        }}
-      >
+      <View className="flex-1 items-center justify-center bg-[#FFF7EE]">
         <ActivityIndicator size="large" color={BR.orange} />
       </View>
     );
@@ -254,15 +238,8 @@ export default function MySettlement() {
 
   if (settlement === null) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: BR.paper,
-        }}
-      >
-        <Text style={{ fontFamily: BR_FONT.mono, color: BR.coralInk }}>
+      <View className="flex-1 items-center justify-center bg-[#FFF7EE]">
+        <Text className="text-[#B82340]" style={BR_FONT_STYLE.mono}>
           Not authorized to view settlement
         </Text>
       </View>
@@ -289,33 +266,49 @@ export default function MySettlement() {
 
   return (
     <>
-      <SafeAreaView edges={["top"]} style={{ backgroundColor: BR.paper }} />
+      <SafeAreaView edges={["top"]} className="bg-[#FFF7EE]" />
 
       {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+      <View className="flex-row items-center justify-between bg-[#FFF7EE] px-[18px] pb-3 pt-2">
+        <Pressable
+          onPress={() => router.back()}
+          className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+        >
           <Icon name="ChevronLeft" size={20} color={BR.ink} />
         </Pressable>
-        <Text style={styles.headerTitle}>Settle up</Text>
-        <View style={{ width: 38 }} />
+        <Text
+          className="text-[17px] text-[#1A1410]"
+          style={BR_FONT_STYLE.display}
+        >
+          Settle up
+        </Text>
+        <View className="w-[38px]" />
       </View>
 
       <ScrollView
-        style={{ flex: 1, backgroundColor: BR.paper }}
-        contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 140 }}
+        className="flex-1 bg-[#FFF7EE]"
+        contentContainerClassName="px-[18px] pb-[140px]"
         showsVerticalScrollIndicator={false}
       >
-        <BrText variant="eyebrow" style={{ marginBottom: 10 }}>
+        <BrText variant="eyebrow" className="mb-2.5">
           {settlement.orderName ?? "Your order"}
         </BrText>
 
         {/* Receipt */}
         <Animated.View entering={FadeInUp.duration(300)}>
           <TornEdge position="top" />
-          <View style={styles.receipt}>
-            <View style={{ alignItems: "center" }}>
-              <Text style={styles.receiptTitle}>BiteRunr</Text>
-              <Text style={styles.receiptMeta}>
+          <View className="bg-white px-[22px] py-6">
+            <View className="items-center">
+              <Text
+                className="text-center text-[22px] italic text-[#E8551A]"
+                style={BR_FONT_STYLE.displayExtraBold}
+              >
+                BiteRunr
+              </Text>
+              <Text
+                className="mt-[3px] text-center text-[11px] tracking-[1.2px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
+              >
                 ·{" "}
                 {new Date()
                   .toLocaleDateString("en-US", {
@@ -328,41 +321,61 @@ export default function MySettlement() {
               </Text>
             </View>
 
-            <View style={styles.rule} />
+            <View className="my-3.5 h-px bg-[rgba(26,20,16,0.1)]" />
 
             {amount > 0 ? (
               <>
-                <Text style={styles.oweLabel}>You owe {creatorName}</Text>
+                <Text
+                  className="mb-2.5 text-[13px] text-[#4A3C32]"
+                  style={BR_FONT_STYLE.mono}
+                >
+                  You owe {creatorName}
+                </Text>
                 {showFeeBreakdown ? (
                   <>
-                    <View style={styles.receiptRow}>
-                      <Text style={styles.rowLabel}>Their share</Text>
-                      <Text style={styles.rowValue}>{formatCents(amount)}</Text>
+                    <View className="mb-[5px] flex-row justify-between">
+                      <Text
+                        className="text-[13px] text-[#4A3C32]"
+                        style={BR_FONT_STYLE.mono}
+                      >
+                        Their share
+                      </Text>
+                      <Text
+                        className="text-[13px] text-[#1A1410]"
+                        style={BR_FONT_STYLE.mono}
+                      >
+                        {formatCents(amount)}
+                      </Text>
                     </View>
-                    <View style={styles.receiptRow}>
-                      <Text style={styles.rowLabel}>Service fee</Text>
-                      <Text style={styles.rowValue}>
+                    <View className="mb-[5px] flex-row justify-between">
+                      <Text
+                        className="text-[13px] text-[#4A3C32]"
+                        style={BR_FONT_STYLE.mono}
+                      >
+                        Service fee
+                      </Text>
+                      <Text
+                        className="text-[13px] text-[#1A1410]"
+                        style={BR_FONT_STYLE.mono}
+                      >
                         {formatCents(serviceFee)}
                       </Text>
                     </View>
                   </>
                 ) : null}
 
-                <View style={styles.rule} />
+                <View className="my-3.5 h-px bg-[rgba(26,20,16,0.1)]" />
 
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "baseline",
-                  }}
-                >
-                  <Text style={styles.totalLabel}>TOTAL</Text>
+                <View className="flex-row items-baseline justify-between">
                   <Text
-                    style={[
-                      styles.totalAmount,
-                      { color: isSettled ? BR.mintInk : BR.orangeDeep },
-                    ]}
+                    className="text-lg text-[#1A1410]"
+                    style={BR_FONT_STYLE.displayExtraBold}
+                  >
+                    TOTAL
+                  </Text>
+                  <Text
+                    className={`text-[32px] ${isSettled ? "text-[#1B6B43]" : "text-[#E8551A]"}`}
+                    style={BR_FONT_STYLE.displayExtraBold}
                   >
                     {formatCents(showFeeBreakdown ? totalWithFee : amount)}
                   </Text>
@@ -370,26 +383,41 @@ export default function MySettlement() {
               </>
             ) : (
               <>
-                <View style={styles.rule} />
-                <View style={{ alignItems: "center", gap: 4 }}>
-                  <Text style={styles.totalLabel}>TOTAL</Text>
-                  <Text style={[styles.totalAmount, { color: BR.mintInk }]}>
+                <View className="my-3.5 h-px bg-[rgba(26,20,16,0.1)]" />
+                <View className="items-center gap-1">
+                  <Text
+                    className="text-lg text-[#1A1410]"
+                    style={BR_FONT_STYLE.displayExtraBold}
+                  >
+                    TOTAL
+                  </Text>
+                  <Text
+                    className="text-[32px] text-[#1B6B43]"
+                    style={BR_FONT_STYLE.displayExtraBold}
+                  >
                     {formatCents(0)}
                   </Text>
-                  <Text style={[styles.receiptMeta, { marginTop: 4 }]}>
+                  <Text
+                    className="mt-1 text-[11px] tracking-[1.2px] text-[#8A7A6E]"
+                    style={BR_FONT_STYLE.mono}
+                  >
                     Nothing owed
                   </Text>
                 </View>
               </>
             )}
 
-            <View style={styles.rule} />
-            <View style={{ alignItems: "center" }}>
-              <Text style={styles.receiptCode}>
+            <View className="my-3.5 h-px bg-[rgba(26,20,16,0.1)]" />
+            <View className="items-center">
+              <Text
+                className="text-[10px] tracking-[1px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
+              >
                 BR-{orderId?.slice(-8).toUpperCase() ?? "--------"}
               </Text>
               <Text
-                style={[styles.receiptCode, { marginTop: 5, letterSpacing: 5 }]}
+                className="mt-[5px] text-[10px] tracking-[5px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
               >
                 · · · · · · · ·
               </Text>
@@ -401,9 +429,9 @@ export default function MySettlement() {
         {/* Payment status stepper */}
         <Animated.View
           entering={FadeInUp.duration(300).delay(60)}
-          style={{ marginTop: 22 }}
+          className="mt-[22px]"
         >
-          <BrText variant="eyebrow" style={{ marginBottom: 10 }}>
+          <BrText variant="eyebrow" className="mb-2.5">
             Payment status
           </BrText>
           <StatusStepper currentStep={currentStep} />
@@ -412,12 +440,23 @@ export default function MySettlement() {
         {/* Paying to */}
         <Animated.View
           entering={FadeInUp.duration(300).delay(110)}
-          style={[styles.runnerCard, { marginTop: 14 }]}
+          className="mt-3.5 flex-row items-center gap-3 rounded-[22px] border border-[rgba(255,106,31,0.2)] bg-[#FFF1E2] p-3.5"
+          style={BR_SHADOW.card}
         >
           <BrAvatar name={creatorName} size={44} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.runnerSubLabel}>Paying</Text>
-            <Text style={styles.runnerName}>{creatorName}</Text>
+          <View className="flex-1">
+            <Text
+              className="mb-0.5 text-[11px] text-[#8A7A6E]"
+              style={BR_FONT_STYLE.mono}
+            >
+              Paying
+            </Text>
+            <Text
+              className="text-[15px] text-[#1A1410]"
+              style={BR_FONT_STYLE.display}
+            >
+              {creatorName}
+            </Text>
           </View>
           <BrChip
             color="mint"
@@ -430,10 +469,13 @@ export default function MySettlement() {
         {isSettled && (
           <Animated.View
             entering={FadeInUp.duration(300).delay(160)}
-            style={styles.settledBanner}
+            className="mt-3.5 flex-row items-center gap-2.5 rounded-2xl border border-[rgba(46,190,123,0.25)] bg-[#DDF5E8] p-3.5"
           >
             <Icon name="BadgeCheck" size={18} color={BR.mintInk} />
-            <Text style={styles.settledBannerText}>
+            <Text
+              className="flex-1 text-[13px] text-[#1B6B43]"
+              style={BR_FONT_STYLE.monoSemibold}
+            >
               {settlement.settlementStatus === "settled_in_person"
                 ? "Settled in person — no card needed"
                 : "Payment confirmed · you're all square"}
@@ -445,23 +487,25 @@ export default function MySettlement() {
       {/* Footer */}
       {canPay && (
         <View
-          style={[
-            styles.footer,
-            { paddingBottom: Math.max(insets.bottom, 16) },
-          ]}
+          className="gap-2.5 border-t border-[rgba(26,20,16,0.08)] bg-[#FFF7EE] px-[18px] pt-3.5"
+          style={{ paddingBottom: Math.max(insets.bottom, 16) }}
         >
           {runnerAcceptsCards && (
             <TouchableOpacity
               onPress={handlePayWithCard}
               disabled={isPaying}
-              style={[styles.primaryBtn, isPaying && { opacity: 0.6 }]}
+              className={`h-[54px] flex-row items-center justify-center gap-2 rounded-2xl bg-[#FF6A1F] ${isPaying ? "opacity-60" : ""}`}
+              style={BR_SHADOW.primary}
             >
               {isPaying ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
                 <Icon name="CreditCard" size={16} color="#fff" />
               )}
-              <Text style={styles.primaryBtnText}>
+              <Text
+                className="text-base text-white"
+                style={BR_FONT_STYLE.display}
+              >
                 {isPaying
                   ? "Processing…"
                   : `Pay with card · ${formatCents(showFeeBreakdown ? totalWithFee : amount)}`}
@@ -470,7 +514,12 @@ export default function MySettlement() {
           )}
           <TouchableOpacity
             onPress={handleSettleInCash}
-            style={[styles.ghostBtn, !runnerAcceptsCards && styles.primaryBtn]}
+            className={`h-[50px] flex-row items-center justify-center gap-2 rounded-2xl ${
+              runnerAcceptsCards
+                ? "border border-[rgba(26,20,16,0.14)] bg-[#FCEFE0]"
+                : "h-[54px] bg-[#FF6A1F]"
+            }`}
+            style={runnerAcceptsCards ? undefined : BR_SHADOW.primary}
           >
             <Icon
               name="Banknote"
@@ -478,10 +527,16 @@ export default function MySettlement() {
               color={runnerAcceptsCards ? BR.ink : "#fff"}
             />
             <Text
-              style={[
-                styles.ghostBtnText,
-                !runnerAcceptsCards && styles.primaryBtnText,
-              ]}
+              className={
+                runnerAcceptsCards
+                  ? "text-[15px] text-[#1A1410]"
+                  : "text-base text-white"
+              }
+              style={
+                runnerAcceptsCards
+                  ? BR_FONT_STYLE.displaySemibold
+                  : BR_FONT_STYLE.display
+              }
             >
               Settle in cash
             </Text>
@@ -491,194 +546,3 @@ export default function MySettlement() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 12,
-    backgroundColor: BR.paper,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerTitle: {
-    fontFamily: BR_FONT.display,
-    fontSize: 17,
-    fontWeight: "700",
-    color: BR.ink,
-  },
-  receipt: {
-    backgroundColor: BR.card,
-    paddingHorizontal: 22,
-    paddingVertical: 24,
-  },
-  receiptTitle: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontStyle: "italic",
-    fontSize: 22,
-    color: BR.orangeDeep,
-    textAlign: "center",
-  },
-  receiptMeta: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 11,
-    color: BR.ink3,
-    letterSpacing: 1.2,
-    marginTop: 3,
-  },
-  rule: {
-    height: 1,
-    backgroundColor: "rgba(26,20,16,0.1)",
-    marginVertical: 14,
-  },
-  oweLabel: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 13,
-    color: BR.ink2,
-    marginBottom: 10,
-  },
-  receiptRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 5,
-  },
-  rowLabel: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 13,
-    color: BR.ink2,
-  },
-  rowValue: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 13,
-    color: BR.ink,
-  },
-  totalLabel: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontSize: 18,
-    color: BR.ink,
-  },
-  totalAmount: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontSize: 32,
-  },
-  receiptCode: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 10,
-    color: BR.ink3,
-    letterSpacing: 1,
-  },
-  // step cards
-  stepCard: {
-    flex: 1,
-    backgroundColor: BR.card,
-    borderWidth: 1,
-    borderColor: BR.line,
-    borderRadius: BR_RADIUS.md,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
-    alignItems: "center",
-    gap: 6,
-    ...BR_SHADOW.card,
-  },
-  stepLabel: {
-    fontFamily: BR_FONT.display,
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  // runner card
-  runnerCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 14,
-    borderRadius: BR_RADIUS.lg,
-    backgroundColor: BR.orangeTint,
-    borderWidth: 1,
-    borderColor: "rgba(255,106,31,0.2)",
-    ...BR_SHADOW.card,
-  },
-  runnerSubLabel: {
-    fontFamily: BR_FONT.mono,
-    fontSize: 11,
-    color: BR.ink3,
-    marginBottom: 2,
-  },
-  runnerName: {
-    fontFamily: BR_FONT.display,
-    fontSize: 15,
-    fontWeight: "700",
-    color: BR.ink,
-  },
-  // settled banner
-  settledBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginTop: 14,
-    padding: 14,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.mintSoft,
-    borderWidth: 1,
-    borderColor: "rgba(46,190,123,0.25)",
-  },
-  settledBannerText: {
-    flex: 1,
-    fontFamily: BR_FONT.mono,
-    fontSize: 13,
-    color: BR.mintInk,
-    fontWeight: "600",
-  },
-  // footer
-  footer: {
-    paddingHorizontal: 18,
-    paddingTop: 14,
-    gap: 10,
-    backgroundColor: BR.paper,
-    borderTopWidth: 1,
-    borderTopColor: BR.line,
-  },
-  primaryBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    height: 54,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.orange,
-    ...BR_SHADOW.primary,
-  },
-  primaryBtnText: {
-    fontFamily: BR_FONT.display,
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-  },
-  ghostBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    height: 50,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line2,
-    backgroundColor: BR.paper2,
-  },
-  ghostBtnText: {
-    fontFamily: BR_FONT.display,
-    fontSize: 15,
-    fontWeight: "600",
-    color: BR.ink,
-  },
-});

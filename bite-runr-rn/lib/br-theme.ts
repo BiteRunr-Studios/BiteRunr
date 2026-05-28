@@ -36,9 +36,26 @@ export const BR_RADIUS = {
 export const BR_FONT = {
   display: "BricolageGrotesque_700Bold",
   displayMedium: "BricolageGrotesque_500Medium",
+  displaySemibold: "BricolageGrotesque_600SemiBold",
   displayExtraBold: "BricolageGrotesque_800ExtraBold",
   mono: "JetBrainsMono_500Medium",
+  monoSemibold: "JetBrainsMono_600SemiBold",
   monoBold: "JetBrainsMono_700Bold",
+} as const;
+
+/**
+ * `style` presets for Text / TextInput with NativeWind className.
+ * Use these instead of Tailwind `font-bold` / `font-semibold` — RN ignores
+ * custom fontFamily when fontWeight is set separately.
+ */
+export const BR_FONT_STYLE = {
+  display: { fontFamily: BR_FONT.display },
+  displayMedium: { fontFamily: BR_FONT.displayMedium },
+  displaySemibold: { fontFamily: BR_FONT.displaySemibold },
+  displayExtraBold: { fontFamily: BR_FONT.displayExtraBold },
+  mono: { fontFamily: BR_FONT.mono },
+  monoSemibold: { fontFamily: BR_FONT.monoSemibold },
+  monoBold: { fontFamily: BR_FONT.monoBold },
 } as const;
 
 export const BR_SHADOW = {

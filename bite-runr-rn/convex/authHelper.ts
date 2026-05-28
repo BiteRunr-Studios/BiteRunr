@@ -56,8 +56,10 @@ export async function ensureUser(
   let firstName = authUser.firstName;
   let lastName = authUser.lastName;
 
-  if ((!firstName || !lastName) && authUser.name) {
-    const names = splitName(authUser.name);
+  const rawName = typeof authUser.name === "string" ? authUser.name.trim() : "";
+  // Apple id-token sign-in stores the email as name when full name isn't forwarded.
+  if ((!firstName || !lastName) && rawName && !rawName.includes("@")) {
+    const names = splitName(rawName);
     firstName = firstName || names.firstName || "User";
     lastName = lastName || names.lastName || "";
   }

@@ -1,0 +1,147 @@
+{
+  "project": {
+    "name": "BiteRunr",
+    "languages": [
+      "config",
+      "css",
+      "dockerfile",
+      "html",
+      "javascript",
+      "json",
+      "markdown",
+      "toml",
+      "txt",
+      "typescript",
+      "yaml"
+    ],
+    "frameworks": [
+      "Better Auth",
+      "Biome",
+      "Convex",
+      "Docker",
+      "Expo",
+      "Expo Router",
+      "Framer Motion",
+      "GitHub Actions",
+      "NativeWind",
+      "Prettier",
+      "React",
+      "React Native",
+      "Stripe",
+      "Tailwind CSS",
+      "TanStack Router",
+      "TanStack Start",
+      "TypeScript",
+      "Vite",
+      "Vitest"
+    ],
+    "description": "BiteRunr is an Expo/React Native mobile app for coordinating group food runs, collecting orders, scanning receipts, and settling per-line payments through Stripe Connect. The repository also includes separate admin and landing Vite apps alongside the mobile Convex backend. Note: this project has over 100 source files; consider scoping analysis to a subdirectory for faster results.",
+    "analyzedAt": "2026-05-21T14:45:37.215Z",
+    "gitCommitHash": "785c01fef1b9bd40e6c5219f89fd7cbb566e6c93"
+  },
+  "filesAnalyzed": 171,
+  "fileCategories": {
+    "docs": 8,
+    "config": 23,
+    "infra": 3,
+    "code": 132,
+    "markup": 5
+  },
+  "nodeTypes": {
+    "document": 8,
+    "config": 23,
+    "pipeline": 1,
+    "service": 7,
+    "file": 137,
+    "function": 190,
+    "class": 1
+  },
+  "edgeTypes": {
+    "contains": 206,
+    "exports": 105,
+    "imports": 270,
+    "configures": 32,
+    "triggers": 1,
+    "deploys": 3,
+    "documents": 10,
+    "related": 4,
+    "calls": 41,
+    "depends_on": 6,
+    "serves": 1
+  },
+  "layers": [
+    "Mobile App Routes",
+    "Mobile UI Components",
+    "Client Runtime Services",
+    "Convex Backend And Data",
+    "Admin Web App",
+    "Landing Web App",
+    "Project Configuration",
+    "Infrastructure And CI",
+    "Documentation And Guidance"
+  ],
+  "tourSteps": 13,
+  "review": {
+    "issues": [],
+    "warnings": [
+      "Node 'file:admin/eslint.config.js' has no edges (orphan)",
+      "Node 'file:app.config.ts' has no edges (orphan)",
+      "Node 'file:babel.config.js' has no edges (orphan)",
+      "Node 'config:biome.json' has no edges (orphan)",
+      "Node 'document:CLAUDE.md' has no edges (orphan)",
+      "Node 'file:convex/_generated/api.d.ts' has no edges (orphan)",
+      "Node 'file:convex/_generated/dataModel.d.ts' has no edges (orphan)",
+      "Node 'file:convex/_generated/server.d.ts' has no edges (orphan)",
+      "Node 'file:convex/auth.config.ts' has no edges (orphan)",
+      "Node 'file:convex/convex.config.ts' has no edges (orphan)",
+      "Node 'config:eas.json' has no edges (orphan)",
+      "Node 'config:landing/.dockerignore' has no edges (orphan)",
+      "Node 'file:landing/convex/_generated/api.d.ts' has no edges (orphan)",
+      "Node 'file:landing/convex/_generated/dataModel.d.ts' has no edges (orphan)",
+      "Node 'file:landing/convex/_generated/server.d.ts' has no edges (orphan)",
+      "Node 'file:landing/convex/_generated/server.js' has no edges (orphan)",
+      "Node 'file:tailwind.config.js' has no edges (orphan)"
+    ],
+    "stats": {
+      "totalNodes": 367,
+      "totalEdges": 679,
+      "totalLayers": 9,
+      "tourSteps": 13,
+      "nodeTypes": {
+        "document": 8,
+        "config": 23,
+        "pipeline": 1,
+        "service": 7,
+        "file": 137,
+        "function": 190,
+        "class": 1
+      },
+      "edgeTypes": {
+        "contains": 206,
+        "exports": 105,
+        "imports": 270,
+        "configures": 32,
+        "triggers": 1,
+        "deploys": 3,
+        "documents": 10,
+        "related": 4,
+        "calls": 41,
+        "depends_on": 6,
+        "serves": 1
+      }
+    }
+  },
+  "assembleReview": {
+    "fixedSectionOk": true,
+    "nodesRecovered": 0,
+    "edgesRestored": 1,
+    "crossBatchEdgesAdded": 0,
+    "typesRemapped": 0,
+    "complexityRemapped": 0,
+    "notes": [
+      "35 import-map endpoint(s) were not represented by file: nodes; non-file canonical nodes were left intact except the reported tokens.json repair.",
+      "Restored lib/constants.ts import to canonical config:tokens.json node instead of creating a duplicate file node for the generated config artifact.",
+      "Merge report had no Fixed-section anomalies to review beyond one dropped import; no node type or complexity remaps were needed."
+    ]
+  }
+}

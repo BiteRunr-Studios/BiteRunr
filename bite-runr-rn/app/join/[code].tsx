@@ -3,7 +3,6 @@ import {
   View,
   Pressable,
   ActivityIndicator,
-  StyleSheet,
   TouchableOpacity,
   Text,
 } from "react-native";
@@ -14,8 +13,7 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/lib/convex-auth-context";
 import Icon from "@/components/common/icon";
 import { BrAvatar, BrCard, BrChip, BrText } from "@/components/br";
-import { BR, BR_FONT, BR_RADIUS, BR_SHADOW } from "@/lib/br-theme";
-import { COLORS } from "@/lib/fonts";
+import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 
 export default function JoinOrderPage() {
   const { code } = useLocalSearchParams<{ code: string }>();
@@ -70,9 +68,12 @@ export default function JoinOrderPage() {
   // Loading state
   if (!isReady || validation === undefined) {
     return (
-      <SafeAreaView edges={["top"]} style={styles.centerScreen}>
+      <SafeAreaView
+        edges={["top"]}
+        className="flex-1 items-center justify-center bg-[#FFF7EE]"
+      >
         <ActivityIndicator size="large" color={BR.orange} />
-        <BrText color={BR.ink3} style={styles.loadingText}>
+        <BrText color={BR.ink3} className="mt-3.5">
           Validating invite
         </BrText>
       </SafeAreaView>
@@ -82,29 +83,22 @@ export default function JoinOrderPage() {
   // Invalid invite
   if (!validation.valid) {
     return (
-      <SafeAreaView edges={["top"]} style={styles.screen}>
-        <View style={styles.stateWrap}>
-          <View style={[styles.stateIcon, { backgroundColor: BR.coralSoft }]}>
+      <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
+        <View className="flex-1 items-center justify-center px-7 pb-6">
+          <View className="mb-5 h-[82px] w-[82px] items-center justify-center rounded-full bg-[#FFE0E6]">
             <Icon name="CircleX" size={42} color={BR.coralInk} />
           </View>
-          <BrText variant="h2" style={styles.stateTitle}>
+          <BrText variant="h2" className="mb-2 text-center">
             Invalid Invite
           </BrText>
-          <BrText color={BR.ink3} style={styles.stateCopy}>
+          <BrText color={BR.ink3} className="mb-7 text-center">
             {validation.error}
           </BrText>
           <Pressable
             onPress={handleGoHome}
-            style={({ pressed }) => [
-              styles.stateButton,
-              pressed && styles.pressed,
-            ]}
+            className="min-h-[54px] min-w-[150px] items-center justify-center rounded-2xl bg-[#FF6A1F] px-[22px] active:scale-[0.98] active:opacity-75"
           >
-            <BrText
-              color="#fff"
-              weight="semibold"
-              style={styles.stateButtonText}
-            >
+            <BrText color="#fff" weight="semibold" className="text-base">
               Go to Home
             </BrText>
           </Pressable>
@@ -116,31 +110,24 @@ export default function JoinOrderPage() {
   // Already a member - redirect directly
   if (validation.isAlreadyMember && validation.order) {
     return (
-      <SafeAreaView edges={["top"]} style={styles.screen}>
-        <View style={styles.stateWrap}>
-          <View style={[styles.stateIcon, { backgroundColor: BR.mintSoft }]}>
+      <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
+        <View className="flex-1 items-center justify-center px-7 pb-6">
+          <View className="mb-5 h-[82px] w-[82px] items-center justify-center rounded-full bg-[#DDF5E8]">
             <Icon name="CircleCheck" size={42} color={BR.mintInk} />
           </View>
-          <BrText variant="h2" style={styles.stateTitle}>
+          <BrText variant="h2" className="mb-2 text-center">
             Already a Member
           </BrText>
-          <BrText color={BR.ink3} style={styles.stateCopy}>
+          <BrText color={BR.ink3} className="mb-7 text-center">
             You're already part of this order
           </BrText>
           <Pressable
             onPress={() =>
               router.replace(`/(protected)/order/${validation.order?.id}`)
             }
-            style={({ pressed }) => [
-              styles.stateButton,
-              pressed && styles.pressed,
-            ]}
+            className="min-h-[54px] min-w-[150px] items-center justify-center rounded-2xl bg-[#FF6A1F] px-[22px] active:scale-[0.98] active:opacity-75"
           >
-            <BrText
-              color="#fff"
-              weight="semibold"
-              style={styles.stateButtonText}
-            >
+            <BrText color="#fff" weight="semibold" className="text-base">
               View Order
             </BrText>
           </Pressable>
@@ -159,92 +146,74 @@ export default function JoinOrderPage() {
   } joined`;
 
   return (
-    <SafeAreaView edges={["top"]} style={styles.screen}>
+    <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
       {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: 18,
-          paddingVertical: 10,
-          position: "relative",
-          marginTop: 12,
-        }}
-      >
+      <View className="relative mt-3 flex-row items-center justify-between px-[18px] py-2.5">
         <Pressable
           onPress={handleGoHome}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: COLORS.paper2,
-            borderWidth: 1,
-            borderColor: COLORS.line,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
+          className="h-9 w-9 items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
         >
-          <Icon name="ChevronLeft" size={20} color={COLORS.ink} />
+          <Icon name="ChevronLeft" size={20} color={BR.ink} />
         </Pressable>
         <View
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: 10,
-            bottom: 10,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
+          className="absolute bottom-2.5 left-0 right-0 top-2.5 items-center justify-center"
           pointerEvents="none"
         >
-          <BrText weight="bold" style={{ fontSize: 17, lineHeight: 24 }}>
+          <BrText
+            weight="bold"
+            className="text-[17px] leading-6"
+            style={BR_FONT_STYLE.display}
+          >
             Join Order
           </BrText>
         </View>
-        <View style={{ width: 36 }} />
+        <View className="w-9" />
       </View>
 
-      <View style={styles.content}>
-        <BrCard padding={24} radius="xl" style={styles.card}>
-          <BrAvatar
-            name={creatorName}
-            avatarUrl={validation.creator?.avatarUrl}
-            size={82}
-            ring={BR.paper}
-          />
+      <View className="flex-1 justify-center px-[22px] pb-6">
+        <BrCard padding={24} radius="xl">
+          <View className="items-center">
+            <BrAvatar
+              name={creatorName}
+              avatarUrl={validation.creator?.avatarUrl}
+              size={82}
+              ring={BR.paper}
+            />
 
-          <BrText variant="eyebrow" style={styles.hostLabel}>
-            Hosted by
-          </BrText>
-          <BrText variant="h3" style={styles.hostName}>
-            {creatorName}
-          </BrText>
+            <BrText variant="eyebrow" className="mb-1.5 mt-[18px]">
+              Hosted by
+            </BrText>
+            <BrText variant="h3" className="mb-[18px] text-center">
+              {creatorName}
+            </BrText>
 
-          <View style={styles.divider} />
+            <View className="mb-[18px] h-px self-stretch bg-[rgba(26,20,16,0.08)]" />
 
-          <BrText variant="eyebrow" style={styles.orderLabel}>
-            ORDER
-          </BrText>
-          <BrText variant="h2" style={styles.orderName}>
-            {validation.order?.name}
-          </BrText>
+            <BrText variant="eyebrow" className="mb-1.5">
+              ORDER
+            </BrText>
+            <BrText variant="h2" className="mb-[18px] text-center">
+              {validation.order?.name}
+            </BrText>
 
-          <BrChip
-            color="orange"
-            size="lg"
-            style={styles.participantChip}
-            leftSlot={<Icon name="Users" size={16} color={BR.orangeDeep} />}
-          >
-            {participantLabel}
-          </BrChip>
+            <BrChip
+              color="orange"
+              size="lg"
+              style={{ alignSelf: "center" }}
+              leftSlot={<Icon name="Users" size={16} color={BR.orangeDeep} />}
+            >
+              {participantLabel}
+            </BrChip>
+          </View>
         </BrCard>
 
         {error && (
-          <View style={styles.errorBox}>
+          <View className="mt-4 flex-row items-center justify-center gap-2 rounded-2xl border border-[rgba(255,77,109,0.24)] bg-[#FFE0E6] p-3.5">
             <Icon name="CircleAlert" size={16} color={BR.coralInk} />
-            <BrText color={BR.coralInk} style={styles.errorText}>
+            <BrText
+              color={BR.coralInk}
+              className="flex-1 text-center font-semibold"
+            >
               {error}
             </BrText>
           </View>
@@ -253,20 +222,22 @@ export default function JoinOrderPage() {
         <TouchableOpacity
           onPress={handleJoin}
           disabled={isJoining}
-          style={[styles.footerBtn, isJoining && styles.joinButtonDisabled]}
+          className={`mt-3.5 w-full flex-row items-center justify-center gap-2 rounded-2xl bg-[#FF6A1F] py-4 active:opacity-85 ${
+            isJoining ? "opacity-65" : ""
+          }`}
           activeOpacity={0.85}
         >
           {isJoining ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.footerBtnText}>
+            <Text className="text-base font-bold text-white">
               {isLoggedIn ? "Join Order" : "Sign In to Join"}
             </Text>
           )}
         </TouchableOpacity>
 
         {!isLoggedIn && (
-          <BrText color={BR.ink3} style={styles.signInNote}>
+          <BrText color={BR.ink3} className="mt-3.5 text-center">
             You'll be redirected to sign in first
           </BrText>
         )}
@@ -274,185 +245,3 @@ export default function JoinOrderPage() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  footerBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-  },
-  footerBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: BR_RADIUS.md,
-    width: "100%",
-    backgroundColor: BR.orange,
-    marginTop: 14,
-  },
-  screen: {
-    flex: 1,
-    backgroundColor: BR.paper,
-  },
-  centerScreen: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: BR.paper,
-  },
-  loadingText: {
-    marginTop: 14,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    minHeight: 58,
-    paddingHorizontal: 18,
-    paddingTop: 6,
-    paddingBottom: 10,
-    backgroundColor: BR.paper,
-  },
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 999,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-  },
-  headerTitleWrap: {
-    position: "absolute",
-    left: 72,
-    right: 72,
-    top: 6,
-    bottom: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerTitle: {
-    fontFamily: BR_FONT.display,
-    fontSize: 19,
-    lineHeight: 24,
-    letterSpacing: 0,
-    textAlign: "center",
-  },
-  headerSpacer: {
-    width: 40,
-    height: 40,
-  },
-  pressed: {
-    opacity: 0.75,
-    transform: [{ scale: 0.98 }],
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 22,
-    paddingBottom: 24,
-  },
-  card: {
-    alignItems: "center",
-  },
-  hostLabel: {
-    marginTop: 18,
-    marginBottom: 6,
-  },
-  hostName: {
-    textAlign: "center",
-    marginBottom: 18,
-  },
-  divider: {
-    alignSelf: "stretch",
-    height: 1,
-    backgroundColor: BR.line,
-    marginBottom: 18,
-  },
-  orderLabel: {
-    marginBottom: 6,
-  },
-  orderName: {
-    textAlign: "center",
-    marginBottom: 18,
-  },
-  participantChip: {
-    alignSelf: "center",
-  },
-  joinButton: {
-    marginTop: 22,
-    minHeight: 56,
-    alignSelf: "stretch",
-    borderRadius: BR_RADIUS.md,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: BR.orange,
-    ...BR_SHADOW.primary,
-  },
-  joinButtonDisabled: {
-    opacity: 0.65,
-  },
-  joinButtonText: {
-    fontSize: 16,
-  },
-  signInNote: {
-    marginTop: 14,
-    textAlign: "center",
-  },
-  errorBox: {
-    marginTop: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    padding: 14,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.coralSoft,
-    borderWidth: 1,
-    borderColor: "rgba(255,77,109,0.24)",
-  },
-  errorText: {
-    flex: 1,
-    textAlign: "center",
-    fontWeight: "600",
-  },
-  stateWrap: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 28,
-    paddingBottom: 24,
-  },
-  stateIcon: {
-    width: 82,
-    height: 82,
-    borderRadius: 41,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 20,
-  },
-  stateTitle: {
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  stateCopy: {
-    textAlign: "center",
-    marginBottom: 28,
-  },
-  stateButton: {
-    minWidth: 150,
-    minHeight: 54,
-    paddingHorizontal: 22,
-    borderRadius: BR_RADIUS.md,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: BR.orange,
-    ...BR_SHADOW.primary,
-  },
-  stateButtonText: {
-    fontSize: 16,
-  },
-});

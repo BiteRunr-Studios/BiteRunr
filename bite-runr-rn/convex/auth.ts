@@ -1,11 +1,13 @@
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins";
 import { expo } from "@better-auth/expo";
-import { createClient } from "@convex-dev/better-auth";
+import { createClient, type AuthFunctions } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { Resend } from "resend";
-import { components } from "./_generated/api";
+import { components, internal } from "./_generated/api";
+import type { DataModel } from "./_generated/dataModel";
 import authConfig from "./auth.config";
+import { purgeAppUserByEmail } from "./accountDeletion";
 
 const resend = new Resend(process.env.AUTH_RESEND_KEY);
 
@@ -52,8 +54,21 @@ if (!siteUrl && hasOAuthProviders) {
   );
 }
 
+const authFunctions: AuthFunctions = internal.auth;
+
 // Create the Better Auth client for Convex
-export const authComponent = createClient(components.betterAuth);
+export const authComponent = createClient<DataModel>(components.betterAuth, {
+  authFunctions,
+  triggers: {
+    user: {
+      onDelete: async (ctx, authUser) => {
+        await purgeAppUserByEmail(ctx, authUser.email);
+      },
+    },
+  },
+});
+
+export const { onCreate, onUpdate, onDelete } = authComponent.triggersApi();
 
 // Create the Better Auth instance
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -71,6 +86,11 @@ export const createAuth = (ctx: any) => {
     ],
     emailAndPassword: {
       enabled: true,
+    },
+    user: {
+      deleteUser: {
+        enabled: true,
+      },
     },
     plugins: [
       convex({ authConfig }),

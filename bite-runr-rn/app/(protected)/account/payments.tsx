@@ -6,7 +6,6 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
-  StyleSheet,
   TouchableOpacity,
   TextInput,
   type TextInputProps,
@@ -17,7 +16,7 @@ import * as WebBrowser from "expo-web-browser";
 import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Icon from "@/components/common/icon";
-import { BR, BR_FONT, BR_RADIUS } from "@/lib/br-theme";
+import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 import { BrText } from "@/components/br";
 import Animated, {
   FadeInUp,
@@ -382,54 +381,74 @@ export default function PaymentsScreen() {
   // ── Render ────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView
-      edges={["top"]}
-      style={{ flex: 1, backgroundColor: BR.paper }}
-    >
+    <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
       {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+      <View className="relative flex-row items-center justify-between px-[18px] pb-3 pt-2">
+        <Pressable
+          onPress={() => router.back()}
+          className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+        >
           <Icon name="ChevronLeft" size={20} color={BR.ink} />
         </Pressable>
-        <View pointerEvents="none" style={styles.headerTitle}>
-          <BrText weight="bold" style={{ fontSize: 17, lineHeight: 24 }}>
+        <View
+          pointerEvents="none"
+          className="absolute inset-x-0 bottom-3 top-2 items-center justify-center"
+        >
+          <BrText
+            className="text-[17px] leading-6"
+            style={BR_FONT_STYLE.display}
+          >
             Payments
           </BrText>
         </View>
         <Pressable
           onPress={() => openURL("https://stripe.com/payments")}
-          style={styles.stripeTrustPill}
+          className="ml-auto flex-row items-center gap-1.5 rounded-full border border-[rgba(27,107,67,0.16)] bg-[#DDF5E8] px-3 py-[7px]"
           accessibilityRole="link"
           accessibilityLabel="Stripe verified. What is Stripe?"
         >
           <Icon name="ShieldCheck" size={12} color={BR.mintInk} />
-          <Text style={styles.stripeTrustText}>Stripe</Text>
+          <Text
+            className="text-xs text-[#1B6B43]"
+            style={BR_FONT_STYLE.display}
+          >
+            Stripe
+          </Text>
           <Icon name="ExternalLink" size={12} color={BR.mintInk} />
         </Pressable>
       </View>
 
       {isLoading ? (
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
+        <View className="flex-1 items-center justify-center">
           <ActivityIndicator color={BR.orange} size="large" />
         </View>
       ) : (
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: 60 }}
+          className="flex-1"
+          contentContainerClassName="px-[18px] pb-[60px]"
           showsVerticalScrollIndicator={false}
         >
           {/* Intro */}
-          <Animated.View
-            entering={FadeInUp.duration(300)}
-            style={{ marginTop: 4 }}
-          >
-            <Text style={styles.eyebrow}>Get paid back</Text>
-            <Text style={styles.pageTitle}>
-              Accept card <Text style={styles.pageTitleAccent}>payments.</Text>
+          <Animated.View entering={FadeInUp.duration(300)} className="mt-1">
+            <BrText
+              variant="eyebrow"
+              className="tracking-[1.2px] text-[#8A7A6E]"
+            >
+              Get paid back
+            </BrText>
+            <Text
+              className="mt-1.5 text-[36px] leading-[42px] text-[#1A1410]"
+              style={BR_FONT_STYLE.displayExtraBold}
+            >
+              Accept card{" "}
+              <Text
+                className="italic text-[#FF6A1F]"
+                style={BR_FONT_STYLE.displayExtraBold}
+              >
+                payments.
+              </Text>
             </Text>
-            <Text style={styles.introBody}>
+            <Text className="mt-2.5 text-sm leading-[21px] text-[#4A3C32]">
               When you're the runner, your squad pays their share through
               BiteRunr. We deposit it straight to your bank.
             </Text>
@@ -439,32 +458,42 @@ export default function PaymentsScreen() {
           {hasNoAccount && (
             <Animated.View
               entering={FadeInUp.duration(300).delay(60)}
-              style={{ marginTop: 24 }}
+              className="mt-6"
             >
-              <View style={styles.setupCard}>
-                <Text style={styles.setupCardTitle}>Set up in ~2 min</Text>
-                <Text style={styles.setupCardSub}>Here's what to expect:</Text>
+              <View className="rounded-[22px] border border-[rgba(26,20,16,0.08)] bg-white p-5">
+                <Text
+                  className="text-lg text-[#1A1410]"
+                  style={BR_FONT_STYLE.display}
+                >
+                  Set up in ~2 min
+                </Text>
+                <Text className="mt-1 text-[13px] leading-[19px] text-[#8A7A6E]">
+                  Here's what to expect:
+                </Text>
 
-                <View style={{ marginTop: 18, gap: 16 }}>
-                  {ONBOARDING_STEPS.map((step, _i) => (
+                <View className="mt-[18px] gap-4">
+                  {ONBOARDING_STEPS.map((step) => (
                     <View
                       key={step.title}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "flex-start",
-                        gap: 14,
-                      }}
+                      className="flex-row items-start gap-3.5"
                     >
-                      <View style={styles.setupStepIcon}>
+                      <View className="h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFF1E2]">
                         <Icon
                           name={step.icon}
                           size={16}
                           color={BR.orangeDeep}
                         />
                       </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.setupStepTitle}>{step.title}</Text>
-                        <Text style={styles.setupStepDesc}>{step.desc}</Text>
+                      <View className="flex-1">
+                        <Text
+                          className="text-sm text-[#1A1410]"
+                          style={BR_FONT_STYLE.display}
+                        >
+                          {step.title}
+                        </Text>
+                        <Text className="mt-0.5 text-xs leading-[17px] text-[#8A7A6E]">
+                          {step.desc}
+                        </Text>
                       </View>
                     </View>
                   ))}
@@ -473,10 +502,7 @@ export default function PaymentsScreen() {
                 <TouchableOpacity
                   onPress={handleSetupPayouts}
                   disabled={isSettingUp}
-                  style={[
-                    styles.primaryBtn,
-                    { marginTop: 22, opacity: isSettingUp ? 0.7 : 1 },
-                  ]}
+                  className={`mt-[22px] flex-row items-center justify-center gap-2 rounded-2xl bg-[#FF6A1F] py-4 ${isSettingUp ? "opacity-70" : ""}`}
                   activeOpacity={0.85}
                 >
                   {isSettingUp ? (
@@ -484,27 +510,19 @@ export default function PaymentsScreen() {
                   ) : (
                     <Icon name="ArrowRight" size={18} color="#fff" />
                   )}
-                  <Text style={styles.primaryBtnText}>
+                  <Text
+                    className="text-base text-white"
+                    style={BR_FONT_STYLE.display}
+                  >
                     {isSettingUp ? "Opening Stripe…" : "Get started"}
                   </Text>
                 </TouchableOpacity>
 
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    marginTop: 12,
-                  }}
-                >
+                <View className="mt-3 flex-row items-center justify-center gap-1.5">
                   <Icon name="Lock" size={11} color={BR.ink3} />
                   <Text
-                    style={{
-                      fontSize: 11,
-                      color: BR.ink3,
-                      fontFamily: BR_FONT.mono,
-                    }}
+                    className="text-[11px] text-[#8A7A6E]"
+                    style={BR_FONT_STYLE.mono}
                   >
                     Secured by Stripe
                   </Text>
@@ -517,33 +535,29 @@ export default function PaymentsScreen() {
           {connectedAccount && !isReady && (
             <Animated.View
               entering={FadeInUp.duration(300).delay(60)}
-              style={{ marginTop: 24 }}
+              className="mt-6"
             >
-              <View style={styles.setupCard}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 6,
-                  }}
-                >
+              <View className="rounded-[22px] border border-[rgba(26,20,16,0.08)] bg-white p-5">
+                <View className="mb-1.5 flex-row items-center gap-2">
                   <Icon
                     name={isOnboarded ? "Clock" : "CircleAlert"}
                     size={18}
                     color={BR.yolk}
                   />
-                  <Text style={[styles.setupCardTitle, { color: "#7A4A20" }]}>
+                  <Text
+                    className={`text-lg ${isOnboarded ? "text-[#7A4A20]" : "text-[#1A1410]"}`}
+                    style={BR_FONT_STYLE.display}
+                  >
                     {isOnboarded ? "Verification in progress" : "Almost there"}
                   </Text>
                 </View>
-                <Text style={styles.setupCardSub}>
+                <Text className="text-[13px] leading-[19px] text-[#8A7A6E]">
                   {isOnboarded
                     ? "Stripe is reviewing your details. This usually takes just a few minutes — check back shortly."
                     : "You're almost done! Finish the last few steps to start accepting card payments."}
                 </Text>
 
-                <View style={{ marginTop: 18, gap: 10 }}>
+                <View className="mt-[18px] gap-2.5">
                   {ONBOARDING_STEPS.map((step, i) => {
                     const status = getStepStatus(i);
                     const isDone = status === "done";
@@ -551,17 +565,16 @@ export default function PaymentsScreen() {
                     return (
                       <View
                         key={step.title}
-                        style={[
-                          styles.progressStep,
-                          { opacity: isDone || isActive ? 1 : 0.4 },
-                        ]}
+                        className={`flex-row items-center gap-3 ${isDone || isActive ? "opacity-100" : "opacity-40"}`}
                       >
                         <View
-                          style={[
-                            styles.progressStepIcon,
-                            isDone && { backgroundColor: BR.mintSoft },
-                            isActive && { backgroundColor: BR.yolkSoft },
-                          ]}
+                          className={`h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                            isDone
+                              ? "bg-[#DDF5E8]"
+                              : isActive
+                                ? "bg-[#FFF1C4]"
+                                : "bg-[#FCEFE0]"
+                          }`}
                         >
                           <Icon
                             name={
@@ -579,13 +592,8 @@ export default function PaymentsScreen() {
                           />
                         </View>
                         <Text
-                          style={[
-                            styles.progressStepText,
-                            isDone && {
-                              textDecorationLine: "line-through",
-                              color: BR.ink3,
-                            },
-                          ]}
+                          className={`text-sm text-[#1A1410] ${isDone ? "text-[#8A7A6E] line-through" : ""}`}
+                          style={BR_FONT_STYLE.display}
                         >
                           {step.title}
                         </Text>
@@ -594,15 +602,12 @@ export default function PaymentsScreen() {
                   })}
                 </View>
 
-                <View style={{ gap: 10, marginTop: 20 }}>
+                <View className="mt-5 gap-2.5">
                   {!isOnboarded && (
                     <TouchableOpacity
                       onPress={handleSetupPayouts}
                       disabled={isSettingUp}
-                      style={[
-                        styles.primaryBtn,
-                        { opacity: isSettingUp ? 0.7 : 1 },
-                      ]}
+                      className={`flex-row items-center justify-center gap-2 rounded-2xl bg-[#FF6A1F] py-4 ${isSettingUp ? "opacity-70" : ""}`}
                       activeOpacity={0.85}
                     >
                       {isSettingUp ? (
@@ -610,7 +615,10 @@ export default function PaymentsScreen() {
                       ) : (
                         <Icon name="ArrowRight" size={18} color="#fff" />
                       )}
-                      <Text style={styles.primaryBtnText}>
+                      <Text
+                        className="text-base text-white"
+                        style={BR_FONT_STYLE.display}
+                      >
                         {isSettingUp ? "Opening Stripe…" : "Continue setup"}
                       </Text>
                     </TouchableOpacity>
@@ -618,7 +626,7 @@ export default function PaymentsScreen() {
                   <TouchableOpacity
                     onPress={handleCheckStatus}
                     disabled={isChecking}
-                    style={[styles.ghostBtn, { opacity: isChecking ? 0.7 : 1 }]}
+                    className={`flex-row items-center justify-center gap-2 rounded-2xl border border-[rgba(26,20,16,0.14)] bg-white py-[15px] ${isChecking ? "opacity-70" : ""}`}
                     activeOpacity={0.85}
                   >
                     {isChecking ? (
@@ -626,7 +634,10 @@ export default function PaymentsScreen() {
                     ) : (
                       <Icon name="RefreshCw" size={16} color={BR.ink} />
                     )}
-                    <Text style={styles.ghostBtnText}>
+                    <Text
+                      className="text-[15px] text-[#1A1410]"
+                      style={BR_FONT_STYLE.display}
+                    >
                       {isChecking ? "Checking…" : "Check status"}
                     </Text>
                   </TouchableOpacity>
@@ -640,30 +651,44 @@ export default function PaymentsScreen() {
             <>
               <Animated.View
                 entering={FadeInUp.duration(300).delay(60)}
-                style={{ marginTop: 24 }}
+                className="mt-6"
               >
-                <View style={styles.balanceCard}>
-                  {/* Decorative $ watermark */}
-                  <Text style={styles.balanceWatermark} aria-hidden>
+                <View className="relative min-h-[220px] overflow-hidden rounded-[22px] border border-[rgba(255,106,31,0.18)] bg-[#FFF1E2] p-[22px]">
+                  <Text
+                    aria-hidden
+                    className="pointer-events-none absolute -bottom-7 -right-2.5 text-[180px] italic leading-[180px] tracking-[-10px] text-[rgba(255,106,31,0.10)]"
+                    style={BR_FONT_STYLE.displayExtraBold}
+                  >
                     $
                   </Text>
 
-                  {/* Active badge */}
-                  <View style={styles.activeBadge}>
-                    <View style={styles.activeDot} />
-                    <Text style={styles.activeBadgeText}>
+                  <View className="flex-row items-center gap-1.5 self-start rounded-full bg-[rgba(46,190,123,0.15)] px-2.5 py-[5px]">
+                    <View className="h-1.5 w-1.5 rounded-full bg-[#2EBE7B]" />
+                    <Text
+                      className="text-[11px] uppercase tracking-[0.8px] text-[#1B6B43]"
+                      style={BR_FONT_STYLE.display}
+                    >
                       Card payments active
                     </Text>
                   </View>
 
-                  <View style={{ marginTop: 18 }}>
-                    <Text style={styles.balanceEyebrow}>Available balance</Text>
+                  <View className="mt-[18px]">
+                    <Text
+                      className="text-[11px] uppercase tracking-[0.8px] text-[#E8551A]"
+                      style={BR_FONT_STYLE.mono}
+                    >
+                      Available balance
+                    </Text>
                     <AnimatedTextInput
                       animatedProps={animatedBalanceProps}
                       editable={false}
-                      style={styles.balanceAmount}
+                      className="mt-1 border-0 bg-transparent p-0 text-[52px] leading-[60px] tracking-[-1px] text-[#1A1410]"
+                      style={BR_FONT_STYLE.displayExtraBold}
                     />
-                    <Text style={styles.balanceCurrency}>
+                    <Text
+                      className="mt-1 text-[11px] tracking-[0.5px] text-[#8A7A6E]"
+                      style={BR_FONT_STYLE.mono}
+                    >
                       {balanceData?.currency?.toUpperCase() ?? "USD"} · synced
                       with Stripe
                     </Text>
@@ -672,13 +697,24 @@ export default function PaymentsScreen() {
                   {balanceData && !isEmpty && (
                     <>
                       {balanceData.pending > 0 && (
-                        <Text style={styles.pendingNote}>
+                        <Text
+                          className="mt-2.5 text-xs text-[#8A7A6E]"
+                          style={BR_FONT_STYLE.mono}
+                        >
                           {formatCurrency(balanceData.pending)} pending
                         </Text>
                       )}
-                      <Text style={styles.payoutNote}>
+                      <Text
+                        className="mt-1.5 text-xs text-[#8A7A6E]"
+                        style={BR_FONT_STYLE.mono}
+                      >
                         Next payout ·{" "}
-                        <Text style={{ color: BR.ink }}>Tomorrow</Text>
+                        <Text
+                          className="text-[#1A1410]"
+                          style={BR_FONT_STYLE.mono}
+                        >
+                          Tomorrow
+                        </Text>
                       </Text>
                     </>
                   )}
@@ -689,19 +725,13 @@ export default function PaymentsScreen() {
               {balanceData && !isEmpty && (
                 <Animated.View
                   entering={FadeInUp.duration(300).delay(80)}
-                  style={{ gap: 10, marginTop: 12 }}
+                  className="mt-3 gap-2.5"
                 >
                   {showInstantPayout && (
                     <TouchableOpacity
                       onPress={handleInstantPayout}
                       disabled={isRequestingPayout}
-                      style={[
-                        styles.primaryBtn,
-                        {
-                          backgroundColor: BR.mint,
-                          opacity: isRequestingPayout ? 0.7 : 1,
-                        },
-                      ]}
+                      className={`flex-row items-center justify-center gap-2 rounded-2xl bg-[#2EBE7B] py-4 ${isRequestingPayout ? "opacity-70" : ""}`}
                       activeOpacity={0.85}
                     >
                       {isRequestingPayout ? (
@@ -709,7 +739,10 @@ export default function PaymentsScreen() {
                       ) : (
                         <Icon name="Zap" size={18} color="#fff" />
                       )}
-                      <Text style={styles.primaryBtnText}>
+                      <Text
+                        className="text-base text-white"
+                        style={BR_FONT_STYLE.display}
+                      >
                         Instant payout ·{" "}
                         {formatCurrency(balanceData.instantPayoutAmount)}
                       </Text>
@@ -719,10 +752,7 @@ export default function PaymentsScreen() {
                     <TouchableOpacity
                       onPress={handleStandardPayout}
                       disabled={isRequestingStandardPayout}
-                      style={[
-                        styles.ghostBtn,
-                        { opacity: isRequestingStandardPayout ? 0.7 : 1 },
-                      ]}
+                      className={`flex-row items-center justify-center gap-2 rounded-2xl border border-[rgba(26,20,16,0.14)] bg-white py-[15px] ${isRequestingStandardPayout ? "opacity-70" : ""}`}
                       activeOpacity={0.85}
                     >
                       {isRequestingStandardPayout ? (
@@ -730,7 +760,10 @@ export default function PaymentsScreen() {
                       ) : (
                         <Icon name="Building" size={16} color={BR.ink} />
                       )}
-                      <Text style={styles.ghostBtnText}>
+                      <Text
+                        className="text-[15px] text-[#1A1410]"
+                        style={BR_FONT_STYLE.display}
+                      >
                         Bank transfer · {formatCurrency(balanceData.available)}
                       </Text>
                     </TouchableOpacity>
@@ -741,25 +774,28 @@ export default function PaymentsScreen() {
               {/* Stripe dashboard button */}
               <Animated.View
                 entering={FadeInUp.duration(300).delay(100)}
-                style={{ marginTop: 12 }}
+                className="mt-3"
               >
                 <TouchableOpacity
                   onPress={handleOpenDashboard}
                   disabled={isOpeningDashboard}
-                  style={[
-                    styles.dashboardBtn,
-                    { opacity: isOpeningDashboard ? 0.7 : 1 },
-                  ]}
+                  className={`flex-row items-center gap-3 rounded-[22px] bg-[#1A1410] p-4 ${isOpeningDashboard ? "opacity-70" : ""}`}
                   activeOpacity={0.85}
                 >
-                  <View style={styles.dashboardBtnIcon}>
+                  <View className="h-[38px] w-[38px] items-center justify-center rounded-xl bg-[rgba(255,255,255,0.1)]">
                     <Icon name="TrendingUp" size={18} color="#fff" />
                   </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.dashboardBtnTitle}>
+                  <View className="flex-1">
+                    <Text
+                      className="text-sm text-white"
+                      style={BR_FONT_STYLE.display}
+                    >
                       View earnings & payouts
                     </Text>
-                    <Text style={styles.dashboardBtnSub}>
+                    <Text
+                      className="mt-px text-[11px] text-[rgba(255,255,255,0.55)]"
+                      style={BR_FONT_STYLE.mono}
+                    >
                       Opens Stripe dashboard
                     </Text>
                   </View>
@@ -778,17 +814,47 @@ export default function PaymentsScreen() {
               {/* Stats grid */}
               <Animated.View
                 entering={FadeInUp.duration(300).delay(120)}
-                style={{ flexDirection: "row", gap: 10, marginTop: 12 }}
+                className="mt-3 flex-row gap-2.5"
               >
-                <View style={[styles.statCard, { flex: 1 }]}>
-                  <Text style={styles.statLabel}>This month</Text>
-                  <Text style={styles.statValue}>$0.00</Text>
-                  <Text style={styles.statMeta}>0 runs</Text>
+                <View className="flex-1 rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white p-3.5">
+                  <BrText
+                    variant="eyebrow"
+                    className="text-[10px] tracking-[1.2px] text-[#8A7A6E]"
+                  >
+                    This month
+                  </BrText>
+                  <Text
+                    className="mt-1.5 text-2xl text-[#1A1410]"
+                    style={BR_FONT_STYLE.displayExtraBold}
+                  >
+                    $0.00
+                  </Text>
+                  <Text
+                    className="mt-0.5 text-[11px] text-[#8A7A6E]"
+                    style={BR_FONT_STYLE.mono}
+                  >
+                    0 runs
+                  </Text>
                 </View>
-                <View style={[styles.statCard, { flex: 1 }]}>
-                  <Text style={styles.statLabel}>All time</Text>
-                  <Text style={styles.statValue}>$0.00</Text>
-                  <Text style={styles.statMeta}>0 payouts</Text>
+                <View className="flex-1 rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white p-3.5">
+                  <BrText
+                    variant="eyebrow"
+                    className="text-[10px] tracking-[1.2px] text-[#8A7A6E]"
+                  >
+                    All time
+                  </BrText>
+                  <Text
+                    className="mt-1.5 text-2xl text-[#1A1410]"
+                    style={BR_FONT_STYLE.displayExtraBold}
+                  >
+                    $0.00
+                  </Text>
+                  <Text
+                    className="mt-0.5 text-[11px] text-[#8A7A6E]"
+                    style={BR_FONT_STYLE.mono}
+                  >
+                    0 payouts
+                  </Text>
                 </View>
               </Animated.View>
             </>
@@ -797,48 +863,67 @@ export default function PaymentsScreen() {
           {/* Section divider */}
           <Animated.View
             entering={FadeInUp.duration(300).delay(160)}
-            style={styles.sectionDivider}
+            className="-mx-[18px] mb-[22px] mt-[30px] items-center border-t border-dashed border-[rgba(26,20,16,0.14)] pt-[22px]"
           >
-            <Text style={styles.sectionDividerEmoji}>💸</Text>
+            <Text className="absolute -top-3.5 bg-[#FFF7EE] px-2 text-[22px]">
+              💸
+            </Text>
           </Animated.View>
 
           {/* How it works */}
           <Animated.View entering={FadeInUp.duration(300).delay(180)}>
-            <Text style={styles.eyebrow}>
+            <BrText
+              variant="eyebrow"
+              className="tracking-[1.2px] text-[#8A7A6E]"
+            >
               How it works{" "}
-              <Text
-                style={{
-                  color: BR.ink3,
-                  textTransform: "none",
-                  letterSpacing: 0,
-                }}
+              <BrText
+                variant="eyebrow"
+                className="normal-case tracking-normal text-[#8A7A6E]"
               >
                 · three steps
-              </Text>
-            </Text>
+              </BrText>
+            </BrText>
 
-            <View style={{ gap: 10, marginTop: 12 }}>
+            <View className="mt-3 gap-2.5">
               {HOW_IT_WORKS.map((step, i) => (
-                <View key={step.title} style={styles.howItWorksCard}>
-                  <View style={{ position: "relative", flexShrink: 0 }}>
+                <View
+                  key={step.title}
+                  className="flex-row items-start gap-3.5 rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white p-3.5"
+                >
+                  <View className="relative shrink-0">
                     <View
-                      style={[
-                        styles.howItWorksIcon,
-                        {
-                          backgroundColor: step.color,
-                          shadowColor: step.color,
-                        },
-                      ]}
+                      className="h-11 w-11 items-center justify-center rounded-[14px]"
+                      style={{
+                        backgroundColor: step.color,
+                        shadowColor: step.color,
+                        shadowOffset: { width: 0, height: 6 },
+                        shadowOpacity: 0.35,
+                        shadowRadius: 10,
+                        elevation: 4,
+                      }}
                     >
                       <Icon name={step.icon} size={20} color="#fff" />
                     </View>
-                    <View style={styles.howItWorksIndex}>
-                      <Text style={styles.howItWorksIndexText}>{i + 1}</Text>
+                    <View className="absolute -right-1.5 -top-1.5 h-[22px] w-[22px] items-center justify-center rounded-full border-[1.5px] border-[#1A1410] bg-white">
+                      <Text
+                        className="text-[11px] text-[#1A1410]"
+                        style={BR_FONT_STYLE.monoBold}
+                      >
+                        {i + 1}
+                      </Text>
                     </View>
                   </View>
-                  <View style={{ flex: 1, paddingTop: 2 }}>
-                    <Text style={styles.howItWorksTitle}>{step.title}</Text>
-                    <Text style={styles.howItWorksSub}>{step.sub}</Text>
+                  <View className="flex-1 pt-0.5">
+                    <Text
+                      className="text-sm text-[#1A1410]"
+                      style={BR_FONT_STYLE.display}
+                    >
+                      {step.title}
+                    </Text>
+                    <Text className="mt-[3px] text-[12.5px] leading-[18px] text-[#4A3C32]">
+                      {step.sub}
+                    </Text>
                   </View>
                 </View>
               ))}
@@ -848,10 +933,10 @@ export default function PaymentsScreen() {
           {/* Footer note */}
           <Animated.View
             entering={FadeInUp.duration(300).delay(220)}
-            style={styles.footerNote}
+            className="mt-[22px] flex-row items-start gap-2.5 rounded-2xl bg-[#FCEFE0] p-3.5"
           >
             <Icon name="ShieldCheck" size={14} color={BR.ink3} />
-            <Text style={styles.footerNoteText}>
+            <Text className="flex-1 text-[11px] leading-[17px] text-[#8A7A6E]">
               Payments are processed by Stripe. BiteRunr never stores your card
               or bank details.
             </Text>
@@ -861,409 +946,3 @@ export default function PaymentsScreen() {
     </SafeAreaView>
   );
 }
-
-// ── Styles ───────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 12,
-    position: "relative",
-  },
-  headerTitle: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 8,
-    bottom: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    borderWidth: 1,
-    borderColor: BR.line,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  stripeTrustPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginLeft: "auto",
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 999,
-    backgroundColor: BR.mintSoft,
-    borderWidth: 1,
-    borderColor: "rgba(27,107,67,0.16)",
-  },
-  stripeTrustText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: BR.mintInk,
-  },
-  eyebrow: {
-    fontSize: 11,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-  },
-  pageTitle: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontSize: 36,
-    color: BR.ink,
-    marginTop: 6,
-    lineHeight: 42,
-  },
-  pageTitleAccent: {
-    color: BR.orange,
-    fontStyle: "italic",
-    fontFamily: BR_FONT.displayExtraBold,
-  },
-  introBody: {
-    fontSize: 14,
-    color: BR.ink2,
-    marginTop: 10,
-    lineHeight: 21,
-  },
-  // Setup card (no account + pending)
-  setupCard: {
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: BR.line,
-    padding: 20,
-  },
-  setupCardTitle: {
-    fontFamily: BR_FONT.display,
-    fontSize: 18,
-    fontWeight: "700",
-    color: BR.ink,
-  },
-  setupCardSub: {
-    fontSize: 13,
-    color: BR.ink3,
-    marginTop: 4,
-    lineHeight: 19,
-  },
-  setupStepIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: BR.orangeTint,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  setupStepTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: BR.ink,
-  },
-  setupStepDesc: {
-    fontSize: 12,
-    color: BR.ink3,
-    marginTop: 2,
-    lineHeight: 17,
-  },
-  progressStep: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  progressStepIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 999,
-    backgroundColor: BR.paper2,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  progressStepText: {
-    fontSize: 14,
-    color: BR.ink,
-    fontWeight: "500",
-  },
-  // Balance card
-  balanceCard: {
-    backgroundColor: BR.orangeTint,
-    borderRadius: BR_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: "rgba(255,106,31,0.18)",
-    padding: 22,
-    overflow: "hidden",
-    position: "relative",
-    minHeight: 220,
-  },
-  balanceWatermark: {
-    position: "absolute",
-    right: -10,
-    bottom: -28,
-    fontFamily: BR_FONT.displayExtraBold,
-    fontStyle: "italic",
-    fontSize: 180,
-    lineHeight: 180,
-    color: "rgba(255,106,31,0.10)",
-    letterSpacing: -10,
-    pointerEvents: "none",
-  } as any,
-  activeBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    alignSelf: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
-    backgroundColor: "rgba(46,190,123,0.15)",
-  },
-  activeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 999,
-    backgroundColor: BR.mint,
-  },
-  activeBadgeText: {
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    color: BR.mintInk,
-  },
-  balanceEyebrow: {
-    fontSize: 11,
-    fontFamily: BR_FONT.mono,
-    letterSpacing: 0.8,
-    color: BR.orangeDeep,
-    textTransform: "uppercase",
-  },
-  balanceAmount: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontSize: 52,
-    lineHeight: 60,
-    color: BR.ink,
-    marginTop: 4,
-    letterSpacing: -1,
-    // TextInput resets
-    padding: 0,
-    borderWidth: 0,
-    backgroundColor: "transparent",
-  },
-  balanceCurrency: {
-    fontSize: 11,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-    marginTop: 4,
-    letterSpacing: 0.5,
-  },
-  emptyBalanceNote: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-    marginTop: 16,
-    padding: 12,
-    borderRadius: 14,
-    backgroundColor: "rgba(255,255,255,0.7)",
-    borderWidth: 1,
-    borderStyle: "dashed",
-    borderColor: "rgba(26,20,16,0.16)",
-  },
-  emptyBalanceText: {
-    flex: 1,
-    fontSize: 12,
-    color: BR.ink2,
-    lineHeight: 18,
-  },
-  pendingNote: {
-    marginTop: 10,
-    fontSize: 12,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-  },
-  payoutNote: {
-    marginTop: 6,
-    fontSize: 12,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-  },
-  // Buttons
-  primaryBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.orange,
-  },
-  primaryBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-  },
-  ghostBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 15,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.card,
-    borderWidth: 1,
-    borderColor: BR.line2,
-  },
-  ghostBtnText: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: BR.ink,
-  },
-  dashboardBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 16,
-    borderRadius: BR_RADIUS.lg,
-    backgroundColor: BR.ink,
-  },
-  dashboardBtnIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dashboardBtnTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#fff",
-  },
-  dashboardBtnSub: {
-    fontSize: 11,
-    color: "rgba(255,255,255,0.55)",
-    marginTop: 1,
-    fontFamily: BR_FONT.mono,
-  },
-  // Stats grid
-  statCard: {
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-    padding: 14,
-  },
-  statLabel: {
-    fontSize: 10,
-    fontFamily: BR_FONT.mono,
-    color: BR.ink3,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-  },
-  statValue: {
-    fontFamily: BR_FONT.displayExtraBold,
-    fontSize: 24,
-    color: BR.ink,
-    marginTop: 6,
-  },
-  statMeta: {
-    fontSize: 11,
-    color: BR.ink3,
-    marginTop: 2,
-    fontFamily: BR_FONT.mono,
-  },
-  // Section divider
-  sectionDivider: {
-    marginTop: 30,
-    marginBottom: 22,
-    marginHorizontal: -18,
-    paddingTop: 22,
-    borderTopWidth: 1,
-    borderStyle: "dashed",
-    borderColor: BR.line2,
-    alignItems: "center",
-  },
-  sectionDividerEmoji: {
-    position: "absolute",
-    top: -14,
-    fontSize: 22,
-    backgroundColor: BR.paper,
-    paddingHorizontal: 8,
-  },
-  // How it works
-  howItWorksCard: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 14,
-    padding: 14,
-    backgroundColor: BR.card,
-    borderRadius: BR_RADIUS.md,
-    borderWidth: 1,
-    borderColor: BR.line,
-  },
-  howItWorksIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  howItWorksIndex: {
-    position: "absolute",
-    top: -6,
-    right: -6,
-    width: 22,
-    height: 22,
-    borderRadius: 999,
-    backgroundColor: "#fff",
-    borderWidth: 1.5,
-    borderColor: BR.ink,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  howItWorksIndexText: {
-    fontFamily: BR_FONT.monoBold,
-    fontSize: 11,
-    color: BR.ink,
-  },
-  howItWorksTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: BR.ink,
-  },
-  howItWorksSub: {
-    fontSize: 12.5,
-    color: BR.ink2,
-    marginTop: 3,
-    lineHeight: 18,
-  },
-  // Footer note
-  footerNote: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-    marginTop: 22,
-    padding: 14,
-    borderRadius: BR_RADIUS.md,
-    backgroundColor: BR.paper2,
-  },
-  footerNoteText: {
-    flex: 1,
-    fontSize: 11,
-    color: BR.ink3,
-    lineHeight: 17,
-  },
-});

@@ -54,6 +54,15 @@ export const theme = {
     borderWidth: {
       hairline: hairlineWidth(),
     },
+    fontFamily: {
+      "br-display": ["BricolageGrotesque_700Bold"],
+      "br-display-medium": ["BricolageGrotesque_500Medium"],
+      "br-display-semibold": ["BricolageGrotesque_600SemiBold"],
+      "br-display-extrabold": ["BricolageGrotesque_800ExtraBold"],
+      "br-mono": ["JetBrainsMono_500Medium"],
+      "br-mono-semibold": ["JetBrainsMono_600SemiBold"],
+      "br-mono-bold": ["JetBrainsMono_700Bold"],
+    },
   },
 };
 export const plugins = [];
