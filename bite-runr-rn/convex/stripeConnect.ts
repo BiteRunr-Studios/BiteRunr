@@ -18,6 +18,17 @@ import { calculatePlatformFee } from "./fees";
 
 const STRIPE_INSTANT_PAYOUT_PERCENT = 0.01;
 const STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS = 60;
+const STRIPE_STANDARD_PAYOUT_PERCENT = 0.0025;
+const STRIPE_STANDARD_PAYOUT_FIXED_FEE_CENTS = 25;
+const MIN_NET_PAYOUT_CENTS = 500;
+
+function calculateStandardPayoutFee(amountCents: number): number {
+  if (amountCents <= 0) return 0;
+  return (
+    Math.ceil(amountCents * STRIPE_STANDARD_PAYOUT_PERCENT) +
+    STRIPE_STANDARD_PAYOUT_FIXED_FEE_CENTS
+  );
+}
 
 function calculateInstantPayoutFee(amountCents: number): number {
   if (amountCents <= 0) return 0;
@@ -43,10 +54,12 @@ function calculateMaxInstantPayout(amountAvailableCents: number): {
     calculateInstantPayoutFee(minFeeCandidate) ===
     STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS
   ) {
-    return {
-      amount: minFeeCandidate,
-      fee: STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS,
-    };
+    return minFeeCandidate >= MIN_NET_PAYOUT_CENTS
+      ? {
+          amount: minFeeCandidate,
+          fee: STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS,
+        }
+      : { amount: 0, fee: STRIPE_INSTANT_PAYOUT_MIN_FEE_CENTS };
   }
 
   // Once percentage pricing applies, solve `amount + fee <= available`.
@@ -54,12 +67,87 @@ function calculateMaxInstantPayout(amountAvailableCents: number): {
   while (amount > 0) {
     const fee = calculateInstantPayoutFee(amount);
     if (amount + fee <= amountAvailableCents) {
-      return { amount, fee };
+      return amount >= MIN_NET_PAYOUT_CENTS
+        ? { amount, fee }
+        : { amount: 0, fee };
     }
     amount -= 1;
   }
 
   return { amount: 0, fee: 0 };
+}
+
+function calculateMaxStandardPayout(amountAvailableCents: number): {
+  amount: number;
+  fee: number;
+} {
+  if (amountAvailableCents <= STRIPE_STANDARD_PAYOUT_FIXED_FEE_CENTS) {
+    return { amount: 0, fee: 0 };
+  }
+
+  let amount = Math.floor(
+    (amountAvailableCents - STRIPE_STANDARD_PAYOUT_FIXED_FEE_CENTS) /
+      (1 + STRIPE_STANDARD_PAYOUT_PERCENT),
+  );
+  while (amount > 0) {
+    const fee = calculateStandardPayoutFee(amount);
+    if (amount + fee <= amountAvailableCents) {
+      return amount >= MIN_NET_PAYOUT_CENTS
+        ? { amount, fee }
+        : { amount: 0, fee };
+    }
+    amount -= 1;
+  }
+
+  return { amount: 0, fee: 0 };
+}
+
+async function ensureManualPayoutSchedule(
+  stripe: Stripe,
+  stripeAccountId: string,
+): Promise<void> {
+  await stripe.accounts.update(stripeAccountId, {
+    settings: {
+      payouts: {
+        schedule: {
+          interval: "manual",
+        },
+      },
+    },
+  });
+}
+
+async function collectPayoutFee(
+  stripe: Stripe,
+  stripeAccountId: string,
+  amountCents: number,
+  currency: string,
+  method: "instant" | "standard",
+): Promise<Stripe.Charge | null> {
+  if (amountCents <= 0) return null;
+
+  return await stripe.charges.create({
+    amount: amountCents,
+    currency,
+    source: stripeAccountId,
+    description: `BiteRunr ${method} payout fee`,
+    metadata: {
+      stripeAccountId,
+      payoutMethod: method,
+    },
+  });
+}
+
+async function refundCollectedPayoutFee(
+  stripe: Stripe,
+  feeCharge: Stripe.Charge | null,
+): Promise<void> {
+  if (!feeCharge) return;
+  try {
+    await stripe.refunds.create({ charge: feeCharge.id });
+  } catch {
+    // If refunding the fee collection fails, preserve the original payout error.
+  }
 }
 
 async function getPayoutDestinationAvailability(
@@ -128,6 +216,9 @@ export const createConnectAccount = action({
         settings: {
           payouts: {
             debit_negative_balances: true,
+            schedule: {
+              interval: "manual",
+            },
           },
         },
       });
@@ -142,6 +233,8 @@ export const createConnectAccount = action({
         email: user.email,
       });
     }
+
+    await ensureManualPayoutSchedule(getStripe(), stripeAccountId);
 
     const siteUrl = process.env.CONVEX_SITE_URL;
     if (!siteUrl) throw new Error("CONVEX_SITE_URL not configured");
@@ -189,6 +282,7 @@ export const checkOnboardingStatus = action({
     const stripeAccount = await getStripe().accounts.retrieve(
       account.stripeAccountId,
     );
+    await ensureManualPayoutSchedule(getStripe(), account.stripeAccountId);
     const onboardingComplete: boolean =
       stripeAccount.details_submitted ?? false;
     const payoutsEnabled: boolean = stripeAccount.payouts_enabled ?? false;
@@ -341,6 +435,8 @@ export const getPayoutBalance = action({
     instantAvailable: number;
     instantPayoutAmount: number;
     instantPayoutFee: number;
+    standardPayoutAmount: number;
+    standardPayoutFee: number;
     hasInstantPayoutCard: boolean;
     hasBankPayoutAccount: boolean;
     instantPayoutsEnabled: boolean;
@@ -383,6 +479,8 @@ export const getPayoutBalance = action({
     const instantAmount = instantEntry?.amount ?? 0;
     const { amount: instantPayoutAmount, fee: instantPayoutFee } =
       calculateMaxInstantPayout(instantAmount);
+    const { amount: standardPayoutAmount, fee: standardPayoutFee } =
+      calculateMaxStandardPayout(availableAmount);
     const hasInstantCapability =
       Array.isArray(balance.instant_available) &&
       balance.instant_available.length > 0;
@@ -393,6 +491,8 @@ export const getPayoutBalance = action({
       instantAvailable: instantAmount,
       instantPayoutAmount,
       instantPayoutFee,
+      standardPayoutAmount,
+      standardPayoutFee,
       hasInstantPayoutCard: payoutDestinations.hasInstantPayoutCard,
       hasBankPayoutAccount: payoutDestinations.hasBankPayoutAccount,
       instantPayoutsEnabled:
@@ -475,11 +575,20 @@ export const requestInstantPayout = action({
 
     if (amount <= 0) {
       throw new Error(
-        `Your available balance of $${(instantAvailableAmount / 100).toFixed(2)} is too small to cover the instant payout fee. Funds will be paid out automatically on the regular schedule.`,
+        `Your instant payout balance of $${(instantAvailableAmount / 100).toFixed(2)} is too small after Stripe fees. Keep collecting payments until you have at least $${(MIN_NET_PAYOUT_CENTS / 100).toFixed(2)} available to transfer.`,
       );
     }
 
+    let feeCharge: Stripe.Charge | null = null;
+
     try {
+      feeCharge = await collectPayoutFee(
+        stripe,
+        account.stripeAccountId,
+        fee,
+        currency,
+        "instant",
+      );
       const payout = await stripe.payouts.create(
         {
           amount,
@@ -498,6 +607,7 @@ export const requestInstantPayout = action({
         currency,
       };
     } catch (error) {
+      await refundCollectedPayoutFee(stripe, feeCharge);
       // Provide user-friendly messages for common Stripe errors
       const msg = error instanceof Error ? error.message : String(error);
       if (msg.includes("insufficient funds") || msg.includes("balance")) {
@@ -525,6 +635,7 @@ export const requestStandardPayout = action({
   ): Promise<{
     success: boolean;
     amount: number;
+    fee: number;
     currency: string;
   }> => {
     const user = await ctx.runQuery(api.users.getCurrentUser, {});
@@ -572,11 +683,27 @@ export const requestStandardPayout = action({
     }
 
     const currency = availableEntry?.currency ?? "cad";
+    const { amount, fee } = calculateMaxStandardPayout(availableAmount);
+
+    if (amount <= 0) {
+      throw new Error(
+        `Your available balance of $${(availableAmount / 100).toFixed(2)} is too small for a bank payout after Stripe fees. Keep collecting payments until you have at least $${(MIN_NET_PAYOUT_CENTS / 100).toFixed(2)} available to transfer.`,
+      );
+    }
+
+    let feeCharge: Stripe.Charge | null = null;
 
     try {
+      feeCharge = await collectPayoutFee(
+        stripe,
+        account.stripeAccountId,
+        fee,
+        currency,
+        "standard",
+      );
       const payout = await stripe.payouts.create(
         {
-          amount: availableAmount,
+          amount,
           currency,
           method: "standard",
         },
@@ -588,9 +715,11 @@ export const requestStandardPayout = action({
       return {
         success: true,
         amount: payout.amount,
+        fee,
         currency,
       };
     } catch (error) {
+      await refundCollectedPayoutFee(stripe, feeCharge);
       const msg = error instanceof Error ? error.message : String(error);
       if (msg.includes("insufficient funds") || msg.includes("balance")) {
         throw new Error(

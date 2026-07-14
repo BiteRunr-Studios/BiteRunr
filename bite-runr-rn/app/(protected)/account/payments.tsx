@@ -43,6 +43,8 @@ type PayoutBalanceData = {
   instantAvailable: number;
   instantPayoutAmount: number;
   instantPayoutFee: number;
+  standardPayoutAmount: number;
+  standardPayoutFee: number;
   hasInstantPayoutCard: boolean;
   hasBankPayoutAccount: boolean;
   instantPayoutsEnabled: boolean;
@@ -244,6 +246,12 @@ export default function PaymentsScreen() {
       instantAvailable: sanitizeCurrencyAmount(payoutBalance.instantAvailable),
       instantPayoutAmount,
       instantPayoutFee: sanitizeCurrencyAmount(payoutBalance.instantPayoutFee),
+      standardPayoutAmount: sanitizeCurrencyAmount(
+        payoutBalance.standardPayoutAmount,
+      ),
+      standardPayoutFee: sanitizeCurrencyAmount(
+        payoutBalance.standardPayoutFee,
+      ),
       hasInstantPayoutCard: payoutBalance.hasInstantPayoutCard === true,
       hasBankPayoutAccount: payoutBalance.hasBankPayoutAccount === true,
       instantPayoutsEnabled:
@@ -299,20 +307,20 @@ export default function PaymentsScreen() {
   const handleStandardPayout = async () => {
     if (
       !balanceData ||
-      balanceData.available <= 0 ||
+      balanceData.standardPayoutAmount <= 0 ||
       !balanceData.hasBankPayoutAccount
     )
       return;
     Alert.alert(
       "Payout to Bank",
-      `Transfer ${formatCurrency(balanceData.available)} to your bank account?\n\nNo fees — funds typically arrive in 1-2 business days.`,
+      `Transfer to your bank account?\n\nBalance: ${formatCurrency(balanceData.available)}\nStripe fee: -${formatCurrency(balanceData.standardPayoutFee)}\nYou'll receive: ${formatCurrency(balanceData.standardPayoutAmount)}\n\nFunds typically arrive in 1-2 business days.`,
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Transfer",
           onPress: async () => {
             setIsRequestingStandardPayout(true);
-            let payoutResult: { amount: number } | null = null;
+            let payoutResult: { amount: number; fee: number } | null = null;
             try {
               payoutResult = await requestStandardPayout({});
             } catch (error) {
@@ -325,9 +333,13 @@ export default function PaymentsScreen() {
             }
             setIsRequestingStandardPayout(false);
             if (!payoutResult) return;
+            const feeMsg =
+              payoutResult.fee > 0
+                ? ` Stripe fee: ${formatCurrency(payoutResult.fee)}.`
+                : "";
             Alert.alert(
               "Payout Initiated",
-              `${formatCurrency(payoutResult.amount)} will arrive in your bank account in 1-2 business days.`,
+              `${formatCurrency(payoutResult.amount)} will arrive in your bank account in 1-2 business days.${feeMsg}`,
             );
             void fetchBalance();
           },
@@ -374,7 +386,8 @@ export default function PaymentsScreen() {
     !!balanceData?.instantPayoutsEnabled &&
     (balanceData?.instantPayoutAmount ?? 0) > 0;
   const showBankTransfer =
-    !!balanceData?.hasBankPayoutAccount && (balanceData?.available ?? 0) > 0;
+    !!balanceData?.hasBankPayoutAccount &&
+    (balanceData?.standardPayoutAmount ?? 0) > 0;
   const availableBalance = balanceData?.available ?? 0;
   const isEmpty = availableBalance <= 0;
 
@@ -713,7 +726,7 @@ export default function PaymentsScreen() {
                           className="text-[#1A1410]"
                           style={BR_FONT_STYLE.mono}
                         >
-                          Tomorrow
+                          Manual transfer
                         </Text>
                       </Text>
                     </>
@@ -764,7 +777,8 @@ export default function PaymentsScreen() {
                         className="text-[15px] text-[#1A1410]"
                         style={BR_FONT_STYLE.display}
                       >
-                        Bank transfer · {formatCurrency(balanceData.available)}
+                        Bank transfer ·{" "}
+                        {formatCurrency(balanceData.standardPayoutAmount)}
                       </Text>
                     </TouchableOpacity>
                   )}
