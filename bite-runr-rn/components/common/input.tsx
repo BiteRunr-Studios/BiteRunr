@@ -74,7 +74,6 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
           className={inputClassName}
           style={{
             letterSpacing: 0,
-            lineHeight: 19,
             paddingVertical: 0,
             includeFontPadding: false,
             textAlignVertical: "center",

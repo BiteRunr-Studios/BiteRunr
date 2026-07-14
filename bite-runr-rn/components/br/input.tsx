@@ -32,7 +32,6 @@ export const BrInput = forwardRef<TextInput, BrInputProps>(function BrInput(
             BR_FONT_STYLE.displayMedium,
             {
               fontSize: 16,
-              lineHeight: 22,
               color: BR.ink,
               letterSpacing: 0,
               paddingVertical: 0,

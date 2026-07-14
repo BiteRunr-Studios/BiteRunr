@@ -153,10 +153,10 @@ export default function AccountTab() {
             resizeMode="contain"
           />
           <Pressable
-            className="h-9 w-9 items-center justify-center rounded-full bg-[#FCEFE0]"
+            className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
             onPress={() => router.push("/account/account-info")}
           >
-            <Icon name="Settings" size={16} color={BR.ink} />
+            <Icon name="Settings" size={18} color={BR.ink} />
           </Pressable>
         </View>
 
