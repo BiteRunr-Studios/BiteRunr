@@ -254,7 +254,7 @@ export default function CompletedOrder() {
                   className="mt-1 text-[10px] tracking-[1.4px] text-[#8A7A6E]"
                   style={BR_FONT_STYLE.mono}
                 >
-                  LINES
+                  ITEMS
                 </Text>
               </View>
               <View className="my-1 w-px bg-[rgba(26,20,16,0.14)]" />
@@ -341,7 +341,7 @@ export default function CompletedOrder() {
                     style={BR_FONT_STYLE.mono}
                   >
                     {runner.itemCount}{" "}
-                    {runner.itemCount === 1 ? "line" : "lines"} · drove the run
+                    {runner.itemCount === 1 ? "item" : "items"} · drove the run
                   </Text>
                 </View>
                 <View className="flex-row items-center gap-1.5 rounded-full border border-[rgba(255,197,66,0.5)] bg-[#FFF1C4] px-[9px] py-1">
@@ -408,7 +408,7 @@ export default function CompletedOrder() {
                             style={BR_FONT_STYLE.mono}
                           >
                             {participant.itemCount}{" "}
-                            {participant.itemCount === 1 ? "line" : "lines"}
+                            {participant.itemCount === 1 ? "item" : "items"}
                             {participant.amountOwed > 0
                               ? ` · $${(participant.amountOwed / 100).toFixed(2)}`
                               : ""}

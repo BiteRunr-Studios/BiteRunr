@@ -1020,7 +1020,7 @@ export default function OrderSummary() {
             {
               icon: "DollarSign" as const,
               title: "Enter manually",
-              sub: "Type in prices for each order line",
+              sub: "Type in prices for each item",
               onPress: () => {
                 sourceActionSheetRef.current?.hide();
                 setTimeout(() => startManualEntry(), 400);
