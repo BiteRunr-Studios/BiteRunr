@@ -68,6 +68,41 @@ export const listPendingRequests = query({
   },
 });
 
+// List pending friend requests sent by current user
+export const listSentRequests = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getUserId(ctx);
+    if (!userId) return [];
+
+    const requests = await ctx.db
+      .query("friendRequests")
+      .withIndex("by_senderId", (q) => q.eq("senderId", userId))
+      .collect();
+
+    // Get receiver details
+    const requestsWithReceiver = await Promise.all(
+      requests.map(async (r) => {
+        const receiver = await ctx.db.get(r.receiverId);
+        return {
+          id: r._id,
+          receiver: receiver
+            ? {
+                id: receiver._id,
+                firstName: receiver.firstName,
+                lastName: receiver.lastName,
+                avatarUrl: receiver.avatarUrl,
+              }
+            : null,
+          createdAt: r._creationTime,
+        };
+      }),
+    );
+
+    return requestsWithReceiver.filter((r) => r.receiver !== null);
+  },
+});
+
 // Send a friend request
 export const sendRequest = mutation({
   args: { receiverId: v.id("users") },
@@ -189,6 +224,22 @@ export const rejectRequest = mutation({
     const request = await ctx.db.get(args.requestId);
     if (!request) throw new Error("Request not found");
     if (request.receiverId !== userId) throw new Error("Not authorized");
+
+    await ctx.db.delete(args.requestId);
+    return true;
+  },
+});
+
+// Cancel a friend request sent by the current user
+export const cancelRequest = mutation({
+  args: { requestId: v.id("friendRequests") },
+  handler: async (ctx, args) => {
+    const userId = await getUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const request = await ctx.db.get(args.requestId);
+    if (!request) throw new Error("Request not found");
+    if (request.senderId !== userId) throw new Error("Not authorized");
 
     await ctx.db.delete(args.requestId);
     return true;
