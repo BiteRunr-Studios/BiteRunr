@@ -1,6 +1,19 @@
 # Landing Website
 
-This app is set up to deploy to Railway as its own service from the `/landing` directory.
+This app is set up to deploy as its own service from the `/landing` directory.
+
+## Cloudflare Workers
+
+The Worker config is in `wrangler.jsonc` and serves the Vite `dist/` folder through Cloudflare Workers Static Assets with SPA fallback enabled.
+
+```bash
+npm install
+npm run cf:deploy
+```
+
+Use `npm run cf:dev` to build and run the Worker locally with Wrangler.
+
+If the waitlist form should connect to Convex, set `VITE_CONVEX_URL` as a Cloudflare build environment variable before running the build/deploy.
 
 ## Railway
 
