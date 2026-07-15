@@ -1,4 +1,11 @@
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import * as Haptics from "expo-haptics";
 import {
   ActivityIndicator,
@@ -239,6 +246,9 @@ function AddFriendSheet({
   const [query, setQuery] = useState("");
   const [sentUsers, setSentUsers] = useState<SentUser[]>([]);
   const [sendingTo, setSendingTo] = useState<Set<string>>(new Set());
+  // In-flight sends resolving after the sheet closed must not repopulate
+  // sentUsers, which handleClose already reset for the next session
+  const isOpenRef = useRef(visible);
 
   const sendRequest = useMutation(api.friends.sendRequest);
   const searchResults = useQuery(
@@ -247,6 +257,7 @@ function AddFriendSheet({
   );
 
   useEffect(() => {
+    isOpenRef.current = visible;
     if (visible) setQuery(initialQuery);
   }, [visible, initialQuery]);
 
@@ -258,9 +269,11 @@ function AddFriendSheet({
     setSendingTo((prev) => new Set(prev).add(userId));
     try {
       await sendRequest({ receiverId: userId });
+      if (!isOpenRef.current) return;
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setSentUsers((prev) => [{ id: userId, fullName, avatarUrl }, ...prev]);
     } catch (e: any) {
+      if (!isOpenRef.current) return;
       Alert.alert("Error", e?.message ?? "Failed to send request");
     } finally {
       setSendingTo((prev) => {
