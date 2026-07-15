@@ -32,6 +32,7 @@ import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { ConvexReactClient } from "convex/react";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
+import { PostHogProvider, usePostHog } from "posthog-react-native";
 import { AuthProvider, useAuth } from "@/lib/convex-auth-context";
 import { authClient } from "@/lib/auth-client";
 import Icon from "@/components/common/icon";
@@ -92,6 +93,49 @@ const convex = new ConvexReactClient(convexUrl, {
   unsavedChangesWarning: false,
   logger: convexLogger,
 });
+
+// Analytics is optional — without a key the app runs with no tracking
+const posthogApiKey = process.env.EXPO_PUBLIC_POSTHOG_API_KEY;
+const posthogHost =
+  process.env.EXPO_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com";
+
+// Ties PostHog events to the signed-in user; resets on sign-out so the
+// next anonymous session isn't attributed to them
+function PostHogUserIdentity() {
+  const posthog = usePostHog();
+  const { user } = useAuth();
+  const wasIdentified = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!posthog) return;
+    if (user) {
+      posthog.identify(user.id, {
+        email: user.email,
+        name: user.name,
+      });
+      wasIdentified.current = true;
+    } else if (wasIdentified.current) {
+      posthog.reset();
+      wasIdentified.current = false;
+    }
+  }, [posthog, user]);
+
+  return null;
+}
+
+function AnalyticsProvider({ children }: { children: React.ReactNode }) {
+  if (!posthogApiKey) return <>{children}</>;
+  return (
+    <PostHogProvider
+      apiKey={posthogApiKey}
+      options={{ host: posthogHost }}
+      autocapture
+    >
+      <PostHogUserIdentity />
+      {children}
+    </PostHogProvider>
+  );
+}
 
 function useToastConfig() {
   const { colorScheme } = useColorScheme();
@@ -286,13 +330,15 @@ export default function RootLayout() {
     >
       <ConvexBetterAuthProvider client={convex} authClient={authClient}>
         <AuthProvider>
-          <ThemeProvider
-            value={colorScheme === "dark" ? DARK_THEME : LIGHT_THEME}
-          >
-            <SafeAreaProvider>
-              <RootAppShell fontsLoaded={fontsLoaded} />
-            </SafeAreaProvider>
-          </ThemeProvider>
+          <AnalyticsProvider>
+            <ThemeProvider
+              value={colorScheme === "dark" ? DARK_THEME : LIGHT_THEME}
+            >
+              <SafeAreaProvider>
+                <RootAppShell fontsLoaded={fontsLoaded} />
+              </SafeAreaProvider>
+            </ThemeProvider>
+          </AnalyticsProvider>
         </AuthProvider>
       </ConvexBetterAuthProvider>
     </StripeProvider>
