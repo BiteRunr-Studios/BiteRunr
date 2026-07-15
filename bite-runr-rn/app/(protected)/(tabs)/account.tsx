@@ -11,7 +11,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { BrAvatar, BrSticker, BrText } from "@/components/br";
+import { BrAvatar, BrSticker, BrText, BrIconButton } from "@/components/br";
 import { BR } from "@/lib/br-theme";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import type { icons } from "lucide-react-native";
@@ -152,12 +152,11 @@ export default function AccountTab() {
             className="h-11 w-11"
             resizeMode="contain"
           />
-          <Pressable
-            className="h-9 w-9 items-center justify-center rounded-full bg-[#FCEFE0]"
+          <BrIconButton
+            name="Settings"
             onPress={() => router.push("/account/account-info")}
-          >
-            <Icon name="Settings" size={16} color={BR.ink} />
-          </Pressable>
+            accessibilityLabel="Settings"
+          />
         </View>
 
         <ScrollView

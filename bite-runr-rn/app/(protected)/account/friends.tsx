@@ -720,9 +720,10 @@ function SearchTab() {
           placeholderTextColor="#8A7A6E"
           autoCapitalize="none"
           autoCorrect={false}
-          className="flex-1 self-stretch py-0 text-sm text-[#1A1410]"
+          className="flex-1 self-stretch py-0 text-[#1A1410]"
           style={{
             ...BR_FONT_STYLE.displayMedium,
+            fontSize: 14,
             paddingVertical: 0,
             includeFontPadding: false,
             textAlignVertical: "center",
