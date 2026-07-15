@@ -395,7 +395,7 @@ export default function Settlement() {
                 className="text-[13px] text-[#4A3C32]"
                 style={BR_FONT_STYLE.mono}
               >
-                Members
+                People
               </Text>
               <Text
                 className="text-[13px] text-[#1A1410]"
