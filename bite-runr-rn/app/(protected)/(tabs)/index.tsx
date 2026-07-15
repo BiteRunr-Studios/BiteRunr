@@ -234,7 +234,7 @@ export default function HomeTab() {
 
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ paddingBottom: 50 + insets.bottom }}
+          contentContainerStyle={{ paddingBottom: 80 + insets.bottom }}
           showsVerticalScrollIndicator={false}
         >
           <View className="px-[18px]">
