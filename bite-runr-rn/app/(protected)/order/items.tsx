@@ -1016,6 +1016,20 @@ export default function WriteOrder() {
               </TouchableOpacity>
             </Animated.View>
 
+            {/* Prices note */}
+            <Animated.View
+              entering={FadeInUp.duration(300).delay(65)}
+              className="mt-2.5 flex-row items-center gap-1.5 px-1.5"
+            >
+              <Icon name="ReceiptText" size={12} color={BR.ink3} />
+              <Text
+                className="text-[11px] text-[#8A7A6E]"
+                style={BR_FONT_STYLE.mono}
+              >
+                No prices needed — they're added from the receipt after the run
+              </Text>
+            </Animated.View>
+
             {/* Items list */}
             <Animated.View
               entering={FadeInUp.duration(300).delay(80)}
