@@ -31,7 +31,14 @@ import { Skeleton, SkeletonBlock } from "@/components/common/skeleton";
 import { PaymentSetupSplash } from "@/components/payment-setup-splash";
 import { QRScannerModal } from "@/components/qr-scanner-modal";
 import { EnterCodeModal } from "@/components/enter-code-modal";
-import { BrCard, BrChip, BrText, BrAvatar, BrSticker } from "@/components/br";
+import {
+  BrCard,
+  BrChip,
+  BrText,
+  BrAvatar,
+  BrSticker,
+  BrIconButton,
+} from "@/components/br";
 import { BR } from "@/lib/br-theme";
 
 const SQUAD_COLOR_MAP: Record<string, string> = {
@@ -94,30 +101,6 @@ function formatDateLine(): string {
     month: "long",
     day: "numeric",
   });
-}
-
-function IconButton({
-  name,
-  onPress,
-  badge,
-}: {
-  name: React.ComponentProps<typeof Icon>["name"];
-  onPress?: () => void;
-  badge?: number;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
-    >
-      <Icon name={name} size={18} color={BR.ink} />
-      {badge && badge > 0 ? (
-        <View className="absolute -right-0.5 -top-0.5 h-4 min-w-4 items-center justify-center rounded-lg border-[1.5px] border-[#FFF7EE] bg-[#FF4D6D] px-1">
-          <Text className="text-[9px] font-extrabold text-white">{badge}</Text>
-        </View>
-      ) : null}
-    </Pressable>
-  );
 }
 
 export default function HomeTab() {
@@ -241,7 +224,11 @@ export default function HomeTab() {
             resizeMode="contain"
           />
           <View className="flex-row gap-2">
-            <IconButton name="ScanLine" onPress={() => setShowScanner(true)} />
+            <BrIconButton
+              name="ScanLine"
+              onPress={() => setShowScanner(true)}
+              accessibilityLabel="Scan code"
+            />
           </View>
         </View>
 

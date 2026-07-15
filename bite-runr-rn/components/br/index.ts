@@ -5,3 +5,4 @@ export { BrChip } from "./chip";
 export { BrAvatar } from "./avatar";
 export { BrSticker } from "./sticker";
 export { BrInput } from "./input";
+export { BrIconButton } from "./icon-button";
