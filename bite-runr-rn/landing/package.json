@@ -7,9 +7,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "npm run build && wrangler dev",
+    "preview": "vite preview",
+    "cf:dev": "npm run build && wrangler dev",
+    "cf:deploy": "npm run build && wrangler deploy",
+    "cf:typegen": "wrangler types",
     "start": "vite preview --host 0.0.0.0 --port ${PORT:-4173}",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run cf:deploy"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
