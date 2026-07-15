@@ -1,7 +1,7 @@
 // app/_layout.tsx
 import React from "react";
 import { Platform, View, Text } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, usePathname, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -32,6 +32,7 @@ import { NAV_THEME } from "@/lib/constants";
 import { useColorScheme } from "@/lib/use-color-scheme";
 import { ConvexReactClient } from "convex/react";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
+import { PostHogProvider, usePostHog } from "posthog-react-native";
 import { AuthProvider, useAuth } from "@/lib/convex-auth-context";
 import { authClient } from "@/lib/auth-client";
 import Icon from "@/components/common/icon";
@@ -92,6 +93,73 @@ const convex = new ConvexReactClient(convexUrl, {
   unsavedChangesWarning: false,
   logger: convexLogger,
 });
+
+// Analytics is optional — without a key the app runs with no tracking
+const posthogApiKey = process.env.EXPO_PUBLIC_POSTHOG_API_KEY;
+const posthogHost =
+  process.env.EXPO_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com";
+
+// Ties PostHog events to the signed-in user; resets when signed out while
+// still carrying an identity (sign-out in-app, or a session that expired
+// while the app was closed) so events aren't attributed to the wrong user.
+function PostHogUserIdentity() {
+  const posthog = usePostHog();
+  const { user, isReady, isLoading } = useAuth();
+
+  React.useEffect(() => {
+    if (!posthog || !isReady || isLoading) return;
+    let cancelled = false;
+    void posthog.ready().then(() => {
+      if (cancelled) return;
+      if (user) {
+        posthog.identify(user.id, {
+          email: user.email,
+          name: user.name,
+        });
+      } else if (posthog.getDistinctId() !== posthog.getAnonymousId()) {
+        posthog.reset();
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [posthog, user, isReady, isLoading]);
+
+  return null;
+}
+
+// PostHog's built-in screen autocapture can't hook expo-router's hidden
+// NavigationContainer, so capture screens from the router's own hooks.
+// Screen name is the route pattern (stable across e.g. order ids); the
+// concrete path is attached as a property.
+function PostHogScreenTracker() {
+  const posthog = usePostHog();
+  const pathname = usePathname();
+  const segments = useSegments();
+  const screenName = segments.length > 0 ? `/${segments.join("/")}` : pathname;
+
+  React.useEffect(() => {
+    if (!posthog || !pathname) return;
+    void posthog.screen(screenName, { pathname });
+  }, [posthog, screenName, pathname]);
+
+  return null;
+}
+
+function AnalyticsProvider({ children }: { children: React.ReactNode }) {
+  if (!posthogApiKey) return <>{children}</>;
+  return (
+    <PostHogProvider
+      apiKey={posthogApiKey}
+      options={{ host: posthogHost, captureAppLifecycleEvents: true }}
+      autocapture={{ captureScreens: false, captureTouches: true }}
+    >
+      <PostHogUserIdentity />
+      <PostHogScreenTracker />
+      {children}
+    </PostHogProvider>
+  );
+}
 
 function useToastConfig() {
   const { colorScheme } = useColorScheme();
@@ -286,13 +354,15 @@ export default function RootLayout() {
     >
       <ConvexBetterAuthProvider client={convex} authClient={authClient}>
         <AuthProvider>
-          <ThemeProvider
-            value={colorScheme === "dark" ? DARK_THEME : LIGHT_THEME}
-          >
-            <SafeAreaProvider>
-              <RootAppShell fontsLoaded={fontsLoaded} />
-            </SafeAreaProvider>
-          </ThemeProvider>
+          <AnalyticsProvider>
+            <ThemeProvider
+              value={colorScheme === "dark" ? DARK_THEME : LIGHT_THEME}
+            >
+              <SafeAreaProvider>
+                <RootAppShell fontsLoaded={fontsLoaded} />
+              </SafeAreaProvider>
+            </ThemeProvider>
+          </AnalyticsProvider>
         </AuthProvider>
       </ConvexBetterAuthProvider>
     </StripeProvider>
