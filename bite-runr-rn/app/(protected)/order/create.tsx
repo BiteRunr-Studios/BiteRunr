@@ -238,7 +238,7 @@ function AddFriendSheet({
 }) {
   const [query, setQuery] = useState("");
   const [sentUsers, setSentUsers] = useState<SentUser[]>([]);
-  const [sendingTo, setSendingTo] = useState<string | null>(null);
+  const [sendingTo, setSendingTo] = useState<Set<string>>(new Set());
 
   const sendRequest = useMutation(api.friends.sendRequest);
   const searchResults = useQuery(
@@ -255,7 +255,7 @@ function AddFriendSheet({
     fullName: string,
     avatarUrl?: string,
   ) => {
-    setSendingTo(userId);
+    setSendingTo((prev) => new Set(prev).add(userId));
     try {
       await sendRequest({ receiverId: userId });
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -263,7 +263,11 @@ function AddFriendSheet({
     } catch (e: any) {
       Alert.alert("Error", e?.message ?? "Failed to send request");
     } finally {
-      setSendingTo(null);
+      setSendingTo((prev) => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
     }
   };
 
@@ -447,10 +451,10 @@ function AddFriendSheet({
                     onPress={() =>
                       handleAdd(user.id, fullName, user.avatarUrl)
                     }
-                    disabled={sendingTo === user.id}
+                    disabled={sendingTo.has(user.id)}
                     className="flex-row items-center gap-[5px] rounded-[10px] bg-[#1A1410] px-3 py-2"
                   >
-                    {sendingTo === user.id ? (
+                    {sendingTo.has(user.id) ? (
                       <ActivityIndicator size="small" color="#fff" />
                     ) : (
                       <>
