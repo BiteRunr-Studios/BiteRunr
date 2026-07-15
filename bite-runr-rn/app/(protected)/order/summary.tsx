@@ -112,15 +112,33 @@ function SummaryAiLoadingScreen() {
 
 // ── Data loading skeleton ─────────────────────────────────────────
 
+// Tan placeholder tone for always-cream screens (avoids dark `bg-muted` slabs).
+const SKELETON_TAN = "#EFE1CF";
+
 function SummaryDataLoadingScreen() {
   return (
     <SummaryShell title="Order Summary">
       <Skeleton>
         <View className="gap-3.5 p-[18px]">
-          <SkeletonBlock width="100%" height={44} rounded="rounded-2xl" />
+          <SkeletonBlock
+            width="100%"
+            height={44}
+            rounded="rounded-2xl"
+            color={SKELETON_TAN}
+          />
           <View className="flex-row gap-2">
-            <SkeletonBlock width={90} height={32} rounded="rounded-full" />
-            <SkeletonBlock width={110} height={32} rounded="rounded-full" />
+            <SkeletonBlock
+              width={90}
+              height={32}
+              rounded="rounded-full"
+              color={SKELETON_TAN}
+            />
+            <SkeletonBlock
+              width={110}
+              height={32}
+              rounded="rounded-full"
+              color={SKELETON_TAN}
+            />
           </View>
           {[1, 2, 3].map((i) => (
             <SkeletonBlock
@@ -128,6 +146,7 @@ function SummaryDataLoadingScreen() {
               width="100%"
               height={64}
               rounded="rounded-2xl"
+              color={SKELETON_TAN}
             />
           ))}
         </View>
@@ -508,7 +527,12 @@ export default function OrderSummary() {
       </View>
     );
   }
-  if (aiSummaryStatus === "loading-data") return <SummaryDataLoadingScreen />;
+  if (aiSummaryStatus === "loading-data")
+    return aiHint === "generate" ? (
+      <SummaryAiLoadingScreen />
+    ) : (
+      <SummaryDataLoadingScreen />
+    );
   if (aiSummaryStatus === "summarizing") return <SummaryAiLoadingScreen />;
   if (!aiSummary && !isUsingLocalSummaryFallback)
     return <SummaryDataLoadingScreen />;
@@ -740,13 +764,23 @@ export default function OrderSummary() {
                         >
                           {group.displayName}
                         </Text>
-                        <View className="rounded-full bg-[#FFE7D4] px-2.5 py-1">
-                          <Text
-                            className="text-xs text-[#E8551A]"
-                            style={BR_FONT_STYLE.monoBold}
-                          >
-                            {group.lineCount}
-                          </Text>
+                        <View className="flex-row items-center gap-2.5">
+                          {group.subtotalInCents !== null && (
+                            <Text
+                              className="text-[13px] text-[#8A7A6E]"
+                              style={BR_FONT_STYLE.mono}
+                            >
+                              ${(group.subtotalInCents / 100).toFixed(2)}
+                            </Text>
+                          )}
+                          <View className="rounded-full bg-[#FFE7D4] px-2.5 py-1">
+                            <Text
+                              className="text-xs text-[#E8551A]"
+                              style={BR_FONT_STYLE.monoBold}
+                            >
+                              {group.lineCount}
+                            </Text>
+                          </View>
                         </View>
                       </View>
                     </Animated.View>

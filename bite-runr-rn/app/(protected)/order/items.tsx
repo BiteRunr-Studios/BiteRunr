@@ -681,8 +681,9 @@ export default function WriteOrder() {
         return;
       const didSave = await saveCurrentLocation();
       if (!didSave) return;
-      setCurrentItems([]);
-      setLoadedItems([]);
+      // Keep the previous location's items (and header count) on screen until
+      // the new location's query resolves — clearing here made the count badge
+      // vanish and the title jump for ~1s while Convex re-fetched.
       setItemInput("");
       setSelectedLocationId(nextLocationId);
     },
@@ -842,18 +843,20 @@ export default function WriteOrder() {
         >
           Your order
         </BrText>
-        {totalItems > 0 ? (
-          <View className="rounded-full bg-[#FF6A1F] px-2.5 py-[5px]">
-            <Text
-              className="text-[11px] text-white"
-              style={BR_FONT_STYLE.monoBold}
-            >
-              {totalItems} {totalItems === 1 ? "item" : "items"}
-            </Text>
-          </View>
-        ) : (
-          <View className="w-[72px]" />
-        )}
+        {/* Fixed-width slot keeps the centered title from shifting as the
+            count changes or briefly hides between location switches. */}
+        <View className="w-[72px] items-end">
+          {totalItems > 0 && (
+            <View className="rounded-full bg-[#FF6A1F] px-2.5 py-[5px]">
+              <Text
+                className="text-[11px] text-white"
+                style={BR_FONT_STYLE.monoBold}
+              >
+                {totalItems} {totalItems === 1 ? "item" : "items"}
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
 
       <View className="flex-1 bg-[#FFF7EE]">
