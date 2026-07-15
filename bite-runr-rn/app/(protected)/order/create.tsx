@@ -348,15 +348,8 @@ export default function CreateOrder() {
           >
             {isReorder ? "Order again" : "New run"}
           </Text>
-          <View className="rotate-[3deg] flex-row items-center gap-[5px] rounded-full bg-[#FFF1C4] px-2.5 py-[5px]">
-            <Icon name="Sparkles" size={11} color="#7A4A20" />
-            <Text
-              className="text-[11px] text-[#7A4A20]"
-              style={BR_FONT_STYLE.monoBold}
-            >
-              Quick
-            </Text>
-          </View>
+          {/* Spacer to keep the title centered opposite the back button */}
+          <View className="w-[38px]" />
         </View>
 
         <KeyboardAvoidingView
@@ -412,7 +405,7 @@ export default function CreateOrder() {
                 />
                 {!name && (
                   <Text
-                    className="pr-4 text-[11px] text-[#8A7A6E]"
+                    className="text-[11px] text-[#8A7A6E]"
                     style={BR_FONT_STYLE.mono}
                   >
                     required
@@ -534,13 +527,14 @@ export default function CreateOrder() {
               </View>
 
               <View className="mt-2.5 flex-row items-start gap-1.5">
-                <Icon name="Info" size={11} color={BR.ink3} />
+                <View className="mt-[3px]">
+                  <Icon name="Info" size={11} color={BR.ink3} />
+                </View>
                 <Text
                   className="flex-1 text-[11px] leading-[17px] text-[#8A7A6E]"
                   style={BR_FONT_STYLE.mono}
                 >
-                  Anywhere works — a restaurant, an address, or just "the
-                  usual."
+                  A restaurant, an address, or just "the usual."
                 </Text>
               </View>
             </Animated.View>
@@ -735,7 +729,7 @@ export default function CreateOrder() {
               className="mt-[18px]"
             >
               <View className="flex-row items-baseline gap-1.5">
-                <BrText variant="eyebrow">Note for the squad</BrText>
+                <BrText variant="eyebrow">Note for the group</BrText>
                 <Text
                   className="text-[11px] text-[#8A7A6E]"
                   style={BR_FONT_STYLE.mono}
