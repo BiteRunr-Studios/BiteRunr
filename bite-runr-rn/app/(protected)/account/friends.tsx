@@ -524,11 +524,13 @@ function FriendsTab({ pendingCount }: { pendingCount: number }) {
 // ─── Requests tab ──────────────────────────────────────────────────
 function RequestsTab() {
   const requests = useQuery(api.friends.listPendingRequests);
+  const sentRequests = useQuery(api.friends.listSentRequests);
   const acceptRequest = useMutation(api.friends.acceptRequest);
   const rejectRequest = useMutation(api.friends.rejectRequest);
+  const cancelRequest = useMutation(api.friends.cancelRequest);
   const [processing, setProcessing] = useState<{
     id: string;
-    action: "accept" | "reject";
+    action: "accept" | "reject" | "cancel";
   } | null>(null);
 
   const handleAccept = async (id: Id<"friendRequests">) => {
@@ -555,7 +557,28 @@ function RequestsTab() {
     }
   };
 
-  if (requests === undefined) {
+  const handleCancel = (id: Id<"friendRequests">, name: string) => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Alert.alert("Cancel Request", `Cancel your friend request to ${name}?`, [
+      { text: "Keep", style: "cancel" },
+      {
+        text: "Cancel Request",
+        style: "destructive",
+        onPress: async () => {
+          setProcessing({ id, action: "cancel" });
+          try {
+            await cancelRequest({ requestId: id });
+          } catch (e: any) {
+            Alert.alert("Error", e?.message ?? "Failed to cancel request");
+          } finally {
+            setProcessing(null);
+          }
+        },
+      },
+    ]);
+  };
+
+  if (requests === undefined || sentRequests === undefined) {
     return (
       <ScrollView contentContainerClassName="gap-2.5 px-[18px] pb-8">
         <Skeleton>
@@ -572,7 +595,7 @@ function RequestsTab() {
     );
   }
 
-  if (requests.length === 0) {
+  if (requests.length === 0 && sentRequests.length === 0) {
     return (
       <View className="items-center px-6 pt-12">
         <View className="mb-3.5 h-16 w-16 items-center justify-center rounded-[20px] bg-[#FCEFE0]">
@@ -585,7 +608,7 @@ function RequestsTab() {
           No pending requests
         </Text>
         <Text className="mt-1.5 text-center text-[13px] leading-5 text-[#8A7A6E]">
-          When someone sends you a friend request, it will appear here
+          Friend requests you send or receive will appear here
         </Text>
       </View>
     );
@@ -596,12 +619,14 @@ function RequestsTab() {
       contentContainerClassName="px-[18px] pb-8"
       showsVerticalScrollIndicator={false}
     >
-      <Text
-        className="mb-2.5 text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]"
-        style={BR_FONT_STYLE.monoSemibold}
-      >
-        {requests.length} pending
-      </Text>
+      {requests.length > 0 && (
+        <Text
+          className="mb-2.5 text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E]"
+          style={BR_FONT_STYLE.monoSemibold}
+        >
+          {requests.length} received
+        </Text>
+      )}
       <View className="gap-2.5">
         {requests.map((req, i) => {
           if (!req.sender) return null;
@@ -681,6 +706,70 @@ function RequestsTab() {
           );
         })}
       </View>
+
+      {/* Sent requests */}
+      {sentRequests.length > 0 && (
+        <>
+          <Text
+            className={`mb-2.5 text-[10px] uppercase tracking-[1.2px] text-[#8A7A6E] ${
+              requests.length > 0 ? "mt-6" : ""
+            }`}
+            style={BR_FONT_STYLE.monoSemibold}
+          >
+            {sentRequests.length} sent
+          </Text>
+          <View className="gap-2.5">
+            {sentRequests.map((req, i) => {
+              if (!req.receiver) return null;
+              const fullName = `${req.receiver.firstName} ${req.receiver.lastName}`;
+              const isCancelling =
+                processing?.id === req.id && processing.action === "cancel";
+              return (
+                <Animated.View
+                  key={req.id}
+                  entering={FadeInUp.duration(300).delay(i * 50)}
+                >
+                  <View className="flex-row items-center gap-3 rounded-[18px] border border-[rgba(26,20,16,0.08)] bg-white p-3.5">
+                    <Avatar
+                      name={fullName}
+                      avatarUrl={req.receiver.avatarUrl}
+                      size={46}
+                    />
+                    <View className="flex-1">
+                      <Text
+                        className="text-[15px] text-[#1A1410]"
+                        style={BR_FONT_STYLE.display}
+                      >
+                        {fullName}
+                      </Text>
+                      <View className="mt-0.5 flex-row items-center gap-1">
+                        <Icon name="Clock" size={11} color="#8A7A6E" />
+                        <Text
+                          className="text-xs text-[#8A7A6E]"
+                          style={BR_FONT_STYLE.displaySemibold}
+                        >
+                          Pending — waiting on them
+                        </Text>
+                      </View>
+                    </View>
+                    <Pressable
+                      onPress={() => handleCancel(req.id, fullName)}
+                      disabled={isCancelling}
+                      className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+                    >
+                      {isCancelling ? (
+                        <ActivityIndicator size="small" color="#8A7A6E" />
+                      ) : (
+                        <Icon name="X" size={16} color={BR.ink} />
+                      )}
+                    </Pressable>
+                  </View>
+                </Animated.View>
+              );
+            })}
+          </View>
+        </>
+      )}
     </ScrollView>
   );
 }
