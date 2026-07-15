@@ -1,4 +1,11 @@
-import { memo, useCallback, useMemo, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import * as Haptics from "expo-haptics";
 import {
   ActivityIndicator,
@@ -6,6 +13,7 @@ import {
   InputAccessoryView,
   Keyboard,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -24,8 +32,9 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { useFriends, useCreateOrder } from "@/lib/hooks/use-order-api";
 import Icon from "@/components/common/icon";
 import { AnimatedPressable } from "@/components/common/animated-pressable";
@@ -217,6 +226,271 @@ const FriendSelectRow = memo(function FriendSelectRow({
   );
 });
 
+// ── Add friend sheet ─────────────────────────────────────────────
+
+interface SentUser {
+  id: string;
+  fullName: string;
+  avatarUrl?: string;
+}
+
+function AddFriendSheet({
+  visible,
+  onClose,
+  initialQuery,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  initialQuery: string;
+}) {
+  const [query, setQuery] = useState("");
+  const [sentUsers, setSentUsers] = useState<SentUser[]>([]);
+  const [sendingTo, setSendingTo] = useState<Set<string>>(new Set());
+  // In-flight sends resolving after the sheet closed must not repopulate
+  // sentUsers, which handleClose already reset for the next session
+  const isOpenRef = useRef(visible);
+
+  const sendRequest = useMutation(api.friends.sendRequest);
+  const searchResults = useQuery(
+    api.friends.searchUsers,
+    visible && query.trim().length >= 2 ? { query: query.trim() } : "skip",
+  );
+
+  useEffect(() => {
+    isOpenRef.current = visible;
+    if (visible) setQuery(initialQuery);
+  }, [visible, initialQuery]);
+
+  const handleAdd = async (
+    userId: Id<"users">,
+    fullName: string,
+    avatarUrl?: string,
+  ) => {
+    setSendingTo((prev) => new Set(prev).add(userId));
+    try {
+      await sendRequest({ receiverId: userId });
+      if (!isOpenRef.current) return;
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setSentUsers((prev) => [{ id: userId, fullName, avatarUrl }, ...prev]);
+    } catch (e: any) {
+      if (!isOpenRef.current) return;
+      Alert.alert("Error", e?.message ?? "Failed to send request");
+    } finally {
+      setSendingTo((prev) => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
+    }
+  };
+
+  const handleClose = () => {
+    setQuery("");
+    setSentUsers([]);
+    onClose();
+  };
+
+  const isSearching = query.trim().length >= 2 && searchResults === undefined;
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="formSheet"
+      onRequestClose={handleClose}
+    >
+      <View className="flex-1 bg-[#FFF7EE]">
+        {/* Handle + header */}
+        <View className="items-center pb-1 pt-3">
+          <View className="h-1 w-10 rounded-sm bg-[rgba(26,20,16,0.14)]" />
+        </View>
+        <View className="flex-row items-center gap-3 px-[18px] py-3.5">
+          <View className="h-11 w-11 items-center justify-center rounded-[14px] bg-[#FF6A1F]">
+            <Icon name="UserPlus" size={20} color="#fff" />
+          </View>
+          <View className="flex-1">
+            <Text
+              className="text-[22px] tracking-[-0.4px] text-[#1A1410]"
+              style={BR_FONT_STYLE.display}
+            >
+              Add a <Text className="italic text-[#FF6A1F]">friend</Text>
+            </Text>
+            <Text className="mt-px text-xs text-[#8A7A6E]">
+              They can hop on this run once they accept
+            </Text>
+          </View>
+          <Pressable
+            onPress={handleClose}
+            className="h-8 w-8 items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
+          >
+            <Icon name="X" size={15} color={BR.ink} />
+          </Pressable>
+        </View>
+
+        <View className="flex-1 px-[18px]">
+          {/* Search input */}
+          <View className="mb-4 h-[46px] flex-row items-center gap-2 rounded-[14px] border border-[rgba(26,20,16,0.08)] bg-white px-3">
+            <Icon name="Search" size={16} color="#8A7A6E" />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search by name or email…"
+              placeholderTextColor="#8A7A6E"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoFocus
+              className="flex-1 self-stretch py-0 text-[#1A1410]"
+              style={{
+                ...BR_FONT_STYLE.displayMedium,
+                fontSize: 14,
+                paddingVertical: 0,
+                includeFontPadding: false,
+                textAlignVertical: "center",
+              }}
+            />
+            {query.length > 0 && (
+              <Pressable onPress={() => setQuery("")}>
+                <Icon name="X" size={14} color="#8A7A6E" />
+              </Pressable>
+            )}
+          </View>
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerClassName="gap-2 pb-8"
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Requests sent from this sheet */}
+            {sentUsers.map((user) => (
+              <View
+                key={user.id}
+                className="flex-row items-center gap-3 rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white p-3"
+              >
+                <BrAvatar
+                  name={user.fullName}
+                  avatarUrl={user.avatarUrl}
+                  size={46}
+                />
+                <View className="flex-1">
+                  <Text
+                    className="text-[15px] text-[#1A1410]"
+                    style={BR_FONT_STYLE.display}
+                  >
+                    {user.fullName}
+                  </Text>
+                  <View className="mt-0.5 flex-row items-center gap-1">
+                    <Icon name="Clock" size={11} color="#8A7A6E" />
+                    <Text
+                      className="text-xs text-[#8A7A6E]"
+                      style={BR_FONT_STYLE.displaySemibold}
+                    >
+                      Request sent
+                    </Text>
+                  </View>
+                </View>
+                <Icon name="Check" size={16} color="#2EBE7B" strokeWidth={3} />
+              </View>
+            ))}
+
+            {query.trim().length < 2 && sentUsers.length === 0 && (
+              <View className="items-center pt-10">
+                <View className="mb-3.5 h-16 w-16 items-center justify-center rounded-[20px] bg-[#FCEFE0]">
+                  <Icon name="Search" size={28} color="#8A7A6E" />
+                </View>
+                <Text
+                  className="text-[17px] text-[#1A1410]"
+                  style={BR_FONT_STYLE.display}
+                >
+                  Find friends
+                </Text>
+                <Text className="mt-1.5 text-center text-[13px] text-[#8A7A6E]">
+                  Enter at least 2 characters to search
+                </Text>
+              </View>
+            )}
+
+            {isSearching && (
+              <View className="items-center pt-8">
+                <ActivityIndicator size="small" color={BR.orange} />
+              </View>
+            )}
+
+            {searchResults &&
+              searchResults.length === 0 &&
+              sentUsers.length === 0 && (
+                <View className="items-center pt-10">
+                  <View className="mb-3.5 h-16 w-16 items-center justify-center rounded-[20px] bg-[#FCEFE0]">
+                    <Icon name="UserX" size={28} color="#8A7A6E" />
+                  </View>
+                  <Text
+                    className="text-[17px] text-[#1A1410]"
+                    style={BR_FONT_STYLE.display}
+                  >
+                    No users found
+                  </Text>
+                  <Text className="mt-1.5 text-[13px] text-[#8A7A6E]">
+                    Try a different name or email
+                  </Text>
+                </View>
+              )}
+
+            {(searchResults ?? []).map((user) => {
+              const fullName = `${user.firstName} ${user.lastName}`;
+              return (
+                <View
+                  key={user.id}
+                  className="flex-row items-center gap-3 rounded-2xl border border-[rgba(26,20,16,0.08)] bg-white p-3"
+                >
+                  <BrAvatar
+                    name={fullName}
+                    avatarUrl={user.avatarUrl}
+                    size={46}
+                  />
+                  <View className="flex-1">
+                    <Text
+                      className="text-[15px] text-[#1A1410]"
+                      style={BR_FONT_STYLE.display}
+                    >
+                      {fullName}
+                    </Text>
+                    <Text
+                      className="mt-0.5 text-xs text-[#8A7A6E]"
+                      numberOfLines={1}
+                    >
+                      {user.email}
+                    </Text>
+                  </View>
+                  <Pressable
+                    onPress={() =>
+                      handleAdd(user.id, fullName, user.avatarUrl)
+                    }
+                    disabled={sendingTo.has(user.id)}
+                    className="flex-row items-center gap-[5px] rounded-[10px] bg-[#1A1410] px-3 py-2"
+                  >
+                    {sendingTo.has(user.id) ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <>
+                        <Icon name="UserPlus" size={14} color="#fff" />
+                        <Text
+                          className="text-[13px] text-white"
+                          style={BR_FONT_STYLE.displaySemibold}
+                        >
+                          Add
+                        </Text>
+                      </>
+                    )}
+                  </Pressable>
+                </View>
+              );
+            })}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 // ── Main ─────────────────────────────────────────────────────────
 
 export default function CreateOrder() {
@@ -241,6 +515,7 @@ export default function CreateOrder() {
   const [comments, setComments] = useState("");
   const [friendQuery, setFriendQuery] = useState("");
   const [showAllFriends, setShowAllFriends] = useState(false);
+  const [showAddFriend, setShowAddFriend] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   // ── Data
@@ -721,6 +996,25 @@ export default function CreateOrder() {
                   />
                 </Pressable>
               )}
+
+              {/* Add a new friend */}
+              <Pressable
+                onPress={() => setShowAddFriend(true)}
+                className="mt-2 flex-row items-center justify-center gap-2 rounded-2xl border border-dashed border-[rgba(26,20,16,0.14)] py-3"
+              >
+                <Icon
+                  name="UserPlus"
+                  size={13}
+                  color={BR.ink2}
+                  strokeWidth={2.5}
+                />
+                <Text
+                  className="text-[13px] text-[#4A3C32]"
+                  style={BR_FONT_STYLE.displaySemibold}
+                >
+                  Add a new friend
+                </Text>
+              </Pressable>
             </Animated.View>
 
             {/* ── Notes ─────────────────────────────────────────────────── */}
@@ -825,6 +1119,12 @@ export default function CreateOrder() {
           </View>
         </InputAccessoryView>
       )}
+
+      <AddFriendSheet
+        visible={showAddFriend}
+        onClose={() => setShowAddFriend(false)}
+        initialQuery={friendQuery}
+      />
     </>
   );
 }
