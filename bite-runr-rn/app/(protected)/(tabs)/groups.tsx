@@ -39,9 +39,9 @@ type FilterType = "all" | "active" | "completed" | "needs_payment";
 type TimeSection = "Today" | "This Week" | "Earlier";
 
 const FILTERS: { key: FilterType; label: string }[] = [
-  { key: "all", label: "History" },
   { key: "active", label: "Live" },
   { key: "completed", label: "Settled" },
+  { key: "all", label: "History" },
   { key: "needs_payment", label: "Needs Payment" },
 ];
 
@@ -319,17 +319,19 @@ function RunCard({
 
 export default function GroupsTab() {
   const { filter } = useLocalSearchParams<{ filter?: string }>();
-  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [activeFilter, setActiveFilter] = useState<FilterType>("active");
 
   useEffect(() => {
     if (
       filter === "active" ||
       filter === "completed" ||
-      filter === "needs_payment"
+      filter === "needs_payment" ||
+      filter === "all"
     ) {
       setActiveFilter(filter);
     } else {
-      setActiveFilter("all");
+      // Default to Live — live runs matter most.
+      setActiveFilter("active");
     }
   }, [filter]);
 
@@ -432,7 +434,15 @@ export default function GroupsTab() {
             className="h-11 w-11"
             resizeMode="contain"
           />
-          <View className="flex-row gap-2">
+          <View className="flex-row items-center gap-2">
+            <AnimatedPressable
+              scale={0.93}
+              onPress={handleCreateOrder}
+              className="h-[38px] flex-row items-center gap-1.5 rounded-full bg-[#FF6A1F] px-3.5 shadow-[0_2px_4px_rgba(255,106,31,0.18)]"
+            >
+              <Icon name="Plus" size={14} color="#fff" strokeWidth={3} />
+              <Text className="text-[13px] font-bold text-white">New run</Text>
+            </AnimatedPressable>
             <Pressable
               onPress={() => setShowScanner(true)}
               className="h-[38px] w-[38px] items-center justify-center rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]"
@@ -451,29 +461,17 @@ export default function GroupsTab() {
             {/* Title */}
             <Animated.View
               entering={FadeInUp.duration(300)}
-              className="mb-1 mt-2.5 flex-row items-center justify-between gap-3"
+              className="mb-1 mt-2.5"
             >
-              <View className="min-w-0 flex-1">
-                <BrText variant="eyebrow">
-                  {allCount} {allCount === 1 ? "run" : "runs"} total
+              <BrText variant="eyebrow">
+                {allCount} {allCount === 1 ? "run" : "runs"} total
+              </BrText>
+              <BrText variant="h1" className="mt-1">
+                Your{" "}
+                <BrText variant="h1" color={BR.orange}>
+                  runs.
                 </BrText>
-                <BrText variant="h1" className="mt-1">
-                  Your{" "}
-                  <BrText variant="h1" color={BR.orange}>
-                    runs.
-                  </BrText>
-                </BrText>
-              </View>
-              <AnimatedPressable
-                scale={0.93}
-                onPress={handleCreateOrder}
-                className="shrink-0 flex-row items-center gap-1.5 rounded-full bg-[#FF6A1F] px-3.5 py-2 shadow-[0_2px_4px_rgba(255,106,31,0.18)]"
-              >
-                <Icon name="Plus" size={14} color="#fff" strokeWidth={3} />
-                <Text className="text-[13px] font-bold text-white">
-                  New run
-                </Text>
-              </AnimatedPressable>
+              </BrText>
             </Animated.View>
 
             {/* Filter row */}
