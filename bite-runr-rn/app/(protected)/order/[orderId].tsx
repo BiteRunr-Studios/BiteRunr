@@ -42,6 +42,10 @@ import { BR, BR_FONT_STYLE } from "@/lib/br-theme";
 type ButtonState = "readyToRun" | "enabled" | "disabled";
 type SwipeableRef = { close: () => void };
 
+// Tan placeholder tone for the always-cream loading state (avoids dark
+// `bg-muted` slabs sliding in over the cream background).
+const SKELETON_TAN = "#EFE1CF";
+
 function UserItemsList({ orderUserId }: { orderUserId: Id<"orderUsers"> }) {
   const items = useQuery(api.orderItems.listForOrderUser, { orderUserId });
 
@@ -402,20 +406,31 @@ export default function SpecificOrder() {
       <SafeAreaView edges={["top"]} className="flex-1 bg-[#FFF7EE]">
         <View className="flex-row items-center justify-between px-[18px] pb-3 pt-2">
           <View className="h-[38px] w-[38px] rounded-full border border-[rgba(26,20,16,0.08)] bg-[#FCEFE0]" />
-          <SkeletonBlock width={120} height={18} />
+          <SkeletonBlock width={120} height={18} color={SKELETON_TAN} />
           <View className="w-[38px]" />
         </View>
         <Skeleton>
           <View className="mt-1 gap-3.5 px-[18px]">
-            <SkeletonBlock width="100%" height={160} rounded="rounded-3xl" />
-            <SkeletonBlock width="100%" height={80} rounded="rounded-2xl" />
-            <SkeletonBlock width={100} height={14} />
+            <SkeletonBlock
+              width="100%"
+              height={160}
+              rounded="rounded-3xl"
+              color={SKELETON_TAN}
+            />
+            <SkeletonBlock
+              width="100%"
+              height={80}
+              rounded="rounded-2xl"
+              color={SKELETON_TAN}
+            />
+            <SkeletonBlock width={100} height={14} color={SKELETON_TAN} />
             {[1, 2, 3].map((i) => (
               <SkeletonBlock
                 key={i}
                 width="100%"
                 height={72}
                 rounded="rounded-2xl"
+                color={SKELETON_TAN}
               />
             ))}
           </View>
@@ -442,6 +457,17 @@ export default function SpecificOrder() {
       : 0;
   const remainingOrderingCount =
     (data.completionStats?.total ?? 0) - (data.completionStats?.done ?? 0);
+
+  // Show every pickup stop, not just the first. Keep it compact when there are
+  // many: "Costco · Chick-fil-A +2".
+  const locationNames =
+    data.orderLocations
+      ?.map((location) => location.name)
+      .filter((name): name is string => Boolean(name)) ?? [];
+  const locationLabel =
+    locationNames.length <= 2
+      ? locationNames.join(" · ")
+      : `${locationNames.slice(0, 2).join(" · ")} +${locationNames.length - 2}`;
 
   const dateLabel = new Date(data.order.createdAt).toLocaleDateString("en-US", {
     weekday: "short",
@@ -513,15 +539,18 @@ export default function SpecificOrder() {
                   >
                     {data.order.name}
                   </BrText>
-                  {data.orderLocations?.[0]?.name && (
+                  {locationLabel && (
                     <View className="mt-1.5 flex-row items-center gap-[5px]">
                       <Icon
                         name="MapPin"
                         size={12}
                         color="rgba(255,255,255,0.6)"
                       />
-                      <Text className="text-[13px] text-white/60">
-                        {data.orderLocations[0].name}
+                      <Text
+                        className="flex-1 text-[13px] text-white/60"
+                        numberOfLines={1}
+                      >
+                        {locationLabel}
                       </Text>
                     </View>
                   )}
@@ -548,7 +577,7 @@ export default function SpecificOrder() {
                   <Icon name="Users" size={13} color="rgba(255,255,255,0.7)" />
                   <Text className="text-[13px] text-white/[0.85]">
                     <Text className="font-bold">{data.orderUsers.length}</Text>
-                    {" people"}
+                    {data.orderUsers.length === 1 ? " person" : " people"}
                   </Text>
                 </View>
                 <View className="flex-row items-center gap-1.5 rounded-full bg-white/10 px-3 py-2">
@@ -605,21 +634,21 @@ export default function SpecificOrder() {
                   ? "At least one item is needed before the run can start"
                   : data.completionStats?.allDone
                     ? "✨ Everyone's done — ready to roll"
-                    : `Waiting on ${remainingOrderingCount} squad ${
+                    : `Waiting on ${remainingOrderingCount} group ${
                         remainingOrderingCount === 1 ? "member" : "members"
                       }`}
               </Text>
             </ReAnimated.View>
           )}
 
-          {/* Squad section */}
+          {/* Group section */}
           <ReAnimated.View
             entering={FadeInUp.duration(300).delay(80)}
             className="mt-[22px]"
           >
             <View className="flex-row items-center justify-between">
               <BrText weight="bold" className="text-base">
-                Squad
+                Group
               </BrText>
               {isCreator && !data.order.paused && (
                 <Pressable

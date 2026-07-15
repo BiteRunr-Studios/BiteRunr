@@ -258,9 +258,16 @@ export function useAiOrderSummary(
     signature,
   ]);
 
+  // A persisted (paused-order) summary is derived synchronously from the raw
+  // data, so surface it immediately instead of flashing the loading skeleton
+  // for a frame while the effect above commits `status`/`aiSummary`.
+  const effectiveAiSummary = aiSummary ?? persistedAiSummary;
+  const effectiveStatus: AiOrderSummaryStatus =
+    status === "loading-data" && persistedAiSummary ? "ready" : status;
+
   return {
-    status,
-    aiSummary,
+    status: effectiveStatus,
+    aiSummary: effectiveAiSummary,
     retry: () => {
       if (orderId) {
         clearAiOrderSummaryRequestCache(orderId);

@@ -15,6 +15,12 @@ interface SkeletonBlockProps {
   rounded?: string;
   className?: string;
   style?: ViewStyle;
+  /**
+   * Explicit base color. Defaults to the theme `bg-muted` (dark in dark mode),
+   * which suits dark cards. Pass a light tone for always-cream screens so the
+   * blocks don't render as dark slabs.
+   */
+  color?: string;
 }
 
 interface SkeletonProps {
@@ -58,6 +64,7 @@ export function SkeletonBlock({
   rounded = "rounded-lg",
   className = "",
   style,
+  color,
 }: SkeletonBlockProps) {
   const context = React.useContext(SkeletonContext);
 
@@ -75,11 +82,12 @@ export function SkeletonBlock({
 
   return (
     <View
-      className={`bg-muted ${rounded} overflow-hidden ${className}`}
+      className={`${color ? "" : "bg-muted"} ${rounded} overflow-hidden ${className}`}
       style={[
         {
           width: widthValue,
           height,
+          ...(color ? { backgroundColor: color } : null),
         },
         widthPercent ? { width: widthPercent as any } : undefined,
         style,
