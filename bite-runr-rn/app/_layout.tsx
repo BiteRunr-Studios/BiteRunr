@@ -1,7 +1,7 @@
 // app/_layout.tsx
 import React from "react";
 import { Platform, View, Text } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, usePathname, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -99,26 +99,49 @@ const posthogApiKey = process.env.EXPO_PUBLIC_POSTHOG_API_KEY;
 const posthogHost =
   process.env.EXPO_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com";
 
-// Ties PostHog events to the signed-in user; resets on sign-out so the
-// next anonymous session isn't attributed to them
+// Ties PostHog events to the signed-in user; resets when signed out while
+// still carrying an identity (sign-out in-app, or a session that expired
+// while the app was closed) so events aren't attributed to the wrong user.
 function PostHogUserIdentity() {
   const posthog = usePostHog();
-  const { user } = useAuth();
-  const wasIdentified = React.useRef(false);
+  const { user, isReady, isLoading } = useAuth();
 
   React.useEffect(() => {
-    if (!posthog) return;
-    if (user) {
-      posthog.identify(user.id, {
-        email: user.email,
-        name: user.name,
-      });
-      wasIdentified.current = true;
-    } else if (wasIdentified.current) {
-      posthog.reset();
-      wasIdentified.current = false;
-    }
-  }, [posthog, user]);
+    if (!posthog || !isReady || isLoading) return;
+    let cancelled = false;
+    void posthog.ready().then(() => {
+      if (cancelled) return;
+      if (user) {
+        posthog.identify(user.id, {
+          email: user.email,
+          name: user.name,
+        });
+      } else if (posthog.getDistinctId() !== posthog.getAnonymousId()) {
+        posthog.reset();
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [posthog, user, isReady, isLoading]);
+
+  return null;
+}
+
+// PostHog's built-in screen autocapture can't hook expo-router's hidden
+// NavigationContainer, so capture screens from the router's own hooks.
+// Screen name is the route pattern (stable across e.g. order ids); the
+// concrete path is attached as a property.
+function PostHogScreenTracker() {
+  const posthog = usePostHog();
+  const pathname = usePathname();
+  const segments = useSegments();
+  const screenName = segments.length > 0 ? `/${segments.join("/")}` : pathname;
+
+  React.useEffect(() => {
+    if (!posthog || !pathname) return;
+    void posthog.screen(screenName, { pathname });
+  }, [posthog, screenName, pathname]);
 
   return null;
 }
@@ -128,10 +151,11 @@ function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   return (
     <PostHogProvider
       apiKey={posthogApiKey}
-      options={{ host: posthogHost }}
-      autocapture
+      options={{ host: posthogHost, captureAppLifecycleEvents: true }}
+      autocapture={{ captureScreens: false, captureTouches: true }}
     >
       <PostHogUserIdentity />
+      <PostHogScreenTracker />
       {children}
     </PostHogProvider>
   );
