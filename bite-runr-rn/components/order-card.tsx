@@ -234,7 +234,7 @@ export const OrderCard = React.memo(function OrderCard({
                 color={NAV_THEME[colorScheme].text}
               />
               <Text className="text-xs font-medium text-muted-foreground">
-                {itemCount} {itemCount === 1 ? "line" : "lines"}
+                {itemCount} {itemCount === 1 ? "item" : "items"}
               </Text>
             </View>
           )}

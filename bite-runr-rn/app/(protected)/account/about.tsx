@@ -72,7 +72,7 @@ const FEATURES: FeatureItemProps[] = [
     iconBg: BR.mintSoft,
     title: "Voice Ordering",
     description:
-      "Speak your order lines and let BiteRunr clean them up into structured items.",
+      "Speak your order and let BiteRunr clean it up into structured items.",
   },
   {
     icon: "UserPlus",

@@ -73,7 +73,7 @@ const FAQS = [
   {
     question: "How do I create a group order?",
     answer:
-      "Tap the '+' button on the home screen, give your order a name, add the pickup locations, and invite your friends. Everyone can then add their order lines under each location.",
+      "Tap the '+' button on the home screen, give your order a name, add the pickup locations, and invite your friends. Everyone can then add their items under each location.",
   },
   {
     question: "How do I invite friends to an order?",
@@ -88,7 +88,7 @@ const FAQS = [
   {
     question: "Can I order from multiple restaurants?",
     answer:
-      "Yes. Each order can have multiple pickup locations, and everyone can add separate order lines for each one.",
+      "Yes. Each order can have multiple pickup locations, and everyone can add separate items for each one.",
   },
   {
     question: "How do I add friends?",
